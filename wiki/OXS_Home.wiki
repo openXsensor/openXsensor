@@ -1,0 +1,24 @@
+#summary OpenXsensor Home
+
+https://openxsensor.googlecode.com/svn/wiki/images/OXS_Logo.png
+
+
+OpenXsensor is the evolution of [https://code.google.com/p/openxvario/ OpenXvario] and extends it to multi-sensing applications.
+
+Discussion about this project: http://9xforums.com/forum/viewforum.php?f=86
+
+Based on an Arduino platform, it connects to different sensors and transmits the measurements via FrSky telemetry capabilities.
+
+It is both compatible with the D series receivers (HUB protocol) and the new X series rx (Smart Port protocol).
+
+
+===Usable sensors :===
+ * pressure (MS5611)
+   * altitude
+   * vertical speed
+ * voltage
+ * current
+ * RPM
+ * temperature
+ 
+=[https://code.google.com/p/openxsensor/wiki/OXS_Index Downloads & Documentation]=
