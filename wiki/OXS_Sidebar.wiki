@@ -1,8 +1,7 @@
 #summary OpenXsensor Wiki Menu
 
-<wiki:comment>  
+ 
  * [OXS_News News]
-</wiki:comment> 
  * [OXS_Index Index]
  * [OXS_Index#Downloads Downloads]
  * [OXS_Index#Documentation Documentation]
