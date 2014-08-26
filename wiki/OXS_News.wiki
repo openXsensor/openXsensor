@@ -1,0 +1,11 @@
+#summary OpenXsensor News
+#labels news, Featured
+#sidebar OXS_Sidebar
+
+https://openxsensor.googlecode.com/svn/wiki/images/OXS_Logo.png
+
+ 
+=News=
+
+ * 2014-08-26: Wiki restructuring + adding [OXS_Configuration OXS general settings documentation]
+ * 2014-08-23: [OXS_Index#Downloads Release] of OpenXsensor v1.0 and OXS Configurator v1.0

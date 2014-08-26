@@ -1,13 +1,17 @@
 #summary OpenXsensor Index
+#labels Featured
+#sidebar OXS_Sidebar
 
 https://openxsensor.googlecode.com/svn/wiki/images/OXS_Logo.png
 
  
 =Downloads=
- - Latest versions: [https://openxsensor.googlecode.com/svn/downloads/OpenXsensor_v1.0.zip OpenXsensor v1.0]
- - [https://openxsensor.googlecode.com/svn/downloads/OXS_Configurator_v1.0_win.zip OXS Configurator v1.0 windows]
- - [https://openxsensor.googlecode.com/svn/downloads/OXS_Configurator_v1.0_linux.tar.gz OXS Configurator v1.0 linux]
- - [https://openxsensor.googlecode.com/svn/downloads/OXS_Configurator_v1.0_macosx.zip OXS Configurator v1.0 macosx]
+ - Latest versions:
+ 
+ || *OpenXsensor* || *OXS Configurator* || 
+ ||[https://openxsensor.googlecode.com/svn/downloads/OpenXsensor_v1.0.zip OpenXsensor v1.0]||[https://openxsensor.googlecode.com/svn/downloads/OXS_Configurator_v1.0_win.zip OXS Configurator v1.0 windows]||
+ ||||[https://openxsensor.googlecode.com/svn/downloads/OXS_Configurator_v1.0_linux.tar.gz OXS Configurator v1.0 linux]||
+ ||||[https://openxsensor.googlecode.com/svn/downloads/OXS_Configurator_v1.0_macosx.zip OXS Configurator v1.0 macosx]||
  
  - Archive: [https://openxsensor.googlecode.com/svn/downloads/ Downloads] 
 <wiki:comment>
@@ -20,10 +24,8 @@ https://openxsensor.googlecode.com/svn/wiki/images/OXS_Logo.png
  ==OXS general configuration / OXS Configurator==
  https://openxsensor.googlecode.com/svn/wiki/images/OXS-OXSC_heading.jpg
 
- Coming soon...
-<wiki:comment>
- is the documentation to both understand the different OXS options and set them easily with the OXS Configurator.
-</wiki:comment>
+ [OXS_Configuration Here is the documentation] to both understand the different OXS options and set them easily with the OXS Configurator.
+
 
  ==Configuring OpenTX==
  https://openxsensor.googlecode.com/svn/wiki/images/OTX_screen_01.png
@@ -33,7 +35,7 @@ https://openxsensor.googlecode.com/svn/wiki/images/OXS_Logo.png
  : How to use all the data provided by OXS in OpenTX.
 </wiki:comment>
 
- ==Buildings how-tos:==
+ ==Buildings how-tos==
 
  ===OXS alti/vario:===
  https://openxsensor.googlecode.com/svn/wiki/images/OXSv.jpg

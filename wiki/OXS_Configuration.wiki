@@ -1,0 +1,90 @@
+#summary OpenXsensor Configuration
+#labels doc
+#sidebar OXS_Sidebar
+
+=Understanding and Configuring OpenXsensor=
+
+First, you have to [OXS_Index#Downloads download the latest versions] of OpenXsensor and OXS Configurator.
+
+Decompress the archives, then place "openxsensor_vx_x" in your arduino project directory. You can put "oxs_configurator_v1.0" where you want.
+
+==OXS Configurator Title==
+
+https://openxsensor.googlecode.com/svn/wiki/images/OXSC_01.jpg
+
+On the top right logo corner you've got an "About" button, on the bottom left, you'll see the compatible OpenXsensor version and in the bottom right, the Configurator version.
+
+All along the program, you can hover the mouse on the controls and a tooltip should appear with a breve description and/or the default value.
+
+==General settings==
+
+https://openxsensor.googlecode.com/svn/wiki/images/OXSC_02.jpg
+
+Here you can set the openxsensor directory so that the config file could be written in the right place.
+Unfortunately, the text field doesn't support copy pasting but you can manually type the path or click the button "..." at the right and navigate to the folder.
+
+----
+
+https://openxsensor.googlecode.com/svn/wiki/images/OXSC_03.jpg
+
+The FrSky protocol refers to what type of receiver you want OXS to communicate with: 
+ * Hub protocol for D series receivers
+ * Smart Port for X series receivers
+ 
+The serial output pin number is the arduino digital pin to connect to the receiver telemetry data input:
+ * Pin labelled "Rx" on the D series receivers https://openxsensor.googlecode.com/svn/wiki/images/D8R_Side.png
+ 
+ * Pin labelled "S" from the Smart Port connector on the X series receivers https://openxsensor.googlecode.com/svn/wiki/images/X8R_topSP.png
+
+----
+
+https://openxsensor.googlecode.com/svn/wiki/images/OXSC_04.jpg
+
+*! Never connect a voltage > VCC to an Ax arduino analog pin !*
+
+Voltages can be measured compared to VCC or an 1.1v internal reference:
+
+ * If VCC is very stable, it is probably more accurate and easier to measure voltages based on VCC. Still, this requires that the voltage applied on arduino "RAW" pin is regulated, or at at least always more than 5.5v for a 5v Arduino or 3.7v for a 3.3v Arduino (headroom needed for the arduino board regulator).
+ * If voltage on "Raw" pin is less than 5.5v or 3.7v depending on the arduino used, and unstable (e.g. due to servo consumption or low battery), then voltage measurements will be wrong.    
+ * If VCC can't be very stable (e.g. arduino is powered by a battery), then it is possible to measure based on the arduino 1.1v internal reference.
+
+To measure a voltage greater than VCC or 1.1 volt depending on the option you choose, you need to use a [http://en.wikipedia.org/wiki/Voltage_divider voltage divider].
+
+This will be discussed in details when we talk about voltage sensors.
+
+----
+
+https://openxsensor.googlecode.com/svn/wiki/images/OXSC_05.jpg
+
+With this option enabled and the corresponding pin number set, you can use a button (connected to the digital arduino pin previously chosen) to reset some OXS measurements.
+
+Button pressed between 0.1 and 3 seconds: 
+ * reset the minimum and maximum current data
+ * reset all vario data
+ 
+Button pressed between 3 and 5 seconds: 
+ * reset the consumed current (milliAmps)
+ 
+----
+
+https://openxsensor.googlecode.com/svn/wiki/images/OXSC_06.jpg
+
+If checked, some telemetry values will be stored in EEProm (arduino memory) every 10 seconds. 
+ * current data (min, max values and consumption)
+ * vario data 
+ 
+These values will be restored every power up. (e.g. mAh counted...), so you will keep data continuity even if the model is turned off between flights.
+
+----
+
+https://openxsensor.googlecode.com/svn/wiki/images/OXSC_07.jpg
+
+Tick the sensors connected so that OXS can use them.
+
+----
+
+https://openxsensor.googlecode.com/svn/wiki/images/OXSC_08.jpg
+
+You can load and save preset settings for your different OpenXsensor configurations.
+
+The "Preset" folder in the Configurator root is open by default but you can put them where you want.

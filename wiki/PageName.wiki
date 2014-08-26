@@ -1,8 +1,0 @@
-#summary openXsensor - arduino based modular telemetry system
-
-= Introduction =
-
-for latest code please check https://code.google.com/p/openxvario/
-
-
-= Details =
