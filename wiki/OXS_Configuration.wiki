@@ -94,3 +94,7 @@ https://openxsensor.googlecode.com/svn/wiki/images/OXSC_08.jpg
 You can load and save preset settings for your different !OpenXsensor configurations.
 
 The "Preset" folder in the Configurator root is open by default but you can put them where you want.
+
+----
+
+next --> [OXS_Conf_Vario Vario settings]
