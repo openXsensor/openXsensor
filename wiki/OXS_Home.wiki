@@ -2,25 +2,28 @@
 
 https://openxsensor.googlecode.com/svn/wiki/images/OXS_Logo.png
 
+=[OXS_News News] - [OXS_Downloads Downloads] - [OXS_Documentation Documentation]=
 
-OpenXsensor is the evolution of [https://code.google.com/p/openxvario/ OpenXvario] and extends it to multi-sensing applications.
+==Introduction==
+
+!OpenXsensor is the evolution of [https://code.google.com/p/openxvario/ OpenXvario] and extends it to multi-sensing applications.
 
 Discussion about this project: http://openrcforums.com/forum/viewforum.php?f=86
 
-Based on an Arduino platform, it connects to different sensors and transmits the measurements via FrSky telemetry capabilities.
+Based on an [http://arduino.cc/ Arduino] platform, it connects to different sensors and transmits the measurements via !FrSky telemetry capabilities.
 
-It is both compatible with the D series receivers (HUB protocol) and the new X series rx (Smart Port protocol).
+It is both compatible with the *D series* receivers (HUB protocol) and the new *X series* rx (Smart Port protocol).
 
+==Functionalities provided at your choice :==
 
-===Usable sensors :===
- * pressure (MS5611)
-   * altitude
-   * vertical speed
- * voltage
- * current
- * RPM
- * temperature
- 
-=[OXS_News News]=
- 
-=[https://code.google.com/p/openxsensor/wiki/OXS_Index Downloads & Documentation]=
+  * Altimeter / Variometer _(like FrSky Variometer sensor high precision)_
+  * Up to 6 voltages measurements
+    * Battery voltage measurements _(like FrSky FBVS-01)_
+    * Lipo battery cell measurements _(like FrSky FLVS-01 or FLVSS)_
+    * ...
+  * RPM sensor
+  * Current sensor _(like FrSky FAS or FCS)_
+    * Can calculate the consumed current
+  * Can use any sensor outputting voltage
+    * Temperature sensor
+    * ...

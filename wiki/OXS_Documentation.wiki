@@ -1,0 +1,55 @@
+#summary OpenXsensor Documentation
+#labels doc
+#sidebar OXS_Sidebar
+
+https://openxsensor.googlecode.com/svn/wiki/images/OXS_Logo.png
+
+=Documentation=
+
+ ==OXS general configuration / OXS Configurator==
+ https://openxsensor.googlecode.com/svn/wiki/images/OXS-OXSC_heading.jpg
+
+ [OXS_Configuration Here is the documentation] to both understand the different OXS options and set them easily with the OXS Configurator.
+
+
+ ==Configuring OpenTX==
+ https://openxsensor.googlecode.com/svn/wiki/images/OTX_screen_01.png
+
+ Coming soon...
+<wiki:comment>
+ : How to use all the data provided by OXS in OpenTX.
+</wiki:comment>
+
+ ==Buildings how-tos==
+
+ ===OXS alti/vario:===
+ https://openxsensor.googlecode.com/svn/wiki/images/OXSv.jpg
+
+ Visit the Wiki Page [https://code.google.com/p/openxvario/wiki/BuildInstructions Build Instructions] to learn how to make an OpenXsensor alti/vario yourself. 
+
+ ===Current sensor:===
+ https://openxsensor.googlecode.com/svn/wiki/images/CS_ACS712-05.JPG
+
+ Visit the Wiki Page [https://code.google.com/p/openxvario/wiki/CurrentSensorModules Current Sensor Module] for details on how to connect a current sensor module to OpenXsensor.  
+
+ ===Voltage measurements:===
+ Coming soon...
+<wiki:comment>
+ Visit the Wiki Page ... to learn how to measure different voltages and to monitor individually your lipo battery cells to provide the same functionality as FrSky battery sensors.
+</wiki:comment>
+
+ ===RPM measurements:===
+ Coming soon...
+<wiki:comment>
+ Using a revolutions per minute sensor.
+</wiki:comment>
+
+ ===Temperature measurements:===
+ Coming soon...
+<wiki:comment>
+ Using a temperature sensor.
+</wiki:comment>
+
+
+
+

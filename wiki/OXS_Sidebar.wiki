@@ -2,12 +2,12 @@
 
  
   * [OXS_News News]
-  * [OXS_Index Index]
-  * [OXS_Index#Downloads Downloads]
-  * [OXS_Index#Documentation Documentation]
-  * [OXS_Index#OXS_general_configuration_/_OXS_Configurator OXS Configuration]
-    * [OXS_Configuration General settings]
-  * [OXS_Index#Configuring_OpenTX OpenTX Configuration]
-  * [OXS_Index#Buildings_how-tos Buildings how-tos]
-    * [https://code.google.com/p/openxvario/wiki/BuildInstructions OXS alti/vario]
-    * [https://code.google.com/p/openxvario/wiki/CurrentSensorModules Current sensor] 
+  * [OXS_Downloads Downloads]
+  * [OXS_Documentation Documentation]
+    * OXS General configuration
+      * [OXS_Configuration General settings]
+      * [OXS_Configuration#Vario_settings Vario settings]
+    * OpenTX Configuration Coming soon...
+    * Buildings how-tos
+      * [https://code.google.com/p/openxvario/wiki/BuildInstructions OXS alti/vario]
+      * [https://code.google.com/p/openxvario/wiki/CurrentSensorModules Current sensor] 
