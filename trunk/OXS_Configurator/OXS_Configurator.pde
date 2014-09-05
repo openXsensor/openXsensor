@@ -19,21 +19,21 @@
 *****************************************************************************
 **                        Author: David LABURTHE                           **
 **                      Contact: dlaburthe@free.fr                         **
-**                           Date: 20.08.2014                              **
+**                           Date: 05.09.2014                              **
 *****************************************************************************/
 
 import controlP5.* ;
 
-boolean tempActive = false ;           // Define temperature sensor availability 
+boolean tempActive = false ;           // Define temperature sensor availability
 
 String oxsVersion = "v1.x" ;
-String oxsCversion = "v1.0" ;
+String oxsCversion = "v1.1" ;
 
 String day = (day() < 10) ? "0" + day() : "" + day() ;
 String month = (month() < 10) ? "0" + month() : "" + month() ;
 
 String oxsDirectory = "" ;
-PrintWriter output;
+PrintWriter output ;
 String outputConfigDir = "" ;
 
 int blueAct = color(15, 165, 255) ;
@@ -51,7 +51,7 @@ PFont font20 ; //= createFont("arial", 20, false) ;
 
 ControlP5 cp5 ;
 
-ControlGroup messageBox;
+ControlGroup messageBox ;
 
 Tab general ;
 
@@ -91,7 +91,7 @@ int versionValid ;
 boolean allValid ;
 
 int tabColor = 200 ;
-int myColorBackground = 150 ; 
+int myColorBackground = 150 ;
 
 int sensMin ;
 int sensMax ;
@@ -120,10 +120,10 @@ void setup() {
   //Alt+Shift+h to show/hide controllers
   //Alt+Shift+s to save properties (what are properties? have a look at the properties examples)
   //Alt+Shift+l to load properties
-  //cp5.enableShortcuts();  
+  //cp5.enableShortcuts() ;
 
   oxsI = loadShape("OXSc_Icon.svg") ;
-  oxsL = loadShape("OXSc_Logo.svg") ; 
+  oxsL = loadShape("OXSc_Logo.svg") ;
 
   PGraphics icon = createGraphics(64, 64, JAVA2D) ;
   icon.beginDraw() ;
@@ -138,28 +138,27 @@ void setup() {
   font20 = createFont("arial.ttf", 20, false) ;
 
   for ( int i = 0; i < analogPins.length; i++ ) {
-    analogPins[i] = ("A" + i );
-  }  
-  
-  cp5.setControlFont(fontLabel, 12);
-  
+    analogPins[i] = ("A" + i ) ;
+  }
+
+  cp5.setControlFont(fontLabel, 12) ;
 
   // ------------------------ TABS definition ------------------------
-  // By default all controllers are stored inside Tab 'default' 
-  cp5.window().setPositionOfTabs(0, 80); 
-  
+  // By default all controllers are stored inside Tab 'default'
+  cp5.window().setPositionOfTabs(0, 80) ;
+
   // About
   cp5.addButton("about")
      .setLabel("About")
-     .setPosition(355, 14)  // Other positions (5, 14) (355, 38)      
+     .setPosition(355, 14)  // Other positions (5, 14) (355, 38)
      .setSize(40, 15)
      .setColorLabel(#000000)
      .setColorBackground(color(150))
      .setColorForeground(blueAct)
      .setColorActive(orangeAct)
-     .setTab("global")        
+     .setTab("global")
      ;
-  cp5.getController("about").captionLabel().toUpperCase(false) ;  
+  cp5.getController("about").captionLabel().toUpperCase(false) ;
 
   // ----------------------- First tab: GENERAL SETTINGS ----------------------
   general = cp5.getTab("default")
@@ -167,9 +166,9 @@ void setup() {
                .setColorLabel(color(255))
                .setColorForeground(color(200))
                .setColorBackground(color(70))
-               .setColorActive(orangeAct)     
-               .setLabel("GENERAL Settings")              
-               .setId(0)                  
+               .setColorActive(orangeAct)
+               .setLabel("GENERAL Settings")
+               .setId(0)
                ;
   general.captionLabel().toUpperCase(false) ;
 
@@ -178,56 +177,55 @@ void setup() {
               .setLabel("OXS directory  ")
               .setPosition(100, 110)
               .setColorLabel(color(0))
-              .setSize(260, 20)         
-              .setAutoClear(false)     
+              .setSize(260, 20)
+              .setAutoClear(false)
               ;
-  oxsDir.getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER) ;     
+  oxsDir.getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER) ;
   oxsDir.captionLabel().toUpperCase(false) ;
-  cp5.getTooltip().register("oxsDirectory", "Choose OXS source directory");
+  cp5.getTooltip().register("oxsDirectory", "Choose OXS source directory") ;
 
-  cp5.addButton("oxsDirButton")    
+  cp5.addButton("oxsDirButton")
      .setColorForeground(blueAct)
      .setLabel(". . .")
      .setPosition(365, 111)
-     .setSize(25, 18)           
+     .setSize(25, 18)
      ;
-  cp5.getTooltip().register("oxsDirButton", "Choose OXS source directory");          
+  cp5.getTooltip().register("oxsDirButton", "Choose OXS source directory") ;
 
   // Protocol choice
   protocol = cp5.addTextlabel("protocol")
                 .setText("FrSky Protocol                                   ")
                 .setPosition(10, 141)
                 .setColorValue(#000000)
-                .setTab("default")        
+                .setTab("default")
                 ;
-  //protocol.captionLabel().toUpperCase(false) ; 
-  cp5.getProperties().remove(cp5.getController("protocol")) ;   
-  cp5.getTooltip().register("protocol", "Choose protocol");  
+  //protocol.captionLabel().toUpperCase(false) ;
+  cp5.getProperties().remove(cp5.getController("protocol")) ;
+  cp5.getTooltip().register("protocol", "Choose protocol") ;
 
-  prot = cp5.addDropdownList("protocolChoice") 
+  prot = cp5.addDropdownList("protocolChoice")
             .setPosition(100, 160)
             .setSize(105, 300)
             .setColorForeground(blueAct)
             .setBackgroundColor(color(190))
             .setItemHeight(20)
-            .setBarHeight(20)               
-            ; 
-  prot.captionLabel().set("Choose");
+            .setBarHeight(20)
+            ;
+  prot.captionLabel().set("Choose") ;
   prot.captionLabel().style().marginTop = 2 ;
-  prot.addItem("HUB - D rx", 1);
-  prot.addItem("Smart Port - X rx", 2);  
-  prot.toUpperCase(false) ;  
+  prot.addItem("HUB - D rx", 1) ;
+  prot.addItem("Smart Port - X rx", 2) ;
+  prot.toUpperCase(false) ;
   cp5.getProperties().remove(cp5.getGroup("protocolChoice"), "ListBoxItems") ;
 
   // Serial PIN choice
   serialPinL = cp5.addTextlabel("serialPinlabel")
                   .setText("Serial output PIN number            ")
                   .setPosition(215, 141)
-                  .setColorValue(#000000)                
+                  .setColorValue(#000000)
                   ;
-  cp5.getProperties().remove(cp5.getController("serialPinlabel")) ;         
-  cp5.getTooltip().register("serialPinlabel", "Choose the serial output PIN number - Default: 4 -");
-    
+  cp5.getProperties().remove(cp5.getController("serialPinlabel")) ;
+  cp5.getTooltip().register("serialPinlabel", "Choose the serial output PIN number - Default: 4 -") ;
 
   serialPin = cp5.addDropdownList("serialPin")
                  .setPosition(365, 160)
@@ -236,41 +234,40 @@ void setup() {
                  .setBackgroundColor(color(190))
                  .setItemHeight(20)
                  .setBarHeight(20)
-                 ; 
+                 ;
   serialPin.captionLabel().set(" ") ;
-  serialPin.captionLabel().style().marginTop = 2 ; 
+  serialPin.captionLabel().style().marginTop = 2 ;
   serialPin.addItem("2", 2) ;
   serialPin.addItem("4", 4) ;
   serialPin.setValue(4) ;
-  cp5.getProperties().remove(cp5.getGroup("serialPin"), "ListBoxItems") ;  
+  cp5.getProperties().remove(cp5.getGroup("serialPin"), "ListBoxItems") ;
 
   // Internal reference 1.1v
   cp5.addToggle("intRef")
-     .setPosition(190, 173)  
-     .setLabel("Internal voltage reference (1.1v)  ")    
+     .setPosition(190, 173)
+     .setLabel("Internal voltage reference (1.1v)  ")
      ;
   customizeToggleSensor(cp5.getController("intRef")) ;
   cp5.getTooltip().register("intRef", "Voltage measurement reference");
 
-
   // Arduino VCC
   /*
   aVcc = cp5.addTextfield("arduinoVCC")
-   .setLabel("Arduino VCC               volts") 
+   .setLabel("Arduino VCC               volts")
    .setPosition(330, 170)
    .setColorLabel(color(0))
    .setColorValueLabel(color(255))
-   .setSize(32, 20)     
+   .setSize(32, 20)
    .setAutoClear(false)
-   .setText("5") 
+   .setText("5")
    ;
    aVcc.getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER) ;
    aVcc.captionLabel().toUpperCase(false) ;
    //aVcc.getValueLabel().align(ControlP5.RIGHT, ControlP5.CENTER) ;
-   aVcc.setInputFilter(ControlP5.FLOAT);  
+   aVcc.setInputFilter(ControlP5.FLOAT) ;
    */
-   
-  cp5.addNumberbox("arduinoVccNb")    
+
+  cp5.addNumberbox("arduinoVccNb")
      .setPosition(325, 170)
      .setSize(37, 18)
      .setRange(0, 9.99)
@@ -278,84 +275,84 @@ void setup() {
      .setDecimalPrecision(2)
      .setDirection(Controller.HORIZONTAL) // change the control direction to left/right
      .setValue(5)
-     .setLabel("Arduino VCC              volts") 
+     .setLabel("Arduino VCC              volts")
      .setColorLabel(color(0))
-     ; 
+     ;
   cp5.getController("arduinoVccNb").getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER).setPaddingX(-65) ;
   cp5.getController("arduinoVccNb").captionLabel().toUpperCase(false) ;
-  cp5.getTooltip().register("arduinoVccNb", "Arduino alimentation source");
-   
+  cp5.getTooltip().register("arduinoVccNb", "Arduino alimentation source") ;
+
    // Reset button
    cp5.addToggle("resetButton")
-      .setPosition(190, 203)  
-      .setLabel("Reset button")    
+      .setPosition(190, 203)
+      .setLabel("Reset button")
       ;
   customizeToggleSensor(cp5.getController("resetButton")) ;
-  cp5.getController("resetButton").getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER).setPaddingX(8) ;  
-  
+  cp5.getController("resetButton").getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER).setPaddingX(8) ;
+
   // Reset button pin
   cp5.addTextlabel("resetButtonPinLabel")
      .setText("Reset button PIN number           ")
      .setPosition(215, 202)
-     .setColorValue(#000000)          
+     .setColorValue(#000000)
      ;
-  cp5.getProperties().remove(cp5.getController("resetButtonPinLabel")) ;         
-  cp5.getTooltip().register("resetButtonPinLabel", "- Default: 10 -");
-  
+  cp5.getProperties().remove(cp5.getController("resetButtonPinLabel")) ;
+  cp5.getTooltip().register("resetButtonPinLabel", "- Default: 10 -") ;
+
   cp5.addDropdownList("resetButtonPin")
      .setPosition(360, 220)
      .setSize(30, 180)
      .setColorForeground(blueAct)
      .setBackgroundColor(color(190))
      .setItemHeight(20)
-     .setBarHeight(20)              
+     .setBarHeight(20)
      ;
   cp5.get(DropdownList.class, "resetButtonPin").captionLabel().set(" ") ;
-  cp5.get(DropdownList.class, "resetButtonPin").captionLabel().style().marginTop = 2 ;  
+  cp5.get(DropdownList.class, "resetButtonPin").captionLabel().style().marginTop = 2 ;
   for ( int i = 2; i <= 12; i++ ) {
     cp5.get(DropdownList.class, "resetButtonPin").addItem("" + i, i) ;
-  }   
+  }
   cp5.getGroup("resetButtonPin").setValue(10) ;
   cp5.getProperties().remove(cp5.getGroup("resetButtonPin"), "ListBoxItems") ;
-  
+
   // Save to EEPROM
   cp5.addToggle("saveEprom")
-     .setPosition(190, 233)  
-     .setLabel("Save data to EEPROM")    
+     .setPosition(190, 233)
+     .setLabel("Save data to EEPROM")
      ;
   customizeToggleSensor(cp5.getController("saveEprom")) ;
   cp5.getController("saveEprom").getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER).setPaddingX(8) ;
-  //cp5.getTooltip().register("saveEprom", "...");
-  
+  //cp5.getTooltip().register("saveEprom", "...") ;
+
   // - Sensors  part
   sensors = cp5.addTextlabel("sensors")
                .setText("SENSORS")
                .setPosition(1, 255)
-               .setColorValue(#FFFFFF)                        
+               .setColorValue(#FFFFFF)
                ;
-  cp5.getProperties().remove(cp5.getController("sensors")) ;           
-  cp5.getTooltip().register("sensors", "Sensors settings");                
+  cp5.getProperties().remove(cp5.getController("sensors")) ;
+  cp5.getTooltip().register("sensors", "Sensors settings") ;
 
   // Toggle buttons
   cp5.addToggle("vario")
-     .setPosition(85, 285)  
-     .setLabel("Vario  ")    
+     .setPosition(85, 285)
+     .setLabel("Vario  ")
      ;
   customizeToggleSensor(cp5.getController("vario")) ;
 
   cp5.addToggle("voltage")
      .setPosition(220, 285)
      .setLabel("Voltage / Other  ")
-     ; 
+     ;
   customizeToggleSensor(cp5.getController("voltage")) ;
 
   cp5.addToggle("current")
      .setPosition(355, 285)
      .setLabel("Current  ")
-     ; 
+     ;
   customizeToggleSensor(cp5.getController("current")) ;
 
-  
+
   cp5.addToggle("temperature")
      .setPosition(85, 315)
      .setLabel("Temperature  ")
@@ -368,18 +365,18 @@ void setup() {
   cp5.addToggle("rpm")
      .setPosition(220, 315)
      .setLabel("RPM  ")
-     ; 
+     ;
   customizeToggleSensor(cp5.getController("rpm")) ;
 
   // ---------------------------- Tab 2 : Vario settings ------------------------------
-  cp5.getTab("vario")     
-     .setHeight(20) 
+  cp5.getTab("vario")
+     .setHeight(20)
      .setColorForeground(color(200))
      .setColorBackground(color(70))
      .setColorActive(blueAct)
-     .setLabel("Vario")            
-     .setId(1) 
-     .hide()     
+     .setLabel("Vario")
+     .setId(1)
+     .hide()
      ;
   cp5.getTab("vario").captionLabel().toUpperCase(false) ;
 
@@ -387,60 +384,60 @@ void setup() {
   cp5.addTextlabel("sensitivityRange")
      .setText("Sensitivity            Min.")
      .setPosition(10, 110)
-     .setColorValue(#000000) 
-     .setTab("vario")        
+     .setColorValue(#000000)
+     .setTab("vario")
      ;
-  cp5.getProperties().remove(cp5.getController("sensitivityRange")) ;           
+  cp5.getProperties().remove(cp5.getController("sensitivityRange")) ;
 
-  cp5.addRange("sensMinMax") 
-     .setPosition(138, 108)             
+  cp5.addRange("sensMinMax")
+     .setPosition(138, 108)
      .setCaptionLabel("Max.")
      .setSize(195, 20)
-     .setHandleSize(15) 
+     .setHandleSize(15)
      .setRange(20, 150)
-     .setRangeValues(50.9, 50.9)            
+     .setRangeValues(50.9, 50.9)
      ;
-  //cp5.getController("sensMinMax").getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER) ;     
+  //cp5.getController("sensMinMax").getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER) ;
   customizeRange(cp5.getController("sensMinMax")) ;
-  cp5.getTooltip().register("sensMinMax", "Sensitivity based on vertical speed - Default: 50:50 -");  
+  cp5.getTooltip().register("sensMinMax", "Sensitivity based on vertical speed - Default: 50:50 -");
 
   // Vario Vertical speed sensitivity range
   cp5.addTextlabel("vSpeedSensitivityRng")
      .setText("Vertical speed sensibility (cm/s)                                                ")
      .setPosition(10, 135)
-     .setColorValue(#000000) 
-     .setTab("vario")        
+     .setColorValue(#000000)
+     .setTab("vario")
      ;
-   cp5.getProperties().remove(cp5.getController("vSpeedSensitivityRng")) ;         
-   cp5.getTooltip().register("vSpeedSensitivityRng", "Vertical speed threshold sensitivity - Default: 20:100 -");         
-            
-   cp5.addNumberbox("vSpeedMin")    
+   cp5.getProperties().remove(cp5.getController("vSpeedSensitivityRng")) ;
+   cp5.getTooltip().register("vSpeedSensitivityRng", "Vertical speed threshold sensitivity - Default: 20:100 -");
+
+   cp5.addNumberbox("vSpeedMin")
       .setPosition(230, 134)
       .setSize(40, 18)
       .setColorActive(blueAct)
-      .setBroadcast(false) 
+      .setBroadcast(false)
       .setMultiplier(0.5) // set the sensitifity of the numberbox
       .setDirection(Controller.HORIZONTAL) // change the control direction to left/right
       .setValue(20)
-      .setLabel("Min.") 
+      .setLabel("Min.")
       .setColorLabel(color(0))
-      .setTab("vario") 
-      ; 
+      .setTab("vario")
+      ;
   cp5.getController("vSpeedMin").getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER).setPaddingX(5) ;
-  cp5.getController("vSpeedMin").captionLabel().toUpperCase(false) ; 
+  cp5.getController("vSpeedMin").captionLabel().toUpperCase(false) ;
 
-  cp5.addNumberbox("vSpeedMax")    
+  cp5.addNumberbox("vSpeedMax")
      .setPosition(293, 134)
      .setSize(40, 18)
      .setColorActive(blueAct)
-     .setBroadcast(false) 
+     .setBroadcast(false)
      .setMultiplier(0.5) // set the sensitifity of the numberbox
      .setDirection(Controller.HORIZONTAL) // change the control direction to left/right
      .setValue(100)
-     .setLabel("Max.") 
+     .setLabel("Max.")
      .setColorLabel(color(0))
-     .setTab("vario") 
-     ; 
+     .setTab("vario")
+     ;
   cp5.getController("vSpeedMax").getCaptionLabel().align(ControlP5.RIGHT_OUTSIDE, ControlP5.CENTER).setPaddingX(5) ;
   cp5.getController("vSpeedMax").captionLabel().toUpperCase(false) ;
 
@@ -453,18 +450,18 @@ void setup() {
      .setPosition(138, 175)
      .setTab("vario")
      ;
-  customizeToggle(cp5.getController("ppm")) ; 
+  customizeToggle(cp5.getController("ppm")) ;
 
   ppmPinL = cp5.addTextlabel("ppmPinL")
                .setText("PPM Pin           ")
                .setPosition(246, 175)
-               .setColorValue(#000000) 
-               .setTab("vario")           
+               .setColorValue(#000000)
+               .setTab("vario")
                ;
-  cp5.getProperties().remove(cp5.getController("ppmPinL")) ;          
+  cp5.getProperties().remove(cp5.getController("ppmPinL")) ;
   cp5.getTooltip().register("ppmPinL", "- Default: 2 -");
 
-  ppmPin = cp5.addDropdownList("ppmPin") 
+  ppmPin = cp5.addDropdownList("ppmPin")
               .setPosition(303, 194)
               .setSize(30, 75)
               .setColorForeground(orangeAct)
@@ -472,13 +469,13 @@ void setup() {
               .setBackgroundColor(color(190))
               .setItemHeight(20)
               .setBarHeight(20)
-              .setTab("vario")             
-              ; 
+              .setTab("vario")
+              ;
   ppmPin.captionLabel().set(" ");
-  ppmPin.captionLabel().style().marginTop = 2 ;   
+  ppmPin.captionLabel().style().marginTop = 2 ;
   ppmPin.addItem("2", 2);
   ppmPin.addItem("3", 3);
-  ppmPin.setValue(2);   
+  ppmPin.setValue(2);
   ppmPin.toUpperCase(false) ;
   cp5.getProperties().remove(cp5.getGroup("ppmPin"), "ListBoxItems") ;
 
@@ -486,39 +483,39 @@ void setup() {
   cp5.addTextlabel("ppmRngL")
      .setText("PPM range (us)                                                                          ")
      .setPosition(5, 200)
-     .setColorValue(#000000) 
-     .setTab("vario")        
+     .setColorValue(#000000)
+     .setTab("vario")
      ;
-  cp5.getProperties().remove(cp5.getController("ppmRngL")) ;         
+  cp5.getProperties().remove(cp5.getController("ppmRngL")) ;
   cp5.getTooltip().register("ppmRngL", "RC control range - Default: 988:2012 -");
-   
-  cp5.addNumberbox("ppmRngMin")    
+
+  cp5.addNumberbox("ppmRngMin")
      .setPosition(230, 199)
      .setSize(40, 18)
      .setColorActive(blueAct)
-     .setRange(888, 1088) 
+     .setRange(888, 1088)
      .setMultiplier(0.5) // set the sensitifity of the numberbox
      .setDirection(Controller.HORIZONTAL) // change the control direction to left/right
      .setValue(988)
-     .setLabel("Min.") 
+     .setLabel("Min.")
      .setColorLabel(color(0))
-     .setTab("vario") 
-     ; 
+     .setTab("vario")
+     ;
   cp5.getController("ppmRngMin").getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER).setPaddingX(5) ;
-  cp5.getController("ppmRngMin").captionLabel().toUpperCase(false) ; 
+  cp5.getController("ppmRngMin").captionLabel().toUpperCase(false) ;
 
-  cp5.addNumberbox("ppmRngMax")    
+  cp5.addNumberbox("ppmRngMax")
      .setPosition(293, 199)
      .setSize(40, 18)
      .setColorActive(blueAct)
-     .setRange(1912, 2112) 
+     .setRange(1912, 2112)
      .setMultiplier(0.5) // set the sensitifity of the numberbox
      .setDirection(Controller.HORIZONTAL) // change the control direction to left/right
      .setValue(2012)
-     .setLabel("Max.") 
+     .setLabel("Max.")
      .setColorLabel(color(0))
-     .setTab("vario") 
-     ; 
+     .setTab("vario")
+     ;
   cp5.getController("ppmRngMax").getCaptionLabel().align(ControlP5.RIGHT_OUTSIDE, ControlP5.CENTER).setPaddingX(5) ;
   cp5.getController("ppmRngMax").captionLabel().toUpperCase(false) ;
 
@@ -526,39 +523,39 @@ void setup() {
   cp5.addTextlabel("ppmSensRngL")
      .setText("PPM sensitivity      Min.")
      .setPosition(5, 225)
-     .setColorValue(#000000) 
-     .setTab("vario")        
+     .setColorValue(#000000)
+     .setTab("vario")
      ;
-  cp5.getProperties().remove(cp5.getController("ppmSensRngL")) ;          
+  cp5.getProperties().remove(cp5.getController("ppmSensRngL")) ;
 
-  cp5.addRange("ppmSensMinMax") 
-     .setPosition(138, 223) 
+  cp5.addRange("ppmSensMinMax")
+     .setPosition(138, 223)
      .setSize(195, 20)
      .setCaptionLabel("Max.")
-     .setHandleSize(15)               
+     .setHandleSize(15)
      .setRange(20, 150)
-     .setRangeValues(20, 100.5)      
-     ;     
+     .setRangeValues(20, 100.5)
+     ;
   customizeRange(cp5.getController("ppmSensMinMax")) ;
   cp5.getTooltip().register("ppmSensMinMax", "RC control sensitivity range - Default: 20:100 -");
 
-  // Vario hysteresis 
+  // Vario hysteresis
   cp5.addSlider("varioHysteresis")
      .setPosition(138, 260)
      .setSize(195, 15)
      .setLabel("Hysteresis (cm/s)")
-     .setColorForeground(blueAct) 
-     .setColorLabel(#000000) 
-     .setColorValue(#000000)       
+     .setColorForeground(blueAct)
+     .setColorLabel(#000000)
+     .setColorValue(#000000)
      .setRange(0, 100)
-     .setValue(5) 
+     .setValue(5)
      .setTab("vario")
      ;
   // reposition the Labels for controller 'slider'
-  cp5.getController("varioHysteresis").getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER).setPaddingX(10) ;   
+  cp5.getController("varioHysteresis").getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER).setPaddingX(10) ;
   cp5.getController("varioHysteresis").getValueLabel().align(ControlP5.RIGHT_OUTSIDE, ControlP5.CENTER).setPaddingX(10) ;
   cp5.getController("varioHysteresis").captionLabel().toUpperCase(false) ;
-  cp5.getTooltip().register("varioHysteresis", "Minimum measurement difference - Default: 5 -");  
+  cp5.getTooltip().register("varioHysteresis", "Minimum measurement difference - Default: 5 -");
 
   // Analog climb rate  pin and settings
   cp5.addToggle("analogClimb")
@@ -566,18 +563,18 @@ void setup() {
      .setPosition(138, 288)
      .setTab("vario")
      ;
-  customizeToggle(cp5.getController("analogClimb")) ; 
+  customizeToggle(cp5.getController("analogClimb")) ;
 
   cp5.addTextlabel("climbPinL")
      .setText("Climb rate Pin          ")
      .setPosition(218, 288)
-     .setColorValue(#000000) 
-     .setTab("vario")           
+     .setColorValue(#000000)
+     .setTab("vario")
             ;
-  cp5.getProperties().remove(cp5.getController("climbPinL")) ;          
+  cp5.getProperties().remove(cp5.getController("climbPinL")) ;
   cp5.getTooltip().register("climbPinL", "- Default: 3 -");
 
-  climbPin = cp5.addDropdownList("climbPin") 
+  climbPin = cp5.addDropdownList("climbPin")
                 .setPosition(303, 307)
                 .setSize(30, 75)
                 .setColorForeground(orangeAct)
@@ -585,7 +582,7 @@ void setup() {
                 .setBackgroundColor(color(190))
                 .setItemHeight(20)
                 .setBarHeight(20)
-                .setTab("vario")             
+                .setTab("vario")
                 ;
   climbPin.captionLabel().set(" ");
   climbPin.captionLabel().style().marginTop = 2 ;
@@ -597,52 +594,52 @@ void setup() {
 
   // Output climb rate range
   cp5.addTextlabel("outClimbRateRngL")
-     .setText("Climb rate            Min.")
+     .setText("Climb rate (m/s)   Min.")
      .setPosition(10, 315)
-     .setColorValue(#000000) 
-     .setTab("vario")        
+     .setColorValue(#000000)
+     .setTab("vario")
      ;
-  cp5.getProperties().remove(cp5.getController("outClimbRateRngL")) ;           
+  cp5.getProperties().remove(cp5.getController("outClimbRateRngL")) ;
 
-  cp5.addRange("outClimbRateMinMax") 
+  cp5.addRange("outClimbRateMinMax")
      .setPosition(138, 312)
-     .setSize(195, 20)    
+     .setSize(195, 20)
      .setCaptionLabel("Max.")
-     .setHandleSize(15)               
+     .setHandleSize(15)
      .setRange(-10, 10)
-     .setRangeValues(-3, 3.3)      
+     .setRangeValues(-3, 3.3)
      ;
-  //cp5.getController("outClimbRateMinMax").getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER) ;     
+  //cp5.getController("outClimbRateMinMax").getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER) ;
   customizeRange(cp5.getController("outClimbRateMinMax")) ;
-  cp5.getTooltip().register("outClimbRateMinMax", "Analog climb rate range - Default: -3:3 -"); 
+  cp5.getTooltip().register("outClimbRateMinMax", "Analog climb rate range - Default: -3:3 -");
 
 
   // ------------------------------ Tab 3 : Voltage settings ------------------------------
-  cp5.getTab("voltage")     
-     .setHeight(20) 
+  cp5.getTab("voltage")
+     .setHeight(20)
      .setColorForeground(color(200))
      .setColorBackground(color(70))
      .setColorActive(blueAct)
-     .setLabel("Voltage...")            
-     .setId(2) 
-     .hide()     
+     .setLabel("Voltage...")
+     .setId(2)
+     .hide()
      ;
-  cp5.getTab("voltage").captionLabel().toUpperCase(false) ; 
+  cp5.getTab("voltage").captionLabel().toUpperCase(false) ;
 
   // Voltage 1-6 toggle
   cp5.addTextlabel("voltages")
      .setText("Voltage number")
      .setPosition(10, 138)
-     .setColorValue(#000000) 
-     .setTab("voltage")           
+     .setColorValue(#000000)
+     .setTab("voltage")
      ;
-  cp5.getProperties().remove(cp5.getController("voltages")) ;         
+  cp5.getProperties().remove(cp5.getController("voltages")) ;
 
   for ( int i = 1; i <= voltNbr; i++ ) {
     cp5.addToggle("volt" + i)
        .setLabel("" + i)
        .setPosition(127 + 45 * (i-1), 140)
-       .setTab("voltage")          
+       .setTab("voltage")
        ;
     customizeToggleVolt(cp5.getController("volt" + i)) ;
   }
@@ -651,13 +648,13 @@ void setup() {
   cp5.addTextlabel("voltPin")
      .setText("Pin number")
      .setPosition(10, 165)
-     .setColorValue(#000000) 
-     .setTab("voltage")       
+     .setColorValue(#000000)
+     .setTab("voltage")
      ;
-  cp5.getProperties().remove(cp5.getController("voltPin")) ;          
+  cp5.getProperties().remove(cp5.getController("voltPin")) ;
 
   for ( int i = 1; i <= voltNbr; i++ ) {
-    cp5.addDropdownList("ddlVolt" + i)    
+    cp5.addDropdownList("ddlVolt" + i)
        .setPosition(120 + 45 * (i-1), 185)
        .setTab("voltage")
        ;
@@ -670,137 +667,137 @@ void setup() {
   cp5.addTextlabel("voltDivider")
      .setText("Divider factor                                                                                           ")
      .setPosition(10, 196)
-     .setColorValue(#000000) 
-     .setTab("voltage")           
+     .setColorValue(#000000)
+     .setTab("voltage")
      ;
-  cp5.getProperties().remove(cp5.getController("voltDivider")) ;             
-  cp5.getTooltip().register("voltDivider", "- Default: 1 -");          
+  cp5.getProperties().remove(cp5.getController("voltDivider")) ;
+  cp5.getTooltip().register("voltDivider", "- Default: 1 -");
 
   for ( int i = 1; i <= voltNbr; i++ ) {
-    cp5.addNumberbox("dividerVolt" +i)    
-       .setPosition(115 + 45 * (i-1), 195)
-       .setSize(40, 18)
+    cp5.addNumberbox("dividerVolt" +i)
+       .setPosition(114 + 45 * (i-1), 195)
+       .setSize(42, 18)
        .setColorActive(blueAct)
        .setDecimalPrecision(2)
-       .setRange(0.01, 10) 
+       .setRange(0.01, 99.99)
        .setMultiplier(0.01) // set the sensitifity of the numberbox
        .setDirection(Controller.HORIZONTAL) // change the control direction to left/right
        .setValue(1)
-       .setCaptionLabel("")                     
-       .setTab("voltage") 
-       ;   
+       .setCaptionLabel("")
+       .setTab("voltage")
+       ;
 /*
     cp5.addTextfield("dividerVolt" + i)
        .setPosition(120 + 45 * (i-1), 195)
        .setSize(30, 20)
        .setCaptionLabel(" ")
-       .setText("1") 
-       .setColorActive(blueAct)      
+       .setText("1")
+       .setColorActive(blueAct)
        .setAutoClear(false)
        .setTab("voltage")
        ;
-*/                   
+*/
   }
 
   // Voltage 1-6 Offset
   cp5.addTextlabel("voltOffset")
      .setText("Offset (mV)                                                                                              ")
      .setPosition(10, 225)
-     .setColorValue(#000000) 
-     .setTab("voltage")           
+     .setColorValue(#000000)
+     .setTab("voltage")
             ;
-  cp5.getProperties().remove(cp5.getController("voltOffset")) ;          
-  cp5.getTooltip().register("voltOffset", "- Default: 0 -");          
+  cp5.getProperties().remove(cp5.getController("voltOffset")) ;
+  cp5.getTooltip().register("voltOffset", "- Default: 0 -");
 
   for ( int i = 1; i <= voltNbr; i++ ) {
-    cp5.addNumberbox("offsetVolt" +i)    
+    cp5.addNumberbox("offsetVolt" +i)
        .setPosition(114 + 45 * (i-1), 224)
        .setSize(42, 18)
        .setColorActive(blueAct)
        .setDecimalPrecision(0)
-       .setRange(-5000, 5000) 
+       .setRange(-5000, 5000)
        .setMultiplier(1) // set the sensitifity of the numberbox
        .setDirection(Controller.HORIZONTAL) // change the control direction to left/right
        .setValue(0)
-       .setCaptionLabel("")                     
-       .setTab("voltage") 
-       ;               
+       .setCaptionLabel("")
+       .setTab("voltage")
+       ;
   }
 
   // Cells monitoring -> Number of Cells
   cp5.addToggle("cells")
      .setPosition(148, 280)
-     .setLabel("Battery cells monitoring")        
-     .setColorForeground(orangeAct) 
-     .setColorBackground(color(70)) 
-     .setColorActive(blueAct) 
-     .setColorLabel(#000000) 
-     .setSize(15, 15) 
+     .setLabel("Battery cells monitoring")
+     .setColorForeground(orangeAct)
+     .setColorBackground(color(70))
+     .setColorActive(blueAct)
+     .setColorLabel(#000000)
+     .setSize(15, 15)
      .setTab("voltage")
-     ;  
+     ;
   cp5.getController("cells").getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER).setPaddingX(10) ;
   cp5.getController("cells").captionLabel().toUpperCase(false) ;
 
   cp5.addTextlabel("NbrCells")
      .setText("Number of Cells")
      .setPosition(183, 279)
-     .setColorValue(#000000) 
-     .setTab("voltage")           
+     .setColorValue(#000000)
+     .setTab("voltage")
      ;
-  cp5.getProperties().remove(cp5.getController("NbrCells")) ;          
+  cp5.getProperties().remove(cp5.getController("NbrCells")) ;
 
   ddlNbrCells = cp5.addDropdownList("ddlNbrCells")
-                   .setColorForeground(orangeAct) 
-                   .setColorBackground(color(70)) 
-                   .setColorActive(blueAct) 
-                   .setPosition(283, 299) 
-                   .setSize(25, 80) 
+                   .setColorForeground(orangeAct)
+                   .setColorBackground(color(70))
+                   .setColorActive(blueAct)
+                   .setPosition(283, 299)
+                   .setSize(25, 80)
                    .setItemHeight(20)
                    .setBarHeight(20)
-                   .setTab("voltage")      
-                   ;                 
+                   .setTab("voltage")
+                   ;
   for ( int i = 1; i <= 6; i++ ) {
     ddlNbrCells.addItem("" + i, i);
   }
-  ddlNbrCells.setValue(1) ;  
+  ddlNbrCells.setValue(1) ;
   ddlNbrCells.captionLabel().style().marginTop = 2 ;
   ddlNbrCells.toUpperCase(false) ;
   cp5.getProperties().remove(cp5.getGroup("ddlNbrCells"), "ListBoxItems") ;
 
 
   // ------------------------------ Tab 4 : Current settings ------------------------------
-  cp5.getTab("current")     
-     .setHeight(20) 
+  cp5.getTab("current")
+     .setHeight(20)
      .setColorForeground(color(200))
      .setColorBackground(color(70))
      .setColorActive(blueAct)
-     .setLabel("Current")            
-     .setId(3) 
-     .hide()     
+     .setLabel("Current")
+     .setId(3)
+     .hide()
      ;
-  cp5.getTab("current").captionLabel().toUpperCase(false) ; 
+  cp5.getTab("current").captionLabel().toUpperCase(false) ;
 
-  // Current pin 
+  // Current pin
   cp5.addTextlabel("currentPinL")
      .setText("Current sensor pin number")
      .setPosition(10, 120)
-     .setColorValue(#000000) 
-     .setTab("current")           
+     .setColorValue(#000000)
+     .setTab("current")
      ;
-  cp5.getProperties().remove(cp5.getController("currentPinL")) ;          
+  cp5.getProperties().remove(cp5.getController("currentPinL")) ;
 
   cp5.addDropdownList("currentPin")
-     .setColorForeground(orangeAct) 
-     .setColorBackground(color(70)) 
-     .setColorActive(blueAct) 
-     .setPosition(165, 139) 
-     .setSize(30, 200) 
+     .setColorForeground(orangeAct)
+     .setColorBackground(color(70))
+     .setColorActive(blueAct)
+     .setPosition(165, 139)
+     .setSize(30, 200)
      .setItemHeight(20)
      .setBarHeight(20)
      .setTab("current")
      ;
-  cp5.get(DropdownList.class, "currentPin").addItem("--", -1) ;                  
-  cp5.get(DropdownList.class, "currentPin").addItems(analogPins) ;  
+  cp5.get(DropdownList.class, "currentPin").addItem("--", -1) ;
+  cp5.get(DropdownList.class, "currentPin").addItems(analogPins) ;
   cp5.getGroup("currentPin").captionLabel().style().marginTop = 2 ;
   cp5.get(DropdownList.class, "currentPin").setValue(-1) ;
   cp5.get(DropdownList.class, "currentPin").toUpperCase(false) ;
@@ -808,59 +805,59 @@ void setup() {
 
   // Current sensor output sensitivity
   cp5.addNumberbox("currentOutSensNb")
-     .setColorActive(blueAct) 
+     .setColorActive(blueAct)
      .setPosition(165, 154)
      .setSize(33, 18)
-     .setRange(0, 500)
+     .setRange(0, 999)
      .setMultiplier(0.5) // set the sensitifity of the numberbox
      .setDecimalPrecision(0)
-     .setDirection(Controller.HORIZONTAL) // change the control direction to left/right     
-     .setLabel("Output sensitivity (mV/A)") 
+     .setDirection(Controller.HORIZONTAL) // change the control direction to left/right
+     .setLabel("Output sensitivity (mV/A)")
      .setColorLabel(color(0))
      .setTab("current")
-     ; 
+     ;
   cp5.getController("currentOutSensNb").getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER).setPaddingX(8) ;
   cp5.getController("currentOutSensNb").captionLabel().toUpperCase(false) ;
-  
+
   // Current sensor offset
   cp5.addNumberbox("currentOutOffsetNb")
-     .setColorActive(blueAct) 
+     .setColorActive(blueAct)
      .setPosition(165, 189)
      .setSize(45, 18)
      .setRange(-5000, 5000)
      .setMultiplier(1) // set the sensitifity of the numberbox
      .setDecimalPrecision(0)
      .setDirection(Controller.HORIZONTAL) // change the control direction to left/right
-     .setLabel("Output offset (mV)") 
+     .setLabel("Output offset (mV)")
      .setColorLabel(color(0))
      .setTab("current")
-     ; 
+     ;
   cp5.getController("currentOutOffsetNb").getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER).setPaddingX(8) ;
   cp5.getController("currentOutOffsetNb").captionLabel().toUpperCase(false) ;
   //cp5.getTooltip().register("currentOutOffsetNb", "...");
-  
+
   // Current sensor divider factor
   cp5.addNumberbox("currentDivNb")
-     .setColorActive(blueAct) 
+     .setColorActive(blueAct)
      .setPosition(165, 224)
-     .setSize(35, 18)
-     .setRange(1, 9.99)
+     .setSize(45, 18)
+     .setRange(0.01, 99.99)
      .setMultiplier(0.01) // set the sensitifity of the numberbox
      .setDecimalPrecision(2)
      .setDirection(Controller.HORIZONTAL) // change the control direction to left/right
      .setValue(1)
-     .setLabel("Divider factor") 
+     .setLabel("Divider factor")
      .setColorLabel(color(0))
      .setTab("current")
-     ; 
+     ;
   cp5.getController("currentDivNb").getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER).setPaddingX(8) ;
   cp5.getController("currentDivNb").captionLabel().toUpperCase(false) ;
   cp5.getTooltip().register("currentDivNb", "- Default: 1 -");
-  
+
   /*
   // Current sensor Vcc
   cp5.addNumberbox("currentVccNb")
-     .setColorActive(blueAct) 
+     .setColorActive(blueAct)
      .setPosition(330, 118)
      .setSize(30, 18)
      .setRange(0, 9.9)
@@ -868,23 +865,23 @@ void setup() {
      .setDecimalPrecision(1)
      .setDirection(Controller.HORIZONTAL) // change the control direction to left/right
      //.setValue(5)
-     .setLabel("Current sensor Vcc             volts") 
+     .setLabel("Current sensor Vcc             volts")
      .setColorLabel(color(0))
      .setTab("current")
-     ; 
+     ;
   cp5.getController("currentVccNb").getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER).setPaddingX(-59) ;
   cp5.getController("currentVccNb").captionLabel().toUpperCase(false) ;
-  cp5.getTooltip().register("currentVccNb", "Current sensor alimentation source value");         
+  cp5.getTooltip().register("currentVccNb", "Current sensor alimentation source value");
   */
   /*
   // Current sensor direction
   cp5.addTextlabel("currentDirL")
      .setText("Unidirectional")
      .setPosition(10, 157)
-     .setColorValue(#000000) 
-     .setTab("current")           
+     .setColorValue(#000000)
+     .setTab("current")
      ;
-  cp5.getProperties().remove(cp5.getController("currentDirL")) ;          
+  cp5.getProperties().remove(cp5.getController("currentDirL")) ;
 
   cp5.addToggle("currentDir")
      .setColorForeground(orangeAct)
@@ -893,7 +890,7 @@ void setup() {
      .setColorLabel(#000000)
      .setPosition(98, 155)
      .setSize(50, 20)
-     .setLabel("Bidirectional")  
+     .setLabel("Bidirectional")
      .setMode(ControlP5.SWITCH)
      .setTab("current")
      ;
@@ -902,49 +899,49 @@ void setup() {
   */
 
   // ------------------------------ Tab 5 : Temperature settings ------------------------------
-  cp5.getTab("temperature")     
-     .setHeight(20) 
+  cp5.getTab("temperature")
+     .setHeight(20)
      .setColorForeground(color(200))
      .setColorBackground(color(70))
      .setColorActive(blueAct)
-     .setLabel("Temperature")            
-     .setId(4) 
-     .hide()     
-     ; 
-  cp5.getTab("temperature").captionLabel().toUpperCase(false) ; 
+     .setLabel("Temperature")
+     .setId(4)
+     .hide()
+     ;
+  cp5.getTab("temperature").captionLabel().toUpperCase(false) ;
 
   // Use vario temp
   cp5.addToggle("vTemp")
      .setPosition(142, 120)
-     .setLabel("Use vario temperature")        
-     .setColorForeground(orangeAct) 
-     .setColorBackground(color(70)) 
-     .setColorActive(blueAct) 
-     .setColorLabel(#000000) 
-     .setSize(15, 15) 
+     .setLabel("Use vario temperature")
+     .setColorForeground(orangeAct)
+     .setColorBackground(color(70))
+     .setColorActive(blueAct)
+     .setColorLabel(#000000)
+     .setSize(15, 15)
      .setTab("temperature")
-     ;  
+     ;
   cp5.getController("vTemp").getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER).setPaddingX(10) ;
-  cp5.getController("vTemp").captionLabel().toUpperCase(false) ; 
+  cp5.getController("vTemp").captionLabel().toUpperCase(false) ;
 
   // Temperature sensor pin
   cp5.addTextlabel("tempPinL")
      .setText("Temperature sensor pin number")
      .setPosition(10, 157)
-     .setColorValue(#000000) 
-     .setTab("temperature")           
+     .setColorValue(#000000)
+     .setTab("temperature")
      ;
-  cp5.getProperties().remove(cp5.getController("tempPinL")) ;          
+  cp5.getProperties().remove(cp5.getController("tempPinL")) ;
 
   cp5.addDropdownList("tempPin")
-     .setColorForeground(orangeAct) 
-     .setColorBackground(color(70)) 
-     .setColorActive(blueAct) 
-     .setPosition(193, 176) 
-     .setSize(30, 200) 
+     .setColorForeground(orangeAct)
+     .setColorBackground(color(70))
+     .setColorActive(blueAct)
+     .setPosition(193, 176)
+     .setSize(30, 200)
      .setItemHeight(20)
      .setBarHeight(20)
-     .setTab("temperature")                          
+     .setTab("temperature")
      ;
   cp5.get(DropdownList.class, "tempPin").addItem("--", -1) ;
   cp5.get(DropdownList.class, "tempPin").addItems(analogPins) ;
@@ -955,119 +952,119 @@ void setup() {
 
   // Temperature sensor offset
   cp5.addTextfield("tempOffset")
-     .setLabel("Temperature sensor offset") 
+     .setLabel("Temperature sensor offset")
      .setPosition(164, 192)
      .setColorLabel(color(0))
      .setColorValueLabel(color(255))
-     .setColorActive(blueAct) 
-     .setSize(28, 20)     
+     .setColorActive(blueAct)
+     .setSize(28, 20)
      .setAutoClear(false)
-     .setText("0") 
+     .setText("0")
      .setTab("temperature")
      ;
   cp5.getController("tempOffset").getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER).setPaddingX(10) ;
   cp5.getController("tempOffset").captionLabel().toUpperCase(false) ;
-  
+
 
   // ------------------------------ Tab 6 : RPM settings ------------------------------   needed ?
-  cp5.getTab("rpm")     
-     .setHeight(20) 
+  cp5.getTab("rpm")
+     .setHeight(20)
      .setColorForeground(color(200))
      .setColorBackground(color(70))
      .setColorActive(blueAct)
-     .setLabel("RPM")         
-     .setId(5) 
-     .hide()             
-                  ; 
-  cp5.getTab("rpm").captionLabel().toUpperCase(false) ;   
+     .setLabel("RPM")
+     .setId(5)
+     .hide()
+                  ;
+  cp5.getTab("rpm").captionLabel().toUpperCase(false) ;
 
-  // ------------------------------ Tab 7 : DATA to send ------------------------------   
-  cp5.getTab("data")     
-     .setHeight(20) 
+  // ------------------------------ Tab 7 : DATA to send ------------------------------
+  cp5.getTab("data")
+     .setHeight(20)
      .setColorForeground(color(200))
      .setColorBackground(color(40, 90, 40))
      .setColorActive(color(60, 190, 60))
-     .setLabel("DATA sent")         
-     .setId(6) 
-     .hide()             
-     ; 
-  cp5.getTab("data").captionLabel().toUpperCase(false) ; 
+     .setLabel("DATA sent")
+     .setId(6)
+     .hide()
+     ;
+  cp5.getTab("data").captionLabel().toUpperCase(false) ;
 
-  // Text Labels   
+  // Text Labels
   cp5.addTextlabel("sentData")
      .setText("OXS measurement")
      .setPosition(12, 105)
-     .setColorValue(#000000) 
-     .setTab("data")           
+     .setColorValue(#000000)
+     .setTab("data")
      ;
-  cp5.getProperties().remove(cp5.getController("sentData")) ;          
+  cp5.getProperties().remove(cp5.getController("sentData")) ;
 
   cp5.addTextlabel("DataFS")
      .setText("Telemetry data field")
      .setPosition(139, 105)
-     .setColorValue(#000000) 
-     .setTab("data")           
+     .setColorValue(#000000)
+     .setTab("data")
      ;
-  cp5.getProperties().remove(cp5.getController("DataFS")) ;          
+  cp5.getProperties().remove(cp5.getController("DataFS")) ;
 
   cp5.addTextlabel("multiplierL")
      .setText("Multiplier")
      .setPosition(256, 105)
-     .setColorValue(#000000) 
-     .setTab("data")           
+     .setColorValue(#000000)
+     .setTab("data")
      ;
-  cp5.getProperties().remove(cp5.getController("multiplierL")) ;          
+  cp5.getProperties().remove(cp5.getController("multiplierL")) ;
 
   cp5.addTextlabel("dividerL")
      .setText("Divider")
      .setPosition(308, 105)
-     .setColorValue(#000000) 
-     .setTab("data")           
+     .setColorValue(#000000)
+     .setTab("data")
      ;
-  cp5.getProperties().remove(cp5.getController("dividerL")) ;          
+  cp5.getProperties().remove(cp5.getController("dividerL")) ;
 
   cp5.addTextlabel("offsetL")
      .setText("Offset")
      .setPosition(356, 105)
-     .setColorValue(#000000) 
-     .setTab("data")           
+     .setColorValue(#000000)
+     .setTab("data")
      ;
-  cp5.getProperties().remove(cp5.getController("offsetL")) ;          
+  cp5.getProperties().remove(cp5.getController("offsetL")) ;
 
   for ( int i = 1; i <= dataSentFieldNbr; i++ ) {
     // Transmitted DATA field
     cp5.addDropdownList("sentDataField" + i)
-       .setColorForeground(orangeAct) 
-       .setColorBackground(color(70)) 
-       .setColorActive(blueAct) 
-       .setPosition(5, 148 - 25 + i * 25) 
-       .setSize(127, 180 - 11 * i) 
+       .setColorForeground(orangeAct)
+       .setColorBackground(color(70))
+       .setColorActive(blueAct)
+       .setPosition(5, 148 - 25 + i * 25)
+       .setSize(127, 180 - 11 * i)
        .setItemHeight(20)
        .setBarHeight(20)
-       .setTab("data")                         
+       .setTab("data")
        ;
     for (int j = 0; j < sentDataList.length; j++ ) {
       cp5.get(DropdownList.class, "sentDataField" + i).addItem("" + sentDataList[j][1], j) ;
-    }    
+    }
     cp5.get(DropdownList.class, "sentDataField" + i).setValue(0) ;
     cp5.getGroup("sentDataField" + i).captionLabel().style().marginTop = 2 ;
-    cp5.get(DropdownList.class, "sentDataField" + i).toUpperCase(false) ; 
+    cp5.get(DropdownList.class, "sentDataField" + i).toUpperCase(false) ;
     cp5.getProperties().remove(cp5.getGroup("sentDataField" + i), "ListBoxItems") ;
 
     // HUB DATA field
     cp5.addDropdownList("hubDataField" + i)
-       .setColorForeground(orangeAct) 
-       .setColorBackground(color(70)) 
-       .setColorActive(blueAct) 
-       .setPosition(137, 148 - 25 + i * 25) 
-       .setSize(120, 180 - 11 * i) 
+       .setColorForeground(orangeAct)
+       .setColorBackground(color(70))
+       .setColorActive(blueAct)
+       .setPosition(137, 148 - 25 + i * 25)
+       .setSize(120, 180 - 11 * i)
        .setItemHeight(20)
        .setBarHeight(20)
-       .setTab("data")                          
-       ; 
+       .setTab("data")
+       ;
     for (int j = 0; j < hubDataList.length; j++ ) {
       cp5.get(DropdownList.class, "hubDataField" + i).addItem("" + hubDataList[j][1], j) ;
-    }      
+    }
     cp5.getGroup("hubDataField" + i).captionLabel().style().marginTop = 2 ;
     cp5.get(DropdownList.class, "hubDataField" + i).toUpperCase(false) ;
     cp5.get(DropdownList.class, "hubDataField" + i).setValue(0) ;
@@ -1076,18 +1073,18 @@ void setup() {
 
     // SMART PORT DATA field
     cp5.addDropdownList("sPortDataField" + i)
-       .setColorForeground(orangeAct) 
-       .setColorBackground(color(70)) 
-       .setColorActive(blueAct) 
-       .setPosition(137, 148 - 25 + i * 25) 
-       .setSize(120, 180 - 11 * i) 
+       .setColorForeground(orangeAct)
+       .setColorBackground(color(70))
+       .setColorActive(blueAct)
+       .setPosition(137, 148 - 25 + i * 25)
+       .setSize(120, 180 - 11 * i)
        .setItemHeight(20)
        .setBarHeight(20)
-       .setTab("data")                   
+       .setTab("data")
        ;
     for (int j = 0; j < sPortDataList.length; j++ ) {
       cp5.get(DropdownList.class, "sPortDataField" + i).addItem("" + sPortDataList[j][1], j) ;
-    }       
+    }
     cp5.getGroup("sPortDataField" + i).captionLabel().style().marginTop = 2 ;
     cp5.get(DropdownList.class, "sPortDataField" + i).toUpperCase(false) ;
     cp5.get(DropdownList.class, "sPortDataField" + i).setValue(0) ;
@@ -1096,7 +1093,7 @@ void setup() {
 
     // Data sent multiplier
     cp5.addNumberbox("dataMultiplier" + i)
-       .setColorActive(blueAct) 
+       .setColorActive(blueAct)
        .setPosition(265, 128 - 25 + i * 25)
        .setSize(40, 18)
        .setRange(-1000, 1000)
@@ -1104,14 +1101,14 @@ void setup() {
        .setDecimalPrecision(0)
        .setDirection(Controller.HORIZONTAL) // change the control direction to left/right
        .setValue(1)
-       .setLabel("")                     
+       .setLabel("")
        .setTab("data")
        ;
-    cp5.getTooltip().register("dataMultiplier" + i, "- Default: 1 -"); 
+    cp5.getTooltip().register("dataMultiplier" + i, "- Default: 1 -");
 
     // Data sent divider
     cp5.addNumberbox("dataDivider" + i)
-       .setColorActive(blueAct) 
+       .setColorActive(blueAct)
        .setPosition(311, 128 - 25 + i * 25)
        .setSize(40, 18)
        .setRange(1, 1000)
@@ -1119,14 +1116,14 @@ void setup() {
        .setDecimalPrecision(0)
        .setDirection(Controller.HORIZONTAL) // change the control direction to left/right
        .setValue(1)
-       .setLabel("")                     
+       .setLabel("")
        .setTab("data")
-       ; 
-    cp5.getTooltip().register("dataDivider" + i, "- Default: 1 -");                  
+       ;
+    cp5.getTooltip().register("dataDivider" + i, "- Default: 1 -");
 
     // Data sent offset
     cp5.addNumberbox("dataOffset" + i)
-       .setColorActive(blueAct) 
+       .setColorActive(blueAct)
        .setPosition(357, 128 - 25 + i * 25)
        .setSize(40, 18)
        .setRange(-999, 999)
@@ -1134,82 +1131,82 @@ void setup() {
        .setDecimalPrecision(0)
        .setDirection(Controller.HORIZONTAL) // change the control direction to left/right
        .setValue(0)
-       .setLabel("")                     
+       .setLabel("")
        .setTab("data")
-       ; 
-    cp5.getTooltip().register("dataOffset" + i, "- Default: 0 -");                     
+       ;
+    cp5.getTooltip().register("dataOffset" + i, "- Default: 0 -");
   }
-  
-  prot.setValue(1);  // Set the protocol ddl value after telemetry fields creation  
+
+  prot.setValue(1);  // Set the protocol ddl value after telemetry fields creation
 
   // ------------------------------ File dialog ------------------------------
-  
+
   // Load preset button
-  cp5.addButton("loadButton")    
-     .setColorForeground(blueAct)    
-     .setLabel("Load Preset")      
+  cp5.addButton("loadButton")
+     .setColorForeground(blueAct)
+     .setLabel("Load Preset")
      .setPosition(10, 369)
-     .setSize(100, 25)  
-     .setTab("global")             
+     .setSize(100, 25)
+     .setTab("global")
      ;
   cp5.getController("loadButton").captionLabel().setFont(font16) ;
   cp5.getController("loadButton").captionLabel().toUpperCase(false) ;
   cp5.getController("loadButton").getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER) ;
-  
+
   // Save preset button
-  cp5.addButton("saveButton")    
+  cp5.addButton("saveButton")
      .setColorForeground(orangeAct)
-     .setColorActive(blueAct)     
-     .setLabel("Save Preset")      
+     .setColorActive(blueAct)
+     .setLabel("Save Preset")
      .setPosition(120, 369)
-     .setSize(100, 25)  
-     .setTab("global")   
+     .setSize(100, 25)
+     .setTab("global")
      ;
   cp5.getController("saveButton").captionLabel().setFont(font16) ;
   cp5.getController("saveButton").captionLabel().toUpperCase(false) ;
   cp5.getController("saveButton").getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER) ;
-  
-  
+
+
   // Write button
-  cp5.addButton("writeConfButton")    
+  cp5.addButton("writeConfButton")
      .setColorForeground(orangeAct)
-     .setColorActive(blueAct)    
-     .setLabel("Write Config")      
+     .setColorActive(blueAct)
+     .setLabel("Write Config")
      .setPosition(260, 367)
-     .setSize(120, 30)  
-     .setTab("data")   
+     .setSize(120, 30)
+     .setTab("data")
      ;
-  cp5.getController("writeConfButton").captionLabel().setFont(font20) ;            
+  cp5.getController("writeConfButton").captionLabel().setFont(font20) ;
   cp5.getController("writeConfButton").captionLabel().toUpperCase(false) ;
   cp5.getController("writeConfButton").getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER) ;
 
   // --------------------------------------------------------------------------
 
   // dropdownlist overlap
-  prot.bringToFront() ;  
-  cp5.getGroup("resetButtonPin").bringToFront() ; 
+  prot.bringToFront() ;
+  cp5.getGroup("resetButtonPin").bringToFront() ;
   serialPin.bringToFront() ;
-  climbPin.bringToFront() ;  
+  climbPin.bringToFront() ;
   ppmPin.bringToFront() ;
   ddlNbrCells.bringToFront();
   for ( int i = 1; i <= voltNbr; i++ ) {
     cp5.getGroup("ddlVolt" + i).bringToFront() ;
-  }  
-  cp5.getGroup("currentPin").bringToFront() ;  
+  }
+  cp5.getGroup("currentPin").bringToFront() ;
   cp5.getGroup("tempPin").bringToFront() ;
   for ( int i = dataSentFieldNbr; i >= 1; i-- ) {
     cp5.getGroup("sentDataField" + i).bringToFront() ;
     cp5.getGroup("hubDataField" + i).bringToFront() ;
     cp5.getGroup("sPortDataField" + i).bringToFront() ;
-  } 
-  
+  }
+
   // Tooltips general settings
   cp5.getTooltip().setDelay(1000) ;
   cp5.getTooltip().getLabel().toUpperCase(false) ;
-    
+
   createMessageBox() ;          //  Message box creation
 
-// *************************************************************************  
+// *************************************************************************
 } // ***************************** END SETUP *******************************
 // *************************************************************************
 
@@ -1217,117 +1214,117 @@ void setup() {
 // ********************************   DRAW   *******************************
 // *************************************************************************
 void draw() {
-  background(myColorBackground); 
+  background(myColorBackground);
   // Main screen background
   fill(tabColor);
   rect(0, 100, width, 300);
   fill(70);
   rect(0, 97, width, 3);
-  
+
   // Compatibility subtitle
   fill(0) ;
   textFont(fontLabel) ;
   text("For OXS " + oxsVersion, 50, 65) ;
-  
+
   // OXS Configurator version display
   textFont(fontItalic) ;
   text(oxsCversion, 352, 68) ;
-  
+
   // Logo display
-  shapeMode(CENTER);                      
-  shape(oxsL, width/2, 38, 300, 300);    
-  
+  shapeMode(CENTER);
+  shape(oxsL, width/2, 38, 300, 300);
+
   // File dialog Zone
   fill(myColorBackground);
   rect(0, height, width, -60);
   fill(70);
-  rect(0, height-60, width, 3); 
-  
+  rect(0, height-60, width, 3);
+
   // Show preset buttons
-  cp5.getController("loadButton").show() ;    
-  cp5.getController("saveButton").show() ;  
+  cp5.getController("loadButton").show() ;
+  cp5.getController("saveButton").show() ;
 
   // ------------ Tabs specific display ------------
 
   int ctid = cp5.window(this).currentTab().id();
 
-  switch( ctid ) { 
-       
+  switch( ctid ) {
+
   case 0 :                                        // TAB GENERAL Settings
     // SENSORS part
-    fill(255, 128, 0);              
+    fill(255, 128, 0);
     rect(0, 255, 68, 18);
     rect(0, 270, 180, 3);
     rect(0, 271, 290, 2);
-    rect(0, 272, width, 1);    
+    rect(0, 272, width, 1);
 
-    if ( cp5.getController("intRef").value() == 1 ) {       
+    if ( cp5.getController("intRef").value() == 1 ) {
       cp5.getController("arduinoVccNb").lock() ;
       cp5.getController("arduinoVccNb").setColorBackground(grayedColor) ;
       cp5.getController("arduinoVccNb").setColorValueLabel(grayedColor) ;
-      cp5.getController("arduinoVccNb").setColorLabel(grayedColor) ;      
-    } else {        
+      cp5.getController("arduinoVccNb").setColorLabel(grayedColor) ;
+    } else {
       cp5.getController("arduinoVccNb").unlock() ;
       cp5.getController("arduinoVccNb").setColorBackground(color(70)) ;
       cp5.getController("arduinoVccNb").setColorValueLabel(color(255)) ;
-      cp5.getController("arduinoVccNb").setColorLabel(color(0)) ;      
+      cp5.getController("arduinoVccNb").setColorLabel(color(0)) ;
     }
-    
-    if ( cp5.getController("resetButton").value() == 0 ) {       
+
+    if ( cp5.getController("resetButton").value() == 0 ) {
       cp5.getController("resetButtonPinLabel").setColorValue(grayedColor) ;
       cp5.getGroup("resetButtonPin").hide() ;
       fill(grayedColor) ;
       rect(360, 199, 30, 20) ;
-    } else {        
+    } else {
       cp5.getController("resetButtonPinLabel").setColorValue(color(0)) ;
       cp5.getGroup("resetButtonPin").show() ;
     }
-    
+
     if ( !tempActive ) {
       cp5.getController("temperature").setColorLabel(grayedColor) ;
       cp5.getController("temperature").setColorBackground(grayedColor) ;
-    }    
+    }
     break ;
 
   case 1 :                                                 // TAB Vario
     if ( cp5.getController("ppm").value() == 0 ) {         // RC remote sensitivity
       cp5.getGroup("ppmPin").hide() ;
       fill(grayedColor) ;
-      rect(303, 174, 30, 20) ;      
+      rect(303, 174, 30, 20) ;
       cp5.getController("ppmPinL").setColorValue(grayedColor) ;
 
       cp5.getController("ppmRngL").setColorValue(grayedColor) ;
-      cp5.getController("ppmRngMin").lock() ;      
-      cp5.getController("ppmRngMin").setColorBackground(grayedColor) ;      
+      cp5.getController("ppmRngMin").lock() ;
+      cp5.getController("ppmRngMin").setColorBackground(grayedColor) ;
       cp5.getController("ppmRngMin").setColorValueLabel(grayedColor) ;
       cp5.getController("ppmRngMin").setColorLabel(grayedColor) ;
-      
-      cp5.getController("ppmRngMax").lock() ;      
-      cp5.getController("ppmRngMax").setColorBackground(grayedColor) ;      
+
+      cp5.getController("ppmRngMax").lock() ;
+      cp5.getController("ppmRngMax").setColorBackground(grayedColor) ;
       cp5.getController("ppmRngMax").setColorValueLabel(grayedColor) ;
-      cp5.getController("ppmRngMax").setColorLabel(grayedColor) ;      
+      cp5.getController("ppmRngMax").setColorLabel(grayedColor) ;
 
       cp5.getController("ppmSensRngL").setColorValue(grayedColor) ;
       cp5.getController("ppmSensMinMax").lock() ;
       cp5.getController("ppmSensMinMax").setColorForeground(grayedColor) ;
-      cp5.getController("ppmSensMinMax").setColorBackground(grayedColor) ;      
+      cp5.getController("ppmSensMinMax").setColorBackground(grayedColor) ;
       cp5.getController("ppmSensMinMax").setColorValueLabel(grayedColor) ;
       cp5.getController("ppmSensMinMax").setColorLabel(grayedColor) ;
-    } else { 
+    } else {
       cp5.getGroup("ppmPin").show() ;
-      cp5.getController("ppmPinL").setColorValue(color(0)) ;      
-      
+      cp5.getController("ppmPinL").setColorValue(color(0)) ;
+
       cp5.getController("ppmRngL").setColorValue(color(0)) ;
-      cp5.getController("ppmRngMin").unlock() ;      
+      cp5.getController("ppmRngMin").unlock() ;
       cp5.getController("ppmRngMin").setColorBackground(color(70)) ;
       cp5.getController("ppmRngMin").setColorValueLabel(color(255)) ;
       cp5.getController("ppmRngMin").setColorLabel(color(0)) ;
-      
-      cp5.getController("ppmRngMax").unlock() ;      
+
+      cp5.getController("ppmRngMax").unlock() ;
       cp5.getController("ppmRngMax").setColorBackground(color(70)) ;
       cp5.getController("ppmRngMax").setColorValueLabel(color(255)) ;
       cp5.getController("ppmRngMax").setColorLabel(color(0)) ;
-     
+
       cp5.getController("ppmSensRngL").setColorValue(color(0)) ;
       cp5.getController("ppmSensMinMax").unlock() ;
       cp5.getController("ppmSensMinMax").setColorForeground(blueAct) ;
@@ -1340,15 +1337,15 @@ void draw() {
       cp5.getController("climbPinL").setColorValue(grayedColor) ;
       cp5.getGroup("climbPin").hide() ;
       fill(grayedColor) ;
-      rect(303, 287, 30, 20) ;      
+      rect(303, 287, 30, 20) ;
 
       cp5.getController("outClimbRateRngL").setColorValue(grayedColor) ;
       cp5.getController("outClimbRateMinMax").lock() ;
       cp5.getController("outClimbRateMinMax").setColorForeground(grayedColor) ;
-      cp5.getController("outClimbRateMinMax").setColorBackground(grayedColor) ;      
+      cp5.getController("outClimbRateMinMax").setColorBackground(grayedColor) ;
       cp5.getController("outClimbRateMinMax").setColorValueLabel(grayedColor) ;
       cp5.getController("outClimbRateMinMax").setColorLabel(grayedColor) ;
-    } else { 
+    } else {
       cp5.getController("climbPinL").setColorValue(color(0)) ;
       cp5.getGroup("climbPin").show() ;
 
@@ -1358,20 +1355,20 @@ void draw() {
       cp5.getController("outClimbRateMinMax").setColorBackground(color(70)) ;
       cp5.getController("outClimbRateMinMax").setColorValueLabel(color(255)) ;
       cp5.getController("outClimbRateMinMax").setColorLabel(color(0)) ;
-    }    
+    }
     break ;
 
   case 2 :                                                 // TAB Voltage / Other
-    
-    for ( int i = 1; i <= voltNbr; i++ ) {                   // Voltage tab grayed items                  
-      if ( cp5.getController("volt" + i).value() == 0 ) {    
+
+    for ( int i = 1; i <= voltNbr; i++ ) {                   // Voltage tab grayed items
+      if ( cp5.getController("volt" + i).value() == 0 ) {
         cp5.getGroup("ddlVolt" + i).hide() ;
         fill(grayedColor) ;
         rect(120 - 45 + i * 45, 165, 30, 20) ;
         cp5.getController("dividerVolt" + i).lock() ;
         cp5.getController("dividerVolt" + i).setColorBackground(color(165)) ;
         cp5.getController("dividerVolt" + i).setColorForeground(color(195)) ;
-        cp5.getController("dividerVolt" + i).setColorValueLabel(color(165)) ;        
+        cp5.getController("dividerVolt" + i).setColorValueLabel(color(165)) ;
         cp5.getController("offsetVolt" + i).lock() ;
         cp5.getController("offsetVolt" + i).setColorBackground(color(175)) ;
         cp5.getController("offsetVolt" + i).setColorForeground(color(195)) ;
@@ -1379,7 +1376,7 @@ void draw() {
       } else {
         cp5.getGroup("ddlVolt" + i).show() ;
         cp5.getController("dividerVolt" + i).unlock() ;
-        cp5.getController("dividerVolt" + i).setColorBackground(color(70)) ;        
+        cp5.getController("dividerVolt" + i).setColorBackground(color(70)) ;
         cp5.getController("dividerVolt" + i).setColorValueLabel(color(255)) ;
         cp5.getController("offsetVolt" + i).unlock() ;
         cp5.getController("offsetVolt" + i).setColorBackground(color(70)) ;
@@ -1411,13 +1408,13 @@ void draw() {
     }
 
     // Voltage tab ->  Cells indicator
-    if ( cp5.getController("cells").value() == 1 && ddlNbrCells.getValue() > 0 ) { 
+    if ( cp5.getController("cells").value() == 1 && ddlNbrCells.getValue() > 0 ) {
       int nCells = int(ddlNbrCells.getValue()) ;
       noSmooth();
-      stroke(blueAct) ;      
+      stroke(blueAct) ;
       strokeWeight(3) ;
       strokeCap(PROJECT);
-      fill(blueAct) ;      
+      fill(blueAct) ;
       textFont(fontCells) ;
       text("CELLS", 68, 128) ;
       line ( 115, 117, 115, 128 ) ;
@@ -1425,39 +1422,39 @@ void draw() {
       line ( 110 + 45 * nCells, 117, 110 + 45 * nCells, 128 ) ;
       noStroke() ;
       smooth() ;
-    }    
+    }
     break ;
 
   case 3 :                                                            // TAB Current sensor
     /*
     if ( cp5.getController("currentDir").value() == 0 ) {             // Current grayed switch
-      cp5.getController("currentDirL").setColorValue(grayedColor) ; 
+      cp5.getController("currentDirL").setColorValue(grayedColor) ;
       cp5.getController("currentDir").setColorCaptionLabel(color(0)) ;
     } else {
-      cp5.getController("currentDirL").setColorValue(color(0)) ; 
+      cp5.getController("currentDirL").setColorValue(color(0)) ;
       cp5.getController("currentDir").setColorCaptionLabel(grayedColor) ;
     }
     */
     break ;
-    
+
   case 6 :                                                            // TAB DATA sent
     fill(10);
     rect(258, 365, 124, 34);
     // Load and Save preset buttons hide  for ( int i = 6 ; i <= dataSentFieldNbr ; i++ ) {
-      if ( cp5.getGroup("sentDataField" + 6 ).isOpen() || cp5.getGroup("hubDataField" + 6 ).isOpen() || cp5.getGroup("sPortDataField" + 6 ).isOpen() 
-           || cp5.getGroup("sentDataField" + 7 ).isOpen() || cp5.getGroup("hubDataField" + 7 ).isOpen() || cp5.getGroup("sPortDataField" + 7 ).isOpen() 
+      if ( cp5.getGroup("sentDataField" + 6 ).isOpen() || cp5.getGroup("hubDataField" + 6 ).isOpen() || cp5.getGroup("sPortDataField" + 6 ).isOpen()
+           || cp5.getGroup("sentDataField" + 7 ).isOpen() || cp5.getGroup("hubDataField" + 7 ).isOpen() || cp5.getGroup("sPortDataField" + 7 ).isOpen()
            || cp5.getGroup("sentDataField" + 8 ).isOpen() || cp5.getGroup("hubDataField" + 8 ).isOpen() || cp5.getGroup("sPortDataField" + 8 ).isOpen() ) {
         cp5.getController("loadButton").hide() ;
-        cp5.getController("saveButton").hide() ;        
+        cp5.getController("saveButton").hide() ;
       } else {
          cp5.getController("loadButton").show() ;
-         cp5.getController("saveButton").show() ;         
+         cp5.getController("saveButton").show() ;
       }
    // }
-   
+
     // Grayed multiplier + divider + offset if Telemetry data field == DEFAULT
     for ( int i = 1 ; i <= dataSentFieldNbr ; i++ ) {
-      if ( cp5.getGroup("protocolChoice").value() == 1 ) {      
+      if ( cp5.getGroup("protocolChoice").value() == 1 ) {
         if ( cp5.getGroup("hubDataField" + i).value() == 1 ) {
           cp5.getController("dataMultiplier" + i).lock() ;
           cp5.getController("dataMultiplier" + i).setColorBackground(grayedColor) ;
@@ -1467,8 +1464,8 @@ void draw() {
           cp5.getController("dataDivider" + i).setColorValueLabel(grayedColor) ;
           cp5.getController("dataOffset" + i).lock() ;
           cp5.getController("dataOffset" + i).setColorBackground(grayedColor) ;
-          cp5.getController("dataOffset" + i).setColorValueLabel(grayedColor) ;          
-        } else {        
+          cp5.getController("dataOffset" + i).setColorValueLabel(grayedColor) ;
+        } else {
           cp5.getController("dataMultiplier" + i).unlock() ;
           cp5.getController("dataMultiplier" + i).setColorBackground(color(70)) ;
           cp5.getController("dataMultiplier" + i).setColorValueLabel(color(255)) ;
@@ -1477,7 +1474,7 @@ void draw() {
           cp5.getController("dataDivider" + i).setColorValueLabel(color(255)) ;
           cp5.getController("dataOffset" + i).unlock() ;
           cp5.getController("dataOffset" + i).setColorBackground(color(70)) ;
-          cp5.getController("dataOffset" + i).setColorValueLabel(color(255)) ;          
+          cp5.getController("dataOffset" + i).setColorValueLabel(color(255)) ;
         }
       } else if ( cp5.getGroup("protocolChoice").value() == 2 ) {
         if ( cp5.getGroup("sPortDataField" + i).value() == 1 ) {
@@ -1489,8 +1486,8 @@ void draw() {
           cp5.getController("dataDivider" + i).setColorValueLabel(grayedColor) ;
           cp5.getController("dataOffset" + i).lock() ;
           cp5.getController("dataOffset" + i).setColorBackground(grayedColor) ;
-          cp5.getController("dataOffset" + i).setColorValueLabel(grayedColor) ;          
-        } else {        
+          cp5.getController("dataOffset" + i).setColorValueLabel(grayedColor) ;
+        } else {
           cp5.getController("dataMultiplier" + i).unlock() ;
           cp5.getController("dataMultiplier" + i).setColorBackground(color(70)) ;
           cp5.getController("dataMultiplier" + i).setColorValueLabel(color(255)) ;
@@ -1499,25 +1496,25 @@ void draw() {
           cp5.getController("dataDivider" + i).setColorValueLabel(color(255)) ;
           cp5.getController("dataOffset" + i).unlock() ;
           cp5.getController("dataOffset" + i).setColorBackground(color(70)) ;
-          cp5.getController("dataOffset" + i).setColorValueLabel(color(255)) ;          
-        }        
+          cp5.getController("dataOffset" + i).setColorValueLabel(color(255)) ;
+        }
       }
     }
     break ;
   }
 
   // ---------------- End TAB specific display ---------------
-  
+
   // Load and Save preset buttons deco
-  if ( cp5.getController("loadButton").isVisible() ) {    
+  if ( cp5.getController("loadButton").isVisible() ) {
     fill(blueAct);
-    rect(9, 368, 102, 27);    
+    rect(9, 368, 102, 27);
     fill(orangeAct);
     rect(119, 368, 102, 27);
   }
 
   // ----------------- Texfield and Numberbox mouse-over -----------------
-  
+
   if ( cp5.isMouseOver (oxsDir) ) {
     oxsDir.setColorForeground(blueAct);
   } else {
@@ -1529,25 +1526,25 @@ void draw() {
   } else {
     cp5.getController("arduinoVccNb").setColorForeground(grayedColor);
   }
-  
+
   if ( cp5.isMouseOver ( cp5.getController("vSpeedMin") ) ) {
     cp5.getController("vSpeedMin").setColorForeground(orangeAct);
   } else {
     cp5.getController("vSpeedMin").setColorForeground(grayedColor);
   }
-  
+
   if ( cp5.isMouseOver ( cp5.getController("vSpeedMax") ) ) {
     cp5.getController("vSpeedMax").setColorForeground(orangeAct);
   } else {
     cp5.getController("vSpeedMax").setColorForeground(grayedColor);
   }
-  
+
   if ( cp5.isMouseOver ( cp5.getController("ppmRngMin") ) ) {
     cp5.getController("ppmRngMin").setColorForeground(orangeAct);
   } else {
     cp5.getController("ppmRngMin").setColorForeground(grayedColor);
   }
-  
+
   if ( cp5.isMouseOver ( cp5.getController("ppmRngMax") ) ) {
     cp5.getController("ppmRngMax").setColorForeground(orangeAct);
   } else {
@@ -1555,7 +1552,7 @@ void draw() {
   }
 
   for ( int i = 1; i <= voltNbr; i++ ) {
-    if ( cp5.isMouseOver ( cp5.getController( "dividerVolt" + i ) ) ) {     
+    if ( cp5.isMouseOver ( cp5.getController( "dividerVolt" + i ) ) ) {
       cp5.getController( "dividerVolt" + i ).setColorForeground(orangeAct);
     } else {
       cp5.getController( "dividerVolt" + i ).setColorForeground(color(170));
@@ -1563,7 +1560,7 @@ void draw() {
   }
 
   for ( int i = 1; i <= voltNbr; i++ ) {
-    if ( cp5.isMouseOver ( cp5.getController( "offsetVolt" + i ) ) ) {     
+    if ( cp5.isMouseOver ( cp5.getController( "offsetVolt" + i ) ) ) {
       cp5.getController( "offsetVolt" + i ).setColorForeground(orangeAct);
     } else {
       cp5.getController( "offsetVolt" + i ).setColorForeground(color(170));
@@ -1575,7 +1572,7 @@ void draw() {
   } else {
     cp5.getController( "currentVccNb" ).setColorForeground(color(170));
   }
-*/ 
+*/
   if ( cp5.isMouseOver ( cp5.getController( "currentDivNb" ) ) ) {
     cp5.getController( "currentDivNb" ).setColorForeground(orangeAct);
   } else {
@@ -1593,15 +1590,15 @@ void draw() {
   } else {
     cp5.getController( "currentOutOffsetNb" ).setColorForeground(color(170));
   }
-  
+
   if ( cp5.isMouseOver ( cp5.getController( "tempOffset" ) ) ) {
     cp5.getController( "tempOffset" ).setColorForeground(orangeAct);
   } else {
     cp5.getController( "tempOffset" ).setColorForeground(color(200));
-  }  
+  }
 
   for ( int i = 1; i <= dataSentFieldNbr; i++ ) {
-    if ( cp5.isMouseOver ( cp5.getController( "dataMultiplier" + i ) ) ) {     
+    if ( cp5.isMouseOver ( cp5.getController( "dataMultiplier" + i ) ) ) {
       cp5.getController( "dataMultiplier" + i ).setColorForeground(orangeAct);
     } else {
       cp5.getController( "dataMultiplier" + i ).setColorForeground(grayedColor);
@@ -1609,7 +1606,7 @@ void draw() {
   }
 
   for ( int i = 1; i <= dataSentFieldNbr; i++ ) {
-    if ( cp5.isMouseOver ( cp5.getController( "dataDivider" + i ) ) ) {     
+    if ( cp5.isMouseOver ( cp5.getController( "dataDivider" + i ) ) ) {
       cp5.getController( "dataDivider" + i ).setColorForeground(orangeAct);
     } else {
       cp5.getController( "dataDivider" + i ).setColorForeground(grayedColor);
@@ -1617,7 +1614,7 @@ void draw() {
   }
 
   for ( int i = 1; i <= dataSentFieldNbr; i++ ) {
-    if ( cp5.isMouseOver ( cp5.getController( "dataOffset" + i ) ) ) {     
+    if ( cp5.isMouseOver ( cp5.getController( "dataOffset" + i ) ) ) {
       cp5.getController( "dataOffset" + i ).setColorForeground(orangeAct);
     } else {
       cp5.getController( "dataOffset" + i ).setColorForeground(grayedColor);
@@ -1625,25 +1622,25 @@ void draw() {
   }
 
   // ----------------- Dropdownlist: mouse pressed elsewhere closes list -----------------
-  
+
   if ( !cp5.isMouseOver ( prot ) ) {
     if (mousePressed == true) {
       prot.close() ;
     }
   }
-  
+
   if ( !cp5.isMouseOver ( serialPin ) ) {
     if (mousePressed == true) {
       serialPin.close() ;
     }
   }
-  
+
   if ( !cp5.isMouseOver ( cp5.getGroup( "resetButtonPin" ) ) ) {
     if (mousePressed == true) {
       cp5.getGroup( "resetButtonPin" ).close() ;
     }
   }
-  
+
 
   if ( !cp5.isMouseOver ( ppmPin ) ) {
     if (mousePressed == true) {
@@ -1676,12 +1673,12 @@ void draw() {
       cp5.getGroup( "currentPin" ).close() ;
     }
   }
-  
+
   if ( !cp5.isMouseOver ( cp5.getGroup( "tempPin") ) ) {
     if (mousePressed == true) {
       cp5.getGroup( "tempPin" ).close() ;
     }
-  }  
+  }
 
   for ( int i = 1; i <= dataSentFieldNbr; i++ ) {
     if ( !cp5.isMouseOver ( cp5.getGroup( "sentDataField" + i ) ) ) {
@@ -1707,15 +1704,15 @@ void draw() {
     }
   }
 
-  // ----------------- TAB DATA sent display ----------------- 
-  
-  if ( cp5.getController("vario").getValue() == 1 || cp5.getController("voltage").getValue() == 1 || 
+  // ----------------- TAB DATA sent display -----------------
+
+  if ( cp5.getController("vario").getValue() == 1 || cp5.getController("voltage").getValue() == 1 ||
     cp5.getController("current").getValue() == 1 || cp5.getController("temperature").getValue() == 1 ||
   cp5.getController("rpm").getValue() == 1 ) {
     cp5.getTab("data").show() ;
   } else {
     cp5.getTab("data").hide() ;
-  }  
+  }
 // *************************************************************************
 } // ***************************   end DRAW   ******************************
 // *************************************************************************
@@ -1723,49 +1720,49 @@ void draw() {
 void controlEvent(ControlEvent theEvent) {
   // DropdownList is of type ControlGroup.
   // A controlEvent will be triggered from inside the ControlGroup class.
-  // therefore you need to check the originator of the Event with if (theEvent.isGroup()) to avoid an error message thrown by controlP5.  
+  // therefore you need to check the originator of the Event with if (theEvent.isGroup()) to avoid an error message thrown by controlP5.
 
   if ( theEvent.isFrom(cp5.getController("vSpeedMax")) || theEvent.isFrom(cp5.getController("vSpeedMin")) ) {   //  V speed sensitivity range interaction
     cp5.getController("vSpeedMax").setBroadcast(false) ;
     cp5.getController("vSpeedMin").setBroadcast(false) ;
-    cp5.get(Numberbox.class, "vSpeedMax").setRange( cp5.getController("vSpeedMin").getValue(), 1000 ) ; 
-    cp5.get(Numberbox.class, "vSpeedMin").setRange( 0, cp5.getController("vSpeedMax").getValue() ) ; 
+    cp5.get(Numberbox.class, "vSpeedMax").setRange( cp5.getController("vSpeedMin").getValue(), 1000 ) ;
+    cp5.get(Numberbox.class, "vSpeedMin").setRange( 0, cp5.getController("vSpeedMax").getValue() ) ;
     cp5.getController("vSpeedMin").setBroadcast(true) ;
     cp5.getController("vSpeedMax").setBroadcast(true) ;
   }
 
   if ( theEvent.isFrom(cp5.getGroup("protocolChoice")) ) {           // Showing right Telemetry data list in fields
-    switch( int(theEvent.getGroup().getValue()) ) {      
-      case 1 :    
+    switch( int(theEvent.getGroup().getValue()) ) {
+      case 1 :
         for ( int i = 1; i <= dataSentFieldNbr; i++ ) {
           cp5.getGroup("hubDataField" + i).show() ;
-          cp5.getGroup("sPortDataField" + i).hide() ;       
+          cp5.getGroup("sPortDataField" + i).hide() ;
         }
         break ;
-      case 2 :    
+      case 2 :
         for ( int i = 1; i <= dataSentFieldNbr; i++ ) {
           cp5.getGroup("sPortDataField" + i).show() ;
-          cp5.getGroup("hubDataField" + i).hide() ;        
+          cp5.getGroup("hubDataField" + i).hide() ;
         }
         break ;
     }
   }
-  
-  for ( int i = 1; i <= dataSentFieldNbr; i++ ) { 
+
+  for ( int i = 1; i <= dataSentFieldNbr; i++ ) {
     if ( theEvent.isFrom(cp5.getGroup("sentDataField" + i )) ) {           // Selecting DEFAULT automaticaly in Telemetry data fields
-      switch( int(theEvent.getGroup().getValue()) ) {        
+      switch( int(theEvent.getGroup().getValue()) ) {
         case 1 :    // "ALTIMETER"
         case 2 :    // "VERTICAL_SPEED"
         case 5 :    // "CURRENTMA"
         case 7 :    // "CELLS"
         case 14 :   // "RPM"
           cp5.getGroup("hubDataField" + i).setValue(1) ;
-          cp5.getGroup("sPortDataField" + i).setValue(1) ;  
-          break ; 
+          cp5.getGroup("sPortDataField" + i).setValue(1) ;
+          break ;
       }
     }
   }
-/*    
+/*
   if (theEvent.isGroup()) {
     // check if the Event was triggered from a ControlGroup
     println("event from group : "+theEvent.getGroup().getValue()+" from "+theEvent.getGroup());
@@ -1812,13 +1809,13 @@ void current(boolean theFlag) {
   //println("a toggle event.");
 }
 
-void temperature(boolean theFlag) {  
+void temperature(boolean theFlag) {
   if (theFlag==true) {
     cp5.getTab("temperature").show() ;
   } else {
     cp5.getTab("temperature").hide() ;
   }
-  //println("a toggle event.");  
+  //println("a toggle event.");
 }
 
 /* // RPM TAB display
@@ -1831,16 +1828,16 @@ void temperature(boolean theFlag) {
  println("a toggle event.");
  }
  */
- 
+
 void about(boolean theFlag) {
-  
-  mbClose() ; 
-  
+
+  mbClose() ;
+
   messageList.clear() ;
-  
-  messageList.append( "                           OXS Configurator for OXS " + oxsVersion ) ;
+
+  messageList.append( "                       OXS Configurator " + oxsCversion + " for OXS " + oxsVersion ) ;
   messageList.append( "                                                   ---" ) ;
-  messageList.append( "                 -- OpenXsensor configuration file GUI " + oxsCversion + " --" ) ;
+  messageList.append( "                    -- OpenXsensor configuration file GUI --" ) ;
   messageList.append( "\n" ) ;
   messageList.append( "Contributors:" ) ;
   messageList.append( "" ) ;
@@ -1851,25 +1848,25 @@ void about(boolean theFlag) {
   messageList.append( "- Michel Strens" ) ;
   messageList.append( "- David Laburthe" ) ;
   messageList.append( "" ) ;
-  messageList.append( "" ) ;  
-  
+  messageList.append( "" ) ;
+
   String[] messageListArray = messageList.array();
-  
-  String joinedMessageList = join(messageListArray, "\n") ; 
-   
-  cp5.get(Textarea.class, "messageBoxLabel").setText(joinedMessageList) ;    
-  
+
+  String joinedMessageList = join(messageListArray, "\n") ;
+
+  cp5.get(Textarea.class, "messageBoxLabel").setText(joinedMessageList) ;
+
   cp5.getController("buttonOK").setColorForeground(orangeAct);
   cp5.getController("buttonOK").setColorBackground(color(100));
   cp5.getController("buttonOK").setColorActive(blueAct);
   messageBox.setBackgroundColor(blueAct);
-  messageBox.show();  
+  messageBox.show();
 }
 
 public void loadButton(int theValue) {                                     // Load preset button
   File presetDir = new File( sketchPath("Preset/...") ) ;
   selectInput("Select a preset file to load:", "presetLoad", presetDir);
-} 
+}
 
 public void saveButton(int theValue) {                                     // Save preset button
   mbClose() ;
@@ -1881,17 +1878,17 @@ public void saveButton(int theValue) {                                     // Sa
   }
 }
 
-void presetLoad(File selection) {  
+void presetLoad(File selection) {
   if (selection == null) {
     //println("Window was closed or the user hit cancel.");
   } else {
     //println("User selected " + selection.getAbsolutePath());
     cp5.loadProperties(selection.getAbsolutePath());
-  
+
     // Hack to keep slider labels alignement
-    cp5.getController("varioHysteresis").getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER).setPaddingX(10) ;  
+    cp5.getController("varioHysteresis").getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER).setPaddingX(10) ;
     cp5.getController("varioHysteresis").getValueLabel().align(ControlP5.RIGHT_OUTSIDE, ControlP5.CENTER).setPaddingX(10) ;
-  }  
+  }
 }
 
 void presetSave(File selection) {
@@ -1900,96 +1897,96 @@ void presetSave(File selection) {
   } else {
     //println("User selected " + selection.getAbsolutePath());
     cp5.saveProperties(selection.getAbsolutePath());
-  }    
+  }
 }
 
-public void writeConfButton(int theValue) {  
-  mbOkCancel() ; 
-  validationProcess("Config") ;  
-  if ( !allValid ) {   
-    mbClose() ; 
+public void writeConfButton(int theValue) {
+  mbOkCancel() ;
+  validationProcess("Config") ;
+  if ( !allValid ) {
+    mbClose() ;
   }
 }
 
 public void validationProcess(String theString) {
-  
+
   // Config file writing destination
   oxsDirectory = trim( cp5.get(Textfield.class, "oxsDirectory").getText() ) ;
-  if ( oxsDirectory.equals("") ) {       
-    outputConfigDir = sketchPath("oxs_config.h") ;   
-  } else {    
-    outputConfigDir = oxsDirectory + "/oxs_config.h" ;  
-  }  
-  
+  if ( oxsDirectory.equals("") ) {
+    outputConfigDir = sketchPath("oxs_config.h") ;
+  } else {
+    outputConfigDir = oxsDirectory + "/oxs_config.h" ;
+  }
+
   messageList.clear() ;
   messageList.set(0, "") ;
   messageList.append("") ;
-  
-  numPinsValid = true ; 
-  analogPinsValid = true ; 
+
+  numPinsValid = true ;
+  analogPinsValid = true ;
   cellsValid = true ;
   oxsMeasureValid = true ;
   versionValid = 2 ;          // 0 -> not valid    1 -> warning   2 -> valid
-  
-  validateNumPins() ;  
+
+  validateNumPins() ;
   validateAnalogPins() ;
   validateCells() ;
   validateSentData() ;
-  validateVersion() ; 
-  
-  if ( numPinsValid && analogPinsValid && cellsValid && oxsMeasureValid && versionValid == 2 ) {    
-    messageList.set(0, "                                 --- ALL IS GOOD ! ---") ;    
+  validateVersion() ;
+
+  if ( numPinsValid && analogPinsValid && cellsValid && oxsMeasureValid && versionValid == 2 ) {
+    messageList.set(0, "                                 --- ALL IS GOOD ! ---") ;
     if ( theString.equals("preset") ) {
-      messageList.append("Preset file can be saved !") ;  
+      messageList.append("Preset file can be saved !") ;
     } else {
       messageList.append("Configuration file will be written to:") ;
-      messageList.append(outputConfigDir) ; 
+      messageList.append(outputConfigDir) ;
       messageList.append("") ;
       messageList.append(" ! If the file already exists, it will be replaced !") ;
     }
     messageList.append("") ;
-    messageList.append("                                      -------------------") ;    
-     
+    messageList.append("                                      -------------------") ;
+
     allValid = true ;
-    
+
   } else if ( numPinsValid && analogPinsValid && cellsValid && oxsMeasureValid && versionValid == 1 ) {
     messageList.set(0, "                                     --- WARNING---") ;
     messageList.append("") ;
     messageList.append("                                      --------------------") ;
     messageList.append("") ;
     messageList.append("Configuration file will be written to:") ;
-    messageList.append(outputConfigDir) ; 
+    messageList.append(outputConfigDir) ;
     messageList.append("") ;
     messageList.append(" ! If the file already exists, it will be replaced !") ;
-    
+
     allValid = true ;
-    
+
   } else {
     messageList.set(0, "                                      --- ERROR ---") ;
     messageList.append("") ;
     messageList.append("                                      -------------------") ;
     messageList.append("") ;
     if ( theString.equals("preset") ) {
-      messageList.append("Preset file can't be saved !") ;  
+      messageList.append("Preset file can't be saved !") ;
     } else {
       messageList.append("Config file can't be written !") ;
-    }     
+    }
     //cp5.get(Textarea.class, "messageBoxLabel").setColor(color(255,0,0)) ;
-    allValid = false ;   
+    allValid = false ;
   }
-  
+
   String[] messageListArray = messageList.array();
-  
-  String joinedMessageList = join(messageListArray, "\n") ; 
-   
-  cp5.get(Textarea.class, "messageBoxLabel").setText(joinedMessageList) ; 
+
+  String joinedMessageList = join(messageListArray, "\n") ;
+
+  cp5.get(Textarea.class, "messageBoxLabel").setText(joinedMessageList) ;
   //println(messageList) ;
-  
+
   messageBox.setBackgroundColor(color(240));
-  cp5.getController("buttonOK").setColorForeground(color(blueAct));  
+  cp5.getController("buttonOK").setColorForeground(color(blueAct));
   cp5.getController("buttonOK").setColorActive(color(orangeAct));
   messageBox.show();
-  
+
 }
 
 void folderSelected(File selection) {
@@ -2002,7 +1999,7 @@ void folderSelected(File selection) {
 }
 /*
 void keyPressed() {
-  // default properties load/save key combinations are 
+  // default properties load/save key combinations are
   // alt+shift+l to load properties
   // alt+shift+s to save properties
   if (key=='s') {
@@ -2011,10 +2008,10 @@ void keyPressed() {
     cp5.loadProperties(("settings.oxs"));
 
     // Hack to keep slider labels alignement
-    cp5.getController("varioHysteresis").getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER).setPaddingX(10) ;  
+    cp5.getController("varioHysteresis").getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER).setPaddingX(10) ;
     cp5.getController("varioHysteresis").getValueLabel().align(ControlP5.RIGHT_OUTSIDE, ControlP5.CENTER).setPaddingX(10) ;
 
-    cp5.getProperties().print();  
+    cp5.getProperties().print();
   } else if ( key == 't' ) {
     println( "mAmp / step " + mAmpStep() ) ;
     println( "Current offset " + offsetCurrent() ) ;
@@ -2044,14 +2041,14 @@ float mAmpStep() {    // Current sensor milliAmp per ADC step calculation
 }
 
 int offsetCurrent() {    // Current sensor offset calculation in ADC step
-   
+
   int offsetCurrent ;
   //float currentVcc = float( cp5.getController("currentVccNb").getValueLabel().getText() ) ;
   float currentOutOffset = float( cp5.getController("currentOutOffsetNb").getValueLabel().getText() ) ;
   float currentDiv = float( cp5.getController("currentDivNb").getValueLabel().getText() ) ;
-  float arduinoVcc = float( cp5.getController("arduinoVccNb").getValueLabel().getText() ) ;  
+  float arduinoVcc = float( cp5.getController("arduinoVccNb").getValueLabel().getText() ) ;
 
-  //if ( cp5.getController( "currentDir" ).value() == 0 ) {  
+  //if ( cp5.getController( "currentDir" ).value() == 0 ) {
   //  offsetCurrent = int( ( currentVcc / 2.0 + currentOutOffset / 1000.0 ) / arduinoVcc  * 1024.0 * currentDiv ) ;
   //} else {
     offsetCurrent = int( currentOutOffset / 1000.0 / arduinoVcc  * 1024.0 * currentDiv ) ;
