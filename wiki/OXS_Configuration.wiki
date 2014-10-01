@@ -12,7 +12,7 @@ Decompress the archives, then place "openxsensor_vx_y" in your arduino project d
 
 ----
 
-==About OpenXsensor Configurator==
+==About !OpenXsensor Configurator==
 
 !OpenXsensor can do a lot of different measurements (that you can combine as you want) therefore it needs a rather dense configuration file.
 
@@ -39,7 +39,7 @@ Unfortunately, the text field doesn't support copy pasting but you can manually 
 
 ----
 
-===FrSky protocol===
+===!FrSky protocol===
 
 https://openxsensor.googlecode.com/svn/wiki/images/OXSC_03.jpg
 
