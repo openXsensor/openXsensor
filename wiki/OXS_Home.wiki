@@ -16,13 +16,13 @@ It is both compatible with the *D series* receivers (HUB protocol) and the new *
 
 ==Functionalities provided at your choice :==
 
-  * Altimeter / Variometer _(like FrSky Variometer sensor high precision)_
+  * Altimeter / Variometer _(like !FrSky Variometer sensor high precision)_
   * Up to 6 voltages measurements
-    * Battery voltage measurements _(like FrSky FBVS-01)_
-    * Lipo battery cell measurements _(like FrSky FLVS-01 or FLVSS)_
+    * Battery voltage measurements _(like !FrSky FBVS-01)_
+    * Lipo battery cell measurements _(like !FrSky FLVS-01 or FLVSS)_
     * ...
   * RPM sensor
-  * Current sensor _(like FrSky FAS or FCS)_
+  * Current sensor _(like !FrSky FAS or FCS)_
     * Can calculate the consumed current
   * Can use any sensor outputting voltage
     * Temperature sensor

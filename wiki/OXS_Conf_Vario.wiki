@@ -6,7 +6,9 @@
 
 ==Vario settings==
 
-A *[https://code.google.com/p/openxvario/wiki/BuildInstructions MS5611 barometric sensor]* can be connected to OXS and provide altitude and vertical speed data.
+A *[OXS_Build_Vario MS5611 barometric sensor]* can be connected to OXS and provide altitude and vertical speed data.
+
+===Sensitivity===
 
 https://openxsensor.googlecode.com/svn/wiki/images/OXSC_vario_01.jpg
 
@@ -15,6 +17,8 @@ Sensitivity can be set between:
   * 150 (fast but lot of errors, reaction time = much less than a second)
   
 50 is a standard setting when measuring small vertical speed (search for lift with a glider).
+
+OpenXsensor allows to automatically modify the sensitivity depending on the vertical speed.
 
 - Sensitivity Min. = sensitivity value being used when vertical speed is lower than Vertical speed sensibility Min. (Standard value = 40)
 
@@ -30,9 +34,11 @@ Sensitivity is automatically interpolated between Vertical speed sensibility Min
 
 ----
 
+===RC remote sensitivity===
+
 https://openxsensor.googlecode.com/svn/wiki/images/OXSC_vario_02.jpg
 
-If the checkbox RC remote sensitivity is ticked, sensitivity can also be adjusted from the Tx using a switch and/or a potentiometer and a servo channel.
+If the checkbox RC remote sensitivity is ticked, sensitivity can also be adjusted from the Tx (during the flight) using a switch and/or a potentiometer and a servo channel.
 
 In this case, a receiver signal servo pin has to be connected to the arduino pin chosen in the PPM Pin drop down list.
 
@@ -50,6 +56,8 @@ _Note : When Arduino detects a signal from TX, the parameters for the predefined
 
 ----
 
+===Hysteresis===
+
 https://openxsensor.googlecode.com/svn/wiki/images/OXSC_vario_03.jpg
 
 OXS can also apply some hysteresis on vertical speed changes.
@@ -60,13 +68,15 @@ It means that transmitted vertical speed will change only if measured vertical s
 
 ----
 
+===Analog climb rate===
+
 https://openxsensor.googlecode.com/svn/wiki/images/OXSC_vario_04.jpg
 
 OXS can also deliver the vertical speed as an analog signal that has to be connected to A1 or A2 on D series receivers.
 
 This can be useful if you have a receiver that has no digital communication pin (D6FR) or if it is already used by another sensor.
 
-*! Additional Hardware is required !*     --     Please read [https://code.google.com/p/openxvario/wiki/AnalogClimbRate Analog Climb Rate].
+*! Additional Hardware is required !*     --     Please read [OXS_Build_Vario#With_optional_analog_climb_rate_output Analog Climb Rate option].
 
 To activate this feature, tick the Analog climb rate checkbox and choose the Climb rate Pin in the drop down list.
 
@@ -75,3 +85,5 @@ Then set the Min. and Max. Climb rate values (m/s) that you want to output to th
 - Climb rate Min. value or lower will apply 0 V to the receiver analog pin (A1 or A2).
 
 - Climb rate Max.  value or higher will apply 3.2 V to the receiver analog pin (A1 or A2).
+
+----
