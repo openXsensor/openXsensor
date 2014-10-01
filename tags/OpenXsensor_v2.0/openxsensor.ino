@@ -340,20 +340,26 @@ void readSensors() {
       switchVSpeed = oxs_MS5611.varioData.climbRate ;
       switchVSpeedAvailable = true ;
       oxs_MS5611.varioData.switchClimbRateAvailable = false ;
-  } else if ( ( selectedVario == 1) && ( oxs_MS5611_2.varioData.switchClimbRateAvailable == true )) {
+  } 
+#if  defined (VARIO2)
+  else if ( ( selectedVario == 1) && ( oxs_MS5611_2.varioData.switchClimbRateAvailable == true )) {
       switchVSpeed = oxs_MS5611_2.varioData.climbRate ;
       switchVSpeedAvailable = true ;
       oxs_MS5611_2.varioData.switchClimbRateAvailable = false ;
-  } else if ( ( selectedVario == 2) && ( switchCompensatedClimbRateAvailable == true )) {
+  }
+#endif
+#if  defined (AIRSPEED)
+  else if ( ( selectedVario == 2) && ( switchCompensatedClimbRateAvailable == true )) {
       switchVSpeed = compensatedClimbRate ;
-      switchVSpeedAvailable = true ;
-#if defined (VARIO)  && ( defined (VARIO2)  || defined (AIRSPEED) ) && defined (VARIO_PRIMARY ) && defined (VARIO_SECONDARY ) && defined (PIN_PPM) && defined (SWITCH_VARIO_GET_PRIO)
+      switchVSpeedAvailable = true ;  
+#if defined (SWITCH_VARIO_GET_PRIO)
       switchCompensatedClimbRateAvailable = true ; // avoid to reset the value on false in order to continue to send the same value as often as possible
 #else
       switchCompensatedClimbRateAvailable = false ; // this is the normal process in order to avoid sending twice the same data.
-#endif      
-  }   
-#endif // endif defined (VARIO) && ( defined (VARIO2) || defined (AIRSPEED) ) && defined (VARIO_SECONDARY ) && defined( VARIO_PRIMARY ) && defined (VARIO_SECONDARY)
+#endif  // end  defined (SWITCH_VARIO_GET_PRIO)   
+  } 
+#endif // end  defined (AIRSPEED) 
+#endif // end  defined (VARIO) && ( defined (VARIO2) || defined (AIRSPEED) ) && defined (VARIO_SECONDARY ) && defined( VARIO_PRIMARY ) && defined (VARIO_SECONDARY) && defined (PIN_PPM)
 
 
 #if (defined PIN_VOLTAGE_1 && PIN_VOLTAGE_1 < 8) || (defined PIN_VOLTAGE_2 && PIN_VOLTAGE_2 < 8) ||(defined PIN_VOLTAGE_3 && PIN_VOLTAGE_3 < 8) ||(defined PIN_VOLTAGE_4 && PIN_VOLTAGE_4 < 8) ||(defined PIN_VOLTAGE_5 && PIN_VOLTAGE_5 < 8) ||(defined PIN_VOLTAGE_6 && PIN_VOLTAGE_6 < 8)  
