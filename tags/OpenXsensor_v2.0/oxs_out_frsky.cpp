@@ -1107,13 +1107,13 @@ void OXS_OUT_FRSKY::loadHubValueToSend( uint8_t currentFieldToSend ) {
 #endif
 
 #ifdef AIRSPEED       
-      case  AIR_SPEED :    
-//          if ( (SwitchFrameVariant == 0) && (airSpeedData->airSpeedAvailable) ) { //========================================================================== Vario Data
-              if(  fieldOk == true ) {
+      case  AIR_SPEED : 
+              if (fieldToSend == DEFAULTFIELD) {
+                 SendGPSSpeed( (long) airSpeedData->airSpeed ) ;
+              }
+              else if(  fieldOk == true ) {
                  SendValue((int8_t) fieldToSend ,(int16_t) ( (airSpeedData->airSpeed * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4] );
-//                 airSpeedData->airSpeedAvailable = false ;
-              }   
-//          }
+              }  
           break ;
       case PRANDTL_COMPENSATION :    
 //          if ( (SwitchFrameVariant == 0) && (airSpeedData->airSpeedAvailable) ) { //========================================================================== Vario Data
@@ -1385,6 +1385,35 @@ void OXS_OUT_FRSKY::SendGPSAlt(long altcm)
   SendValue(FRSKY_USERDATA_GPS_ALT_B, Meter);
   SendValue(FRSKY_USERDATA_GPS_ALT_A, Centimeter);
 }
+
+
+/****************************************************************/
+/* SendGPSSpeed - send the a value to the GPS speed             */
+/* value is split in 2 fields                                   */
+/* knots and 1/10 of knots                                      */
+/****************************************************************/
+void OXS_OUT_FRSKY::SendGPSSpeed(long speedknots)
+{
+  uint16_t knotDecimal =  uint16_t(abs(speedknots)%10);
+  long knots;
+  if (speedknots >0){
+    knots = (speedknots-(long) knotDecimal);
+  }
+  else{
+    knots = -1*(abs(speedknots)+(long)knotDecimal);
+  }
+  knots=knots/10;
+
+  // need to send a gps fix before openTX displays this field....
+  //SendValue(FRSKY_USERDATA_GPS_LONG_A, 1);
+  //SendValue(FRSKY_USERDATA_GPS_LONG_B, 1);
+  //SendValue(FRSKY_USERDATA_GPS_LAT_A, 1);
+  //SendValue(FRSKY_USERDATA_GPS_LAT_B, 1);
+  // now send the data
+  SendValue(FRSKY_USERDATA_GPS_SPEED_B, knots);
+  SendValue(FRSKY_USERDATA_GPS_SPEED_A, knotDecimal);
+}
+
 /***********************************************/
 /* SendCurrentMilliAmps => Send Current        */
 /* current will be transmitted as 1/10th of A  */

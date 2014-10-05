@@ -221,7 +221,7 @@ class OXS_OUT_FRSKY {
     void SendGPSAlt(long altcm);
     void SendFuel(uint16_t fuel);
     void SendCurrentMilliAmps(int32_t milliamps);
-    
+    void SendGPSSpeed(long speedknots) ;
     void sendHubByte( uint8_t byte ) ;
     void SendVoltX( uint8_t VoltToSend ,  uint8_t indexFieldToSend ) ;
 
