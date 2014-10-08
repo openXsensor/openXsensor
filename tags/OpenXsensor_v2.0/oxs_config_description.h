@@ -215,7 +215,7 @@ Note : The digital pin 8 (PB0/ICP) is the only one to be used to measure RPM
 *    MILLIAH          mAh        Consumed milli Amp heure                            Optionnal             Fuel
 *    RPM              t/min(?)   Rotation per min                                    Mandatory             Rpm
 *    AIR_SPEED        knot/10    Air speed                                 Optionnal (X serie)             ASpd
-*                                                                         NOT allowed (D serie)       
+*                                                                          Optionnal (D serie)             Spd (6)      
 *    PRANDTL_COMPENSATION cm/s   Compensation for compensated vario                NOT allowed
 *    PPM                none     Value from PPM signal (range = -100 /+100)        NOT allowed
 *
@@ -228,14 +228,14 @@ Note : The digital pin 8 (PB0/ICP) is the only one to be used to measure RPM
 *       This requires that PPM is used to and that the option SWITCH_VARIO_WITH_PPM is activated. See section 4.
 *   (5) Unit depends on the calibration parameter that are used (e.g. when a voltage is provided by a temperature sensure, unit can be degree)
 *       When used in order to measure Cell(s), calibration must ensure that unit = milliVolt 
-
+*   (6) For D serie Rx, the hub protocol does not allow to transmit the airspeed as airspeed. OXS sent then the airspeed in the Gps speed
 
 * 
 * Note: when DEFAULTFIELD is Optionnal or NOT allowed, you can normally select your self a telemetry field name (e.g. SENSITIVITY can be sent in T1 or T2 ,...) 
 *
 *
 * *********************************************   Telemetry fields   ************************************************ 
-*---Field in OpenTx----- Normal OXS Measurement names------------
+*---Field in OpenTx----- Normal associated OXS Measurement names------------
 *  code   unit       
 *        (metric)                 
 *   Alt     m            ALTIMETER          
@@ -257,7 +257,7 @@ Note : The digital pin 8 (PB0/ICP) is the only one to be used to measure RPM
 **** General set up to define wich measurements are transmitted and how **********************************************************************
 * You MUST specify here under ONE ROW for EACH OXS measurement to tranmit to Tx.
 * Each row must contains:
-*   - 1 : the telemetry field name (or DEFAULTFIED) (e.g. "T1_FIRST_ID" ) (!! see note (1) below)
+*   - 1 : the (telemetry) field name in openTx (e.g. "Alt" ) or DEFAULTFIELD (when allowed) (!! see note (1) below)
 *   - 2 : a comma 
 *   - 3 : the OXS measurement name to transmit in this field (e.g. "VOLT1")  (see note (2))
 *   - 4 : a comma 
@@ -270,10 +270,9 @@ Note : The digital pin 8 (PB0/ICP) is the only one to be used to measure RPM
 *                  TAKE CARE that "\" MUST be the LAST character on the row (even no space after)
 *                  TAKE CARE that no comment lines ("*...") may exist between rows
 *
-* Note (1) : The telemetry field name  is selected in the list of fields for SPORT or for HUB protocol depending on the protocol (= serie Rx) you are using
-*            Do not use code foreseen for SPORT when you use a D serie receiver.
-*            The opposite will perhaps (?) works but it is safier to avoid it. 
-*            In some cases (see the list), you can/must specify the value "DEFAULTFIELD". It means that OXS will automatically transmit the data in the most normal foreseen field.
+* Note (1) : In many cases (see the list), you can/must specify the value "DEFAULTFIELD". It means that OXS will automatically transmit the data in the most normal foreseen field.
+*            Still, in some cases, DEFAULTFIELD is not possible because the OXS measurement has no normal equivalent in openTX. You must then specify a valid (telemetry) field name in openTX.
+*            Please note that some (telemetry) field names in openTx (A3, A4, ASpd) are not allowed when using a D serie receiver because the hub protocol has no codeId to transmit them
 *            Except DEFAULTFIELD, a telemetry field name (e.g. "T1_FIRST_ID" ) may not appear on several rows
 *            Sequence of rows does not matter.
 * Note (2) : A OXS measurement name (e.g. VOLT1) may not appear on several rows

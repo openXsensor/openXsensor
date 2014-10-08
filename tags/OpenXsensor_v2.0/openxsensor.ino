@@ -779,7 +779,15 @@ ISR(INT1_vect, ISR_NOBLOCK)
 	{
 		EndTime = time ;		
 		time -= StartTime ;
+#if F_CPU == 20000000L   // 20MHz clock 
+   #error Unsupported clock speed
+#elif F_CPU == 16000000L  // 16MHz clock                                                  
 		time >>= 7 ;		// Nominal 125 to 250
+#elif F_CPU == 8000000L   // 8MHz clock
+		time >>= 6 ;		// Nominal 125 to 250
+#else
+    #error Unsupported clock speed
+#endif
 		time -= 60 ;		// Nominal 65 to 190
 		if ( time > 255 )
 		{

@@ -1405,10 +1405,10 @@ void OXS_OUT_FRSKY::SendGPSSpeed(long speedknots)
   knots=knots/10;
 
   // need to send a gps fix before openTX displays this field....
-  //SendValue(FRSKY_USERDATA_GPS_LONG_A, 1);
-  //SendValue(FRSKY_USERDATA_GPS_LONG_B, 1);
-  //SendValue(FRSKY_USERDATA_GPS_LAT_A, 1);
-  //SendValue(FRSKY_USERDATA_GPS_LAT_B, 1);
+  SendValue(FRSKY_USERDATA_GPS_LONG_A, 1);
+  SendValue(FRSKY_USERDATA_GPS_LONG_B, 1);
+  SendValue(FRSKY_USERDATA_GPS_LAT_A, 1);
+  SendValue(FRSKY_USERDATA_GPS_LAT_B, 1);
   // now send the data
   SendValue(FRSKY_USERDATA_GPS_SPEED_B, knots);
   SendValue(FRSKY_USERDATA_GPS_SPEED_A, knotDecimal);
