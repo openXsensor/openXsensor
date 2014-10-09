@@ -19,6 +19,10 @@ Authors do not provide any warranty whatsoever for the instructions below. Do it
 
     https://openxsensor.googlecode.com/svn/wiki/images/Arduino_Uno.png
 
+    - [http://arduino.cc/en/Main/ArduinoBoardNano Arduino Nano]
+
+    https://openxsensor.googlecode.com/svn/wiki/images/Arduino_Nano.png
+
     - Arduino Pro Mini (ATmega328 only)  [https://www.sparkfun.com/products/11113 5V-16MHz] and [https://www.sparkfun.com/products/11114 3.3V-8MHz] that you can find nearly everywhere.
 
     https://openxsensor.googlecode.com/svn/wiki/images/Arduino_Pro_Mini_02.jpg - https://openxsensor.googlecode.com/svn/wiki/images/Arduino_Pro_Mini_03.jpg ...
@@ -128,5 +132,17 @@ Below, you'll find some great resources about the Arduino Pro Mini programming:
  * http://arduino.cc/en/Guide/ArduinoProMini
 
  * https://learn.sparkfun.com/tutorials/using-the-arduino-pro-mini-33v
+
+----
+
+=To go further in the thermal hunting=
+
+https://openxsensor.googlecode.com/svn/wiki/images/TE_Probe.jpg
+
+If you want to maximize the vario efficiency, you can use a Total Energy (TE) probe, more information on the links below:
+
+ * http://openrcforums.com/forum/viewtopic.php?f=86&t=5856#p83775
+
+ * http://voiletech.free.fr/skyassistant/energie_totale.htm
 
 ----
