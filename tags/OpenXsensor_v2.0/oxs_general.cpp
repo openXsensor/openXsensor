@@ -10,6 +10,8 @@ uint16_t MillisPrecount ;
 uint16_t lastTimerValue ;
 uint32_t TotalMicros ;
 uint32_t TotalMillis ;
+uint8_t Correction ;
+
 
 uint32_t lastEventTime ;
 uint8_t RpmCounter ;
@@ -67,12 +69,16 @@ uint32_t micros()
 	SREG = oldSREG ;
 
 	elapsed = time - lastTimerValue ;
-	
+	elapsed += Correction ;
+
+
  #if F_CPU == 20000000L   // 20MHz clock 
    #error Unsupported clock speed
   #elif F_CPU == 16000000L  // 16MHz clock                                                  
+        Correction = elapsed & 0x0F ;
         elapsed >>= 4 ;
   #elif F_CPU == 8000000L   // 8MHz clock
+        Correction = elapsed & 0x07 ;
         elapsed >>= 3 ;
     #else
     #error Unsupported clock speed

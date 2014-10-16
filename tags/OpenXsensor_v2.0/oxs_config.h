@@ -18,15 +18,15 @@
 //#define PIN_ANALOG_VSPEED 3
 
 //**** 2.2 Analog Pins for voltages
-//#define PIN_VOLTAGE_1 1    
-//#define PIN_VOLTAGE_2 2    
+#define PIN_VOLTAGE_1 1    
+#define PIN_VOLTAGE_2 2    
 //#define PIN_VOLTAGE_3 3    
 //#define PIN_VOLTAGE_4 1    
 //#define PIN_VOLTAGE_5 2    
 //#define PIN_VOLTAGE_6 3    
 
 //**** 2.3 Analog pin used for curent sensor
-//#define PIN_CURRENTSENSOR   2
+#define PIN_CURRENTSENSOR   3
 
 
 //**** 3 Fields to transmit
@@ -36,16 +36,17 @@
                         VSpd , PPM_VSPEED , 1 , 1 ,0 , \
                         DEFAULTFIELD , AIR_SPEED , 1 , 1 ,0 , \
                         AccX , VERTICAL_SPEED , 1 , 1 ,0 , \
-                        AccY , VERTICAL_SPEED_2 , 1 , 1 ,0 , \
                         AccZ , PRANDTL_DTE , 1 , 1 ,0 ,\
-                        T1 , TEST1 , 1 , 1 ,0 , \
-                        T2 , TEST2 , 1, 1, 0 , \
+                        T1 , VOLT1 , 1 , 1 ,0 , \
+                        T2 , VOLT2 , 1, 1, 0 , \
+                        DEFAULTFIELD , CURRENTMA , 1, 1, 0 , \
+                        DEFAULTFIELD , MILLIAH, 1, 1, 0 , \
                         Fuel , SENSITIVITY , 1, 1, 0
                         
 
 // **** 4 - Set up for vario
 #define VARIO // set as comment if there is no vario  
-#define VARIO2 // set as comment if there is no second vario
+//#define VARIO2 // set as comment if there is no second vario
 
 #define SENSITIVITY_MIN_AT 100   
 #define SENSITIVITY_MAX_AT 1000
@@ -63,7 +64,7 @@
 #define ANALOG_VSPEED_MAX  3 
 
 #define VARIO_PRIMARY       2 // 0 means first ms5611, 1 means second ms5611 , 2 means vario based on vario 1 + compensation from airspeed
-#define VARIO_SECONDARY     1  // 0 means first ms5611, 1 means second ms5611 , 2 means vario based on vario 1 + compensation from airspeed
+#define VARIO_SECONDARY     0  // 0 means first ms5611, 1 means second ms5611 , 2 means vario based on vario 1 + compensation from airspeed
 #define SWITCH_VARIO_MIN_AT_PPM 10 //
 #define SWITCH_VARIO_MAX_AT_PPM 90 //
 
@@ -73,14 +74,14 @@
 //#define USE_INTERNAL_REFERENCE
 
 //**** 5.2 Calibration parameters for current sensor
-//#define OFFSET_CURRENT_STEPS         0    
-//#define MAMP_PER_STEP                0.9775
+#define OFFSET_CURRENT_STEPS         0    
+#define MAMP_PER_STEP                0.9775
 
 //***** 5.3 - Calibration parameters for voltage measurements
-//#define OFFSET_1             0   
-//#define MVOLT_PER_STEP_1       4.89    
-//#define OFFSET_2             0    
-//#define MVOLT_PER_STEP_2       10.1    
+#define OFFSET_1             0   
+#define MVOLT_PER_STEP_1       4.89    
+#define OFFSET_2             0    
+#define MVOLT_PER_STEP_2       10.1    
 //#define OFFSET_3             0       
 //#define MVOLT_PER_STEP_3       1
 //#define OFFSET_4             0        
