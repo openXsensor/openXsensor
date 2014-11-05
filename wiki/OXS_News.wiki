@@ -7,7 +7,8 @@ https://openxsensor.googlecode.com/svn/wiki/images/OXS_Logo.png
  
 =News=
 
-  * 2014-10-01: New wiki: [OXS_Build_Vario OXS Vario building] 
+  * 2014-11-05: New wiki: [OXS_Conf_DataSent OXS DATA sent settings]
+  * 2014-10-01: New wiki: [OXS_Build_Vario OXS Vario building]
   * 2014-09-05: [OXS_Downloads Release] OXS Configurator v1.1 -> Bug correction
   * 2014-08-31: Adding wiki [OXS_Conf_Vario OXS Vario settings documentation]
   * 2014-08-26: Wiki restructuring + adding [OXS_Configuration OXS general settings documentation]
