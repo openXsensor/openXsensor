@@ -26,6 +26,8 @@ This dropdown list allows you to choose how the OXS measurement will be seen on 
 
 ====DEFAULT parameter usage:====
 
+Generally, it's simplest to use DEFAULT parameter whenever it's possible.
+
 https://openxsensor.googlecode.com/svn/wiki/images/OXSC_DATA_04.png
 
 ----
