@@ -1,23 +1,23 @@
 // Data sent list array
 
 String sentDataList[][] = new String[][] {
-  { "----------", "----------" },
-  { "ALTIMETER", "Altitude" },
-  { "VERTICAL_SPEED", "Vertical Speed" },
-  { "SENSITIVITY", "Sensitivity" },
-  { "ALT_OVER_10_SEC", "Alt. over 10 seconds" },
-  //{ "VARIOTEMP", "Vario Temperature" },
-  { "CURRENTMA", "Current (mA)" },
-  { "MILLIAH", "Consumption (mAh)" },
-  { "CELLS", "Cells monitoring" },  
-  { "VOLT1", "Volt 1" },
-  { "VOLT2", "Volt 2" },
-  { "VOLT3", "Volt 3" },
-  { "VOLT4", "Volt 4" },
-  { "VOLT5", "Volt 5" },
-  { "VOLT6", "Volt 6" },
-  { "RPM" , "RPM" }
-  //{ "TEMP1", "Temperature 1" }
+  { "----------", "----------" },                        // 0
+  { "ALTIMETER", "Altitude" },                           // 1
+  { "VERTICAL_SPEED", "Vertical Speed" },                // 2
+  { "SENSITIVITY", "Sensitivity" },                      // 3
+  { "ALT_OVER_10_SEC", "Alt. over 10 seconds" },         // 4
+  //{ "VARIOTEMP", "Vario Temperature" },                //
+  { "CURRENTMA", "Current (mA)" },                       // 5
+  { "MILLIAH", "Consumption (mAh)" },                    // 6
+  { "CELLS", "Cells monitoring" },                       // 7
+  { "VOLT1", "Volt 1" },                                 // 8
+  { "VOLT2", "Volt 2" },                                 // 9
+  { "VOLT3", "Volt 3" },                                 // 10
+  { "VOLT4", "Volt 4" },                                 // 11
+  { "VOLT5", "Volt 5" },                                 // 12
+  { "VOLT6", "Volt 6" },                                 // 13
+  { "RPM" , "RPM" }                                      // 14
+  //{ "TEMP1", "Temperature 1" }                         // 
 } ;
 
 /*

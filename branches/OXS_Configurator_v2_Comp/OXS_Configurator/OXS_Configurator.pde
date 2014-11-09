@@ -26,8 +26,8 @@ import controlP5.* ;
 
 boolean tempActive = false ;           // Define temperature sensor availability
 
-String oxsVersion = "v1.x" ;
-String oxsCversion = "v1.1" ;
+String oxsVersion = "v2.x" ;
+String oxsCversion = "v2.0" ;
 
 String day = (day() < 10) ? "0" + day() : "" + day() ;
 String month = (month() < 10) ? "0" + month() : "" + month() ;

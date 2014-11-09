@@ -11,32 +11,62 @@ void writeConf() {
   output.println("");
   output.println("#ifndef OXS_CONFIG_h");
   output.println("#define OXS_CONFIG_h");
-  output.println("// openxvario http://code.google.com/p/openxvario/");
+  output.println("// OpenXsensor https://code.google.com/p/openxsensor/");
   output.println("// started by Rainer Schloßhan");
   output.println("");
 
-  // ---------------------------------- Protocol --------------------------------------
+  // ---------------------------------- Device id --------------------------------------
 
-  if ( prot.getValue() == 2 ) {
-    output.println("// *****************************");
-    output.println("// **** Smart Port Protocol ****");
-    output.println("// *****************************");
-    output.println("#define FRSKY_SPORT               // put this line as comment if OXS is connected to a D serie receiver ( = Hub protocol); do not comment for X serie receiver.");
-    output.println("#define SENSOR_ID           0x1B  // this parameter identifies a device connected on SPORT. It is not allowed having 2 devices with the same ID connected at the same time");
+  output.println("//**** 1 FrSky device ID when Sport protocol is used ");
+  output.println("#define SENSOR_ID    0x1B");
+  output.println("");
+
+  // ---------------------------------- Hardware settings --------------------------------------
+
+  output.println("//**** 2 Hardware settings");
+  
+  output.println("//****** 2.1 Digital pins");
+  output.println("#define PIN_SERIALTX         " + serialPin.captionLabel().getText() + "     // The pin to transmit the serial data to the frsky telemetry enabled receiver");
+  if ( cp5.getController("ppm").value() == 1 ) {
+    output.println("#define PIN_PPM              " + ppmPin.captionLabel().getText() + "     // Arduino can read a PPM Signal coming from Tx.");
   } else {
-    output.println("// ****************************");
-    output.println("// ******** HUB Protocol ******");
-    output.println("// ****************************");
+    output.println("//#define PIN_PPM               // Arduino can read a PPM Signal coming from Tx.");      
   }
-
-  // ---------------------------------- Serial pin --------------------------------------
-
+  output.println("#define PPM_MIN_100          " + int(cp5.getController("ppmRngMin").getValue()) + "   // 1500 - 512 ; // pulse width (usec) when TX send a channel = -100");
+  output.println("#define PPM_PLUS_100         " + int(cp5.getController("ppmRngMax").getValue()) + "  // 1500 + 512 ; // pulse width (usec) when TX send a channel = +100");
+  if ( cp5.getController("resetButton").value() == 1 && cp5.getGroup("resetButtonPin").getValue() != -1 ) {
+    output.println("#define PIN_PUSHBUTTON       " + cp5.get(DropdownList.class, "resetButtonPin").captionLabel().getText() + "    // check if a button has been pushed.");
+  } else {
+    output.println("//#define PIN_PUSHBUTTON             // check if a button has been pushed.");
+  }
+//  if ( cp5.getController("vario").value() == 1 ) {
+  if ( cp5.getController("analogClimb").value() == 1 ) {
+      output.println("#define PIN_ANALOG_VSPEED    " + climbPin.captionLabel().getText() + "     // the pin used to write the vertical speed to the Rx A1 or A2 pin"); 
+  } else {
+      output.println("//#define PIN_ANALOG_VSPEED          // the pin used to write the vertical speed to the Rx A1 or A2 pin");
+  }
   output.println("");
-  output.println("#define PIN_SerialTX           " + serialPin.captionLabel().getText() + "  // The pin to transmit the serial data to the frsky telemetry enabled receiver");
-  //output.println("                                  // It is a DIGITAL arduino pin that has to be connected to \"Rx\" pin from receiver (for D serie RX) or to Signal pin (for X serie RX)");
-  //output.println("                                  // mandatory ; default: 4 ; allowed values are 0 up to 7 but take care not using the same pin as PPM (if PPM is used)");
+  
+  output.println("//****** 2.2 Analog Pins for voltages");
+  for ( int i = 1; i <= voltNbr; i++ ) {
+    if ( cp5.getController( "voltage" ).value() == 1 && cp5.getController( "volt" + i ).value() == 1 && int(cp5.getGroup("ddlVolt" + i).getValue()) >= 0 ) {
+      output.println("#define PIN_VOLTAGE_" + i + "    " + int(cp5.getGroup("ddlVolt" + i).getValue()) );
+    } else {
+      output.println("//#define PIN_VOLTAGE_" + i );
+    }
+  }
   output.println("");
-
+  
+  output.println("//****** 2.3 Analog pin used for current sensor");
+  if ( cp5.getController( "current" ).value() == 1 && int(cp5.getGroup("currentPin").getValue()) >= 0 ) {
+    output.println("#define PIN_CURRENTSENSOR    " + ( int(cp5.getGroup("currentPin").getValue()) ) );
+  } else {
+    output.println("//#define PIN_CURRENTSENSOR");    
+  }
+  output.println("");
+  
+  
+  
   // ------------------------------- Voltage reference -----------------------------------
 
   if ( cp5.getController("intRef").value() == 1 ) {
@@ -49,13 +79,9 @@ void writeConf() {
     output.println("");
   }
 
-  // -------------------------- Reset button ----------------------------
 
-  if ( cp5.getController("resetButton").value() == 1 && cp5.getGroup("resetButtonPin").getValue() != -1 ) {
-    output.println("// -------- Reset button --------");
-    output.println("#define PIN_PushButton         " + cp5.get(DropdownList.class, "resetButtonPin").captionLabel().getText() + "  // check if a button has been pushed to reset some values (consumption, max altititude, max current, ...)");
-    output.println("");
-  }
+
+  
 
   // -------------------------- Save to EEPROM ----------------------------
 
@@ -85,27 +111,6 @@ void writeConf() {
       output.println("#define PPM_RANGE_MAX " + int(cp5.getController("ppmRngMax").getValue()) );
       output.println("#define SENSITIVITY_PPM_MIN " + int(cp5.getController("ppmSensMinMax").getArrayValue(0)) );
       output.println("#define SENSITIVITY_PPM_MAX " + int(cp5.getController("ppmSensMinMax").getArrayValue(1)) );
-
-      output.println("");
-      output.println("// do not modify those lines");
-      output.println("#ifdef PIN_PPM");
-      output.println("  #if PIN_PPM == 2");
-      output.println("       #define PPM_INTERRUPT                  ON  // define to use interrupt code in Aserial.cpp");
-      output.println("");
-      output.println("       #define PPM_INT_MASK                    3");
-      output.println("       #define PPM_INT_EDGE                    1");
-      output.println("       #define PPM_PIN_HEX                             0x02");
-      output.println("       #define PPM_INT_BIT                             0x01");
-      output.println("  #endif");
-      output.println("");
-      output.println("  #if PIN_PPM == 3");
-      output.println("       #define PPM_INTERRUPT                   ON // define to use interrupt code in Aserial.cpp");
-      output.println("       #define PPM_INT_MASK                    0x0C");
-      output.println("       #define PPM_INT_EDGE                    0x04");
-      output.println("       #define PPM_PIN_HEX                             0x04");
-      output.println("       #define PPM_INT_BIT                             0x02");
-      output.println("  #endif");
-      output.println("#endif");
 
     } else {
       output.println("//#define PIN_PPM                // Arduino can read a PPM Signal coming from Tx. This allows to change the vario sensitivity using a pot or a switch on TX.");
@@ -149,13 +154,7 @@ void writeConf() {
 
   output.println("// -------- Voltage --------");
 
-  for ( int i = 1; i <= voltNbr; i++ ) {
-    if ( cp5.getController( "voltage" ).value() == 1 && cp5.getController( "volt" + i ).value() == 1 && int(cp5.getGroup("ddlVolt" + i).getValue()) >= 0 ) {
-      output.println("#define PIN_Voltage" + i + "   " + int(cp5.getGroup("ddlVolt" + i).getValue()) + "    //  Pin for measuring Voltage " + i + " ( Analog Pin! )");
-    } else {
-      output.println("#define PIN_Voltage" + i + " " + 8 + "      //  Pin for measuring Voltage " + i + " ( Analog Pin! )");
-    }
-  }
+  
   output.println("");
 
   for ( int i = 1; i <= voltNbr; i++ ) {
@@ -181,9 +180,7 @@ void writeConf() {
   output.println("");
 
   // ---------------------------------- Current sensor --------------------------------------
-
-  if ( cp5.getController( "current" ).value() == 1 && int(cp5.getGroup("currentPin").getValue()) >= 0 ) {
-    output.println("// -------- Current sensor --------");
+if ( cp5.getController( "current" ).value() == 1 && int(cp5.getGroup("currentPin").getValue()) >= 0 ) {
     output.println("#define PIN_CurrentSensor          " + ( int(cp5.getGroup("currentPin").getValue()) ) + "       // The Analog pin the optional current Sensor is connected to");
     output.println("#define mAmpPerStep                " + round(mAmpStep(), 2) + "   // INA282 with 0.1 ohm shunt gives 5000mv/A ");
     output.println("#define offsetCurrentSteps         " + offsetCurrent() + "      // 66mv offset (set to zero for now)");
@@ -192,7 +189,7 @@ void writeConf() {
     //output.println("//#define mAmpPerStep              // INA282 with 0.1 ohm shunt gives 5000mv/A ");
     //output.println("//#define offsetCurrentSteps       // 66mv offset (set to zero for now)");
   }
-  output.println("");
+  
 
   // ---------------------------------- Temperature sensor --------------------------------------
 
