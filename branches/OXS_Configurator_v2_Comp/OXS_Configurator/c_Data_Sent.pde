@@ -4,7 +4,7 @@ String sentDataList[][] = new String[][] {
   { "----------", "----------" },                        // 0
   { "ALTIMETER", "Altitude" },                           // 1
   { "VERTICAL_SPEED", "Vertical Speed" },                // 2
-  { "SENSITIVITY", "Sensitivity" },                      // 3
+  { "SENSITIVITY", "Vario sensitivity" },                // 3
   { "ALT_OVER_10_SEC", "Alt. over 10 seconds" },         // 4
   //{ "VARIOTEMP", "Vario Temperature" },                //
   { "CURRENTMA", "Current (mA)" },                       // 5
