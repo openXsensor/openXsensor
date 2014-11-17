@@ -870,6 +870,7 @@ void OXS_OUT_FRSKY::loadSportValueToSend( uint8_t currentFieldToSend) {
 
       }  // end Switch
       if ( (fieldContainsData[currentFieldToSend][0] != DEFAULTFIELD)  ) fieldID = convertToSportId[ fieldContainsData[currentFieldToSend][0]] ;
+      if ( (fieldID >= VFAS_FIRST_ID) && (fieldID <= VFAS_LAST_ID) ) valueTemp = valueTemp * 10 ;
 #ifdef DEBUGWITHFIXVALUE
       static int delta = 1 ;
       static int32_t prevValue = 0 ;
@@ -1003,7 +1004,7 @@ void OXS_OUT_FRSKY::loadHubValueToSend( uint8_t currentFieldToSend ) {
       case  ALTIMETER :    
 //          if ( (SwitchFrameVariant == 0) && (varioData->absoluteAltAvailable) ) { //========================================================================== Vario Data
               if (fieldToSend == DEFAULTFIELD) {
-                SendAlt(varioData->absoluteAlt);           
+                  SendAlt( ( (varioData->absoluteAlt * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4] );           
 //                varioData->absoluteAltAvailable = false ;
               }
               else if(  fieldOk == true ) {
@@ -1019,11 +1020,11 @@ void OXS_OUT_FRSKY::loadHubValueToSend( uint8_t currentFieldToSend ) {
                 //SendValue(FRSKY_USERDATA_VERT_SPEED,(int16_t)varioData->climbRate); // ClimbRate in open9x Vario mode
                 if (varioData->climbRate==10) SendValue(FRSKY_USERDATA_VERT_SPEED,(int16_t)9); // ClimbRate in open9x Vario mode
                 else if (varioData->climbRate==-10) SendValue(FRSKY_USERDATA_VERT_SPEED,(int16_t)-9);
-                else SendValue(FRSKY_USERDATA_VERT_SPEED,(int16_t)varioData->climbRate); // ClimbRate in open9x Vario mode
+                else SendValue(FRSKY_USERDATA_VERT_SPEED,( ( (int16_t) varioData->climbRate * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3]))+ fieldContainsData[currentFieldToSend][4] ); // ClimbRate in open9x Vario mode
 //                varioData->climbRateAvailable = false ;
               }
               else if(  fieldOk == true ) {
-                 SendValue((int8_t) fieldToSend ,(int16_t) ( (varioData->climbRate * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3]))+ fieldContainsData[currentFieldToSend][4] );
+                 SendValue((int8_t) fieldToSend , ( ((int16_t)varioData->climbRate * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3]))+ fieldContainsData[currentFieldToSend][4] );
                  varioData->climbRateAvailable = false ;
               }  
 //          }   
@@ -1031,7 +1032,7 @@ void OXS_OUT_FRSKY::loadHubValueToSend( uint8_t currentFieldToSend ) {
        case SENSITIVITY :
 //          if ( (SwitchFrameVariant == 0) && (varioData->sensitivityAvailable ) ){
              if ( fieldOk == true ) {
-               SendValue((int8_t) fieldToSend ,(int16_t) ( (varioData->sensitivity * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3]))+ fieldContainsData[currentFieldToSend][4] );
+               SendValue((int8_t) fieldToSend , ( ((int16_t) varioData->sensitivity * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3]))+ fieldContainsData[currentFieldToSend][4] );
 //               varioData->sensitivityAvailable = false ;
              }
 //          }   
@@ -1039,7 +1040,7 @@ void OXS_OUT_FRSKY::loadHubValueToSend( uint8_t currentFieldToSend ) {
        case ALT_OVER_10_SEC :
 //          if ( (SwitchFrameVariant == 0) && (varioData->vSpeed10SecAvailable ) ){
              if ( fieldOk == true ) {
-               SendValue((int8_t) fieldToSend ,(int16_t) ( (varioData->vSpeed10SecAvailable * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3]) ) + fieldContainsData[currentFieldToSend][4] );
+               SendValue((int8_t) fieldToSend , ( ( (int16_t) varioData->vSpeed10SecAvailable * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3]) ) + fieldContainsData[currentFieldToSend][4] );
 //               varioData->vSpeed10SecAvailable = false ;
              }
 //          }   
@@ -1053,7 +1054,7 @@ void OXS_OUT_FRSKY::loadHubValueToSend( uint8_t currentFieldToSend ) {
       case  ALTIMETER_2 :    
  //         if ( (SwitchFrameVariant == 0) && (varioData_2->absoluteAltAvailable) ) { //========================================================================== Vario Data
               if (fieldToSend == DEFAULTFIELD) {
-                SendAlt(varioData_2->absoluteAlt);           
+                SendAlt( ( (varioData_2->absoluteAlt * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4]);           
 //                varioData_2->absoluteAltAvailable = false ;
               }
               else if(  fieldOk == true ) {
@@ -1069,11 +1070,11 @@ void OXS_OUT_FRSKY::loadHubValueToSend( uint8_t currentFieldToSend ) {
                 //SendValue(FRSKY_USERDATA_VERT_SPEED,(int16_t)varioData->climbRate); // ClimbRate in open9x Vario mode
                 if (varioData_2->climbRate==10) SendValue(FRSKY_USERDATA_VERT_SPEED,(int16_t)9); // ClimbRate in open9x Vario mode
                 else if (varioData_2->climbRate==-10) SendValue(FRSKY_USERDATA_VERT_SPEED,(int16_t)-9);
-                else SendValue(FRSKY_USERDATA_VERT_SPEED,(int16_t)varioData_2->climbRate); // ClimbRate in open9x Vario mode
+                else SendValue(FRSKY_USERDATA_VERT_SPEED, ( ( (int16_t) varioData_2->climbRate * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3]))+ fieldContainsData[currentFieldToSend][4] ); // ClimbRate in open9x Vario mode
 //                varioData_2->climbRateAvailable = false ;
               }
               else if(  fieldOk == true ) {
-                 SendValue((int8_t) fieldToSend ,(int16_t) ( (varioData_2->climbRate * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3]))+ fieldContainsData[currentFieldToSend][4] );
+                 SendValue((int8_t) fieldToSend , ( ( (int16_t) varioData_2->climbRate * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3]))+ fieldContainsData[currentFieldToSend][4] );
 //                 varioData_2->climbRateAvailable = false ;
               }  
 //          }   
@@ -1081,7 +1082,7 @@ void OXS_OUT_FRSKY::loadHubValueToSend( uint8_t currentFieldToSend ) {
        case SENSITIVITY_2 :
 //          if ( (SwitchFrameVariant == 0) && (varioData_2->sensitivityAvailable ) ){
              if ( fieldOk == true ) {
-               SendValue((int8_t) fieldToSend ,(int16_t) ( (varioData_2->sensitivity * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3]))+ fieldContainsData[currentFieldToSend][4] );
+               SendValue((int8_t) fieldToSend , ( ( (int16_t) varioData_2->sensitivity * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3]))+ fieldContainsData[currentFieldToSend][4] );
 //               varioData_2->sensitivityAvailable = false ;
              }
 //          }   
@@ -1101,7 +1102,7 @@ void OXS_OUT_FRSKY::loadHubValueToSend( uint8_t currentFieldToSend ) {
 #if defined (VARIO )  && ( defined (VARIO2) || defined( AIRSPEED) ) && defined (VARIO_PRIMARY ) && defined (VARIO_SECONDARY ) && defined (PIN_PPM)
       case PPM_VSPEED :
               if(  fieldOk == true ) {
-                 SendValue((int8_t) fieldToSend ,(int16_t) ( (switchVSpeed * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4] );
+                 SendValue((int8_t) fieldToSend , ( ( (int16_t) switchVSpeed * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4] );
               }   
           break ;   
 #endif
@@ -1109,16 +1110,16 @@ void OXS_OUT_FRSKY::loadHubValueToSend( uint8_t currentFieldToSend ) {
 #ifdef AIRSPEED       
       case  AIR_SPEED : 
               if (fieldToSend == DEFAULTFIELD) {
-                 SendGPSSpeed( (long) airSpeedData->airSpeed ) ;
+                 SendGPSSpeed(  (( (int16_t) airSpeedData->airSpeed * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4]) ;
               }
               else if(  fieldOk == true ) {
-                 SendValue((int8_t) fieldToSend ,(int16_t) ( (airSpeedData->airSpeed * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4] );
+                 SendValue((int8_t) fieldToSend , ( ( (int16_t) airSpeedData->airSpeed * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4] );
               }  
           break ;
       case PRANDTL_COMPENSATION :    
 //          if ( (SwitchFrameVariant == 0) && (airSpeedData->airSpeedAvailable) ) { //========================================================================== Vario Data
               if(  fieldOk == true ) {
-                 SendValue((int8_t) fieldToSend ,(int16_t) ( (airSpeedData->compensation * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4] );
+                 SendValue((int8_t) fieldToSend , ( ( (int16_t) airSpeedData->compensation * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4] );
 //                 airSpeedData->airSpeedAvailable = false ;
               }   
 //          }
@@ -1129,7 +1130,7 @@ void OXS_OUT_FRSKY::loadHubValueToSend( uint8_t currentFieldToSend ) {
 #if defined (VARIO) && defined ( AIRSPEED)
       case PRANDTL_DTE :    
               if(  fieldOk == true ) {
-                 SendValue((int8_t) fieldToSend ,(int16_t) ( (compensatedClimbRate * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4] );
+                 SendValue((int8_t) fieldToSend , ( ((int16_t) compensatedClimbRate * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4] );
               }   
           break ;                      
 #endif  // End defined (VARIO) && defined ( AIRSPEED)
@@ -1170,11 +1171,11 @@ void OXS_OUT_FRSKY::loadHubValueToSend( uint8_t currentFieldToSend ) {
       case CURRENTMA :
 //          if ( (SwitchFrameVariant == 0) && (currentData->milliAmpsAvailable ) ) {
              if ( fieldToSend == DEFAULTFIELD ) {
-                 SendCurrentMilliAmps(currentData->milliAmps);
+                 SendCurrentMilliAmps(( ( (int16_t) currentData->milliAmps * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3]) ) + fieldContainsData[currentFieldToSend][4]);
 //                 currentData->milliAmpsAvailable = false ;
              }
               else if(  fieldOk == true ) {
-                 SendValue((int8_t) fieldToSend ,(int16_t) ( (currentData->milliAmps * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3]) ) + fieldContainsData[currentFieldToSend][4] );
+                 SendValue((int8_t) fieldToSend , ( ( (int16_t) currentData->milliAmps * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3]) ) + fieldContainsData[currentFieldToSend][4] );
 //                 currentData->milliAmpsAvailable = false ;
               }  
 //          }    
@@ -1232,7 +1233,7 @@ void OXS_OUT_FRSKY::loadHubValueToSend( uint8_t currentFieldToSend ) {
 #ifdef PIN_PPM
       case  PPM :
             if(  fieldOk == true ) {
-                   SendValue((int8_t) fieldToSend ,(int16_t) ( (ppm * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4] );
+                   SendValue((int8_t) fieldToSend , ( ( (int16_t) ppm * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4] );
              }
           break ;
 #endif
@@ -1242,7 +1243,7 @@ void OXS_OUT_FRSKY::loadHubValueToSend( uint8_t currentFieldToSend ) {
       case  RPM :
 //          if ( (SwitchFrameVariant == 0) && ( RpmAvailable  ) ) {
              if ( fieldToSend == DEFAULTFIELD || fieldToSend == FRSKY_USERDATA_RPM ) {
-                  SendValue(FRSKY_USERDATA_RPM, RpmValue);
+                  SendValue(FRSKY_USERDATA_RPM, (( RpmValue * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4]);
              }
 //          }
           break ;

@@ -107,8 +107,8 @@ void OXS_VOLTAGE::readSensor() {
 void OXS_VOLTAGE::voltageNrIncrease() {
   static int cnt = 0;
   static unsigned long lastVoltMillis = millis() ;
-#if (NUMBEROFCELLS > 0)
-  static int32_t secondMVolt ;
+#if defined ( NUMBEROFCELLS ) && (NUMBEROFCELLS > 0)
+    static int32_t secondMVolt ;
 #endif  
   //static int32_t previousMVolt ;  
   
