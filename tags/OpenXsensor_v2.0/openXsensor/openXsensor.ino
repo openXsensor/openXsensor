@@ -1,10 +1,10 @@
-#include "oxs_config.h"
-#include "oxs_voltage.h"
-#include "oxs_ms5611.h"
-#include "oxs_4525.h"
-#include "oxs_curr.h"
-#include "oxs_out_frsky.h"
-#include "oxs_general.h"
+#include "oXs_config.h"
+#include "oXs_voltage.h"
+#include "oXs_ms5611.h"
+#include "oXs_4525.h"
+#include "oXs_curr.h"
+#include "oXs_out_frsky.h"
+#include "oXs_general.h"
 
 #ifdef SAVE_TO_EEPROM
   #include <EEPROM.h>
@@ -103,34 +103,34 @@ uint8_t selectedVario ; // identify the vario to be used when switch vario with 
   // to do : adapt the test on defined (PIN_VOLTAGE_...) because actual config.h expects now that all PIN_VOLTAGE_ are defined ; a value > 7 means it is not used. 
 #if defined( PIN_VOLTAGE_1 ) || defined( PIN_VOLTAGE_2 ) || defined( PIN_VOLTAGE_3 ) || defined( PIN_VOLTAGE_4 ) || defined( PIN_VOLTAGE_5 ) || defined( PIN_VOLTAGE_6 ) 
 #ifdef DEBUG  
-OXS_VOLTAGE oxs_Voltage(Serial);
+OXS_VOLTAGE oXs_Voltage(Serial);
 #else
-OXS_VOLTAGE oxs_Voltage(0);
+OXS_VOLTAGE oXs_Voltage(0);
 #endif  //DEBUG
 #endif
 
 #ifdef VARIO
 #ifdef DEBUG  
-OXS_MS5611 oxs_MS5611(I2C_MS5611_Add,Serial);
+OXS_MS5611 oXs_MS5611(I2C_MS5611_Add,Serial);
 #else
-OXS_MS5611 oxs_MS5611(I2C_MS5611_Add);
+OXS_MS5611 oXs_MS5611(I2C_MS5611_Add);
 #endif  //DEBUG
 #endif
 
 
 #ifdef VARIO2
 #ifdef DEBUG  
-OXS_MS5611 oxs_MS5611_2(I2C_MS5611_Add - 1,Serial);
+OXS_MS5611 oXs_MS5611_2(I2C_MS5611_Add - 1,Serial);
 #else
-OXS_MS5611 oxs_MS5611_2(I2C_MS5611_Add - 1);
+OXS_MS5611 oXs_MS5611_2(I2C_MS5611_Add - 1);
 #endif  //DEBUG
 #endif
 
 #ifdef AIRSPEED // differential pressure
 #ifdef DEBUG  
-OXS_4525 oxs_4525(I2C_4525_Add ,Serial);
+OXS_4525 oXs_4525(I2C_4525_Add ,Serial);
 #else
-OXS_4525 oxs_4525(I2C_4525_Add);
+OXS_4525 oXs_4525(I2C_4525_Add);
 #endif  //DEBUG
 #endif
 
@@ -139,16 +139,16 @@ OXS_4525 oxs_4525(I2C_4525_Add);
 
 #ifdef PIN_CURRENTSENSOR
 #ifdef DEBUG  
-OXS_CURRENT oxs_Current(PIN_CURRENTSENSOR,Serial);
+OXS_CURRENT oXs_Current(PIN_CURRENTSENSOR,Serial);
 #else
-OXS_CURRENT oxs_Current(PIN_CURRENTSENSOR);
+OXS_CURRENT oXs_Current(PIN_CURRENTSENSOR);
 #endif //DEBUG
 #endif
 
 #ifdef DEBUG  
-OXS_OUT_FRSKY oxs_OutFrsky(PIN_SERIALTX,Serial);
+OXS_OUT_FRSKY oXs_OutFrsky(PIN_SERIALTX,Serial);
 #else
-OXS_OUT_FRSKY oxs_OutFrsky(PIN_SERIALTX);
+OXS_OUT_FRSKY oXs_OutFrsky(PIN_SERIALTX);
 #endif
 
                             // Mike I do not understand this instruction; could you explain
@@ -184,14 +184,14 @@ void setup(){
   // Invoke all setup methods and set reference
   // to do : adapt the test on defined (PIN_VOLTAGE_...) because actual config.h expects now that all PIN_VOLTAGE_ are defined ; a value > 7 means it is not used. 
 #if (defined PIN_VOLTAGE_1 && PIN_VOLTAGE_1 < 8) || (defined PIN_VOLTAGE_2 && PIN_VOLTAGE_2 < 8) ||(defined PIN_VOLTAGE_3 && PIN_VOLTAGE_3 < 8) ||(defined PIN_VOLTAGE_4 && PIN_VOLTAGE_4 < 8) ||(defined PIN_VOLTAGE_5 && PIN_VOLTAGE_5 < 8) ||(defined PIN_VOLTAGE_6 && PIN_VOLTAGE_6 < 8)  
-  oxs_Voltage.setupDivider(); 
-  oxs_OutFrsky.voltageData=&oxs_Voltage.voltageData; 
+  oXs_Voltage.setupDivider(); 
+  oXs_OutFrsky.voltageData=&oXs_Voltage.voltageData; 
 #endif
 
 
 #ifdef VARIO
-  oxs_MS5611.setup();
-  oxs_OutFrsky.varioData=&oxs_MS5611.varioData; 
+  oXs_MS5611.setup();
+  oXs_OutFrsky.varioData=&oXs_MS5611.varioData; 
 #ifdef PIN_ANALOG_VSPEED
   lastMillisPWR = 3500 ; // So we will wait for 3.5 sec before generating a Vertical speed on PWM
   analogWrite(PIN_ANALOG_VSPEED,255/5*1.6); // initialize the output pin 
@@ -199,19 +199,19 @@ void setup(){
 #endif // vario
 
 #ifdef VARIO2
-  oxs_MS5611_2.setup();
-  oxs_OutFrsky.varioData_2=&oxs_MS5611_2.varioData; 
+  oXs_MS5611_2.setup();
+  oXs_OutFrsky.varioData_2=&oXs_MS5611_2.varioData; 
 #endif // vario
 
 
 #ifdef AIRSPEED
-  oxs_4525.setup();
-  oxs_OutFrsky.airSpeedData=&oxs_4525.airSpeedData; 
+  oXs_4525.setup();
+  oXs_OutFrsky.airSpeedData=&oXs_4525.airSpeedData; 
 #endif // end AIRSPEED
 
 #ifdef PIN_CURRENTSENSOR
-  oxs_Current.setupCurrent( );
-  oxs_OutFrsky.currentData=&oxs_Current.currentData;
+  oXs_Current.setupCurrent( );
+  oXs_OutFrsky.currentData=&oXs_Current.currentData;
 #endif
 
 #if defined (VARIO) && defined ( AIRSPEED)
@@ -219,7 +219,7 @@ void setup(){
   compensatedClimbRate = 0;
 #endif
 
-  oxs_OutFrsky.setup();
+  oXs_OutFrsky.setup();
 
 #ifdef SAVE_TO_EEPROM
   LoadFromEEProm();
@@ -260,15 +260,15 @@ void loop(){
 #if defined (VARIO) || defined (VARIO2)
     if (checkFreeTime()) checkButton(); // Do not perform calculation if there is less than 2000 usec before MS5611 ADC is available =  (9000 - 2000)/2
 //    extended2Micros = micros() >> 1 ;
-//    if (extended2Micros < oxs_MS5611.varioData.lastCommand2Micros) extended2Micros = extended2Micros | 0x80000000 ;
-//    if ( extended2Micros < (oxs_MS5611.varioData.lastCommand2Micros + 3500)  ) checkButton(); // Do not perform calculation if there is less than 2000 usec before MS5611 ADC is available =  (9000 - 2000)/2
+//    if (extended2Micros < oXs_MS5611.varioData.lastCommand2Micros) extended2Micros = extended2Micros | 0x80000000 ;
+//    if ( extended2Micros < (oXs_MS5611.varioData.lastCommand2Micros + 3500)  ) checkButton(); // Do not perform calculation if there is less than 2000 usec before MS5611 ADC is available =  (9000 - 2000)/2
 #else
     checkButton();
 #endif    
 #endif 
     
     readSensors(); // read all sensors)
-    oxs_OutFrsky.sendData(); // choice which data can be send base on availability and some priority logic 
+    oXs_OutFrsky.sendData(); // choice which data can be send base on availability and some priority logic 
     
 #if defined ( DEBUG ) && defined (DEBUGOUTDATATOSERIAL)
     OutputToSerial() ; 
@@ -283,7 +283,7 @@ void loop(){
 #ifdef PIN_ANALOG_VSPEED
     if (millis() > lastMillisPWR + 100) {
         if (checkFreeTime()) { // Do not change PWM if there is less than 2000 usec before MS5611 ADC is available =  (9000 - 2000)/2
-            PWRValue=map( (long) oxs_MS5611.varioData.climbRate,ANALOG_VSPEED_MIN*100,ANALOG_VSPEED_MAX * 100,0,255/5*3.2);
+            PWRValue=map( (long) oXs_MS5611.varioData.climbRate,ANALOG_VSPEED_MIN*100,ANALOG_VSPEED_MAX * 100,0,255/5*3.2);
             PWRValue=constrain(PWRValue, 0, 255/5*3.2 ) ;
             analogWrite(PIN_ANALOG_VSPEED,(int)PWRValue);
             lastMillisPWR = millis() ; 
@@ -309,24 +309,24 @@ void readSensors() {
 //  Serial.println(F("in readSensors"));  
 //#endif 
 #ifdef AIRSPEED
-  oxs_4525.readSensor(); // Read a the differential pressure on 4525DO, calculate airspeed
+  oXs_4525.readSensor(); // Read a the differential pressure on 4525DO, calculate airspeed
 #endif
 
 
 #ifdef VARIO
-  oxs_MS5611.readSensor(); // Read pressure & temperature on MS5611, calculate Altitude and vertical speed
-  if ( oxs_MS5611.varioData.absoluteAltAvailable == true and oxs_MS5611.varioData.rawPressure > 100000.0f ) actualPressure = oxs_MS5611.varioData.rawPressure / 10000.0 ; // this value can be used when calculating the Airspeed
+  oXs_MS5611.readSensor(); // Read pressure & temperature on MS5611, calculate Altitude and vertical speed
+  if ( oXs_MS5611.varioData.absoluteAltAvailable == true and oXs_MS5611.varioData.rawPressure > 100000.0f ) actualPressure = oXs_MS5611.varioData.rawPressure / 10000.0 ; // this value can be used when calculating the Airspeed
 #endif
 
 #ifdef VARIO2
-  oxs_MS5611_2.readSensor(); // Read pressure & temperature on MS5611, calculate Altitude and vertical speed
+  oXs_MS5611_2.readSensor(); // Read pressure & temperature on MS5611, calculate Altitude and vertical speed
 #endif
 
 
 #ifdef AIRSPEED
-  oxs_4525.readSensor(); // Read again the sensor in order to reduce response time/noise
+  oXs_4525.readSensor(); // Read again the sensor in order to reduce response time/noise
 #if defined (VARIO) && defined ( AIRSPEED) 
-  if ( oxs_MS5611.varioData.altitudeAt20MsecAvailable == true ) {  // compensation is calculated only when a new altitude is available
+  if ( oXs_MS5611.varioData.altitudeAt20MsecAvailable == true ) {  // compensation is calculated only when a new altitude is available
     calculateDte() ; 
   }  
 #endif  
@@ -336,16 +336,16 @@ void readSensors() {
 
 
 #if defined (VARIO) && ( defined (VARIO2) || defined (AIRSPEED) ) && defined (VARIO_SECONDARY ) && defined( VARIO_PRIMARY )  && defined (PIN_PPM)
-  if (( selectedVario == 0) && ( oxs_MS5611.varioData.switchClimbRateAvailable == true ) )  {
-      switchVSpeed = oxs_MS5611.varioData.climbRate ;
+  if (( selectedVario == 0) && ( oXs_MS5611.varioData.switchClimbRateAvailable == true ) )  {
+      switchVSpeed = oXs_MS5611.varioData.climbRate ;
       switchVSpeedAvailable = true ;
-      oxs_MS5611.varioData.switchClimbRateAvailable = false ;
+      oXs_MS5611.varioData.switchClimbRateAvailable = false ;
   } 
 #if  defined (VARIO2)
-  else if ( ( selectedVario == 1) && ( oxs_MS5611_2.varioData.switchClimbRateAvailable == true )) {
-      switchVSpeed = oxs_MS5611_2.varioData.climbRate ;
+  else if ( ( selectedVario == 1) && ( oXs_MS5611_2.varioData.switchClimbRateAvailable == true )) {
+      switchVSpeed = oXs_MS5611_2.varioData.climbRate ;
       switchVSpeedAvailable = true ;
-      oxs_MS5611_2.varioData.switchClimbRateAvailable = false ;
+      oXs_MS5611_2.varioData.switchClimbRateAvailable = false ;
   }
 #endif
 #if  defined (AIRSPEED)
@@ -363,11 +363,11 @@ void readSensors() {
 
 
 #if (defined PIN_VOLTAGE_1 && PIN_VOLTAGE_1 < 8) || (defined PIN_VOLTAGE_2 && PIN_VOLTAGE_2 < 8) ||(defined PIN_VOLTAGE_3 && PIN_VOLTAGE_3 < 8) ||(defined PIN_VOLTAGE_4 && PIN_VOLTAGE_4 < 8) ||(defined PIN_VOLTAGE_5 && PIN_VOLTAGE_5 < 8) ||(defined PIN_VOLTAGE_6 && PIN_VOLTAGE_6 < 8)  
-    if (checkFreeTime()) oxs_Voltage.readSensor();    // read voltage only if there enough time to avoid delaying vario reading
+    if (checkFreeTime()) oXs_Voltage.readSensor();    // read voltage only if there enough time to avoid delaying vario reading
 #endif   // end voltage
 
 #ifdef PIN_CURRENTSENSOR
-    if (checkFreeTime()) oxs_Current.readSensor() ; // Do not perform calculation if there is less than 2000 usec before MS5611 ADC is available =  (9000 - 2000)/2
+    if (checkFreeTime()) oXs_Current.readSensor() ; // Do not perform calculation if there is less than 2000 usec before MS5611 ADC is available =  (9000 - 2000)/2
 #endif             // End PIN_CURRENTSENSOR
 
 #ifdef MEASURE_RPM
@@ -392,15 +392,15 @@ bool checkFreeTime() { // return true if there is no vario or if the vario senso
 #if defined (VARIO) || defined (VARIO2)
         extended2Micros = micros() >> 1 ;
 #ifdef VARIO
-        if (extended2Micros < oxs_MS5611.varioData.lastCommand2Micros) extended2Micros = extended2Micros | 0x80000000 ;
-        if ( extended2Micros < (oxs_MS5611.varioData.lastCommand2Micros + 3500)  ) { // Do not change PWM if there is less than 2000 usec before MS5611 ADC is available =  (9000 - 2000)/2
+        if (extended2Micros < oXs_MS5611.varioData.lastCommand2Micros) extended2Micros = extended2Micros | 0x80000000 ;
+        if ( extended2Micros < (oXs_MS5611.varioData.lastCommand2Micros + 3500)  ) { // Do not change PWM if there is less than 2000 usec before MS5611 ADC is available =  (9000 - 2000)/2
             return true ;
         } else {
             return false  ;
         }    
 #else // only VARIO2
-        if (extended2Micros < oxs_MS5611_2.varioData.lastCommand2Micros) extended2Micros = extended2Micros | 0x80000000 ;
-        if ( extended2Micros < (oxs_MS5611_2.varioData.lastCommand2Micros + 3500)  ) { // Do not change PWM if there is less than 2000 usec before MS5611 ADC is available =  (9000 - 2000)/2
+        if (extended2Micros < oXs_MS5611_2.varioData.lastCommand2Micros) extended2Micros = extended2Micros | 0x80000000 ;
+        if ( extended2Micros < (oXs_MS5611_2.varioData.lastCommand2Micros + 3500)  ) { // Do not change PWM if there is less than 2000 usec before MS5611 ADC is available =  (9000 - 2000)/2
             return true ; 
         } else {
             return false ;
@@ -437,8 +437,8 @@ void calculateDte () {  // is calculated about every 2O ms each time that an alt
                //                      = 2 * 287.05 * difPressureAdc * 1.0520  * (temperature Celsius + 273.15) / pressure pa /2 /9.81 (m/sec) = 30.78252803 * difPressureAdc * Temp(kelv) / Press (Pa)
                // compensation (cm/sec) =  3078.252803 * difPressureAdc * Temp(kelv) / Press (Pa)
  
-  rawCompensation = 3078.25 * oxs_4525.airSpeedData.difPressureAdc_zero * oxs_4525.airSpeedData.temperature4525  /  actualPressure    ; // 3078.25 = comp = 2 * 287.05 / 2 / 9.81 * 1.0520 * 100 * Temp / Pressure  
-  rawTotalEnergy = (oxs_MS5611.varioData.rawAltitude * 0.01) + rawCompensation * compensationPpmMapped * 0.0115; // 0.01 means 100% compensation but we add 15% because it seems that it is 15% undercompensated. 
+  rawCompensation = 3078.25 * oXs_4525.airSpeedData.difPressureAdc_zero * oXs_4525.airSpeedData.temperature4525  /  actualPressure    ; // 3078.25 = comp = 2 * 287.05 / 2 / 9.81 * 1.0520 * 100 * Temp / Pressure  
+  rawTotalEnergy = (oXs_MS5611.varioData.rawAltitude * 0.01) + rawCompensation * compensationPpmMapped * 0.0115; // 0.01 means 100% compensation but we add 15% because it seems that it is 15% undercompensated. 
   if (totalEnergyLowPass == 0) { 
     totalEnergyLowPass = totalEnergyHighPass = rawTotalEnergy ; 
   }
@@ -452,7 +452,7 @@ void calculateDte () {  // is calculated about every 2O ms each time that an alt
   
   totalEnergyLowPass += 0.085 * ( rawTotalEnergy - totalEnergyLowPass) ;
   totalEnergyHighPass += 0.1 * ( rawTotalEnergy - totalEnergyHighPass) ;
-  rawCompensatedClimbRate = ((totalEnergyHighPass - totalEnergyLowPass )  * 566667.0 ) /     oxs_MS5611.varioData.delaySmooth; // 0.566667 is the parameter to be used for 0.085 and 0.1 filtering if delay is in sec
+  rawCompensatedClimbRate = ((totalEnergyHighPass - totalEnergyLowPass )  * 566667.0 ) /     oXs_MS5611.varioData.delaySmooth; // 0.566667 is the parameter to be used for 0.085 and 0.1 filtering if delay is in sec
 
 //  test3Value = rawCompensatedClimbRate ; 
 //  test3ValueAvailable = true ; 
@@ -471,7 +471,7 @@ void calculateDte () {  // is calculated about every 2O ms each time that an alt
   } 
   compensatedClimbRateAvailable = true ; // allows SPORT protocol to transmit the value every 20 ms
   switchCompensatedClimbRateAvailable = true ; ; // inform readsensors() that a switchable vspeed is available
-  oxs_MS5611.varioData.altitudeAt20MsecAvailable = false ; // avoid to handel it each time.
+  oXs_MS5611.varioData.altitudeAt20MsecAvailable = false ; // avoid to handel it each time.
  
 #ifdef DEBUGCOMPENSATEDCLIMBRATE
   static bool firstCompensatedClimbRate = true ;
@@ -480,11 +480,11 @@ void calculateDte () {  // is calculated about every 2O ms each time that an alt
         firstCompensatedClimbRate = false ;
   } else {
   Serial.print( micros() ) ;Serial.print(F(" , ")) ;
-  Serial.print( oxs_MS5611.varioData.rawAltitude ) ;Serial.print(F(" , ")) ;
-  Serial.print( oxs_4525.airSpeedData.difPressureAdc_zero ) ;Serial.print(F(" , ")) ;
+  Serial.print( oXs_MS5611.varioData.rawAltitude ) ;Serial.print(F(" , ")) ;
+  Serial.print( oXs_4525.airSpeedData.difPressureAdc_zero ) ;Serial.print(F(" , ")) ;
   Serial.print( rawCompensation ) ;Serial.print(F(" , ")) ;
   Serial.print( rawTotalEnergy ) ;Serial.print(F(" , ")) ;
-  Serial.print( oxs_MS5611.varioData.delaySmooth ) ;Serial.print(F(" , ")) ;
+  Serial.print( oXs_MS5611.varioData.delaySmooth ) ;Serial.print(F(" , ")) ;
   Serial.print( rawCompensatedClimbRate ) ;Serial.print(F(" , ")) ;
   Serial.print( compensatedClimbRate) ;
   Serial.println(F(" ")) ; 
@@ -558,22 +558,22 @@ void Reset1SecButtonPress()
 #endif
 
 #ifdef PIN_CURRENTSENSOR
-  struct CURRENTDATA *cd = &oxs_Current.currentData ;
+  struct CURRENTDATA *cd = &oXs_Current.currentData ;
 //  FORCE_INDIRECT(cd) ;
 //  cd->maxMilliAmps=cd->milliAmps;
 //  cd->minMilliAmps=cd->milliAmps;
 #endif
 
 //#ifdef VARIO
-//  oxs_MS5611.resetValues() ;
+//  oXs_MS5611.resetValues() ;
 //#endif
 
 //#ifdef VARIO2
-//  oxs_MS5611_2.resetValues() ;
+//  oXs_MS5611_2.resetValues() ;
 //#endif
 
 //#ifdef PIN_VOLTAGE_DIVIDER
-//  oxs_Voltage.resetValues();
+//  oXs_Voltage.resetValues();
 //#endif
 }
 
@@ -583,8 +583,8 @@ void Reset3SecButtonPress()
   Serial.println(F(" Reset 3-5 sec"));
 #endif
 #ifdef PIN_CURRENTSENSOR
-  oxs_Current.currentData.consumedMilliAmps = 0;
-  oxs_Current.currentData.floatConsumedMilliAmps = 0 ;
+  oXs_Current.currentData.consumedMilliAmps = 0;
+  oXs_Current.currentData.floatConsumedMilliAmps = 0 ;
 #endif
 }
 
@@ -614,27 +614,27 @@ void SaveToEEProm(){
 #ifdef PIN_CURRENTSENSOR
   switch (state){
   case 0:
-    adr+=EEPROM_writeAnything(adr, oxs_Current.currentData.consumedMilliAmps);
+    adr+=EEPROM_writeAnything(adr, oXs_Current.currentData.consumedMilliAmps);
 //  case 1:
-//    adr+=EEPROM_writeAnything(adr, oxs_Current.currentData.maxMilliAmps);
+//    adr+=EEPROM_writeAnything(adr, oXs_Current.currentData.maxMilliAmps);
 //  case 2:
-//    adr+=EEPROM_writeAnything(adr, oxs_Current.currentData.minMilliAmps);
+//    adr+=EEPROM_writeAnything(adr, oXs_Current.currentData.minMilliAmps);
 //#endif // PIN_CURRENTSENSOR
 
 /*
 #ifdef VARIO
   case 3:
-    adr+=EEPROM_writeAnything(adr, oxs_MS5611.varioData.maxRelAlt);
+    adr+=EEPROM_writeAnything(adr, oXs_MS5611.varioData.maxRelAlt);
   case 4:
-    adr+=EEPROM_writeAnything(adr, oxs_MS5611.varioData.minRelAlt);
+    adr+=EEPROM_writeAnything(adr, oXs_MS5611.varioData.minRelAlt);
   case 5:
-    adr+=EEPROM_writeAnything(adr, oxs_MS5611.varioData.maxAbsAlt);
+    adr+=EEPROM_writeAnything(adr, oXs_MS5611.varioData.maxAbsAlt);
   case 6:
-    adr+=EEPROM_writeAnything(adr, oxs_MS5611.varioData.minAbsAlt);
+    adr+=EEPROM_writeAnything(adr, oXs_MS5611.varioData.minAbsAlt);
   case 7:
-    adr+=EEPROM_writeAnything(adr, oxs_MS5611.varioData.maxClimbRate);
+    adr+=EEPROM_writeAnything(adr, oXs_MS5611.varioData.maxClimbRate);
   case 8:
-    adr+=EEPROM_writeAnything(adr, oxs_MS5611.varioData.minClimbRate);
+    adr+=EEPROM_writeAnything(adr, oXs_MS5611.varioData.minClimbRate);
 #endif //VARIO
 */
   }
@@ -655,45 +655,45 @@ void LoadFromEEProm(){
   // Store the last known value to the eeprom
   Serial.println(F("Restored from EEProm:"));
 #ifdef PIN_CURRENTSENSOR
-  adr+=EEPROM_readAnything(adr, oxs_Current.currentData.consumedMilliAmps);
-  oxs_Current.currentData.floatConsumedMilliAmps = oxs_Current.currentData.consumedMilliAmps ;
+  adr+=EEPROM_readAnything(adr, oXs_Current.currentData.consumedMilliAmps);
+  oXs_Current.currentData.floatConsumedMilliAmps = oXs_Current.currentData.consumedMilliAmps ;
   Serial.print(F(" mAh="));    
-  Serial.print( oxs_Current.currentData.consumedMilliAmps);
+  Serial.print( oXs_Current.currentData.consumedMilliAmps);
 
-//  adr+=EEPROM_readAnything(adr, oxs_Current.currentData.maxMilliAmps);
+//  adr+=EEPROM_readAnything(adr, oXs_Current.currentData.maxMilliAmps);
 //  Serial.print(F(" maxMilliAmps="));    
-//  Serial.print( oxs_Current.currentData.maxMilliAmps);
+//  Serial.print( oXs_Current.currentData.maxMilliAmps);
 
-//  adr+=EEPROM_readAnything(adr, oxs_Current.currentData.minMilliAmps);
+//  adr+=EEPROM_readAnything(adr, oXs_Current.currentData.minMilliAmps);
 //  Serial.print(F(" minMilliAmps="));    
-//  Serial.print( oxs_Current.currentData.minMilliAmps);
+//  Serial.print( oXs_Current.currentData.minMilliAmps);
 #endif
 /*
 #ifdef VARIO
-  adr+=EEPROM_readAnything(adr, oxs_MS5611.varioData.maxRelAlt);
+  adr+=EEPROM_readAnything(adr, oXs_MS5611.varioData.maxRelAlt);
   Serial.print(F(" maxRelAlt="));    
-  Serial.print( oxs_MS5611.varioData.maxRelAlt);
+  Serial.print( oXs_MS5611.varioData.maxRelAlt);
 
-  adr+=EEPROM_readAnything(adr, oxs_MS5611.varioData.minRelAlt);
+  adr+=EEPROM_readAnything(adr, oXs_MS5611.varioData.minRelAlt);
   Serial.print(F(" minRelAlt="));    
-  Serial.print( oxs_MS5611.varioData.minRelAlt);
+  Serial.print( oXs_MS5611.varioData.minRelAlt);
 
 
-  adr+=EEPROM_readAnything(adr, oxs_MS5611.varioData.maxAbsAlt);
+  adr+=EEPROM_readAnything(adr, oXs_MS5611.varioData.maxAbsAlt);
   Serial.print(F(" maxAbsAlt="));    
-  Serial.print( oxs_MS5611.varioData.maxAbsAlt);
+  Serial.print( oXs_MS5611.varioData.maxAbsAlt);
 
-  adr+=EEPROM_readAnything(adr, oxs_MS5611.varioData.minAbsAlt);
+  adr+=EEPROM_readAnything(adr, oXs_MS5611.varioData.minAbsAlt);
   Serial.print(F(" minAbsAlt="));    
-  Serial.print( oxs_MS5611.varioData.minAbsAlt);
+  Serial.print( oXs_MS5611.varioData.minAbsAlt);
 
-  adr+=EEPROM_readAnything(adr, oxs_MS5611.varioData.maxClimbRate);
+  adr+=EEPROM_readAnything(adr, oXs_MS5611.varioData.maxClimbRate);
   Serial.print(F(" minClimbRate="));    
-  Serial.print( oxs_MS5611.varioData.minClimbRate);
+  Serial.print( oXs_MS5611.varioData.minClimbRate);
 
-  adr+=EEPROM_readAnything(adr, oxs_MS5611.varioData.minClimbRate);
+  adr+=EEPROM_readAnything(adr, oXs_MS5611.varioData.minClimbRate);
   Serial.print(F(" maxClimbRate="));    
-  Serial.print( oxs_MS5611.varioData.maxClimbRate);
+  Serial.print( oXs_MS5611.varioData.maxClimbRate);
 #endif //VARIO
 */
 }
@@ -727,10 +727,10 @@ void ProcessPPMSignal(){
         if ( (abs(ppm) >= (SENSITIVITY_MIN_AT_PPM - 4)) && ( abs(ppm) <= (SENSITIVITY_MAX_AT_PPM + 4)) ) {
             sensitivityPpmMapped =  map( constrain(abs(ppm), SENSITIVITY_MIN_AT_PPM , SENSITIVITY_MAX_AT_PPM ), SENSITIVITY_MIN_AT_PPM , SENSITIVITY_MAX_AT_PPM , SENSITIVITY_PPM_MIN , SENSITIVITY_PPM_MAX); // map value and change stepping to 10
 #if defined( VARIO) 
-            oxs_MS5611.varioData.sensitivityPpm = sensitivityPpmMapped ; // adjust sensitivity when abs PPM is within range
+            oXs_MS5611.varioData.sensitivityPpm = sensitivityPpmMapped ; // adjust sensitivity when abs PPM is within range
 #endif
 #if defined( VARIO2) 
-            oxs_MS5611_2.varioData.sensitivityPpm = sensitivityPpmMapped ;
+            oXs_MS5611_2.varioData.sensitivityPpm = sensitivityPpmMapped ;
 #endif
         }
 #endif  // end else defined (VARIO) || defined (VARIO2) 
@@ -742,7 +742,7 @@ void ProcessPPMSignal(){
             if (compensationPpmMapped == COMPENSATION_PPM_MIN ) compensationPpmMapped = 0 ; // force compensation to 0 when compensation = min
         }
         if ( ( ppm >= (AIRSPEED_RESET_AT_PPM - 4)) && ( ppm <= (AIRSPEED_RESET_AT_PPM + 4)) ) {
-            oxs_4525.airSpeedData.airspeedReset = true ; // allow a recalculation of offset 4525
+            oXs_4525.airSpeedData.airspeedReset = true ; // allow a recalculation of offset 4525
         }    
 #endif
     } // end ppm == prePpm
@@ -825,21 +825,21 @@ void OutputToSerial(){
 
 #ifdef VARIO
   Serial.print(F(" Sensitivity PPM="));    
-  Serial.print( oxs_MS5611.varioData.sensitivityPpm);
+  Serial.print( oXs_MS5611.varioData.sensitivityPpm);
   Serial.print(F(" ;absAlt="));  
-  Serial.print( ( (float)oxs_MS5611.varioData.absoluteAlt)/100);
+  Serial.print( ( (float)oXs_MS5611.varioData.absoluteAlt)/100);
   Serial.print(F(" ;Vspd="));    
-  Serial.print( ( (float)oxs_MS5611.varioData.climbRate)/100);
+  Serial.print( ( (float)oXs_MS5611.varioData.climbRate)/100);
   Serial.print(F(" ;Temp="));    
-  Serial.print((float)oxs_MS5611.varioData.temperature/10);
+  Serial.print((float)oXs_MS5611.varioData.temperature/10);
 #endif // VARIO
 
 #ifdef PIN_CURRENTSENSOR
   Serial.print(F(" ;mA="));    
-  Serial.print( ( ((float)(int32_t)(oxs_Current.currentData.milliAmps))) );
+  Serial.print( ( ((float)(int32_t)(oXs_Current.currentData.milliAmps))) );
   Serial.print("(");    
   Serial.print(F(" ;mAh="));  
-  Serial.print( oxs_Current.currentData.consumedMilliAmps);
+  Serial.print( oXs_Current.currentData.consumedMilliAmps);
 #endif // PIN_CURRENTSENSOR
   Serial.println();
 }

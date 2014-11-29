@@ -1,9 +1,9 @@
 #ifndef OXS_GENERAL_h
 #define OXS_GENERAL_h
 
-#include "oxs_config.h"
+#include "oXs_config.h"
 #include <Arduino.h>
-#include "oxs_out_frsky.h"          // one variable is shared between both files
+#include "oXs_out_frsky.h"          // one variable is shared between both files
 
 
 uint32_t micros( void ) ;

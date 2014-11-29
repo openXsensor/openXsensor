@@ -2,7 +2,7 @@
 // started by Rainer Schloßhan
 
 //***********************************************************************************************************************
-// Another file in this project (see oxs_config_description.h) provides detailed explanations on how to set up this file.
+// Another file in this project (see oXs_config_description.h) provides detailed explanations on how to set up this file.
 //***********************************************************************************************************************
 
 #ifndef OXS_CONFIG_h

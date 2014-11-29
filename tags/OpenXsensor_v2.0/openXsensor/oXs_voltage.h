@@ -2,7 +2,7 @@
 #define OXS_VOLTAGE_h
 
 #include "Arduino.h"
-#include "oxs_config.h"
+#include "oXs_config.h"
 
 struct VOLTAGEDATA {
   bool available;    // to remove afterward
@@ -12,9 +12,9 @@ struct VOLTAGEDATA {
   int32_t mVolt[6] ;             // in mV 
   bool mVoltAvailable[6] ;
   
-  byte mVoltPin[6] ;            // Arduino pin number to use to read each voltage (See hardware setting in oxs_config.h)  
-  int offset[6] ;               // offset to apply while converting ADC to millivolt (See setting in oxs_config.h)  
-  float mVoltPerStep[6] ;       // rate to apply while converting ADC to millivolt (See setting in oxs_config.h)  
+  byte mVoltPin[6] ;            // Arduino pin number to use to read each voltage (See hardware setting in oXs_config.h)  
+  int offset[6] ;               // offset to apply while converting ADC to millivolt (See setting in oXs_config.h)  
+  float mVoltPerStep[6] ;       // rate to apply while converting ADC to millivolt (See setting in oXs_config.h)  
 //  bool atLeastOneVoltage ;      // true if there is at least one voltage to measure
   
   int32_t sumVoltage[6] ;       // use to calculate average voltage     

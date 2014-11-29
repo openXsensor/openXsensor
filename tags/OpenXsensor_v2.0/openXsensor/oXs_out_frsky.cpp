@@ -1,4 +1,4 @@
-#include "oxs_out_frsky.h"
+#include "oXs_out_frsky.h"
 
 #ifdef DEBUG
 // ************************* Several parameters to help debugging
@@ -133,7 +133,7 @@ void OXS_OUT_FRSKY::sendData()
     /* We look if a value to send is available ; if available the value is loaded
        We have to take care that all types of value (when available) have to be transmitted after each other
        Note : it should be possible to send more values if OXS would reply to more than one device ID because the polling occurs more often
-         Still here we will react only to one device ID (see oxs_config.h)
+         Still here we will react only to one device ID (see oXs_config.h)
        We look at the values off each sensor in sequence
        Each value has a extra field "available":
          Available = true = KNOWN when tha value is calculated. It becomes false = UNKNOWN when the value is loaded for transmission.; 

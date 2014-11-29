@@ -1,4 +1,4 @@
-#include "oxs_voltage.h"
+#include "oXs_voltage.h"
  
 #ifdef DEBUG
 //#define DEBUGNEWVALUE

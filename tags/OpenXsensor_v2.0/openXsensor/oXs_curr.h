@@ -2,7 +2,7 @@
 #define OXS_CURRENT_h
 
 #include <Arduino.h>
-#include "oxs_config.h"
+#include "oXs_config.h"
 
 struct CURRENTDATA {
 //  bool available;          // true if data is available

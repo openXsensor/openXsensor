@@ -1,4 +1,4 @@
-#include "oxs_ms5611.h"
+#include "oXs_ms5611.h"
 
 #ifdef DEBUG
 //#define DEBUGI2CMS5611

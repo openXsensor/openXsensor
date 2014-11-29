@@ -3,7 +3,7 @@
 
 
 #include "Arduino.h"
-#include "oxs_config.h"
+#include "oXs_config.h"
 #include "I2C.h"
 
 struct VARIODATA {

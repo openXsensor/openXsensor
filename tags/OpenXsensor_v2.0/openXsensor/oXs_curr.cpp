@@ -1,4 +1,4 @@
-#include "oxs_curr.h"
+#include "oXs_curr.h"
 
 #ifdef DEBUG
 //#define DEBUGCURRENT

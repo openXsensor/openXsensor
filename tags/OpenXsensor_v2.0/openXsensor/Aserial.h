@@ -14,10 +14,10 @@
 #ifndef ASERIAL_h
 #define ASERIAL_h
 
-#include "oxs_config.h"
+#include "oXs_config.h"
 #include <Arduino.h>
-#include "oxs_out_frsky.h"          // one variable is shared between both files
-#include "oxs_general.h"
+#include "oXs_out_frsky.h"          // one variable is shared between both files
+#include "oXs_general.h"
 
 
 //#ifdef FRSKY_SPORT

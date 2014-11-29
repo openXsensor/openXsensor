@@ -1,6 +1,6 @@
 // Author: Mike Blandford
 
-#include "oxs_general.h"
+#include "oXs_general.h"
 
 #ifdef DEBUG
 //#define xxxxxxxxxx

@@ -1,11 +1,11 @@
 #ifndef OXS_OUT_FRSKY_h
 #define OXS_OUT_FRSKY_h
 
-#include "oxs_config.h"
-#include "oxs_ms5611.h" // we need the variodata struct
-#include "oxs_4525.h" // we need the airspeeddata struct
-#include "oxs_curr.h" // we need the currentdata struct
-#include "oxs_voltage.h" // we need the arduinodata struct
+#include "oXs_config.h"
+#include "oXs_ms5611.h" // we need the variodata struct
+#include "oXs_4525.h" // we need the airspeeddata struct
+#include "oXs_curr.h" // we need the currentdata struct
+#include "oXs_voltage.h" // we need the arduinodata struct
 #include "Aserial.h"
 
 #define INTERVAL_FRAME1 200

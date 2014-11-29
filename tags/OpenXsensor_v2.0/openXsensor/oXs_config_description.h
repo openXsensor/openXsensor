@@ -3,7 +3,7 @@
 *                                  Important Note:
 *  Do not remove or modify this file unless you want to add your own comments.
 *  The purpose of this file is only to provide some explanations.
-*  The set up has to be done in the oxs_config.h file.
+*  The set up has to be done in the oXs_config.h file.
 *************************************************************************************
 
 See OpenXsensor https://code.google.com/p/openxsensor/
@@ -12,11 +12,11 @@ started by Rainer Schloßhan
 ************************************************************************************************************************
 ************************************* General explanation of the different options *************************************
 ************************************************************************************************************************
-*  The file oxs_config.h allows the user to set up different options. Here is a summary of the main options.
-*  Note: the oxs_config.h file present on this Google site is not always meaningful.
+*  The file oXs_config.h allows the user to set up different options. Here is a summary of the main options.
+*  Note: the oXs_config.h file present on this Google site is not always meaningful.
 *       It could be that the combination of active/non active parameters is not consistent.
 *       This is just the result of many updates and tests in this document.
-*       So take always care to set up the oxs_config.h file according to your needs and check carefully all options.
+*       So take always care to set up the oXs_config.h file according to your needs and check carefully all options.
 *       You can also use the OXS configurator in order to generate automatically a valid file.
 *
 *  1 - Sensor_ID to be used 
@@ -88,7 +88,7 @@ started by Rainer Schloßhan
 *      - to switch between uncompensated and compensated vario (when using 2 baro sensors one being connected to a TEK probe)
 *      - to reset the airspeed sensor (when the value drift with temperature)
 *      - to change the vario compensation factor (when compensated vario uses the airspeed) using a pot or a switch on TX
-*   It requires then some mixing on Tx side and some set up in the oxs-config.h file (see below).
+*   It requires then some mixing on Tx side and some set up in the oXs-config.h file (see below).
 *
 *   If you want to use this feature, you must:
 *      - uncomment the 3 folowing lines
@@ -294,7 +294,7 @@ started by Rainer Schloßhan
 *     Note : one analog pin can also be used to measure a current using a current sensor; the set up for a current sensor is described in section 6.5 (see below);
 *          Do not use the same analog pin to measure a voltage and a current.
 *     Take care : do NOT use pins A4 and A5 if you use a vario or an airspeed (those pins are reserved for the barometric and pressure sensors).
-*     The Pin value to enter in the oxs_config.h is a number from 0 up to 7 (0 means A0 = analog 0, 1 means A1, ...7 means A7).
+*     The Pin value to enter in the oXs_config.h is a number from 0 up to 7 (0 means A0 = analog 0, 1 means A1, ...7 means A7).
 *  !! Take care that the voltage applied to Arduino pin may not exceed Vcc (normally 5 volt) or 1.1 volt (if internal reference voltage is used).
 *     It can be that you have to use voltage divider in order to reduce the voltage applied on Arduino pin compared to the voltage you want to measure.
 *     See explanation below about voltage divider and about using VCC or 1.1 internal voltage divider.
@@ -342,7 +342,7 @@ started by Rainer Schloßhan
 *         e.g. using 1.1 internal voltage reference and in order to measure max 6 volt with R1 = 10000, then R2 = 10000 * (( 6 / 1.1 ) - 1) = 45545 Ohm; best rounded up to high available value e.g 47000 ohm
 *
 *     Due to errors on resistors, on Vcc or 1.1 volt reference and on ADC it is required, for best result, to calibrate each voltage measurement as follow:
-*      - set parameters in oxs_config.h  :
+*      - set parameters in oXs_config.h  :
 *            - choose to measure based on VCC or 1.1 internal voltage (and (un)comment line "#define USE_INTERNAL_REFERENCE"
 *            - set first OFFSET = 0 (default value)
 *            - set first MVOLT_PER_STEP = 1 (default value)
@@ -423,7 +423,7 @@ started by Rainer Schloßhan
 *     It requires some additional hardware. It can be an IC like ACS712 (for 5, 20, 30 amp) or ACS758 (for 50, 100, 150, 200 amp).
 *     Most sensors can read bidirectional currents but ACS758 has "U" types that read only unidirectional current (providing then an higher sensitivity).
 *     Those current sensors are quite cheap (see e.g. ebay) and return a voltage that depends on the current. This voltage is measured by OXS via an analog pin.
-*     The Pin value to enter in the oxs_config.h is a number from 0 up to 7 (0 means A0, 1 means A1, ...7 means A7).
+*     The Pin value to enter in the oXs_config.h is a number from 0 up to 7 (0 means A0, 1 means A1, ...7 means A7).
 *     If a current sensor is used, do not to use a pin that is already used by a voltage.
 *  !! Take care that the voltage applied to Arduino pin may not exceed Vcc (normally 5 volt) or 1.1 volt (if internal reference voltage is used).
 *     It can be that you have to use a voltage divider in order to reduce the voltage applied on Arduino pin.
