@@ -1,3 +1,6 @@
+#ifndef EEPROMANYTHING_h
+#define EEPROMANYTHING_h
+
 #include <EEPROM.h>
 #include <Arduino.h>  // for type definitions
 
@@ -19,5 +22,6 @@ template <class T> int EEPROM_readAnything(int ee, T& value)
   return i;
 }
 
+#endif // end EEPROMANYTHING
 
 

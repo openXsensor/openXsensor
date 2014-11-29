@@ -1,8 +1,8 @@
 #ifndef OXS_CURRENT_h
 #define OXS_CURRENT_h
 
-#include "Arduino.h"
-#include "oxs_config.h"
+#include <Arduino.h>
+#include "oXs_config.h"
 
 struct CURRENTDATA {
 //  bool available;          // true if data is available
@@ -15,8 +15,8 @@ struct CURRENTDATA {
   int32_t sumCurrent ;
 //  int32_t sumForMampH ;
  
-  int32_t maxMilliAmps;       // in mA
-  int32_t minMilliAmps;       // in mA
+//  int32_t maxMilliAmps;       // in mA
+//  int32_t minMilliAmps;       // in mA
 };
 
 class OXS_CURRENT {
@@ -24,7 +24,7 @@ public:
 #ifdef DEBUG  
   OXS_CURRENT(uint8_t pinCurrent, HardwareSerial &print);
 #else
-	OXS_CURRENT(uint8_t pinCurrent) ;
+  OXS_CURRENT(uint8_t pinCurrent) ;
 #endif
   CURRENTDATA currentData ;
   void setupCurrent() ;
@@ -40,6 +40,7 @@ private:
 };
 
 #endif // OXS_CURRENT_h
+
 
 
 

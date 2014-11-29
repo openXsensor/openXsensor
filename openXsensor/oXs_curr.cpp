@@ -1,9 +1,8 @@
+#include "oXs_curr.h"
 
-#include "Arduino.h"
-#include "oxs_curr.h"
-//#include "oxs_config.h" // already in .h file
-
+#ifdef DEBUG
 //#define DEBUGCURRENT
+#endif
 
 extern unsigned long micros( void ) ;
 extern unsigned long millis( void ) ;
@@ -21,22 +20,26 @@ OXS_CURRENT::OXS_CURRENT(uint8_t pinCurrent)
 #endif
   _pinCurrent=pinCurrent;
   pinMode(pinCurrent,INPUT); 
-#ifdef DEBUG  
-  printer->print("Current sensor on pin:");
-  printer->println(pinCurrent);
-#endif
 }
 
 // **************** Setup the Current sensor *********************
 void OXS_CURRENT::setupCurrent( ) {
+#ifdef DEBUG  
+  printer->print("Current sensor on pin:");
+  printer->println(_pinCurrent);
+  printer->print(" milli=");  
+  printer->println(millis());
+
+#endif
   currentData.milliAmpsAvailable = false;
   currentData.consumedMilliAmpsAvailable = false;
-  currentData.sumCurrent = 0 ;
+//  currentData.sumCurrent = 0 ;
   resetValues();
 }
 
+
 // **************** Read the Current sensor *********************
-#ifdef PIN_CurrentSensor
+#ifdef PIN_CURRENTSENSOR
 void OXS_CURRENT::readSensor() {
   static int cnt = 0;
 //  static int cntMAmp =0;
@@ -59,11 +62,11 @@ void OXS_CURRENT::readSensor() {
   cnt++ ;
   milliTmp = millis() ;
   if(  milliTmp > ( lastCurrentMillis + 200) ){   // calculate average once per 200 millisec
-      currentData.milliAmps = ((currentData.sumCurrent / cnt) - offsetCurrentSteps ) * mAmpPerStep ;
-       if (currentData.milliAmps < 0) currentData.milliAmps = 0 ;
+      currentData.milliAmps = ((currentData.sumCurrent / cnt) - OFFSET_CURRENT_STEPS ) * MAMP_PER_STEP ;
+      if (currentData.milliAmps < 0) currentData.milliAmps = 0 ;
 	  currentData.milliAmpsAvailable = true ;
-      if(currentData.minMilliAmps>currentData.milliAmps)currentData.minMilliAmps=currentData.milliAmps;
-      if(currentData.maxMilliAmps<currentData.milliAmps)currentData.maxMilliAmps=currentData.milliAmps;
+//      if(currentData.minMilliAmps>currentData.milliAmps)currentData.minMilliAmps=currentData.milliAmps;
+//      if(currentData.maxMilliAmps<currentData.milliAmps)currentData.maxMilliAmps=currentData.milliAmps;
       currentData.sumCurrent = 0;
       currentData.floatConsumedMilliAmps += ((float) currentData.milliAmps) * (milliTmp - lastCurrentMillis ) / 3600.0 /1000.0 ;   // Mike , is this ok when millis() overrun????
       currentData.consumedMilliAmps = (int32_t) currentData.floatConsumedMilliAmps ;
@@ -82,15 +85,15 @@ void OXS_CURRENT::readSensor() {
       cnt = 0;
   }  
 }
-#endif
-
+#endif // end of readSensor
 
 void OXS_CURRENT::resetValues(){
   currentData.consumedMilliAmps=0;
   currentData.floatConsumedMilliAmps=0;
-  currentData.maxMilliAmps= 0;    // it is better to reset to 0 instead of the new value
-  currentData.minMilliAmps= 0 ;   // it is better to reset to 0 instead of the new value
+//  currentData.maxMilliAmps= 0;    // it is better to reset to 0 instead of the new value
+//  currentData.minMilliAmps= 0 ;   // it is better to reset to 0 instead of the new value
 }
+
 
 
 

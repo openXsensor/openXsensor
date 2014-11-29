@@ -1,10 +1,10 @@
-#ifndef OXS_ARDUINO_h
-#define OXS_ARDUINO_h
+#ifndef OXS_VOLTAGE_h
+#define OXS_VOLTAGE_h
 
 #include "Arduino.h"
-#include "oxs_config.h"
+#include "oXs_config.h"
 
-struct ARDUINODATA {
+struct VOLTAGEDATA {
   bool available;    // to remove afterward
   uint16_t vrefMilliVolts;          // in mV the internal measured voltage Reference ; to remove afterward
   
@@ -12,10 +12,10 @@ struct ARDUINODATA {
   int32_t mVolt[6] ;             // in mV 
   bool mVoltAvailable[6] ;
   
-  byte mVoltPin[6] ;            // Arduino pin number to use to read each voltage (See hardware setting in oxs_config.h)  
-  int offset[6] ;               // offset to apply while converting ADC to millivolt (See setting in oxs_config.h)  
-  float mVoltPerStep[6] ;       // rate to apply while converting ADC to millivolt (See setting in oxs_config.h)  
-  bool atLeastOneVoltage ;      // true if there is at least one voltage to measure
+  byte mVoltPin[6] ;            // Arduino pin number to use to read each voltage (See hardware setting in oXs_config.h)  
+  int offset[6] ;               // offset to apply while converting ADC to millivolt (See setting in oXs_config.h)  
+  float mVoltPerStep[6] ;       // rate to apply while converting ADC to millivolt (See setting in oXs_config.h)  
+//  bool atLeastOneVoltage ;      // true if there is at least one voltage to measure
   
   int32_t sumVoltage[6] ;       // use to calculate average voltage     
 
@@ -29,14 +29,14 @@ struct ARDUINODATA {
 
 //#define VOLT_BUFFER_LENGTH 20   // not used anymore;averages are calculated at fix time
 
-class OXS_ARDUINO {
+class OXS_VOLTAGE {
   public:
 #ifdef DEBUG  
-    OXS_ARDUINO(HardwareSerial &print);
+    OXS_VOLTAGE(HardwareSerial &print);
 #else
-    OXS_ARDUINO( uint8_t x );
+    OXS_VOLTAGE( uint8_t x );
 #endif
-    ARDUINODATA arduinoData ;
+    VOLTAGEDATA voltageData ;
 	void setupDivider( void );
 	void readSensor();
 	void resetValues();
@@ -51,4 +51,5 @@ class OXS_ARDUINO {
 };
 
 #endif
+
 
