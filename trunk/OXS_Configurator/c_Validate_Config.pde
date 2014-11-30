@@ -304,8 +304,8 @@ void validateVersion () {
     if ( version == null ) {
       versionValid = 1 ;  
       
-      messageList.append( "-- The Configurator can't find OXS version number --" ) ;
-      messageList.append( "--      Configuration file may not be compatible...     --" ) ;
+      messageList.append( "          -- The Configurator can't find OXS version number --" ) ;
+      messageList.append( "          --      Configuration file may not be compatible...     --" ) ;
       
       //println("no version file");    
     } else if ( version[0].charAt(1) == oxsCversion.charAt(1) ) { 
