@@ -1,4 +1,4 @@
-#summary OpenXsensor Home
+#summary openXsensor Home
 
 https://openxsensor.googlecode.com/svn/wiki/images/OXS_Logo.png
 

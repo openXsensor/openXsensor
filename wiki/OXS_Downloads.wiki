@@ -1,4 +1,4 @@
-#summary OpenXsensor Downloads
+#summary openXsensor Downloads
 #labels Featured
 #sidebar OXS_Sidebar
 
@@ -9,10 +9,10 @@ https://openxsensor.googlecode.com/svn/wiki/images/OXS_Logo.png
 
  - Latest versions: 
 
-|| *!OpenXsensor* || *OXS Configurator* || 
-|| [https://openxsensor.googlecode.com/svn/downloads/OpenXsensor_v1.0.zip OpenXsensor v1.0] || [https://openxsensor.googlecode.com/svn/downloads/OXS_Configurator_v1.1_win.zip OXS Configurator v1.1 windows] ||
-|| || [https://openxsensor.googlecode.com/svn/downloads/OXS_Configurator_v1.1_linux.tar.gz OXS Configurator v1.1 linux] ||
-|| || [https://openxsensor.googlecode.com/svn/downloads/OXS_Configurator_v1.1_macosx.zip OXS Configurator v1.1 macosx] ||
+|| *!openXsensor* || *OXS Configurator* || 
+|| [https://openxsensor.googlecode.com/svn/downloads/openXsensor_v2.5.zip openXsensor v2.5] || [https://openxsensor.googlecode.com/svn/downloads/OXS_Configurator_v2.0_win.zip OXS Configurator v2.0 windows] ||
+|| || [https://openxsensor.googlecode.com/svn/downloads/OXS_Configurator_v2.0_linux.tar.gz OXS Configurator v2.0 linux] ||
+|| || [https://openxsensor.googlecode.com/svn/downloads/OXS_Configurator_v2.0_macosx.zip OXS Configurator v2.0 macosx] ||
 
 
 

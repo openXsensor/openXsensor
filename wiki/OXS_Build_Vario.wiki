@@ -1,8 +1,8 @@
-#summary OpenXsensor Building OXS vario
+#summary openXsensor Building OXS vario
 #labels doc
 #sidebar OXS_Sidebar
 
-=Building an !OpenXsensor Alti / Vario=
+=Building an !openXsensor Alti / Vario=
 
 ==Disclaimer==
 
@@ -49,7 +49,7 @@ Authors do not provide any warranty whatsoever for the instructions below. Do it
 
 ==Power supply considerations==
 
-*WARNING:* make sure you are using only one power source at a time for the Arduino. If you connect the arduino to the PC, always disconnect any other power supply first!
+*WARNING:* make sure you are using only one power source at a time for the Arduino. If you connect the Arduino to the PC, always disconnect any other power supply first!
 
 As a general rule, to guarantee proper operation of the Arduino MCU, the power supply must be as stable as possible.
 

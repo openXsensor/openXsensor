@@ -1,4 +1,4 @@
-#summary OpenXsensor Wiki Menu
+#summary openXsensor Wiki Menu
 
  
   * [OXS_News News]

@@ -1,22 +1,22 @@
-#summary OpenXsensor Configuration
+#summary openXsensor Configuration
 #labels doc
 #sidebar OXS_Sidebar
 
-=Understanding and Configuring !OpenXsensor=
+=Understanding and Configuring !openXsensor=
 
 OXS is using an [http://arduino.cc/ Arduino] board, so download the [http://arduino.cc/en/Main/Software#toc2 Arduino IDE] to use it.
 
-Then, you have to *[OXS_Downloads download the latest versions]* of !OpenXsensor and OXS Configurator.
+Then, you have to *[OXS_Downloads download the latest versions]* of !openXsensor and OXS Configurator.
 
-Decompress the archives, then place "openxsensor_vx_y" in your arduino project directory. You can put "oxs_configurator_vx.y" where you want.
+Decompress the archives, then place "openXsensor" in your arduino project directory. You can put "OXS_Configurator_vx.y" where you want.
 
 ----
 
-==About !OpenXsensor Configurator==
+==About !openXsensor Configurator==
 
-!OpenXsensor can do a lot of different measurements (that you can combine as you want) therefore it needs a rather dense configuration file.
+!openXsensor can do a lot of different measurements (that you can combine as you want) therefore it needs a rather dense configuration file.
 
-That's why the *!OpensXsensor Configurator* has been created, it helps set all the OXS functionalities more easily. The documentation below will only make use of the OXS Configurator.
+That's why the *!opensXsensor Configurator* has been created, it helps set all the OXS functionalities more easily. The documentation below will only make use of the OXS Configurator.
 
 ----
 
@@ -24,7 +24,7 @@ That's why the *!OpensXsensor Configurator* has been created, it helps set all t
 
 https://openxsensor.googlecode.com/svn/wiki/images/OXSC_01.jpg
 
-On the top right logo corner you've got an "About" button, on the bottom left, you'll see the compatible !OpenXsensor version and in the bottom right, the Configurator version.
+On the top right logo corner you've got an "About" button, on the bottom left, you'll see the compatible !openXsensor version and in the bottom right, the Configurator version.
 
 All along the program, you can hover the mouse on the controls and a tooltip should appear with a breve description and/or the default value.
 
@@ -34,7 +34,7 @@ All along the program, you can hover the mouse on the controls and a tooltip sho
 
 https://openxsensor.googlecode.com/svn/wiki/images/OXSC_02.jpg
 
-Here you can set the openxsensor directory so that the config file could be written in the right place.
+Here you can set the openXsensor directory so that the config file could be written in the right place.
 Unfortunately, the text field doesn't support copy pasting but you can manually type the path or click the button "..." at the right and navigate to the folder.
 
 ----
@@ -111,7 +111,7 @@ Tick the sensors connected so that OXS can use them.
 
 https://openxsensor.googlecode.com/svn/wiki/images/OXSC_08.jpg
 
-You can load and save preset settings for your different !OpenXsensor configurations.
+You can load and save preset settings for your different !openXsensor configurations.
 
 The "Preset" folder in the Configurator root is open by default but you can put them where you want.
 

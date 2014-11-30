@@ -1,4 +1,4 @@
-#summary OpenXsensor Configuration Vario settings
+#summary openXsensor Configuration Vario settings
 #labels doc
 #sidebar OXS_Sidebar
 
