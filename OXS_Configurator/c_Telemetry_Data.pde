@@ -1,48 +1,18 @@
 // ------------------------- HUB protocol data list array --------------------------
 
 String hubDataList[][] = new String[][] {
-  { "----------", "----------" }, 
+  { "----------", "----------" },
   { "DEFAULTFIELD", "DEFAULT" },
-  { "FRSKY_USERDATA_VERT_SPEED", "Vertical Speed" },
-  { "FRSKY_USERDATA_CURRENT", "Current" },
-  { "FRSKY_USERDATA_VFAS_NEW", "Vfas" },
-  //{ "FRSKY_USERDATA_GPS_ALT_B", "GPS_ALT_B" }, 
-  { "FRSKY_USERDATA_TEMP1", "Temperature 1" },
-  { "FRSKY_USERDATA_TEMP2", "Temperature 2" },
-  { "FRSKY_USERDATA_RPM", "RPM" }, 
-  { "FRSKY_USERDATA_FUEL", "Fuel" },   
-  //{ "FRSKY_USERDATA_CELL_VOLT", "CELL_VOLT" }, 
-  //{ "FRSKY_USERDATA_GPS_ALT_A", "GPS_ALT_A" }, 
-  //{ "FRSKY_USERDATA_BARO_ALT_B", "BARO_ALT_B" }, 
-  //{ "FRSKY_USERDATA_GPS_SPEED_B", "GPS_SPEED_B" }, 
-  //{ "FRSKY_USERDATA_GPS_LONG_B", "GPS_LONG_B" }, 
-  //{ "FRSKY_USERDATA_GPS_LAT_B", "GPS_LAT_B" }, 
-  //{ "FRSKY_USERDATA_GPS_CURSE_B", "GPS_CURSE_B" }, 
-  //{ "FRSKY_USERDATA_GPS_DM", "GPS_DM" }, 
-  //{ "FRSKY_USERDATA_GPS_YEAR", "GPS_YEAR" }, 
-  //{ "FRSKY_USERDATA_GPS_HM", "GPS_HM" }, 
-  //{ "FRSKY_USERDATA_GPS_SEC", "GPS_SEC" }, 
-  //{ "FRSKY_USERDATA_GPS_SPEED_A", "GPS_SPEED_A" }, 
-  //{ "FRSKY_USERDATA_GPS_LONG_A", "GPS_LONG_A" }, 
-  //{ "FRSKY_USERDATA_GPS_LAT_A", "GPS_LAT_A" }, 
-  //{ "FRSKY_USERDATA_GPS_CURSE_A", "CURSE_A" }, 
-  //{ "FRSKY_USERDATA_BARO_ALT_A", "BARO_ALT_A" }, 
-  //{ "FRSKY_USERDATA_GPS_LONG_EW", "GPS_LONG_EW" }, 
-  //{ "FRSKY_USERDATA_GPS_LAT_EW", "GPS_LAT_EW" }, 
-  { "FRSKY_USERDATA_ACC_X", "Acceleration X" }, 
-  { "FRSKY_USERDATA_ACC_Y", "Acceleration Y" }, 
-  { "FRSKY_USERDATA_ACC_Z", "Acceleration Z" },   
-  //{ "FRSKY_USERDATA_ALT_MIN", "ALT_MIN" }, 
-  //{ "FRSKY_USERDATA_ALT_MAX", "ALT_MAX" }, 
-  //{ "FRSKY_USERDATA_RPM_MAX", "RPM_MAX" }, 
-  //{ "FRSKY_USERDATA_T1_MAX", "T1_MAX" }, 
-  //{ "FRSKY_USERDATA_T2_MAX", "T2_MAX" }, 
-  //{ "FRSKY_USERDATA_GPS_SPEED_MAX", "GPS_SPEED_MAX" }, 
-  //{ "FRSKY_USERDATA_GPS_DIS_MAX", "GPS_DIS_MAX" },   
-  //{ "FRSKY_USERDATA_VOLTAGE_B", "VOLTAGE_B" }, 
-  //{ "FRSKY_USERDATA_VOLTAGE_A", "VOLTAGE_A" }, 
-  //{ "FRSKY_USERDATA_GPS_DIST", "GPS_DIST" }, 
-  //{ "FRSKY_USERDATA_FUELPERCENT", "FUELPERCENT" }
+  { "Vspd", "Vertical Speed" },            // FRSKY_USERDATA_VERT_SPEED
+  { "Curr", "Current" },                   // FRSKY_USERDATA_CURRENT
+  { "Vfas", "Vfas" },                      // FRSKY_USERDATA_VFAS_NEW
+  { "T1", "Temperature 1" },               // FRSKY_USERDATA_TEMP1
+  { "T2", "Temperature 2" },               // FRSKY_USERDATA_TEMP2
+  { "Rpm", "RPM" },                        // FRSKY_USERDATA_RPM
+  { "Fuel", "Fuel" },                      // FRSKY_USERDATA_FUEL
+  { "AccX", "Acceleration X" },            // FRSKY_USERDATA_ACC_X
+  { "AccY", "Acceleration Y" },            // FRSKY_USERDATA_ACC_Y
+  { "AccZ", "Acceleration Z" }             // FRSKY_USERDATA_ACC_Z
 } ;
 
 /*
@@ -93,37 +63,20 @@ String hubDataList[][] = new String[][] {
 String sPortDataList[][] = new String[][] {
   { "----------", "----------" }, 
   { "DEFAULTFIELD", "DEFAULT" },
-  { "ALT_FIRST_ID", "Altitude" }, 
-  //{ "ALT_LAST_ID", "ALT lst" }, 
-  { "VARIO_FIRST_ID", "Vertical Speed" }, 
-  //{ "VARIO_LAST_ID", "VARIO lst" },
-  { "CURR_FIRST_ID", "Current" }, 
-  //{ "CURR_LAST_ID", "CURR lst" },
-  { "VFAS_FIRST_ID", "Vfas" }, 
-  //{ "VFAS_LAST_ID", "VFAS lst" },
-  { "T1_FIRST_ID", "Temperature 1" }, 
-  //{ "T1_LAST_ID", "T1 lst" }, 
-  { "T2_FIRST_ID", "Temperature 2" }, 
-  //{ "T2_LAST_ID", "T2 lst" }, 
-  { "RPM_FIRST_ID", "RPM" }, 
-  //{ "RPM_LAST_ID", "RPM lst" }, 
-  { "FUEL_FIRST_ID", "Fuel" }, 
-  //{ "FUEL_LAST_ID", "FUEL lst" },   
-  { "ACCX_FIRST_ID", "Acceleration X" }, 
-  //{ "ACCX_LAST_ID", "ACCX lst" }, 
-  { "ACCY_FIRST_ID", "Acceleration Y" }, 
-  //{ "ACCY_LAST_ID", "ACCY lst" }, 
-  { "ACCZ_FIRST_ID", "Acceleration Z" }, 
-  //{ "ACCZ_LAST_ID", "ACCZ lst" },   
-  //{ "GPS_SPEED_FIRST_ID", "GPS SPEED 1st" }, 
-  //{ "GPS_SPEED_LAST_ID", "GPS SPEED lst" }, 
-  //{ "CELLS_FIRST_ID", "CELLS 1st" }, 
-  //{ "CELLS_SECOND_ID", "CELLS 2nd" }, 
-  //{ "CELLS_THIRD_ID", "CELLS 3rd" }, 
-  //{ "CELLS_LAST_ID", "CELLS lst" },
-  { "A3_FIRST_ID", "A3" },
-  { "A4_FIRST_ID", "A4" },
-  { "AIR_SPEED_FIRST_ID", "Air Speed " }
+  { "Alt", "Altitude" },                 // ALT_FIRST_ID
+  { "Vspd", "Vertical Speed" },          // VARIO_FIRST_ID
+  { "Curr", "Current" },                 // CURR_FIRST_ID
+  { "Vfas", "Vfas" },                    // VFAS_FIRST_ID
+  { "T1", "Temperature 1" },             // T1_FIRST_ID
+  { "T2", "Temperature 2" },             // T2_FIRST_ID
+  { "Rpm", "RPM" },                      // RPM_FIRST_ID
+  { "Fuel", "Fuel" },                    // FUEL_FIRST_ID
+  { "AccX", "Acceleration X" },          // ACCX_FIRST_ID
+  { "AccY", "Acceleration Y" },          // ACCY_FIRST_ID
+  { "AccZ", "Acceleration Z" },          // ACCZ_FIRST_ID
+  { "A3", "A3" },                        // A3_FIRST_ID
+  { "A4", "A4" },                        // A4_FIRST_ID
+  { "ASpd", "Air Speed " }               // AIR_SPEED_FIRST_ID
 } ;
 
 /*

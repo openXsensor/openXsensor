@@ -19,15 +19,15 @@
 *****************************************************************************
 **                        Author: David LABURTHE                           **
 **                      Contact: dlaburthe@free.fr                         **
-**                           Date: 05.09.2014                              **
+**                           Date: 30.11.2014                              **
 *****************************************************************************/
 
 import controlP5.* ;
 
 boolean tempActive = false ;           // Define temperature sensor availability
 
-String oxsVersion = "v1.x" ;
-String oxsCversion = "v1.1" ;
+String oxsVersion = "v2.x" ;
+String oxsCversion = "v2.0" ;
 
 String day = (day() < 10) ? "0" + day() : "" + day() ;
 String month = (month() < 10) ? "0" + month() : "" + month() ;
@@ -1913,9 +1913,9 @@ public void validationProcess(String theString) {
   // Config file writing destination
   oxsDirectory = trim( cp5.get(Textfield.class, "oxsDirectory").getText() ) ;
   if ( oxsDirectory.equals("") ) {
-    outputConfigDir = sketchPath("oxs_config.h") ;
+    outputConfigDir = sketchPath("oXs_config.h") ;
   } else {
-    outputConfigDir = oxsDirectory + "/oxs_config.h" ;
+    outputConfigDir = oxsDirectory + "/oXs_config.h" ;
   }
 
   messageList.clear() ;
@@ -1997,6 +1997,8 @@ void folderSelected(File selection) {
     cp5.get(Textfield.class, "oxsDirectory").setText(selection.getAbsolutePath());
   }
 }
+
+// =========================================== Shortcuts ===========================================
 /*
 void keyPressed() {
   // default properties load/save key combinations are
@@ -2012,26 +2014,43 @@ void keyPressed() {
     cp5.getController("varioHysteresis").getValueLabel().align(ControlP5.RIGHT_OUTSIDE, ControlP5.CENTER).setPaddingX(10) ;
 
     cp5.getProperties().print();
-  } else if ( key == 't' ) {
+  } else if ( key == 'c' ) {
     println( "mAmp / step " + mAmpStep() ) ;
     println( "Current offset " + offsetCurrent() ) ;
   } else if ( key == 'v' ) {
-    validationProcess("Config") ;
+    println( "mVolt / step " + mVoltStep(6) ) ;
   }
 }
 */
+// =================================================================================================
+
 float round(float number, float decimal) {      // Rounding function
   return (float)(round((number*pow(10, decimal))))/pow(10, decimal);
+}
+
+float mVoltStep(int NbrVolt) {    // Voltage measurements milliVolt per ADC step calculation
+
+  float mVoltStep ;
+  float voltageDiv = float( cp5.getController("dividerVolt" + NbrVolt ).getValueLabel().getText() ) ;
+  float arduinoVcc = float( cp5.getController("arduinoVccNb").getValueLabel().getText() ) ;
+
+  if ( cp5.getController("intRef").value() == 0 ) {
+    mVoltStep = ( arduinoVcc * 1000.0 / 1024.0 ) * voltageDiv ;
+  } else {
+    mVoltStep = ( 1.1 * 1000.0 / 1024.0 ) * voltageDiv ;
+  }
+  return mVoltStep ;
 }
 
 float mAmpStep() {    // Current sensor milliAmp per ADC step calculation
 
   float mAmpStep ;
   float mAmpPmV ;
-  float currentDiv = float( cp5.getController("currentDivNb").getValueLabel().getText() ) ;
   float arduinoVcc = float( cp5.getController("arduinoVccNb").getValueLabel().getText() ) ;
+  float currentDiv = float( cp5.getController("currentDivNb").getValueLabel().getText() ) ;
+  float currentOutSens = float( cp5.getController("currentOutSensNb").getValueLabel().getText() ) ;
 
-  mAmpPmV = 1000 / float( cp5.getController("currentOutSensNb").getValueLabel().getText() );
+  mAmpPmV = ( currentOutSens == 0 ) ? 0 : 1000.0 / currentOutSens ;
   if ( cp5.getController("intRef").value() == 0 ) {
     mAmpStep = ( arduinoVcc * 1000.0 / 1024.0 ) * mAmpPmV * currentDiv ;
   } else {
