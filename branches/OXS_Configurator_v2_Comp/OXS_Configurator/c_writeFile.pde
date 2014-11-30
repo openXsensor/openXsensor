@@ -106,15 +106,12 @@ void writeConf() {
   output.println("// --------- 6 - Voltages & Current sensor settings ---------");
   output.println("");
   output.println("// ***** 6.1 - Voltage Reference selection (VCC or 1.1V internal) *****");
-  if ( cp5.getController("intRef").value() == 1 ) {
-    output.println("#define USE_INTERNAL_REFERENCE    // Select the voltage reference, comment the line to activate the VCC voltage reference");
-    output.println("//#define ARDUINOVCC              // Specify the VCC voltage of the arduino to correctly read ADC values");
-  } else {
-    output.println("//#define USE_INTERNAL_REFERENCE    // Select the voltage reference, uncomment the line to activate the internal 1.1v voltage reference");
-    output.println("#define ARDUINOVCC             " + cp5.getController("arduinoVccNb").getValueLabel().getText() + "  // Specify the VCC voltage of the arduino to correctly read ADC values");
+  if ( cp5.getController("intRef").value() == 0 ) {
+    output.print("//");
   }
+  output.println("#define USE_INTERNAL_REFERENCE    // Select the voltage reference, comment the line to activate the VCC voltage reference");
   output.println("");
-  output.println("// ***** 6.2 - Voltages Analog Pins *****");
+  output.println("// ***** 6.2 - Voltages analog pins *****");
   for ( int i = 1; i <= voltNbr; i++ ) {
     if ( cp5.getController( "voltage" ).value() == 1 && cp5.getController( "volt" + i ).value() == 1 && int(cp5.getGroup("ddlVolt" + i).getValue()) >= 0 ) {
       output.println("#define PIN_VOLTAGE_" + i + "    " + int(cp5.getGroup("ddlVolt" + i).getValue()) );
@@ -126,19 +123,15 @@ void writeConf() {
   output.println("// ***** 6.3 - Voltage measurements calibration parameters *****");
   for ( int i = 1; i <= voltNbr; i++ ) {
     if ( cp5.getController( "voltage" ).value() == 1 && cp5.getController( "volt" + i ).value() == 1 ) {
-      output.println("#define OFFSET_" + i + "             " + cp5.getController("offsetVolt" + i).getValueLabel().getText() + "                                        // offset in mv");
-      if ( cp5.getController("intRef").value() == 0 ) {
-        output.println("#define MVOLT_PER_STEP_" + i + "     ( ARDUINOVCC * 1000.0 / 1024.0 * " + cp5.getController("dividerVolt" + i ).getValueLabel().getText() + " )  // => last number is the divider factor");
-      } else {
-        output.println("#define MVOLT_PER_STEP_" + i + "     ( 1.1 * 1000.0 / 1024.0 * " + cp5.getController("dividerVolt" + i ).getValueLabel().getText() + " )  // => last number is the divider factor");
-      }
+      output.println("#define OFFSET_" + i + "             " + cp5.getController("offsetVolt" + i).getValueLabel().getText() + "         // offset in mV");
+      output.println("#define MVOLT_PER_STEP_" + i + "     " + round( mVoltStep( i ), 2 ) );
     } else {
       output.println("#define OFFSET_" + i + "             " + 0 );
       output.println("#define MVOLT_PER_STEP_" + i + "     " + 1 );
     }
   }
   output.println("");
-  output.println("// ***** 6.4 - Number of Lipo cells to measure (and transmit to Tx) *****");
+  output.println("// ***** 6.4 - Number of lipo cells to measure (and transmit to Tx) *****");
   if ( cp5.getController( "voltage" ).value() == 1 && cp5.getController( "cells" ).value() == 1 ) {
     output.println("#define NUMBEROFCELLS    " + ( int(cp5.getGroup("ddlNbrCells").getValue()) ) );
   } else {
@@ -156,7 +149,7 @@ void writeConf() {
   }
   output.println("");
   output.println("// ***** 6.6 - Current sensor calibration parameters *****");
-  output.println("#define OFFSET_CURRENT_STEPS         " + offsetCurrent() + "      // 66mv offset (set to zero for now)");
+  output.println("#define OFFSET_CURRENT_STEPS         " + offsetCurrent() );
   output.println("#define MAMP_PER_STEP                " + round(mAmpStep(), 2) + "   // INA282 with 0.1 ohm shunt gives 5000mv/A ");
   output.println("");
 
@@ -188,7 +181,7 @@ void writeConf() {
 
   output.println("// --------- 8 - Persistent memory settings ---------");
   if ( cp5.getController("saveEprom").value() == 1 ) {
-    output.println("#define SAVE_TO_EEPROM            // Some telemetry values will be stored in EEProm every 10 seconds.");
+    output.println("#define SAVE_TO_EEPROM            // Current consumption will be stored in EEProm every 10 seconds.");
   } else {
     output.println("//#define SAVE_TO_EEPROM");
   }
