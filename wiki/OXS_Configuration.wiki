@@ -2,7 +2,7 @@
 #labels doc
 #sidebar OXS_Sidebar
 
-=Understanding and Configuring !openXsensor=
+=Understanding and Configuring openXsensor=
 
 OXS is using an [http://arduino.cc/ Arduino] board, so download the [http://arduino.cc/en/Main/Software#toc2 Arduino IDE] to use it.
 
@@ -12,11 +12,11 @@ Decompress the archives, then place "openXsensor" in your arduino project direct
 
 ----
 
-==About !openXsensor Configurator==
+==About openXsensor Configurator==
 
-!openXsensor can do a lot of different measurements (that you can combine as you want) therefore it needs a rather dense configuration file.
+openXsensor can do a lot of different measurements (that you can combine as you want) therefore it needs a rather dense configuration file.
 
-That's why the *!opensXsensor Configurator* has been created, it helps set all the OXS functionalities more easily. The documentation below will only make use of the OXS Configurator.
+That's why the *opensXsensor Configurator* has been created, it helps set all the OXS functionalities more easily. The documentation below will only make use of the OXS Configurator.
 
 ----
 

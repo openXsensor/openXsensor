@@ -28,13 +28,13 @@ https://openxsensor.googlecode.com/svn/wiki/images/OXS_Logo.png
  
  https://openxsensor.googlecode.com/svn/wiki/images/OXSv.jpg
 
- Visit the Wiki Page [OXS_Build_Vario OXS Build Instructions] to learn how to make an !openXsensor Alti/Vario yourself. 
+ Visit the Wiki Page [OXS_Build_Vario OXS Build Instructions] to learn how to make an openXsensor Alti/Vario yourself. 
 
  ===Current sensor:===
  
  https://openxsensor.googlecode.com/svn/wiki/images/CS_ACS712-05.JPG
 
- Visit the Wiki Page [https://code.google.com/p/openxvario/wiki/CurrentSensorModules Current Sensor Module] for details on how to connect a current sensor module to !openXsensor.  
+ Visit the Wiki Page [https://code.google.com/p/openxvario/wiki/CurrentSensorModules Current Sensor Module] for details on how to connect a current sensor module to openXsensor.  
 
  ===Voltage measurements:===
  
