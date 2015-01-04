@@ -4,20 +4,28 @@ String sentDataList[][] = new String[][] {
   { "----------", "----------" },                        // 0
   { "ALTIMETER", "Altitude" },                           // 1
   { "VERTICAL_SPEED", "Vertical Speed" },                // 2
-  { "SENSITIVITY", "Vario sensitivity" },                // 3
-  { "ALT_OVER_10_SEC", "Alt. over 10 seconds" },         // 4
-  //{ "VARIOTEMP", "Vario Temperature" },                //
-  { "CURRENTMA", "Current (mA)" },                       // 5
-  { "MILLIAH", "Consumption (mAh)" },                    // 6
-  { "CELLS", "Cells monitoring" },                       // 7
-  { "VOLT1", "Volt 1" },                                 // 8
-  { "VOLT2", "Volt 2" },                                 // 9
-  { "VOLT3", "Volt 3" },                                 // 10
-  { "VOLT4", "Volt 4" },                                 // 11
-  { "VOLT5", "Volt 5" },                                 // 12
-  { "VOLT6", "Volt 6" },                                 // 13
-  { "RPM" , "RPM" }                                      // 14
-  //{ "TEMP1", "Temperature 1" }                         // 
+  { "ALT_OVER_10_SEC", "Alt. over 10 seconds" },         // 3
+  { "ALTIMETER_2", "Altitude 2" },                       // 4
+  { "VERTICAL_SPEED_2", "Vertical Speed 2" },            // 5
+  { "ALT_OVER_10_SEC_2", "Alt. over 10 seconds 2" },     // 6
+  { "SENSITIVITY", "Vario sensitivity" },                // 7
+  { "AIR_SPEED" , "Air Speed" },                         // 8
+  { "PRANDTL_DTE", "Prandtl dTE" },                      // 9
+  { "PRANDTL_COMPENSATION" , "Prandtl Compensation" },   // 10
+  { "PPM_VSPEED", "PPM V.Speed" },                       // 11
+  //{ "VARIOTEMP", "Vario Temperature" },
+  { "CURRENTMA", "Current (mA)" },                       // 12
+  { "MILLIAH", "Consumption (mAh)" },                    // 13
+  { "CELLS", "Cells monitoring" },                       // 14
+  { "VOLT1", "Volt 1" },                                 // 15
+  { "VOLT2", "Volt 2" },                                 // 16
+  { "VOLT3", "Volt 3" },                                 // 17
+  { "VOLT4", "Volt 4" },                                 // 18
+  { "VOLT5", "Volt 5" },                                 // 19
+  { "VOLT6", "Volt 6" },                                 // 20
+  { "RPM" , "RPM" },                                     // 21
+  { "PPM" , "PPM" }                                      // 22
+  //{ "TEMP1", "Temperature 1" }                         //
 } ;
 
 /*
@@ -42,3 +50,4 @@ String sentDataList[][] = new String[][] {
   TEMP1, // DEFAULTFIELD can be used
   TEMP2                     // Not usable yet  // DEFAULTFIELD can be used
 */
+
