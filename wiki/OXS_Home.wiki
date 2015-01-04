@@ -1,4 +1,4 @@
-#summary openXsensor Home
+#summary OpenXsensor Home
 
 https://openxsensor.googlecode.com/svn/wiki/images/OXS_Logo.png
 
@@ -16,7 +16,10 @@ It is both compatible with the *D series* receivers (HUB protocol) and the new *
 
 ==Functionalities provided at your choice :==
 
-  * Altimeter / Variometer _(like !FrSky Variometer sensor high precision)_
+  * Altimeter / Variometer _(like !FrSky Variometer high precision sensor)_
+    * Can use a second barometric sensor and switch with TX while flying
+  * Air Speed
+    * Can be used by OXS to compensate vertical speed measurements (dTE)
   * Up to 6 voltages measurements
     * Battery voltage measurements _(like !FrSky FBVS-01)_
     * Lipo battery cell measurements _(like !FrSky FLVS-01 or FLVSS)_

@@ -1,4 +1,4 @@
-#summary openXsensor News
+#summary OpenXsensor News
 #labels Featured, news
 #sidebar OXS_Sidebar
 
@@ -7,10 +7,12 @@ https://openxsensor.googlecode.com/svn/wiki/images/OXS_Logo.png
  
 =News=
 
-  * 2014-09-05: [OXS_Downloads Releases !] : openXsensor v2.5 + OXS Configurator v2.0 -> More infos in the Readme files
+  * 2015-01-04: Wiki Updated [OXS_Configuration documentation] for OXS Configurator v2.1
+  * 2015-01-04: [OXS_Downloads Release !] : OXS Configurator v2.1 -> The new OXS v2.x features can now be set !
+  * 2014-09-05: [OXS_Downloads Releases !] : !OpenXsensor v2.5 + OXS Configurator v2.0 -> More infos in the Readme files
   * 2014-11-05: New wiki: [OXS_Conf_DataSent OXS DATA sent settings]
   * 2014-10-01: New wiki: [OXS_Build_Vario OXS Vario building]
   * 2014-09-05: [OXS_Downloads Release] OXS Configurator v1.1 -> Bug correction
   * 2014-08-31: Adding wiki [OXS_Conf_Vario OXS Vario settings documentation]
   * 2014-08-26: Wiki restructuring + adding [OXS_Configuration OXS general settings documentation]
-  * 2014-08-23: [OXS_Downloads Release] of openXsensor v1.0 and OXS Configurator v1.0
+  * 2014-08-23: [OXS_Downloads Release] of !OpenXsensor v1.0 and OXS Configurator v1.0

@@ -6,9 +6,9 @@
 
 ==DATA Sent settings==
 
-https://openxsensor.googlecode.com/svn/wiki/images/OXSC_DATA_01.jpg
+https://openxsensor.googlecode.com/svn/wiki/images/OXSC_DATA_01.png
 
-This tab allows you to determine which and how sensors data are sent to the receiver.
+This tab allows you to determine which and how sensors data are sent to the receiver and so to the TX.
 
 ===OXS measurement list===
 
@@ -22,7 +22,7 @@ This dropdown list shows all the data that are possible to get from OXS, but you
 
 https://openxsensor.googlecode.com/svn/wiki/images/OXSC_DATA_03.png
 
-This dropdown list allows you to choose how the OXS measurement will be seen on the TX side.
+This dropdown list allows you to choose how/where the OXS measurement will be seen on the TX side.
 
 ====DEFAULT parameter usage:====
 
@@ -39,8 +39,6 @@ https://openxsensor.googlecode.com/svn/wiki/images/OXSC_DATA_05.png
 As theirs names imply, you can multiply, divide and offset OXS measurements to your liking.
 
 Click and drag right or left in the field to alter the value, only integers are available.
-
-_These parameters are not available when using "DEFAULT" in the Telemetry data field._
 
 ----
 

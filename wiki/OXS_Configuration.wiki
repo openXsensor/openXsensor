@@ -1,119 +1,113 @@
-#summary openXsensor Configuration
+#summary OpenXsensor Configuration
 #labels doc
 #sidebar OXS_Sidebar
 
-=Understanding and Configuring openXsensor=
+=Understanding and Configuring !OpenXsensor=
 
 OXS is using an [http://arduino.cc/ Arduino] board, so download the [http://arduino.cc/en/Main/Software#toc2 Arduino IDE] to use it.
 
-Then, you have to *[OXS_Downloads download the latest versions]* of !openXsensor and OXS Configurator.
+Then, you have to *[OXS_Downloads download the latest versions]* of !OpenXsensor and OXS Configurator.
 
-Decompress the archives, then place "openXsensor" in your arduino project directory. You can put "OXS_Configurator_vx.y" where you want.
+Decompress the archives, then place the folder "openXsensor" in your arduino project directory. You can put the folder "OXS_Configurator_vx.y" where you want.
 
 ----
 
-==About openXsensor Configurator==
+==About !OpenXsensor Configurator==
 
-openXsensor can do a lot of different measurements (that you can combine as you want) therefore it needs a rather dense configuration file.
+!OpenXsensor can do a lot of different measurements (that you can combine as you want) therefore it needs a rather dense configuration file.
 
-That's why the *opensXsensor Configurator* has been created, it helps set all the OXS functionalities more easily. The documentation below will only make use of the OXS Configurator.
+That's why the *!OpensXsensor Configurator* has been created, it helps setting all the OXS functionalities more easily. The documentation below will only make use of the OXS Configurator.
 
 ----
 
 ==OXS Configurator Title==
 
-https://openxsensor.googlecode.com/svn/wiki/images/OXSC_01.jpg
+https://openxsensor.googlecode.com/svn/wiki/images/OXSC_01.png
 
-On the top right logo corner you've got an "About" button, on the bottom left, you'll see the compatible !openXsensor version and in the bottom right, the Configurator version.
+On the top right logo corner you've got an "About" button, on the bottom left, you'll see the compatible !OpenXsensor version and in the bottom right, the Configurator version.
 
 All along the program, you can hover the mouse on the controls and a tooltip should appear with a breve description and/or the default value.
+
+----
 
 ==General settings==
 
 ===OXS directory===
 
-https://openxsensor.googlecode.com/svn/wiki/images/OXSC_02.jpg
+https://openxsensor.googlecode.com/svn/wiki/images/OXSC_02.png
 
-Here you can set the openXsensor directory so that the config file could be written in the right place.
-Unfortunately, the text field doesn't support copy pasting but you can manually type the path or click the button "..." at the right and navigate to the folder.
+Here you can set the !OpenXsensor directory so that the config file could be written in the right place.
+
+Unfortunately, the text field doesn't support copy pasting, but you can manually type the path or click the button "..." at the right and navigate to the OXS folder.
 
 ----
 
-===!FrSky protocol===
+===DATA output settings===
 
-https://openxsensor.googlecode.com/svn/wiki/images/OXSC_03.jpg
+https://openxsensor.googlecode.com/svn/wiki/images/OXSC_03.png
 
-The !FrSky protocol refers to what type of receiver you want OXS to communicate with: 
- * Hub protocol for D series receivers
- * Smart Port for X series receivers
- 
-The serial output pin number is the arduino digital pin to connect to the receiver telemetry data input:
+The serial output pin number is the Arduino digital pin to connect to the receiver telemetry data input:
  * Pin labelled "Rx" on the D series receivers https://openxsensor.googlecode.com/svn/wiki/images/D8R_Side.png
  
  * Pin labelled "S" from the Smart Port connector on the X series receivers https://openxsensor.googlecode.com/svn/wiki/images/X8R_topSP.png
 
-----
+The Sensor ID choice is only relevant with a Smart Port capable receiver (X series), it doesn't have any effect with D series receivers.
 
-===Internal voltage reference===
-
-https://openxsensor.googlecode.com/svn/wiki/images/OXSC_04.jpg
-
-*! Never connect a voltage > VCC to an Ax arduino analog pin !*
-
-Voltages can be measured compared to VCC or an 1.1 V internal reference:
-
- * If VCC is very stable, it is probably more accurate and easier to measure voltages based on VCC. Still, this requires that the voltage applied on arduino "RAW" pin is regulated, or at least always more than 5.5 V for a 5 V Arduino or 3.7 V for a 3.3 V Arduino (headroom needed for the arduino board regulator).
- * If voltage on "Raw" pin is less than 5.5 V or 3.7 V depending on the arduino used, and unstable (e.g. due to servo consumption or low battery), then voltage measurements will be wrong.    
- * If VCC can't be very stable (e.g. arduino is powered by a battery), then it is possible to measure based on the arduino 1.1 V internal reference.
-
-To measure a voltage greater than VCC or 1.1 V depending on the option you choose, you need to use a [https://learn.sparkfun.com/tutorials/voltage-dividers voltage divider].
-
-This will be discussed in details when we talk about voltage sensors.
+ * In S.Port protocol, there may be several sensors connected on the same bus (e.g. a GPS) but each sensor must have a different Sensor ID. So, you have to define a Sensor ID for your OXS that is different from sensor ID of other sensors.
+ * Just stay with the default setting unless you've got a good reason ;)
 
 ----
 
-===Reset button===
+===Voltage reference===
 
-https://openxsensor.googlecode.com/svn/wiki/images/OXSC_05.jpg
+https://openxsensor.googlecode.com/svn/wiki/images/OXSC_04.png
 
-With this option enabled and the corresponding pin number set, you can use a button (connected to the digital arduino pin previously chosen) to reset some OXS measurements.
+*! Never connect a voltage > VCC to an Ax Arduino analog pin !*
 
-Button pressed between 0.1 and 3 seconds: 
- * reset the minimum and maximum current data
- * reset all vario data
- 
-Button pressed between 3 and 5 seconds: 
- * reset the consumed current (milliAmps)
- 
+Voltages can be measured compared to VCC or an 1.1V internal reference:
+
+ * If VCC is very stable, it is probably more accurate and easier to measure voltages based on VCC. Still, this requires that the voltage applied on Arduino "RAW" pin is regulated, or at least always more than 5.5V for a 5V Arduino or 3.7V for a 3.3V Arduino (headroom needed for the Arduino board regulator).
+ * If voltage on "Raw" pin is less than 5.5V or 3.7V depending on the Arduino used, and unstable (e.g. due to servo consumption or low battery), then voltage measurements will be wrong.    
+ * If VCC can't be very stable (e.g. Arduino is powered by a battery), then it is possible to measure based on the Arduino 1.1V internal reference.
+
+To measure a voltage greater than VCC or 1.1V depending on the option you choose, you need to use a [https://learn.sparkfun.com/tutorials/voltage-dividers voltage divider].
+
+This will be discussed in details when we'll talk about voltage sensors.
+
 ----
 
 ===Save data to EEPROM===
 
-https://openxsensor.googlecode.com/svn/wiki/images/OXSC_06.jpg
+https://openxsensor.googlecode.com/svn/wiki/images/OXSC_05.png
 
-If checked, some telemetry values will be stored in EEProm (arduino memory) every 10 seconds. 
- * current data (min, max values and consumption)
- * vario data 
- 
-These values will be restored every power up. (e.g. mAh counted...), so you will keep data continuity even if the model is turned off between flights.
+If checked, current consumption will be stored in EEPROM (Arduino memory) every 10 seconds. 
+
+This value will be restored every power up, so you will keep data continuity even if the model is turned off between flights.
+
+https://openxsensor.googlecode.com/svn/wiki/images/OXSC_06.png
+
+With this option enabled and the corresponding pin number set, you can use a button (connected to the digital Arduino pin previously chosen) to reset the current consumption.
 
 ----
 
 ===Sensors selection===
 
-https://openxsensor.googlecode.com/svn/wiki/images/OXSC_07.jpg
+https://openxsensor.googlecode.com/svn/wiki/images/OXSC_07.png
 
 Tick the sensors connected so that OXS can use them.
+
+_Note: The second barometric sensor (Vario 2) can only be used if Vario 1 is activated._
+_The 2 varios both share the same configuration._
 
 ----
 
 ===Preset management===
 
-https://openxsensor.googlecode.com/svn/wiki/images/OXSC_08.jpg
+https://openxsensor.googlecode.com/svn/wiki/images/OXSC_08.png
 
-You can load and save preset settings for your different !openXsensor configurations.
+You can load and save preset settings for your different !OpenXsensor configurations.
 
-The "Preset" folder in the Configurator root is open by default but you can put them where you want.
+The "Preset" folder in the Configurator root is opened by default, but you can put them where you want.
 
 ----
 
