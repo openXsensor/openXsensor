@@ -16,73 +16,73 @@ String hubDataList[][] = new String[][] {
 } ;
 
 /*
- FRSKY_USERDATA_GPS_ALT_B       
- FRSKY_USERDATA_TEMP1           
- FRSKY_USERDATA_RPM             
- FRSKY_USERDATA_FUEL            
- FRSKY_USERDATA_TEMP2           
- FRSKY_USERDATA_CELL_VOLT       
- FRSKY_USERDATA_GPS_ALT_A       
- FRSKY_USERDATA_BARO_ALT_B      
- FRSKY_USERDATA_GPS_SPEED_B     
- FRSKY_USERDATA_GPS_LONG_B      
- FRSKY_USERDATA_GPS_LAT_B       
- FRSKY_USERDATA_GPS_CURSE_B     
- FRSKY_USERDATA_GPS_DM          
- FRSKY_USERDATA_GPS_YEAR        
- FRSKY_USERDATA_GPS_HM          
- FRSKY_USERDATA_GPS_SEC         
- FRSKY_USERDATA_GPS_SPEED_A     
- FRSKY_USERDATA_GPS_LONG_A      
+ FRSKY_USERDATA_GPS_ALT_B
+ FRSKY_USERDATA_TEMP1
+ FRSKY_USERDATA_RPM
+ FRSKY_USERDATA_FUEL
+ FRSKY_USERDATA_TEMP2
+ FRSKY_USERDATA_CELL_VOLT
+ FRSKY_USERDATA_GPS_ALT_A
+ FRSKY_USERDATA_BARO_ALT_B
+ FRSKY_USERDATA_GPS_SPEED_B
+ FRSKY_USERDATA_GPS_LONG_B
+ FRSKY_USERDATA_GPS_LAT_B
+ FRSKY_USERDATA_GPS_CURSE_B
+ FRSKY_USERDATA_GPS_DM
+ FRSKY_USERDATA_GPS_YEAR
+ FRSKY_USERDATA_GPS_HM
+ FRSKY_USERDATA_GPS_SEC
+ FRSKY_USERDATA_GPS_SPEED_A
+ FRSKY_USERDATA_GPS_LONG_A
  FRSKY_USERDATA_GPS_LAT_A
  FRSKY_USERDATA_GPS_CURSE_A
  FRSKY_USERDATA_BARO_ALT_A
- FRSKY_USERDATA_GPS_LONG_EW    
- FRSKY_USERDATA_GPS_LAT_EW      
- FRSKY_USERDATA_ACC_X           
- FRSKY_USERDATA_ACC_Y           
- FRSKY_USERDATA_ACC_Z           
- FRSKY_USERDATA_CURRENT         
- FRSKY_USERDATA_VERT_SPEED      
- FRSKY_USERDATA_ALT_MIN         
- FRSKY_USERDATA_ALT_MAX         
- FRSKY_USERDATA_RPM_MAX         
- FRSKY_USERDATA_T1_MAX          
- FRSKY_USERDATA_T2_MAX          
- FRSKY_USERDATA_GPS_SPEED_MAX   
- FRSKY_USERDATA_GPS_DIS_MAX     
- FRSKY_USERDATA_VFAS_NEW        
- FRSKY_USERDATA_VOLTAGE_B       
- FRSKY_USERDATA_VOLTAGE_A       
- FRSKY_USERDATA_GPS_DIST        
- FRSKY_USERDATA_FUELPERCENT     
+ FRSKY_USERDATA_GPS_LONG_EW
+ FRSKY_USERDATA_GPS_LAT_EW
+ FRSKY_USERDATA_ACC_X
+ FRSKY_USERDATA_ACC_Y
+ FRSKY_USERDATA_ACC_Z
+ FRSKY_USERDATA_CURRENT
+ FRSKY_USERDATA_VERT_SPEED
+ FRSKY_USERDATA_ALT_MIN
+ FRSKY_USERDATA_ALT_MAX
+ FRSKY_USERDATA_RPM_MAX
+ FRSKY_USERDATA_T1_MAX
+ FRSKY_USERDATA_T2_MAX
+ FRSKY_USERDATA_GPS_SPEED_MAX
+ FRSKY_USERDATA_GPS_DIS_MAX
+ FRSKY_USERDATA_VFAS_NEW
+ FRSKY_USERDATA_VOLTAGE_B
+ FRSKY_USERDATA_VOLTAGE_A
+ FRSKY_USERDATA_GPS_DIST
+ FRSKY_USERDATA_FUELPERCENT
  */
- 
+
  // ----------------------- SMART PORT protocol data list array -----------------------------
 
 String sPortDataList[][] = new String[][] {
-  { "----------", "----------" }, 
-  { "DEFAULTFIELD", "DEFAULT" },
-  { "Alt", "Altitude" },                 // ALT_FIRST_ID
-  { "Vspd", "Vertical Speed" },          // VARIO_FIRST_ID
-  { "Curr", "Current" },                 // CURR_FIRST_ID
-  { "Vfas", "Vfas" },                    // VFAS_FIRST_ID
-  { "T1", "Temperature 1" },             // T1_FIRST_ID
-  { "T2", "Temperature 2" },             // T2_FIRST_ID
-  { "Rpm", "RPM" },                      // RPM_FIRST_ID
-  { "Fuel", "Fuel" },                    // FUEL_FIRST_ID
-  { "AccX", "Acceleration X" },          // ACCX_FIRST_ID
-  { "AccY", "Acceleration Y" },          // ACCY_FIRST_ID
-  { "AccZ", "Acceleration Z" },          // ACCZ_FIRST_ID
-  { "A3", "A3" },                        // A3_FIRST_ID
-  { "A4", "A4" },                        // A4_FIRST_ID
-  { "ASpd", "Air Speed " }               // AIR_SPEED_FIRST_ID
+  { "----------", "----------" },
+  { "DEFAULTFIELD", "DEFAULT" },          // 1
+  { "Alt", "Altitude" },                  // 2  ALT_FIRST_ID
+  { "Vspd", "Vertical Speed" },           // 3  VARIO_FIRST_ID
+  { "Curr", "Current" },                  // 4  CURR_FIRST_ID
+  { "Vfas", "Vfas" },                     // 5  VFAS_FIRST_ID
+  { "T1", "Temperature 1" },              // 6  T1_FIRST_ID
+  { "T2", "Temperature 2" },              // 7  T2_FIRST_ID
+  { "Rpm", "RPM" },                       // 8  RPM_FIRST_ID
+  { "Fuel", "Fuel" },                     // 9  FUEL_FIRST_ID
+  { "AccX", "Acceleration X" },           // 10 ACCX_FIRST_ID
+  { "AccY", "Acceleration Y" },           // 11 ACCY_FIRST_ID
+  { "AccZ", "Acceleration Z" },           // 12 ACCZ_FIRST_ID
+  { "A3", "A3 (S.Port only)" },           // 13 A3_FIRST_ID
+  { "A4", "A4 (S.Port only)" },           // 14 A4_FIRST_ID
+  { "ASpd", "Air Speed (S.Port only)" }   // 15 AIR_SPEED_FIRST_ID
 } ;
 
 /*
 //#define RSSI_ID            0xf101  // please do not use this code because it is already used by the receiver
 //#define ADC1_ID            0xf102  // please do not use this code because it is already used by the receiver
-#define ADC2_ID            0xf103  
+#define ADC2_ID            0xf103
 #define BATT_ID            0xf104
 //#define SWR_ID             0xf105   // please do not use this code because it is already used by the receiver
 #define T1_FIRST_ID        0x0400
@@ -115,3 +115,4 @@ String sPortDataList[][] = new String[][] {
 #define CELLS_LAST_ID      0x030f
 // End of list of all telemetry fields supported by SPORT  (defined by Frsky)
 */
+
