@@ -20,6 +20,7 @@ You need to have java installed:
 --------------------------------------------------------------------------------------------------
 
 Installation:
+
 Put the folder anywhere you want on your computer.
 
 Usage:
@@ -30,6 +31,10 @@ Double-click "OXS_Configurator.exe" on windows
 --------------------------------------------------------------------------------------------------
 
 Change log:
+
+V2.1
+- Supports the new features of OpenXsensor v2.x
+- Small graphics changes
 
 V2.0
 - Supports OpenXsensor v2.x without the new features
