@@ -8,9 +8,12 @@
 #ifndef OXS_CONFIG_h
 #define OXS_CONFIG_h
 
-// --------- 1 - FrSky device ID when Sport protocol is used ---------
-#define SENSOR_ID    0x1B
 
+// --------- 1 - General protocol ---------
+// ***** 1.1 - Multiplex protocol is used (otherwise oXs assumes it is Frsky protocol) *****
+#define MULTIPLEX
+// ***** 1.2 - FrSky device ID (required when Sport protocol is used)  *****
+#define SENSOR_ID    0x03 //0x1B 
 // --------- 2 - Serial data pin choice ---------
 #define PIN_SERIALTX      4    // The pin which transmits the serial data to the FrSky telemetry receiver
 
@@ -23,7 +26,7 @@
 
 // ***** 4.1 - Connecting 1 or 2 MS5611 barometric sensor *****
 #define VARIO // set as comment if there is no vario
-//#define VARIO2 // set as comment if there is no second vario
+#define VARIO2 // set as comment if there is no second vario
 
 // ***** 4.2 - Sensitivity predefined by program *****
 #define SENSITIVITY_MIN 50
@@ -41,8 +44,8 @@
 #define VARIOHYSTERESIS 5
 
 // ***** 4.5 - Vertical speeds calculations *****
-#define VARIO_PRIMARY       2        // 0 means first ms5611, 1 means second ms5611 , 2 means vario based on vario 1 + compensation from airspeed
-#define VARIO_SECONDARY     0        // 0 means first ms5611, 1 means second ms5611 , 2 means vario based on vario 1 + compensation from airspeed
+#define VARIO_PRIMARY       2        // 0 means first ms5611, 1 means second ms5611 , 2 means vario based on vario 1 + compensation from airspeed , 3 means average of first and second ms5611
+#define VARIO_SECONDARY     0        // 0 means first ms5611, 1 means second ms5611 , 2 means vario based on vario 1 + compensation from airspeed , 3 means average of first and second ms5611
 #define SWITCH_VARIO_MIN_AT_PPM 10
 #define SWITCH_VARIO_MAX_AT_PPM 90
 
@@ -52,7 +55,7 @@
 #define ANALOG_VSPEED_MAX  3
 
 // --------- 5 - Airspeed settings ---------
-#define AIRSPEED    MS4525
+//#define AIRSPEED    MS4525
 
 #define AIRSPEED_RESET_AT_PPM   100
 
@@ -89,10 +92,10 @@
 //#define MVOLT_PER_STEP_6       1
 
 // ***** 6.4 - Number of Lipo cells to measure (and transmit to Tx) *****
-//#define NUMBEROFCELLS 3  // keep this line but set value to 0 (zero) if you do not want to transmit cell voltage.
+#define NUMBEROFCELLS 2  // keep this line but set value to 0 (zero) if you do not want to transmit cell voltage.
 
 // ***** 6.5 - Current sensor analog pin *****
-#define PIN_CURRENTSENSOR   3
+//#define PIN_CURRENTSENSOR   3
 
 // ***** 6.6 - Current sensor calibration parameters *****
 #define OFFSET_CURRENT_STEPS         0
@@ -106,10 +109,11 @@
 //#define PIN_PUSHBUTTON    2   // default is 10 but my own device is 2
 
 // --------- 9 - Data to transmit ---------
-// General set up to define which measurements are transmitted and how
-
-#define SETUP_DATA_TO_SEND    \
+// ***** 9.1 - Frsky data *****
+#define SETUP_FRSKY_DATA_TO_SEND    \
                         DEFAULTFIELD , ALTIMETER , 1 , 1 , 0 ,\
+                        DEFAULTFIELD , VERTICAL_SPEED , 1 , 1 , 0
+/*
                         VSpd , PPM_VSPEED , 1 , 1 ,0 , \
                         DEFAULTFIELD , AIR_SPEED , 1 , 1 ,0 , \
                         AccX , VERTICAL_SPEED , 1 , 1 ,0 , \
@@ -119,6 +123,13 @@
                         DEFAULTFIELD , CURRENTMA , 1, 1, 0 , \
                         DEFAULTFIELD , MILLIAH, 1, 1, 0 , \
                         Fuel , SENSITIVITY , 1, 1, 0
+*/
+// ***** 9.2 - Multiplex data *****
+#define SETUP_MULTIPLEX_DATA_TO_SEND    \
+                        3 , ALTIMETER , 1 , 1 , 0 , -16384 , 16383 , \
+                        6 , VERTICAL_SPEED , 1 , 1 , 0, -500 , 500 , \
+                        5 , REL_ALTIMETER , 1 , 1 , 0 , -16384 , 16383 , \
+                        7 , CELL_TOT , 1 , 1 , 0 , -16384 , 16383    
 
 // --------- 10 - Reserved for developer. DEBUG must be activated here when we want to debug one or several functions in some other files. ---------
 //#define DEBUG

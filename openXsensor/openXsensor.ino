@@ -4,7 +4,9 @@
 #include "oXs_4525.h"
 #include "oXs_curr.h"
 #include "oXs_out_frsky.h"
+#include "oXs_out_multiplex.h"
 #include "oXs_general.h"
+#include "Aserial.h"
 
 #ifdef SAVE_TO_EEPROM
   #include <EEPROM.h>
@@ -48,6 +50,8 @@ static unsigned long extended2Micros ;
 #ifdef DEBUG
 //#define DEBUGCOMPENSATEDCLIMBRATE
 //#define DEBUGOUTDATATOSERIAL
+//#define DEBUGENTERLOOP
+
 #endif
 
 int freeRam () ;
@@ -67,8 +71,17 @@ bool compensatedClimbRateAvailable ;
 bool switchCompensatedClimbRateAvailable ;
 float rawCompensatedClimbRate ; 
 int32_t compensatedClimbRate ;
+#endif
+
+#if defined (VARIO) && ( defined (VARIO2) || defined ( AIRSPEED))
 int32_t switchVSpeed ;
 bool switchVSpeedAvailable ;
+#endif
+
+#if defined (VARIO) && defined (VARIO2)
+float averageVSpeedFloat ;
+int32_t averageVSpeed ;
+bool averageVSpeedAvailable ;
 #endif
 
 #ifdef PIN_PPM
@@ -86,7 +99,7 @@ bool RpmAvailable  ;
 int PWRValue; // calculation field for Vertical speed on PWR
 unsigned long lastMillisPWR ;
 
-float actualPressure  ; // default pressure in pascal; to actualise if vario exist; is used in airspeed calcualtion.
+float actualPressure  ; // default pressure in pascal; to actualise if vario exist; is used in airspeed calculation.
 int sensitivityPpmMapped ;
 int compensationPpmMapped ;
 int32_t test1Value ;// used in order to test the transmission of any value
@@ -254,7 +267,12 @@ void setup(){
 //                                Main loop                                               ***
 //*******************************************************************************************
 void loop(){  
+#ifdef DEBUGENTERLOOP
+  Serial.print(F("in loop="));  
+  Serial.println(millis());
+#endif 
 
+ 
 #ifdef PIN_PUSHBUTTON
   // Check if a button has been pressed
 #if defined (VARIO) || defined (VARIO2)
@@ -332,8 +350,17 @@ void readSensors() {
 #endif  
 #endif // end #ifdef AIRSPEED
 
-
-
+#if defined (VARIO) &&  defined (VARIO2)
+  if( (oXs_MS5611.varioData.averageClimbRateAvailable == true) || ( oXs_MS5611_2.varioData.averageClimbRateAvailable == true) ) {
+    averageVSpeedFloat = ( oXs_MS5611.varioData.climbRateFloat + oXs_MS5611_2.varioData.climbRateFloat ) / 2 ;
+    if ( abs((int32_t)  averageVSpeedFloat - averageVSpeed) > VARIOHYSTERESIS ) {
+          averageVSpeed = (int32_t)  averageVSpeedFloat ;
+    }    
+    averageVSpeedAvailable = true ;
+    oXs_MS5611.varioData.averageClimbRateAvailable = false ;
+    oXs_MS5611_2.varioData.averageClimbRateAvailable = false ;
+  }  
+#endif  
 
 #if defined (VARIO) && ( defined (VARIO2) || defined (AIRSPEED) ) && defined (VARIO_SECONDARY ) && defined( VARIO_PRIMARY )  && defined (PIN_PPM)
   if (( selectedVario == 0) && ( oXs_MS5611.varioData.switchClimbRateAvailable == true ) )  {
@@ -347,7 +374,12 @@ void readSensors() {
       switchVSpeedAvailable = true ;
       oXs_MS5611_2.varioData.switchClimbRateAvailable = false ;
   }
-#endif
+  else if ( ( selectedVario == 3) && ( averageVSpeedAvailable == true )) {
+      switchVSpeed = averageVSpeed ;
+      switchVSpeedAvailable = true ;
+      averageVSpeedAvailable = false ;
+  }
+#endif // end of VARIO2
 #if  defined (AIRSPEED)
   else if ( ( selectedVario == 2) && ( switchCompensatedClimbRateAvailable == true )) {
       switchVSpeed = compensatedClimbRate ;

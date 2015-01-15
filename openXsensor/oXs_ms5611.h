@@ -13,10 +13,12 @@ struct VARIODATA {
   
   byte SensorState ;
   int32_t rawAltitude ; // in cm * 100  
-  int32_t absoluteAlt;     // in cm  * 100
+  int32_t absoluteAlt;     // in cm  
   bool absoluteAltAvailable ;
   bool altitudeAt20MsecAvailable   ;  // use to say to readsensors() that an altitude is available and that dte can be calculated.
-  
+  int32_t altOffset ;     // in cm
+  bool relativeAltAvailable ;   
+  int32_t relativeAlt ;     // in cm
   float delaySmooth ; // smoothed delay between 2 altitude calculations
   
   int32_t prevAlt[20] ;   // table contains the 20 latest altitude
@@ -24,10 +26,11 @@ struct VARIODATA {
   int32_t vSpeed10Sec; // Altitude gain/loose between 10 sec (is calculated and send every 500 msec)
   bool vSpeed10SecAvailable ;
   
+  float climbRateFloat  ;  // in cm/sec but as float
   int32_t climbRate;       // in cm /sec = vertical speed
   bool climbRateAvailable ;
   bool switchClimbRateAvailable ; // use to say to the readsensors loop that that a climbrate is available (to select the one being send)
-
+  bool averageClimbRateAvailable ; // use to say to the readsensors loop that that a climbrate is available (to select the one being send)
   bool sensitivityAvailable ;  //used to decide if sensivityPpm can be sent or not
   int sensitivityPpm ;      // sensivity to apply when PPM is used. Value has to be divided by 1000 in order to calculate the smoothing parameter
   int sensitivity ; 
@@ -80,7 +83,7 @@ private:
     unsigned long nextAverageAltMillis  ; // save when AverageAltitude has to be calculated
       
     float climbRate2AltFloat  ;
-    float climbRateFloat  ;
+    
     float abs_deltaClimbRate ;
       
 #ifdef DEBUG

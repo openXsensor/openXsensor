@@ -19,12 +19,22 @@ struct VOLTAGEDATA {
   
   int32_t sumVoltage[6] ;       // use to calculate average voltage     
 
+#ifdef MULTIPLEX
+  uint32_t mVoltCell[6] ;
+  bool mVoltCell_Available [6];
+  uint32_t mVoltCellMin ;
+  bool mVoltCellMin_Available ;
+   uint32_t mVoltCellTot ;
+  bool mVoltCellTot_Available ;
+ 
+#else  
   uint32_t mVoltCell_1_2 ;
   bool mVoltCell_1_2_Available ;
   uint32_t mVoltCell_3_4 ;
   bool mVoltCell_3_4_Available ;
   uint32_t mVoltCell_5_6 ;
   bool mVoltCell_5_6_Available ;
+#endif
 };
 
 //#define VOLT_BUFFER_LENGTH 20   // not used anymore;averages are calculated at fix time
