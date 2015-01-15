@@ -71,8 +71,17 @@ bool compensatedClimbRateAvailable ;
 bool switchCompensatedClimbRateAvailable ;
 float rawCompensatedClimbRate ; 
 int32_t compensatedClimbRate ;
+#endif
+
+#if defined (VARIO) && ( defined (VARIO2) || defined ( AIRSPEED))
 int32_t switchVSpeed ;
 bool switchVSpeedAvailable ;
+#endif
+
+#if defined (VARIO) && defined (VARIO2)
+float averageVSpeedFloat ;
+int32_t averageVSpeed ;
+bool averageVSpeedAvailable ;
 #endif
 
 #ifdef PIN_PPM
@@ -341,8 +350,17 @@ void readSensors() {
 #endif  
 #endif // end #ifdef AIRSPEED
 
-
-
+#if defined (VARIO) &&  defined (VARIO2)
+  if( (oXs_MS5611.varioData.averageClimbRateAvailable == true) || ( oXs_MS5611_2.varioData.averageClimbRateAvailable == true) ) {
+    averageVSpeedFloat = ( oXs_MS5611.varioData.climbRateFloat + oXs_MS5611_2.varioData.climbRateFloat ) / 2 ;
+    if ( abs((int32_t)  averageVSpeedFloat - averageVSpeed) > VARIOHYSTERESIS ) {
+          averageVSpeed = (int32_t)  averageVSpeedFloat ;
+    }    
+    averageVSpeedAvailable = true ;
+    oXs_MS5611.varioData.averageClimbRateAvailable = false ;
+    oXs_MS5611_2.varioData.averageClimbRateAvailable = false ;
+  }  
+#endif  
 
 #if defined (VARIO) && ( defined (VARIO2) || defined (AIRSPEED) ) && defined (VARIO_SECONDARY ) && defined( VARIO_PRIMARY )  && defined (PIN_PPM)
   if (( selectedVario == 0) && ( oXs_MS5611.varioData.switchClimbRateAvailable == true ) )  {
@@ -356,7 +374,12 @@ void readSensors() {
       switchVSpeedAvailable = true ;
       oXs_MS5611_2.varioData.switchClimbRateAvailable = false ;
   }
-#endif
+  else if ( ( selectedVario == 3) && ( averageVSpeedAvailable == true )) {
+      switchVSpeed = averageVSpeed ;
+      switchVSpeedAvailable = true ;
+      averageVSpeedAvailable = false ;
+  }
+#endif // end of VARIO2
 #if  defined (AIRSPEED)
   else if ( ( selectedVario == 2) && ( switchCompensatedClimbRateAvailable == true )) {
       switchVSpeed = compensatedClimbRate ;

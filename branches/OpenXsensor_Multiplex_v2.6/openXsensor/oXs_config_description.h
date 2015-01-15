@@ -46,13 +46,8 @@ started by Rainer Schloßhan
 *        To deactivate a parameter, in general, you can add "//" just before "#define"; this line will then be considered as a comment and discarded.
 ************************************************************************************************************************
 
-// --------- 1 - General protocol ---------
-// ***** 1.1 - Multiplex protocol is used (otherwise oXs assumes it is Frsky protocol) *****
-#define MULTIPLEX
-// ***** 1.2 - FrSky device ID when Sport protocol is used *****
-#define SENSOR_ID    0x03 //0x1B 
 
-**** 1 - General protocol & Frsky sensor_ID to be used **********************************************************************
+**** 1 - Protocol & Frsky sensor_ID to be used **********************************************************************
 * Currently oXs supports only 2 telemetry protocols : Multiplex & Frsky
 * Both are not supported simultanously; if you activate the Multilex, the Frsky is disactivated (and the opposite) 
 * 1.1 Multiplex protocol
@@ -69,8 +64,9 @@ started by Rainer Schloßhan
 *     For the HUB protocol, only one OXS may be connected to the receiver (other sensors are not allowed). 
 *     In SPORT protocol, there may be several sensors connected on the same bus (e.g. a GPS) but each sensor must have a different SENSOR_ID.
 *     So, you have to define a SENSOR_ID for your OXS that is different from sensor Id of other sensors.
+*     You define the SENSOR_ID with this line : #define SENSOR_ID    0x1B 
 *     Valid values are 0x1B, 0xBA, ... (there are 28 values)     
-*    Here the default sensor_IDs used by FrSky for their own sensors (Physical IDs + CRC), so it's better not to use those ones.
+*     Here the default sensor_IDs used by FrSky for their own sensors (Physical IDs + CRC), so it's better not to use those ones.
 *       #define DATA_ID_VARIO  0x00  0
 *       #define DATA_ID_FLVSS  0xA1  1
 *       #define DATA_ID_FAS    0x22  2
@@ -126,9 +122,12 @@ started by Rainer Schloßhan
 *
 * 4.1 - Connecting 1 or 2 MS5611 barometric sensor is an optional feature: *********************************************
 *     It is possible to connect 1 or 2  baro sensors; each sensor must be a MS5611 - like on GY63 board available on ebay
-*     Each sensor can calculate the relative altitude (in meter with 1 decimal) and the vertical speed (in meter/sec with 2 decimals).
+*     Each sensor can calculate the absolute/relative altitude (in meter with 1 decimal) and the vertical speed (in meter/sec with 2 decimals).
 *     A second sensor can be useful because if it is associated with a TEK probe and if option PPM is used, it is possible to select from the TX the sensor that will generate the vario tones.
 *     This allows to switch between a pneumatic compensated and an uncompensated vario.
+*     Using 2 baro sensors can also be an option to consider if you want e.g. a reduced reaction time of the vario for the same noise level.
+*        Note: to get a faster reaction time, sensitivity has to be increased (e.g. using 80 instead of 80 as SENSITIVITY_MIN)
+*     When 2 baro sensors are used, oXs can transmit as vertical speed the average from both sensors (see VERTICALSPEED_A in section 9) 
 *     Uncomment the line "#define VARIO" to enable first MS5611.
 *     Uncomment the line "#define VARIO2" to enable second MS5611.
 *     Both MS5611 are connected in parallel (using same Arduino pins A4 and A5).
@@ -197,12 +196,12 @@ started by Rainer Schloßhan
 *     When you use two MS5611 sensors or one MS5611 + one 4525D0 (see section 5), OXS can calculate several vertical speeds (or dTE).
 *     When the PPM option is implemented, OXS allows to select from TX which value (Vspeed from first or second baro sensor or compensated by airspeed) has to be sent as vertical speed and so will control the vario tone. 
 *     This allows switching between e.g. compensated and uncompensated vario.
-*     Even if OXS can calculate up to 3 vertical speeds (VERTICAL_SPEED, VERTICAL_SPEED_2, PRANDTL_DTE), it is only possible currently to switch between 2 predefined vertical speeds.
+*     Even if OXS can calculate up to 4 vertical speeds (VERTICAL_SPEED, VERTICAL_SPEED_2, PRANDTL_DTE, VERTICAL_SPEED_A), it is only possible currently to switch between 2 predefined vertical speeds.
 *     To enable this feature, additional parameters are required:
 *       1) Specify what are respectively the primary and the secondary vertical speeds using the lines:
 *                  #define VARIO_PRIMARY       2  
 *                  #define VARIO_SECONDARY     1
-*                 where 0 means first ms5611, 1 means second ms5611 , 2 means Prandtl Dte (=vario based on vario 1 + compensation from airspeed sensor).
+*                 where 0 means first ms5611, 1 means second ms5611 , 2 means Prandtl Dte (=vario based on vario 1 + compensation from airspeed sensor), 3 means average of first and second ms5611.
 *       2) Specify a range of PPM value that OXS has to check in order to send or the primary or the secondary vertical speed using the lines:
 *                 #define SWITCH_VARIO_MIN_AT_PPM 10 
 *                 #define SWITCH_VARIO_MAX_AT_PPM 90 
@@ -537,6 +536,7 @@ started by Rainer Schloßhan
 *                                                                          Mandatory (D series)  
 *    VERTICAL_SPEED     cm/s     Vertical speed (1)                                  Optional                 VSpd                0.1m/s
 *    VERTICAL_SPEED_2   cm/s     Vertical speed (2)                                  Optional                 VSpd
+*    VERTICAL_SPEED_A   cm/s     Vertical speed (7)                                  Optional                 VSpd
 *    PRANDTL_DTE        cm/s     Compensated vertical speed (based on airspeed)(3)   Optional                 VSpd
 *    PPM_VSPEED         cm/s     Vertical speed selected by PPM (4)       Optional  (X series)                VSpd
 *                                                                         Not implemented (D series)  
@@ -582,12 +582,12 @@ started by Rainer Schloßhan
 *   (5) Unit depends on the calibration parameter that are used (e.g. when a voltage is provided by a temperature sensor, unit can be degree)
 *       When used in order to measure Cell(s), calibration must ensure that unit = milliVolt 
 *   (6) For D series Rx, the hub protocol does not allow to transmit the airspeed as airspeed. OXS sent then the airspeed in the Gps speed
-
+*   (7) Measurement is the average of first and second baro (MS5611) sensor 
 * 
 * Note: when DEFAULTFIELD is Optional or NOT allowed, you can normally select yourself a telemetry field name (e.g. SENSITIVITY can be sent in T1 or T2 ,...) 
 *
 *
-***********************************************   Telemetry fields  (= names on Tx) *******************************************
+***********************************************   Telemetry fields in Frsky protocol (= names on Tx) *******************
 *-- Field in OpenTx ---- Normal associated OXS Measurement names ------------------------
 *  code   unit
 *        (metric)
@@ -609,7 +609,7 @@ started by Rainer Schloßhan
 *
 **** General set up to define which measurements are transmitted and how ***********************************************
 *     You MUST specify ONE ROW for EACH OXS measurement to transmit to Tx.
-*     The content of the line is different for Multiplex and forFrsky sprotocol
+*     The content of the line is different for Multiplex and for Frsky sprotocol
 * 9.1 Multiplex protocol : each row must contains:
 *        -  1 : the line number where the measurement has to be appear on the display. Valid number are from 2 to 15, do not use twice the same line number
 *        -  2 : a comma

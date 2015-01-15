@@ -205,6 +205,13 @@ uint8_t OXS_OUT_FRSKY::formatOneValue( uint8_t currentFieldToSend) {
         break ;     
 #endif  // End vario2    
 
+#if defined (VARIO )  &&  defined (VARIO2)
+      case VERTICAL_SPEED_A : 
+        if ( ! averageVSpeedAvailable  ) return 0;
+        valueTemp = averageVSpeed / 10 ;
+        averageVSpeedAvailable = false ; 
+         break ; 
+#endif
 
 #if defined (VARIO )  && ( defined (VARIO2) || defined( AIRSPEED) ) && defined (VARIO_PRIMARY ) && defined (VARIO_SECONDARY )  && defined (PIN_PPM)
       case PPM_VSPEED : 

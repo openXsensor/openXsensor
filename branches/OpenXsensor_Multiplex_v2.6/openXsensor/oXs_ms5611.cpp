@@ -230,7 +230,7 @@ void OXS_MS5611::readSensor() {
       if (pressureMicrosPrev1 > pressureMicrosPrev2 ) varioData.delaySmooth += 0.1 * ( pressureMicrosPrev1 -  pressureMicrosPrev2  - varioData.delaySmooth ) ; //delay between 2 measures  only if there is no overflow of pressureMicos
       climbRate2AltFloat = ((altitudeHighPass - altitudeLowPass )  * 5666.685 ) / varioData.delaySmooth; 
 
-      abs_deltaClimbRate =  abs(climbRate2AltFloat - climbRateFloat) ;
+      abs_deltaClimbRate =  abs(climbRate2AltFloat - varioData.climbRateFloat) ;
       if ( varioData.sensitivityPpm  > 0) sensitivityMin =   varioData.sensitivityPpm ; 
       if ( (abs_deltaClimbRate <= SENSITIVITY_MIN_AT) || (sensitivityMin >= SENSITIVITY_MAX) ) {
          varioData.sensitivity = sensitivityMin ;  
@@ -239,14 +239,14 @@ void OXS_MS5611::readSensor() {
       } else {
          varioData.sensitivity = sensitivityMin + ( SENSITIVITY_MAX - sensitivityMin ) * (abs_deltaClimbRate - SENSITIVITY_MIN_AT) / (SENSITIVITY_MAX_AT - SENSITIVITY_MIN_AT) ;
       }
-      climbRateFloat += varioData.sensitivity * (climbRate2AltFloat - climbRateFloat)  * 0.001 ; // sensitivity is an integer and must be divided by 1000
+      varioData.climbRateFloat += varioData.sensitivity * (climbRate2AltFloat - varioData.climbRateFloat)  * 0.001 ; // sensitivity is an integer and must be divided by 1000
       
-      if ( abs((int32_t)  climbRateFloat - varioData.climbRate) > VARIOHYSTERESIS ) {
-          varioData.climbRate = (int32_t)  climbRateFloat  ;
+      if ( abs((int32_t)  varioData.climbRateFloat - varioData.climbRate) > VARIOHYSTERESIS ) {
+          varioData.climbRate = (int32_t)  varioData.climbRateFloat  ;
       }    
       varioData.climbRateAvailable=true; // allows SPORT protocol to transmit the value
       varioData.switchClimbRateAvailable = true ; // inform readsensors() that a switchable vspeed is available
-      
+      varioData.averageClimbRateAvailable = true ; // inform readsensors() that a vspeed is available to calculate the average
       // AltitudeAvailable is set to true only once every 100 msec in order to give priority to climb rate on SPORT
       altMillis = millis() ;
       if (altMillis > nextAltMillis){

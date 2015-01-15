@@ -26,7 +26,7 @@
 
 // ***** 4.1 - Connecting 1 or 2 MS5611 barometric sensor *****
 #define VARIO // set as comment if there is no vario
-//#define VARIO2 // set as comment if there is no second vario
+#define VARIO2 // set as comment if there is no second vario
 
 // ***** 4.2 - Sensitivity predefined by program *****
 #define SENSITIVITY_MIN 50
@@ -44,8 +44,8 @@
 #define VARIOHYSTERESIS 5
 
 // ***** 4.5 - Vertical speeds calculations *****
-#define VARIO_PRIMARY       2        // 0 means first ms5611, 1 means second ms5611 , 2 means vario based on vario 1 + compensation from airspeed
-#define VARIO_SECONDARY     0        // 0 means first ms5611, 1 means second ms5611 , 2 means vario based on vario 1 + compensation from airspeed
+#define VARIO_PRIMARY       2        // 0 means first ms5611, 1 means second ms5611 , 2 means vario based on vario 1 + compensation from airspeed , 3 means average of first and second ms5611
+#define VARIO_SECONDARY     0        // 0 means first ms5611, 1 means second ms5611 , 2 means vario based on vario 1 + compensation from airspeed , 3 means average of first and second ms5611
 #define SWITCH_VARIO_MIN_AT_PPM 10
 #define SWITCH_VARIO_MAX_AT_PPM 90
 

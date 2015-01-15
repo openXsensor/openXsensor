@@ -161,9 +161,10 @@
 #define PPM_VSPEED         23       // DEFAULTFIELD can be used; Vpseed from first or second MS5611 or compensatedVspeed will be sent; to be used only when VARIO_SECONDARY is defined and PIN_PPM is defined
 #define PPM                24       // DEFAULTFIELD can NOT be used ;
 #define PRANDTL_DTE        25       // DEFAULTFIELD can be used
-#define TEST1              99       // reserved : only for debugging
-#define TEST2             100       // reserved : only for debugging
-#define TEST3             101       // reserved : only for debugging
+#define TEST1              26       // reserved : only for debugging
+#define TEST2              27       // reserved : only for debugging
+#define TEST3              28       // reserved : only for debugging
+#define VERTICAL_SPEED_A   29       // DEFAULTFIELD can be used
 // to do : add alt min, alt max ,  rpm max? , current max (not sure that it is neaded because it can be calculated on TX side
 // End of list of type of available measurements
 
@@ -236,6 +237,8 @@ extern int32_t compensatedClimbRate ;
 extern bool compensatedClimbRateAvailable ;
 extern int32_t switchVSpeed ; // used to transmit the selected Vspeed
 extern bool switchVSpeedAvailable ;
+extern int32_t averageVSpeed ; // used to transmit the average Vspeed
+extern bool averageVSpeedAvailable ;
 extern int32_t test1Value ;// used in order to test the transmission of any value
 extern bool test1ValueAvailable ;
 extern int32_t test2Value ;// used in order to test the transmission of any value

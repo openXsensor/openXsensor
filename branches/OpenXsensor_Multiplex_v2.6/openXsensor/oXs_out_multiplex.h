@@ -50,8 +50,8 @@ struct t_mbAllData {
 
 #define MULTIPLEX_UNITS MU_LEVEL , MU_ALT , MU_VSPD , MU_LEVEL , MU_ALT , MU_VOLT , MU_VOLT , MU_VOLT , MU_VOLT , MU_VOLT ,\
                         MU_VOLT , MU_CURR , MU_MAH , MU_VOLT , MU_VOLT ,MU_VOLT , MU_RPM , MU_ALT , MU_VSPD ,  MU_LEVEL ,\
-                        MU_ALT , MU_ASPD , MU_VSPD , MU_LEVEL , MU_LEVEL , MU_VSPD , MU_LEVEL , MU_LEVEL , MU_LEVEL , MU_ALT ,\
-                        MU_ALT , MU_VOLT , MU_VOLT , MU_VOLT , MU_VOLT , MU_VOLT , MU_VOLT , MU_VOLT , MU_VOLT 
+                        MU_ALT , MU_ASPD , MU_VSPD , MU_LEVEL , MU_LEVEL , MU_VSPD , MU_LEVEL , MU_LEVEL , MU_LEVEL , MU_VSPD , \
+                        MU_ALT , MU_ALT , MU_VOLT , MU_VOLT , MU_VOLT , MU_VOLT , MU_VOLT , MU_VOLT , MU_VOLT , MU_VOLT 
   
 
 //  This is the list of codes for each available measurements
@@ -84,16 +84,17 @@ struct t_mbAllData {
 #define TEST1              26       // reserved : only for debugging
 #define TEST2             27       // reserved : only for debugging
 #define TEST3             28       // reserved : only for debugging
-#define REL_ALTIMETER     29
-#define REL_ALTIMETER_2   30
-#define CELL_1            31
-#define CELL_2            32
-#define CELL_3            33
-#define CELL_4            34
-#define CELL_5            35
-#define CELL_6            36
-#define CELL_MIN          37
-#define CELL_TOT          38
+#define VERTICAL_SPEED_A  29
+#define REL_ALTIMETER     30
+#define REL_ALTIMETER_2   31
+#define CELL_1            32
+#define CELL_2            33
+#define CELL_3            34
+#define CELL_4            35
+#define CELL_5            36
+#define CELL_6            37
+#define CELL_MIN          38
+#define CELL_TOT          39
 
 // to do : add alt min, alt max ,  rpm max? , current max (not sure that it is neaded because it can be calculated on TX side
 // End of list of type of available measurements
@@ -159,6 +160,8 @@ extern int32_t compensatedClimbRate ;
 extern bool compensatedClimbRateAvailable ;
 extern int32_t switchVSpeed ; // used to transmit the selected Vspeed
 extern bool switchVSpeedAvailable ;
+extern int32_t averageVSpeed ; // used to transmit the average Vspeed
+extern bool averageVSpeedAvailable ;
 extern int32_t test1Value ;// used in order to test the transmission of any value
 extern bool test1ValueAvailable ;
 extern int32_t test2Value ;// used in order to test the transmission of any value
