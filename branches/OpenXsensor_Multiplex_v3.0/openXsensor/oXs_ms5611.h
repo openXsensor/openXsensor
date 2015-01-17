@@ -17,8 +17,11 @@ struct VARIODATA {
   bool absoluteAltAvailable ;
   bool altitudeAt20MsecAvailable   ;  // use to say to readsensors() that an altitude is available and that dte can be calculated.
   int32_t altOffset ;     // in cm
-  bool relativeAltAvailable ;   
   int32_t relativeAlt ;     // in cm
+  bool relativeAltAvailable ;   
+  int32_t relativeAltMax ;     // in cm
+  bool relativeAltMaxAvailable ;   
+ 
   float delaySmooth ; // smoothed delay between 2 altitude calculations
   
   int32_t prevAlt[20] ;   // table contains the 20 latest altitude
