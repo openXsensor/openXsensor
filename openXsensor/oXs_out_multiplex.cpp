@@ -175,6 +175,12 @@ uint8_t OXS_OUT_FRSKY::formatOneValue( uint8_t currentFieldToSend) {
         valueTemp = (varioData->relativeAlt ) / 100 ;
         varioData->relativeAltAvailable = false ;
             break ;
+      case  ALTIMETER_MAX :
+        if ( ! varioData->relativeAltMaxAvailable ) return 0 ;
+        valueTemp = (varioData->relativeAltMax ) / 100 ;
+        varioData->relativeAltMaxAvailable = false ;
+            break ;
+      
 #endif  // End vario    
 
 #ifdef VARIO2       

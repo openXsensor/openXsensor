@@ -257,6 +257,8 @@ void OXS_MS5611::readSensor() {
         if (varioData.altOffset == 0) varioData.altOffset = varioData.absoluteAlt ;
         varioData.relativeAlt = varioData.absoluteAlt - varioData.altOffset ;
         varioData.relativeAltAvailable = true ;
+        if ( varioData.relativeAlt > varioData.relativeAltMax ) varioData.relativeAltMax = varioData.relativeAlt ;
+        varioData.relativeAltMaxAvailable = true ;
         if ( altMillis > nextAverageAltMillis ){ // calculation of the difference of altitude (in m) between the 10 last sec
             nextAverageAltMillis = altMillis + 500 ; // calculate only once every 500 msec
             varioData.vSpeed10Sec = (varioData.absoluteAlt - varioData.prevAlt[varioData.idxPrevAlt]) /100 ;

@@ -51,7 +51,8 @@ struct t_mbAllData {
 #define MULTIPLEX_UNITS MU_LEVEL , MU_ALT , MU_VSPD , MU_LEVEL , MU_ALT , MU_VOLT , MU_VOLT , MU_VOLT , MU_VOLT , MU_VOLT ,\
                         MU_VOLT , MU_CURR , MU_MAH , MU_VOLT , MU_VOLT ,MU_VOLT , MU_RPM , MU_ALT , MU_VSPD ,  MU_LEVEL ,\
                         MU_ALT , MU_ASPD , MU_VSPD , MU_LEVEL , MU_LEVEL , MU_VSPD , MU_LEVEL , MU_LEVEL , MU_LEVEL , MU_VSPD , \
-                        MU_ALT , MU_ALT , MU_VOLT , MU_VOLT , MU_VOLT , MU_VOLT , MU_VOLT , MU_VOLT , MU_VOLT , MU_VOLT 
+                        MU_ALT , MU_ALT , MU_VOLT , MU_VOLT , MU_VOLT , MU_VOLT , MU_VOLT , MU_VOLT , MU_VOLT , MU_VOLT , \
+                        MU_ALT
   
 
 //  This is the list of codes for each available measurements
@@ -95,7 +96,7 @@ struct t_mbAllData {
 #define CELL_6            37
 #define CELL_MIN          38
 #define CELL_TOT          39
-
+#define ALTIMETER_MAX     40
 // to do : add alt min, alt max ,  rpm max? , current max (not sure that it is neaded because it can be calculated on TX side
 // End of list of type of available measurements
 

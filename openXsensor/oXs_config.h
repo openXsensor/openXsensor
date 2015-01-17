@@ -112,7 +112,7 @@
 // ***** 9.1 - Frsky data *****
 #define SETUP_FRSKY_DATA_TO_SEND    \
                         DEFAULTFIELD , ALTIMETER , 1 , 1 , 0 ,\
-                        DEFAULTFIELD , VERTICAL_SPEED , 1 , 1 , 0
+                        DEFAULTFIELD , VERTICAL_SPEED_A , 1 , 1 , 0
 /*
                         VSpd , PPM_VSPEED , 1 , 1 ,0 , \
                         DEFAULTFIELD , AIR_SPEED , 1 , 1 ,0 , \
@@ -129,8 +129,8 @@
                         3 , ALTIMETER , 1 , 1 , 0 , -16384 , 16383 , \
                         6 , VERTICAL_SPEED , 1 , 1 , 0, -500 , 500 , \
                         5 , REL_ALTIMETER , 1 , 1 , 0 , -16384 , 16383 , \
-                        7 , CELL_TOT , 1 , 1 , 0 , -16384 , 16383    
-
+                        7 , CELL_TOT , 1 , 1 , 0 , -16384 , 16383 , \    
+                        5 , ALTIMETER_MAX , 1 , 1 , 0 , -16384 , 16383 
 // --------- 10 - Reserved for developer. DEBUG must be activated here when we want to debug one or several functions in some other files. ---------
 //#define DEBUG
 
