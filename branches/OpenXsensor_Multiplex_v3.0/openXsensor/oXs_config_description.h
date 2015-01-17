@@ -562,6 +562,7 @@ started by Rainer Schloßhan
 *    PPM                none     Value from PPM signal (range = -100 /+100)        NOT allowed
 *    REL_ALTIMETER       cm      Relative altitude (1)                       Not implemented in FRSKY protocol                 1m
 *    REL_ALTIMETER_2     cm      Relative altitude (2)                       Not implemented in FRSKY protocol                 1m
+*    ALTIMETER_MAX       cm      Max relative altitude (1)                   Not implemented in FRSKY protocol                 1m
 *    CELL_1             mV(5)    Value based on (milli)Volt on PIN_VOLTAGE_1 Not implemented in FRSKY protocol                 0.1V
 *    CELL_2             mV(5)    Value based on mVolt on PIN_VOLTAGE_1 & 2   Not implemented in FRSKY protocol                 0.1V
 *    CELL_3             mV(5)    Value based on mVolt on PIN_VOLTAGE_2 & 3   Not implemented in FRSKY protocol                 0.1V
