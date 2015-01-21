@@ -164,7 +164,8 @@ void OXS_VOLTAGE::voltageNrIncrease() {
         }
         if ( voltageData.mVoltCellMin > 0 ) {
           voltageData.mVoltCellMin_Available = true ;
-        }  
+        }
+        voltageData.mVoltCellTot_Available = true ;
 #else  // not multiplex
         if (NUMBEROFCELLS == 1) {
           secondMVolt = 0 ; 
