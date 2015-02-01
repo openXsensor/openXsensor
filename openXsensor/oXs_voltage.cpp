@@ -136,6 +136,37 @@ void OXS_VOLTAGE::voltageNrIncrease() {
           } // if
         } // End For   
 #if defined ( NUMBEROFCELLS ) && (NUMBEROFCELLS > 0)
+#ifdef MULTIPLEX
+        for (uint8_t cellIndex = 0; cellIndex < NUMBEROFCELLS ; cellIndex++) {
+          int32_t mVoltOneCell ;
+          uint8_t prevIndex ;
+          if (cellIndex == 0) {
+            mVoltOneCell = voltageData.mVolt[cellIndex];
+          } else { 
+            mVoltOneCell = voltageData.mVolt[cellIndex] - voltageData.mVolt[prevIndex] ;
+          }
+          prevIndex = cellIndex ;        
+          if (mVoltOneCell  < 500) mVoltOneCell = 0 ;
+          voltageData.mVoltCell[cellIndex]  = mVoltOneCell ;
+          voltageData.mVoltCell_Available[cellIndex] = true ;
+        }
+        voltageData.mVoltCellMin = 0 ;
+        voltageData.mVoltCellTot = 0 ;
+        for (uint8_t cellIndex = 0; cellIndex < NUMBEROFCELLS ; cellIndex++) {
+          if (voltageData.mVoltCell[cellIndex] == 0 ) {
+            break ;
+          } else {
+            if ( (voltageData.mVoltCellMin == 0) || ( voltageData.mVoltCellMin > voltageData.mVoltCell[cellIndex] ) ){
+              voltageData.mVoltCellMin = voltageData.mVoltCell[cellIndex] ;
+            }
+              voltageData.mVoltCellTot = voltageData.mVolt[cellIndex] ;            
+          }  
+        }
+        if ( voltageData.mVoltCellMin > 0 ) {
+          voltageData.mVoltCellMin_Available = true ;
+        }
+        voltageData.mVoltCellTot_Available = true ;
+#else  // not multiplex
         if (NUMBEROFCELLS == 1) {
           secondMVolt = 0 ; 
         }
@@ -164,6 +195,7 @@ void OXS_VOLTAGE::voltageNrIncrease() {
             voltageData.mVoltCell_5_6 = calculateCell(voltageData.mVolt[3] , voltageData.mVolt[4] , secondMVolt , 4) ;
             voltageData.mVoltCell_5_6_Available = true ;
         }
+#endif // Enf of multiplex/non multiplex
 #endif
         cnt=0;
         lastVoltMillis = millis() ;

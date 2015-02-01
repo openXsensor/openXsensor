@@ -4,18 +4,27 @@
 //***********************************************************************************************************************
 // Another file in this project (see oXs_config_description.h) provides detailed explanations on how to set up this file.
 //***********************************************************************************************************************
+//  Note: the oXs_config.h file present on this Google site is not always meaningful.
+//       It could be that the combination of active/non active parameters is not consistent.
+//       This is just the result of many updates and tests in this document.
+//       So take always care to set up the oXs_config.h file according to your needs and check carefully all options.
+//       You can also use the oXs configurator in order to generate automatically a valid file.
+
 
 #ifndef OXS_CONFIG_h
 #define OXS_CONFIG_h
 
-// --------- 1 - FrSky device ID when Sport protocol is used ---------
-#define SENSOR_ID    0x1B
 
+// --------- 1 - General protocol ---------
+// ***** 1.1 - Multiplex protocol is used (otherwise oXs assumes it is Frsky protocol) *****
+//#define MULTIPLEX
+// ***** 1.2 - FrSky device ID (required when Sport protocol is used)  *****
+#define SENSOR_ID    0x1B //0x1B 
 // --------- 2 - Serial data pin choice ---------
 #define PIN_SERIALTX      4    // The pin which transmits the serial data to the FrSky telemetry receiver
 
 // --------- 3 - PPM settings ---------
-#define PIN_PPM           2       // default is 2 but my own device use 3
+#define PIN_PPM           3       // default is 2 but my own device use 3
 #define PPM_MIN_100       980     // default 1500 - 512 ; // pulse width (usec) when TX sends a channel = -100
 #define PPM_PLUS_100      1990    // default 1500 + 512 ; // pulse width (usec) when TX sends a channel = +100
 
@@ -41,8 +50,8 @@
 #define VARIOHYSTERESIS 5
 
 // ***** 4.5 - Vertical speeds calculations *****
-#define VARIO_PRIMARY       2        // 0 means first ms5611, 1 means second ms5611 , 2 means vario based on vario 1 + compensation from airspeed
-#define VARIO_SECONDARY     0        // 0 means first ms5611, 1 means second ms5611 , 2 means vario based on vario 1 + compensation from airspeed
+#define VARIO_PRIMARY       2        // 0 means first ms5611, 1 means second ms5611 , 2 means vario based on vario 1 + compensation from airspeed , 3 means average of first and second ms5611
+#define VARIO_SECONDARY     0        // 0 means first ms5611, 1 means second ms5611 , 2 means vario based on vario 1 + compensation from airspeed , 3 means average of first and second ms5611
 #define SWITCH_VARIO_MIN_AT_PPM 10
 #define SWITCH_VARIO_MAX_AT_PPM 90
 
@@ -52,7 +61,7 @@
 #define ANALOG_VSPEED_MAX  3
 
 // --------- 5 - Airspeed settings ---------
-#define AIRSPEED    MS4525
+//#define AIRSPEED    MS4525
 
 #define AIRSPEED_RESET_AT_PPM   100
 
@@ -67,8 +76,8 @@
 //#define USE_INTERNAL_REFERENCE
 
 // ***** 6.2 - Voltages Analog Pins *****
-#define PIN_VOLTAGE_1 1
-#define PIN_VOLTAGE_2 2
+//#define PIN_VOLTAGE_1 1
+//#define PIN_VOLTAGE_2 2
 //#define PIN_VOLTAGE_3 3
 //#define PIN_VOLTAGE_4 1
 //#define PIN_VOLTAGE_5 2
@@ -89,10 +98,10 @@
 //#define MVOLT_PER_STEP_6       1
 
 // ***** 6.4 - Number of Lipo cells to measure (and transmit to Tx) *****
-//#define NUMBEROFCELLS 3  // keep this line but set value to 0 (zero) if you do not want to transmit cell voltage.
+//#define NUMBEROFCELLS 2  // keep this line but set value to 0 (zero) if you do not want to transmit cell voltage.
 
 // ***** 6.5 - Current sensor analog pin *****
-#define PIN_CURRENTSENSOR   3
+//#define PIN_CURRENTSENSOR   3
 
 // ***** 6.6 - Current sensor calibration parameters *****
 #define OFFSET_CURRENT_STEPS         0
@@ -106,10 +115,13 @@
 //#define PIN_PUSHBUTTON    2   // default is 10 but my own device is 2
 
 // --------- 9 - Data to transmit ---------
-// General set up to define which measurements are transmitted and how
-
-#define SETUP_DATA_TO_SEND    \
+// ***** 9.1 - Frsky data *****
+#define SETUP_FRSKY_DATA_TO_SEND    \
                         DEFAULTFIELD , ALTIMETER , 1 , 1 , 0 ,\
+                        DEFAULTFIELD , VERTICAL_SPEED , 1 , 1 , 0 , \
+                        T1 , PPM , 1 , 1, 0 , \
+                        T2 , TEST1 , 1 , 1, 0
+/*
                         VSpd , PPM_VSPEED , 1 , 1 ,0 , \
                         DEFAULTFIELD , AIR_SPEED , 1 , 1 ,0 , \
                         AccX , VERTICAL_SPEED , 1 , 1 ,0 , \
@@ -119,8 +131,28 @@
                         DEFAULTFIELD , CURRENTMA , 1, 1, 0 , \
                         DEFAULTFIELD , MILLIAH, 1, 1, 0 , \
                         Fuel , SENSITIVITY , 1, 1, 0
+*/
+// ***** 9.2 - Multiplex data *****
+#define SETUP_MULTIPLEX_DATA_TO_SEND    \
+                        3 , ALTIMETER , 1 , 1 , 0 , -16384 , 16383 , \
+                        6 , VERTICAL_SPEED , 1 , 1 , 0, -500 , 500 , \
+                        5 , REL_ALTIMETER , 1 , 1 , 0 , -16384 , 16383 , \
+                        7 , CELL_TOT , 1 , 1 , 0 , -16384 , 16383 , \
+                        5 , ALTIMETER_MAX , 1 , 1 , 0 , -16384 , 16383 
+// --------- 10 - Sequencer ---------
+#define SEQUENCE_OUTPUTS 0b100000  
+#define SEQUENCE_UNIT 100
+#define SEQUENCE_m100    1 , 0b100000 , 1 , 0b000000 , 1   , 0b100000 , 1 , 0b000000 
+#define SEQUENCE_m75     1 , 0b100000 , 1 , 0b000000 , 2 , 0b100000 , 2 , 0b000000
+#define SEQUENCE_m50     5 , 0b100000 , 5 , 0b000000
+#define SEQUENCE_m25     5 , 0b100000 , 5 , 0b000000 , 0   , 0b100000
+//#define SEQUENCE_0      20 , 0b100000 , 0 , 0b100000
+#define SEQUENCE_25      2 , 0b100000 , 2 , 0b000000
+#define SEQUENCE_50      5 , 0b100000 , 5 , 0b000000
+#define SEQUENCE_75      7 , 0b100000 , 7 , 0b000000
+#define SEQUENCE_100    10 , 0b100000 ,10 , 0b000000
 
-// --------- 10 - Reserved for developer. DEBUG must be activated here when we want to debug one or several functions in some other files. ---------
+// --------- 11 - Reserved for developer. DEBUG must be activated here when we want to debug one or several functions in some other files. ---------
 //#define DEBUG
 
 #ifdef DEBUG

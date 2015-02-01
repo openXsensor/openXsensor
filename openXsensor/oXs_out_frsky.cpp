@@ -1,4 +1,7 @@
+// file for FRSKY
+
 #include "oXs_out_frsky.h"
+#ifndef MULTIPLEX
 
 #ifdef DEBUG
 // ************************* Several parameters to help debugging
@@ -48,7 +51,7 @@ static bool fieldOk ;
 
 //Used by both protocols
 volatile bool sportAvailable = false ;
-int fieldContainsData[][5]  = {  SETUP_DATA_TO_SEND } ; // contains the set up of field to be transmitted
+int fieldContainsData[][5]  = {  SETUP_FRSKY_DATA_TO_SEND } ; // contains the set up of field to be transmitted
 int numberOfFields = sizeof(fieldContainsData) / sizeof(fieldContainsData[0]) ;
 static uint16_t convertToSportId[15] = { FRSKY_SPORT_ID } ; // this array is used to convert an index inside fieldContainsData[][0] into the SPORT field Id (or defaultfield) 
 static uint8_t convertToHubId[15] = { FRSKY_HUB_ID } ; //// this array is used to convert an index inside fieldContainsData[][0] into the Hub field Id (or defaultfield) 
@@ -339,6 +342,11 @@ uint8_t OXS_OUT_FRSKY::readStatusValue( uint8_t fieldToSend) {
           return varioData_2->vSpeed10SecAvailable ;
 #endif
 
+#if defined (VARIO)  &&  defined (VARIO2) 
+      case  VERTICAL_SPEED_A :
+          return averageVSpeedAvailable ; 
+#endif
+
 #if defined (VARIO)  && ( defined (VARIO2)  || defined (AIRSPEED) ) && defined (VARIO_PRIMARY ) && defined (VARIO_SECONDARY ) && defined (PIN_PPM)
       case  PPM_VSPEED :
           return switchVSpeedAvailable ; 
@@ -431,6 +439,10 @@ uint8_t OXS_OUT_FRSKY::nextFieldToSend(  uint8_t indexField) {
       else if ( (fieldContainsData[indexField][1] == VERTICAL_SPEED_2)  && ( varioData_2->climbRateAvailable == KNOWN ) )  { return indexField ; } 
       else if ( (fieldContainsData[indexField][1] == SENSITIVITY_2)  && ( varioData_2->sensitivityAvailable == KNOWN ) )  { return indexField ; } 
       else if ( (fieldContainsData[indexField][1] == ALT_OVER_10_SEC_2)  && ( varioData_2->vSpeed10SecAvailable == KNOWN ) )  { return indexField ; } 
+#endif
+
+#if defined (VARIO)  &&  defined (VARIO2)
+      if ( (fieldContainsData[indexField][1] == VERTICAL_SPEED_A) && ( averageVSpeedAvailable == KNOWN ))  { return indexField ; }        
 #endif
 
 #if defined (VARIO) && ( defined (VARIO2) || defined (AIRSPEED) ) && defined (VARIO_PRIMARY ) && defined (VARIO_SECONDARY )  && defined (PIN_PPM)
@@ -638,6 +650,14 @@ void OXS_OUT_FRSKY::loadSportValueToSend( uint8_t currentFieldToSend) {
 #endif
              break ;       
 #endif  // End vario2    
+
+#if defined (VARIO )  &&  defined (VARIO2)
+      case VERTICAL_SPEED_A : 
+        valueTemp = averageVSpeed ;
+        averageVSpeedAvailable = false ; 
+         fieldID = VARIO_FIRST_ID ;         
+         break ; 
+#endif
 
 
 #if defined (VARIO )  && ( defined (VARIO2) || defined( AIRSPEED) ) && defined (VARIO_PRIMARY ) && defined (VARIO_SECONDARY )  && defined (PIN_PPM)
@@ -1099,6 +1119,14 @@ void OXS_OUT_FRSKY::loadHubValueToSend( uint8_t currentFieldToSend ) {
           
 #endif   // end vario2 
 
+#if defined (VARIO )  &&  defined (VARIO2)
+      case VERTICAL_SPEED_A :
+              if(  fieldOk == true ) {
+                 SendValue((int8_t) fieldToSend , ( ( (int16_t) averageVSpeed * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4] );
+              }   
+          break ;   
+#endif
+
 #if defined (VARIO )  && ( defined (VARIO2) || defined( AIRSPEED) ) && defined (VARIO_PRIMARY ) && defined (VARIO_SECONDARY ) && defined (PIN_PPM)
       case PPM_VSPEED :
               if(  fieldOk == true ) {
@@ -1430,4 +1458,5 @@ void OXS_OUT_FRSKY::SendCurrentMilliAmps(int32_t milliamps)
 
 //#endif // End of FRSKY_SPORT
 
+#endif   //End of not MULTIPLEX
 

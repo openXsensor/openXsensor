@@ -13,13 +13,8 @@ started by Rainer Schloßhan
 ************************************* General explanation of the different options *************************************
 ************************************************************************************************************************
 *  The file oXs_config.h allows the user to set up different options. Here is a summary of the main options.
-*  Note: the oXs_config.h file present on this Google site is not always meaningful.
-*       It could be that the combination of active/non active parameters is not consistent.
-*       This is just the result of many updates and tests in this document.
-*       So take always care to set up the oXs_config.h file according to your needs and check carefully all options.
-*       You can also use the OXS configurator in order to generate automatically a valid file.
 *
-*  1 - Sensor_ID to be used 
+*  1 - General protocol & Frsky sensor_ID to be used 
 *  2 - Serial data pin
 *  3 - PPM settings (optional)
 *  4 - Vario settings (optional)
@@ -40,35 +35,43 @@ started by Rainer Schloßhan
 *  7 - RPM (rotations per minute) sensor settings (optional)
 *  8 - Persistent memory settings (optional)
 *  9 - Data to transmit - This part specifies list of codes to be used and how to combine them
-*  10 - Reserved for developer
+*  10 - Sequencer  (ON/OFF) for some digital outputs (E.g. for a light controller)
+*  11 - Reserved for developer
 *
 * Note : Active parameters are normally on a line beginning by "#define", followed by the name of the parameter and most of the time a value.
 *        To deactivate a parameter, in general, you can add "//" just before "#define"; this line will then be considered as a comment and discarded.
 ************************************************************************************************************************
 
 
-**** 1 - Sensor_ID to be used ******************************************************************************************
-* FrSky uses 2 different protocols:
-*   - SPORT is used for X series receivers (like X8R or X6R)
-*   - HUB is used for D series receivers (like D4R-II)
-* OXS supports now both protocols and detects automatically the type of receiver it is connected to.
-* So there is no need any more to specify the protocol to upload in the Arduino and
-* to reload the program with another protocol if you want to use the same OXS hardware on another type of receiver.
-* Still you have to take care that some telemetry fields exist only for the SPORT protocol (see section 8).
+**** 1 - Protocol & Frsky sensor_ID to be used **********************************************************************
+* Currently oXs supports only 2 telemetry protocols : Multiplex & Frsky
+* Both are not supported simultanously; if you activate the Multilex, the Frsky is disactivated (and the opposite) 
+* 1.1 Multiplex protocol
+*       in order to activate the Multiplex protocol, simply uncomment the line //#define MULTIPLEX
+* 1.2 Frsky protocol
+*     FrSky uses 2 different protocols:
+*       - SPORT is used for X series receivers (like X8R or X6R)
+*       - HUB is used for D series receivers (like D4R-II)
+*     oXs supports now both protocols and detects automatically the type of receiver it is connected to.
+*     So there is no need any more to specify the protocol to upload in the Arduino and
+*     to reload the program with another protocol if you want to use the same OXS hardware on another type of Frsky receiver.
+*     Still you have to take care that some telemetry fields exist only for the SPORT protocol (see section 8).
 *
-* For the HUB protocol, only one OXS may be connected to the receiver (other sensors are not allowed). 
-* In SPORT protocol, there may be several sensors connected on the same bus (e.g. a GPS) but each sensor must have a different SENSOR_ID.
-* So, you have to define a SENSOR_ID for your OXS that is different from sensor Id of other sensors.
-* Valid values are 0x1B, 0xBA, ... (there are 28 values)     
-* Here the default sensor_IDs used by FrSky for their own sensors (Physical IDs + CRC), so it's better not to use those ones.
-*    #define DATA_ID_VARIO  0x00  0
-*    #define DATA_ID_FLVSS  0xA1  1
-*    #define DATA_ID_FAS    0x22  2
-*    #define DATA_ID_GPS    0x83  3
-*    #define DATA_ID_RPM    0xE4  4
-*    #define DATA_ID_SP2UH  0x45  5
-*    #define DATA_ID_SP2UR  0xC6  6
+*     For the HUB protocol, only one OXS may be connected to the receiver (other sensors are not allowed). 
+*     In SPORT protocol, there may be several sensors connected on the same bus (e.g. a GPS) but each sensor must have a different SENSOR_ID.
+*     So, you have to define a SENSOR_ID for your OXS that is different from sensor Id of other sensors.
+*     You define the SENSOR_ID with this line : #define SENSOR_ID    0x1B 
+*     Valid values are 0x1B, 0xBA, ... (there are 28 values)     
+*     Here the default sensor_IDs used by FrSky for their own sensors (Physical IDs + CRC), so it's better not to use those ones.
+*       #define DATA_ID_VARIO  0x00  0
+*       #define DATA_ID_FLVSS  0xA1  1
+*       #define DATA_ID_FAS    0x22  2
+*       #define DATA_ID_GPS    0x83  3
+*       #define DATA_ID_RPM    0xE4  4
+*       #define DATA_ID_SP2UH  0x45  5
+*       #define DATA_ID_SP2UR  0xC6  6
 ************************************************************************************************************************
+//#define MULTIPLEX
 #define SENSOR_ID    0x1B   
 
 
@@ -115,9 +118,12 @@ started by Rainer Schloßhan
 *
 * 4.1 - Connecting 1 or 2 MS5611 barometric sensor is an optional feature: *********************************************
 *     It is possible to connect 1 or 2  baro sensors; each sensor must be a MS5611 - like on GY63 board available on ebay
-*     Each sensor can calculate the relative altitude (in meter with 1 decimal) and the vertical speed (in meter/sec with 2 decimals).
+*     Each sensor can calculate the absolute/relative altitude (in meter with 1 decimal) and the vertical speed (in meter/sec with 2 decimals).
 *     A second sensor can be useful because if it is associated with a TEK probe and if option PPM is used, it is possible to select from the TX the sensor that will generate the vario tones.
 *     This allows to switch between a pneumatic compensated and an uncompensated vario.
+*     Using 2 baro sensors can also be an option to consider if you want e.g. a reduced reaction time of the vario for the same noise level.
+*        Note: to get a faster reaction time, sensitivity has to be increased (e.g. using 80 instead of 80 as SENSITIVITY_MIN)
+*     When 2 baro sensors are used, oXs can transmit as vertical speed the average from both sensors (see VERTICALSPEED_A in section 9) 
 *     Uncomment the line "#define VARIO" to enable first MS5611.
 *     Uncomment the line "#define VARIO2" to enable second MS5611.
 *     Both MS5611 are connected in parallel (using same Arduino pins A4 and A5).
@@ -165,7 +171,7 @@ started by Rainer Schloßhan
 *         SENSITIVITY_PPM_MIN     =  the minimum value for SENSITIVITY_MIN that can be assigned using PPM; typical value could be 20.
 *         SENSITIVITY_PPM_MAX     =  the maximum value for SENSITIVITY_MIN that can be assigned using PPM; typical value could be 100.
 *             SENSITIVITY_MIN is automatically interpolated between SENSITIVITY_PPM_MIN and SENSITIVITY_PPM_MAX depending on the PPM signal.
-*     Sensitivity will be changed only when PPM signal is between SENSITIVITY_PPM_MIN - 5 and  SENSITIVITY_PPM_MAX + 5.
+*     Sensitivity will be changed only when PPM signal is between SENSITIVITY_MIN_AT_PPM - 5 and  SENSITIVITY_MAX_AT_PPM + 5.
 *     Important note : Sensitivity is changed based on the absolute value of PPM; so PPM = -25 has the same effect as PPM = 25.
 *     This is important in order to combine change in sensitivity with a switch on TX to select the sensor (1 or 2) sending the vertical speed (allowing switching between compensated and uncompensated vario).
 ************************************************************************************************************************
@@ -186,12 +192,12 @@ started by Rainer Schloßhan
 *     When you use two MS5611 sensors or one MS5611 + one 4525D0 (see section 5), OXS can calculate several vertical speeds (or dTE).
 *     When the PPM option is implemented, OXS allows to select from TX which value (Vspeed from first or second baro sensor or compensated by airspeed) has to be sent as vertical speed and so will control the vario tone. 
 *     This allows switching between e.g. compensated and uncompensated vario.
-*     Even if OXS can calculate up to 3 vertical speeds (VERTICAL_SPEED, VERTICAL_SPEED_2, PRANDTL_DTE), it is only possible currently to switch between 2 predefined vertical speeds.
+*     Even if OXS can calculate up to 4 vertical speeds (VERTICAL_SPEED, VERTICAL_SPEED_2, PRANDTL_DTE, VERTICAL_SPEED_A), it is only possible currently to switch between 2 predefined vertical speeds.
 *     To enable this feature, additional parameters are required:
 *       1) Specify what are respectively the primary and the secondary vertical speeds using the lines:
 *                  #define VARIO_PRIMARY       2  
 *                  #define VARIO_SECONDARY     1
-*                 where 0 means first ms5611, 1 means second ms5611 , 2 means Prandtl Dte (=vario based on vario 1 + compensation from airspeed sensor).
+*                 where 0 means first ms5611, 1 means second ms5611 , 2 means Prandtl Dte (=vario based on vario 1 + compensation from airspeed sensor), 3 means average of first and second ms5611.
 *       2) Specify a range of PPM value that OXS has to check in order to send or the primary or the secondary vertical speed using the lines:
 *                 #define SWITCH_VARIO_MIN_AT_PPM 10 
 *                 #define SWITCH_VARIO_MAX_AT_PPM 90 
@@ -485,11 +491,18 @@ started by Rainer Schloßhan
 **** 9 - Data to transmit **********************************************************************************************
 *      In this section, you will define which OXS measurements are sent to Tx and in which telemetry field they appear on the Tx telemetry panels.
 *      You have also to specify if some scaling have to be applied by OXS.
+*      Furthermore for Multiplex protocol you can also specify a range value in order to set alarms on/off.
 *
 *      Each measurement that OXS can transmit has a name (= OXS measurement name) in order to identify it (see list below).
+*      Most (but not all) of the oXs measurements can be transmitted via both protocolss but there are a few exception 
 *
-*      The telemetry name are those used in the telemetry screens on Tx.
+*      In Multiplex Protocol, for each oXs measurement to transmit, you only have to specify the line number (2...15) where the measurement has to appear on the display.
+*            On Tx side there is no specific calculation on the transmitted data. 
+*      In Frsky Protocol, each transmitted measurement is identified by some Frsky code while transmitted.
+*            Depending on the Frsky code, Tx knows which calculations have to be done, which conversion, where/how to display/record the value.
+*            The setup up in oXs is based on the telemetry names used in the telemetry screens on Tx side.
 
+*
 * Note: some telemetry name can't be sent for D series receiver because it has not been foreseen by FrSky (see below, e.g. A3 and A4).
 *      In some cases, it is possible to let OXS automatically select the right telemetry name using "DEFAULTFIELD" as telemetry name (see list below).
 *      Still not all OXS measurements may be combined with DEFAULTFIELD e.g. because FrSky and OpenTx have not foreseen this kind of measurement (e.g. for Vario sensitivity).
@@ -511,14 +524,15 @@ started by Rainer Schloßhan
 * Note: OpenTx does not reformat T1, T2, AccX, AccY, AccZ  when Tx is set in metric. So those are fields that can easily be used to get the original OXS measurement (with scaling applied).
 *
 ********************************************  Available OXS Measurements (when all options implemented)  ***************************************************
-* OXS Measurement names  unit     Description              Combination with DEFAULTFIELD             When DEFAULTFIELD is used, 
-*                                                         Mandatory, Optional, Not allowed          value in on TX in field named 
-*    ALTIMETER           cm      Altitude (1)                              Optional (X series)                 Alt
+*        oXs             oXs     Description              Combination with DEFAULTFIELD             When DEFAULTFIELD is used,    Mpx unit
+*   Measurement names   unit                                  Mandatory, Optional, Not allowed          value in on TX in field named 
+*    ALTIMETER           cm      Altitude (1)                              Optional (X series)                 Alt                1m
 *                                                                          Mandatory (D series)                Alt
-*    ALTIMETER_2         cm      Altitude (2)                              Optional (X series)                 Alt
+*    ALTIMETER_2         cm      Altitude (2)                              Optional (X series)                 Alt                1m
 *                                                                          Mandatory (D series)  
-*    VERTICAL_SPEED     cm/s     Vertical speed (1)                                  Optional                 VSpd
+*    VERTICAL_SPEED     cm/s     Vertical speed (1)                                  Optional                 VSpd                0.1m/s
 *    VERTICAL_SPEED_2   cm/s     Vertical speed (2)                                  Optional                 VSpd
+*    VERTICAL_SPEED_A   cm/s     Vertical speed (7)                                  Optional                 VSpd
 *    PRANDTL_DTE        cm/s     Compensated vertical speed (based on airspeed)(3)   Optional                 VSpd
 *    PPM_VSPEED         cm/s     Vertical speed selected by PPM (4)       Optional  (X series)                VSpd
 *                                                                         Not implemented (D series)  
@@ -542,7 +556,19 @@ started by Rainer Schloßhan
 *                                                                          Optional (D series)                Spd (6)      
 *    PRANDTL_COMPENSATION cm/s   Compensation for compensated vario                NOT allowed
 *    PPM                none     Value from PPM signal (range = -100 /+100)        NOT allowed
-*
+*    REL_ALTIMETER       cm      Relative altitude (1)                       Not implemented in FRSKY protocol                 1m
+*    REL_ALTIMETER_2     cm      Relative altitude (2)                       Not implemented in FRSKY protocol                 1m
+*    ALTIMETER_MAX       cm      Max relative altitude (1)                   Not implemented in FRSKY protocol                 1m
+*    CELL_1             mV(5)    Value based on (milli)Volt on PIN_VOLTAGE_1 Not implemented in FRSKY protocol                 0.1V
+*    CELL_2             mV(5)    Value based on mVolt on PIN_VOLTAGE_1 & 2   Not implemented in FRSKY protocol                 0.1V
+*    CELL_3             mV(5)    Value based on mVolt on PIN_VOLTAGE_2 & 3   Not implemented in FRSKY protocol                 0.1V
+*    CELL_4             mV(5)    Value based on mVolt on PIN_VOLTAGE_3 & 4   Not implemented in FRSKY protocol                 0.1V
+*    CELL_5             mV(5)    Value based on mVolt on PIN_VOLTAGE_4 & 5   Not implemented in FRSKY protocol                 0.1V
+*    CELL_6             mV(5)    Value based on mVolt on PIN_VOLTAGE_5 & 6   Not implemented in FRSKY protocol                 0.1V
+*    CELL_MIN           mV(5)    Value based on CELL_1 ... CELL_6            Not implemented in FRSKY protocol                 0.1V
+*    CELL_TOT           mV(5)    Value based on VOLT1...VOLT6                Not implemented in FRSKY protocol                 0.1V
+
+
 *   (1) Measurement from first baro (MS5611) sensor
 *   (2) Measurement from second baro (MS5611) sensor (can e.g. be connected to a TEK probe to get a pneumatic compensated vario)
 *   (3) PRANDTL_DTE is a compensated vertical speed (= delta total energy).
@@ -553,12 +579,12 @@ started by Rainer Schloßhan
 *   (5) Unit depends on the calibration parameter that are used (e.g. when a voltage is provided by a temperature sensor, unit can be degree)
 *       When used in order to measure Cell(s), calibration must ensure that unit = milliVolt 
 *   (6) For D series Rx, the hub protocol does not allow to transmit the airspeed as airspeed. OXS sent then the airspeed in the Gps speed
-
+*   (7) Measurement is the average of first and second baro (MS5611) sensor 
 * 
 * Note: when DEFAULTFIELD is Optional or NOT allowed, you can normally select yourself a telemetry field name (e.g. SENSITIVITY can be sent in T1 or T2 ,...) 
 *
 *
-***********************************************   Telemetry fields   ***************************************************
+***********************************************   Telemetry fields in Frsky protocol (= names on Tx) *******************
 *-- Field in OpenTx ---- Normal associated OXS Measurement names ------------------------
 *  code   unit
 *        (metric)
@@ -579,21 +605,39 @@ started by Rainer Schloßhan
 *   Cell & Cells         CELLS_1_2 & CELLS_3_4 & CELLS_5_6
 *
 **** General set up to define which measurements are transmitted and how ***********************************************
-* You MUST specify here under ONE ROW for EACH OXS measurement to transmit to Tx.
-* Each row must contains:
-*   - 1 : the (telemetry) field name in openTx (e.g. "Alt" ) or DEFAULTFIELD (when allowed) (!! see note (1) below)
-*   - 2 : a comma
-*   - 3 : the OXS measurement name to transmit in this field (e.g. "VOLT1")  (see note (2))
-*   - 4 : a comma
-*   - 5 : a multiplier factor to apply on the value to transmitted (set "1" to keep the original measurement, 10 to multiply by 10 , ...) (see note (3))
-*   - 6 : a comma
-*   - 7 : a divider factor to apply on the value to transmitted (set "1" to keep the original measurement, 10 to divide by 10 , ...)  (see note (3))
-*   - 8 : a comma
-*   - 9 : an offset factor to apply after having applied the multiplier and divider ((set "0" to keep the original measurement, "100" to add 100, ...)
-*   - 10 : a comma and "\" if there is least one next more (don't fill on the last row);
+*     You MUST specify ONE ROW for EACH OXS measurement to transmit to Tx.
+*     The content of the line is different for Multiplex and for Frsky sprotocol
+* 9.1 Multiplex protocol : each row must contains:
+*        -  1 : the line number where the measurement has to be appear on the display. Valid number are from 2 to 15, do not use twice the same line number
+*        -  2 : a comma
+*        -  3 : the OXS measurement name to transmit in this field (e.g. "VOLT1")  (see note (2))
+*        -  4 : a comma
+*        -  5 : a multiplier factor to apply on the value to transmitted (set "1" to keep the original measurement, 10 to multiply by 10 , ...) (see note (3))
+*        -  6 : a comma
+*        -  7 : a divider factor to apply on the value to transmitted (set "1" to keep the original measurement, 10 to divide by 10 , ...)  (see note (3))
+*        -  8 : a comma
+*        -  9 : an offset factor to apply after having applied the multiplier and divider ((set "0" to keep the original measurement, "100" to add 100, ...)
+*        - 10 : a comma
+*        - 11 : an alarm LOW value (see note (4))
+*        - 12 : a comma
+*        - 13 : an alarm HIGH value (see note (4))
+*        - 14 : a comma and "\" if there is least one next more (so don't fill on the last row);
 *                  TAKE CARE that "\" MUST be the LAST character on the row (even no space after)
 *                  TAKE CARE that no comment lines ("*...") may exist between rows
-*
+* 9.2 Frsky protocol : each row must contains:
+*        -  1 : (telemetry) field name in openTx (e.g. "Alt" ) or DEFAULTFIELD (when allowed) (!! see note (1) below)
+*        -  2 : a comma
+*        -  3 : the OXS measurement name to transmit in this field (e.g. "VOLT1")  (see note (2))
+*        -  4 : a comma
+*        -  5 : a multiplier factor to apply on the value to transmitted (set "1" to keep the original measurement, 10 to multiply by 10 , ...) (see note (3))
+*        -  6 : a comma
+*        -  7 : a divider factor to apply on the value to transmitted (set "1" to keep the original measurement, 10 to divide by 10 , ...)  (see note (3))
+*        -  8 : a comma
+*        -  9 : an offset factor to apply after having applied the multiplier and divider ((set "0" to keep the original measurement, "100" to add 100, ...)
+*        - 10 : a comma and "\" if there is least one next more (don't fill on the last row);
+*                  TAKE CARE that "\" MUST be the LAST character on the row (even no space after)
+*                  TAKE CARE that no comment lines ("*...") may exist between rows
+  
 * Note (1) : In many cases (see the list), you can/must specify the value "DEFAULTFIELD". It means that OXS will automatically transmit the data in the most normal foreseen field.
 *            Still, in some cases, DEFAULTFIELD is not possible because the OXS measurement has no normal equivalent in openTX. You must then specify a valid (telemetry) field name in openTX.
 *            Please note that some (telemetry) field names in openTx (A3, A4, ASpd) are not allowed when using a D series receiver because the hub protocol has no codeId to transmit them.
@@ -608,13 +652,29 @@ started by Rainer Schloßhan
 *              - to have e.g. a fuel value starting at 100 (in percent) and going down to 0 when consumption increase (then you must use a negative multiplier and an offset of 100%).
 *            Multiplier/divider/offset must be set up but they are not always taken into account by OXS; it is the case when:
 *              - CELLS_1_2, CELLS_3_4, CELLS_5_6 is transmitted (because those fields have a special formatting required by Tx
-* Here an example of set up in order to transmit on SPORT protocol:
+* Note (4) : alarm limits must be integer (no decimal); they can be negative (e.g. "-100"). 
+*                In order to set the alarms foresseen in the Multiplex protocol, oXs will procceed as follow:
+*                 - adapt the number of decimals in the oXs measurement (most oxs measurements have more decimals than foreseen in Multiplex protocol)
+*                 - apply the Multiplier/divider/offset parameters
+*                 - compare the result with the alarm LOW & HIGH values
+*               The limits have to be fixed taking into account all the digits that apears on the display.
+*                  E.g. Voltages are displayed in 0.1 volt. If you want to get an alarm when voltage is equal or lower than 11.2 volt, set the alarm low value to 112.
+*              In order to avoid alarms, set the LOW value to -16384 and/or the HIGH value to 16383 (limits results from the 15 bits in Multiplex protocol)
+*   
+* Here an example of set up in order to transmit on Multiplex protocol
+*     - on line 3, the relative altitude measurement
+*     - on line 6, the vertical speed measurement (with alarms if it exceed 50m/s)
+*            #define SETUP_MULTIPLEX_DATA_TO_SEND    \
+*                       3 , ALTIMETER , 1 , 1 , 0 , -16384 , 16383,\
+*                       6 , VERTICAL_SPEED , 1 , 1 , -500 , 500
+*
+* Here an example of set up in order to transmit on Frsky protocol:
 *    - as Altitude : the altitude measurement,
 *    - as Vertical speed : the vertical speed measurement
 *    - as Current : the current measurement
 *    - as Fuel : the current consumption in % for an accu of 4000mAmph starting at 100% 
 *    - as Temperature T1 : the VOLT6 measurement divided by 100
-*               #define SETUP_DATA_TO_SEND    \
+*               #define SETUP_FRSKY_DATA_TO_SEND    \
 *                        DEFAULTFIELD , ALTIMETER , 1 , 1 , 0 ,\
 *                        DEFAULTFIELD , VERTICAL_SPEED , 1 , 1 ,0 ,\
 *                        DEFAULTFIELD , CURRENTMA , 1 , 1 , 0,\
@@ -629,15 +689,67 @@ started by Rainer Schloßhan
 * **********************************************************************************************************************
 *  IMPORTANT : keep always the line "#define SETUP_DATA_TO_SEND    \"  ; do not insert any comment lines after or between the rows used for the set up.
 
+**** 10 - Sequencer (ON/OFF) for several digital outputs **************************************************************************************
+* oXs allows you to control (HIGH/LOW) up to 6 digitals Arduino outputs in different sequences.
+* Each sequence is composed of one or several steps; each step defines for how long (= a duration) which outputs are HIGH and which outputs are LOW.
+* oXs determines the sequence to be played based on the signal received on a PPM channel (see section 3 in order to set up a PPM signal). 
+* When a sequence has been played, oXs can or repeat it or just wait for a new sequence. The difference is made in the set up of the sequence.
+* Each time a new (= different) valid PPM signal is received, oXs start immediately the corresponding sequence (even if the current sequence is not completely played)
+* - In order to use the sequencer functionality, you first have to define which Arduino digital pin have to be controlled by the sequencer.
+*     The arduino pins that can be controlled are the pin 13, 12, 11, 10 , 9 and 8.
+*     This set up is achived by a line like : #define SEQUENCE_OUTPUTS 0b100100
+*     Each bit (1 or 0 after the "b") represent an output; the least significant bit correspond to pin 8, the bit on the left pin 9 etc... up to pin 13  
+*     Put 1 when the pin has to be controlled by the sequencer, 0 otherwise; In this example, it means that only pins 13 and 10 would be controlled.
+*     Note: if the line #define SEQUENCE_OUTPUTS xxxx is omiited or put as comment, then the sequencer is not active at all.
+*           Take care not to use the same pin for the sequencer and for another oXs funtionallity (e.g. as Tx pin, for push button, for PPM, for RPM, ...)
+*           If a pin is set up with 0 (= not controlled by oXs), it will never be forced to HIGH or LOW by the sequencer even if a 1 or 0 is set up in a sequence.
+*           When sequencer is activated ( SEQUENCE_OUTPUTS is defined) PPM signal is automatically used ONLY to control the sequence (so PPM can't control any more vario sensitivity, ...)
+* - Then you can (optionnal) specify the units used for defining the durations
+*       By default, the durations are expressed in 10 milli second. A parameter allow you to increase the unit in multiple of 10 milli second;
+*       E.g with a line like #define SEQUENCE_UNIT 50, the durations will become multiple of 500 milli second (= 50 * 10).
+*       Note; this parameter should be an integer between 1 and 1000. So, take care that it is not possible to get a duration less than 10 msec.
+*             If this line is ommitted (or as comment), the default value (1 = 10 msec) will be applied.
+* - Finally you have to define the sequences being used for each value of the PPM channel
+*       You can define up to 9 different sequences.
+*       A sequence is defined by a line like : #define SEQUENCE_m50    200 , 0b100000 , 300 , 0b000000 , 100 , 0b100100
+*       Each sequence is identified by the value of the ppm signal that will activate it; suffix m100 (m = minus) means that it should be activated when ppm is about -100, m75 is for ppm = -75, 75 is for ppm = +75, etc...
+*       Sequence suffix are in multiple of 25; so valid sequence suffix are only : m100, m75, m50, m25, 0, 25, 50, 75 and 100
+*       Each sequence is composed of several steps (from 1 up to 126 steps or even more) (separated by ",")
+*          Each step is composed of 2 parameters (also separated by ",") : a duration and a combination (LOW/HIGH) of outputs
+*             - A duration can be any value between 0 and 255.
+*               The value fix the minimum duration that a combination of outputs has to be applied. Duration (in msec) = value * SEQUENCE_UNIT * 10
+*               So a value = 2 means a duration of 1 sec (if SEQUENCE_UNIT = 50).
+*               Value = 0 has a special meaning. When oXs reachs a duration = 0, it applies the corresponding combination of outputs and keeps it for an unlimitted time.
+*               This allows to force the outputs to stay with a specific combination after having played the sequence.
+*               If duration = 0 is used, it should be in the last step of the sequence (because oXs will never apply the following steps).
+*               If duration is set to 0 in the first step, oXs will apply directly the specific combination of outputs and keep it. 
+*               If duration = 0 is not used in a sequence, oXs will automatically repeat the whole sequence after reaching the last step.
+*               Note: if you need a duration that is longer than the max duration (= 255 * SEQUENCE_UNIT * 10 msec), you can put several steps with the same combination of outputs.   
+*             - A combination (LOW/HIGH) of outputs defines which pins have to be set to LOW and which one to HIGH
+*               A combination can be defined in binary format so setting six 1 (HIGH) and/or 0 (LOW) just after "0b" (e.g. 0b100100)
+*               The least significant bit correspond to pin 8, the bit on the left pin 9 etc... up to pin 13.
+*               So if SEQUENCE_OUTPUTS = 0b110111, then 0b100100 means that:
+*                   - pins 13 and 10 have to be HIGH,
+*                   - pins 9 and 8  have to be LOW
+*                   - the others (pin 12 and 11) are not controlled by sequence because of the value assigned to SEQUENCE_OUTPUTS = 0b100111 
+*      So #define SEQUENCE_m50    2 , 0b100000 , 3 , 0b000000 , 1 , 0b100100 means (assuming that SEQUENCE_OUTPUTS = 0b100100 and SEQUENCE_UNIT = 50, ):
+*            - set pin 13 to HIGH and  pin 10 to 0 (= 0b100000) when PPM signal becomes -50
+*            - then wait at least for 2 * 50 * 10 = 1000 ms = 1 sec before changing the outputs
+*            - after 1 sec, set pin 13 ( and pin 10) to LOW (=0b000000) for a duration of 1.5 sec (3 * 50 * 10)
+*            - after 1.5 sec, set pin 13 and 10 to HIGH for a duration of 0.5 sec (1 * 50 * 10)
+*            - after 0.5 sec repeat first step (pin 13 HIGH for 1 sec)
+*            - continue with next steps
+*      Note: when a sequence name is not defined, oXs handles it like it would be defined with 0 , 0b000000 (so no repeat, all outputs LOW)
+************************************************************************************************************************
+//#define DEBUG
 
-**** 10 - Reserved for developer. **************************************************************************************
+
+**** 11 - Reserved for developer. **************************************************************************************
 * DEBUG must be activated here when you want to debug one or several functions in some other files.
 * You can then select the parts that you want to debug by uncommenting the specifics DEBUG parameters you want in each file
 * Note: OXS allows to transmit 3 fields named TEST1, TEST2, TEST3. You can fill those fields with whatever you want where you want if you want to transmit additional data to the Tx.
 * Just fill in test1Value (or 2, 3) with an int32_t and test1ValueAvailable (or 2, 3) with true and add those OXS measurements in the data to be sent section. 
 ************************************************************************************************************************
 //#define DEBUG
-
-
 
 
