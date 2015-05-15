@@ -1,7 +1,7 @@
 ##OpenXsensor New Home
 _from may 2015_
 
-![OXS logo](wiki/images/OXS_Logo.png)
+![OXS logo](https://github.com/openXsensor/openXsensor/wiki/images/OXS_Logo.png)
 
 
 ###Introduction
