@@ -1,11 +1,14 @@
-#ifndef OXS_MS5611_h
-#define OXS_MS5611_h
+#ifndef OXS_BMP180_h
+#define OXS_BMP180_h
 
 
 #include "Arduino.h"
 #include "oXs_config.h"
 #include "I2C.h"
+#include "oXs_ms5611.h"
 
+#define BMP180_ADR 0x77 // I2C address of BMP180
+/*
 struct VARIODATA {
   int32_t temperature;     // in 1/10 Celsius
 
@@ -42,13 +45,33 @@ struct VARIODATA {
                                      // = micro divided by 2 to avoid overflow on comparison
 
 };
+*/
 
-class OXS_MS5611 {
+/*=========================================================================
+    CALIBRATION DATA
+    -----------------------------------------------------------------------*/
+    typedef struct
+    {
+      int16_t  ac1;
+      int16_t  ac2;
+      int16_t  ac3;
+      uint16_t ac4;
+      uint16_t ac5;
+      uint16_t ac6;
+      int16_t  b1;
+      int16_t  b2;
+      int16_t  mb;
+      int16_t  mc;
+      int16_t  md;
+    } bmp085_calib_data;
+/*=========================================================================*/
+
+class OXS_BMP180 {
 public:
 #ifdef DEBUG  
-  OXS_MS5611(uint8_t addr, HardwareSerial &print);
+  OXS_BMP180( HardwareSerial &print);
 #else
-  OXS_MS5611(uint8_t addr) ;
+  OXS_BMP180( void ) ;
 #endif
   VARIODATA varioData ;
   //int64_t rawPressure; // in 1/10000 mBar
@@ -59,7 +82,7 @@ public:
 
 private:
   uint8_t _addr;
-  unsigned int _calibrationData[7]; // The factory calibration data of the ms5611
+  unsigned int _calibrationData[12]; // The factory calibration data of the BMP180
   uint8_t errorI2C ; //error code returned by I2C::Write and I2C::Read; 0 = no error
   bool errorCalibration ; // (true = error)
   void SendCommand(byte command);

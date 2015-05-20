@@ -45,12 +45,9 @@ ISR( TIMER1_CAPT_vect, ISR_NOBLOCK )
 		RpmCounter = 0 ;
 		difference = eventTime - lastEventTime ;
 		lastEventTime = eventTime ;
-		if ( difference > 200 )
-		{
+		if ( difference > 200 ) {
 			RpmValue = 4000000 / difference ;
-		}
-		else
-		{
+		} else {
 			RpmValue = 0 ;
 		}
 		RpmSet = true ;

@@ -1,4 +1,4 @@
-#include "oXs_ms5611.h"
+#include "oXs_bmp180.h"
 
 #ifdef DEBUG
 //#define DEBUGI2CMS5611
@@ -10,17 +10,21 @@ extern unsigned long micros( void ) ;
 extern unsigned long millis( void ) ;
 extern void delay(unsigned long ms) ;
 
+static bmp085_calib_data _bmp085_coeffs;   // Last read accelerometer data will be available here
+static uint8_t           _bmp085Mode;
+
+
 //long result ;
 
 
 #ifdef DEBUG  
-OXS_MS5611::OXS_MS5611(uint8_t addr, HardwareSerial &print)
+OXS_BMP180::OXS_BMP180( HardwareSerial &print)
 #else
-OXS_MS5611::OXS_MS5611(uint8_t addr)
+OXS_BMP180::OXS_BMP180(void)
 #endif
 {
   // constructor
-  _addr=addr;
+//  _addr=addr;
   varioData.SensorState = 0 ;
 #ifdef DEBUG  
   printer = &print; //operate on the address of print
@@ -32,36 +36,17 @@ OXS_MS5611::OXS_MS5611(uint8_t addr)
 
 
 // **************** Setup the MS5611 sensor *********************
-void OXS_MS5611::setup() {
+void OXS_BMP180::setup() {
   varioData.absoluteAltAvailable = false ;
   varioData.relativeAltAvailable = false ; 
   varioData.climbRateAvailable = false ;
   varioData.sensitivityAvailable = false ;
   varioData.vSpeed10SecAvailable = false ;
-//  varioData.newClimbRateAvailable = false; 
-//  varioData.sensitivityPpm = 0 ;
-//  varioData.idxPrevAlt = 0 ;
-//  D1 = 0;
-//  D2 = 0;
-//  D2Prev = 0;
-//  D2Apply = 0 ;
-//  dT = 0 ;
-//  TEMP = 0 ;
-//  rawAltitude = 0 ;
-
-//  altitude = 0 ;
-//  altitudeLowPass = 0 ;
-//  altitudeHighPass = 0 ;
   sensitivityMin = SENSITIVITY_MIN ; // set the min smoothing to the default value
   varioData.delaySmooth = 20000 ; // delay between 2 altitude calculation = 20msec = 20000 usec
   nextAltMillis  =  5000 ;  // in msec; save when Altitude has to be calculated; altitude is available only after some delay in order to get a stable value (less temperature drift)
   nextAverageAltMillis =  nextAltMillis ;  // in msec ; save when AverageAltitude has to be calculated
   nextAverageAltMillis =  nextAltMillis ; 
- //   static long lastResultPressure = 0 ; // used to replace a new pressure by an oldone if collected pressure is wrong (at some time we got wring values)
- //   static long lastResultTemp = 0 ; // idem for temperature
-    
-//  climbRate2AltFloat = 0 ;
-//  climbRateFloat = 0 ;
 
 #ifdef ALT_TEMP_COMPENSATION
   alt_temp_compensation = ALT_TEMP_COMPENSATION ;
@@ -69,8 +54,8 @@ void OXS_MS5611::setup() {
 
   
 #ifdef DEBUG
-  printer->print(F("Vario Sensor:MS5611 I2C Addr="));
-  printer->println(_addr,HEX);
+  printer->print(F("Vario Sensor:BMP180 "));
+  printer->println(" ");
   printer->print(F(" milli="));  
   printer->println(millis());
 
@@ -78,23 +63,14 @@ void OXS_MS5611::setup() {
   
   I2c.begin() ;
   I2c.timeOut( 80); //initialise the time out in order to avoid infinite loop
-#ifdef DEBUGI2CMS5611
+#ifdef DEBUGI2CBMP180
   I2c.scan() ;
   printer->print(F("last I2C scan adr: "));
   printer->println( I2c.scanAdr , HEX  );
 #endif  
-  errorI2C = I2c.write( _addr,0x1e) ;
-    errorCalibration = false ;
-  if (errorI2C > 0 ) {
-#ifdef DEBUG
-    printer->print(F("error code in setup I2CWrite: "));
-    printer->println( errorI2C );
-#endif
     errorCalibration = true ;
-  } else {
-    delay(100);
-    for (byte i = 1; i <=6; i++) {
-       errorI2C =  I2c.read( _addr, 0xa0 + i*2, 2 ) ; //read 2 bytes from the device after sending the command A0 + xx depending on the register to be read
+    for (byte i = 1; i <=11; i++) {
+       errorI2C =  I2c.read( BMP180_ADR, 0xA8 + i*2, 2 ) ; //read 2 bytes from the device after sending the register to be read (first register = 0xAA (=register AC1)
        if ( errorI2C > 0 ) {
 #ifdef DEBUG
             printer->print(F("error code in setup I2CRead: "));
@@ -115,21 +91,34 @@ void OXS_MS5611::setup() {
         printer->println( errorI2C );
 #endif
     } // End for 
-  } // End if else  
+
+    _bmp085_coeffs.ac1 = _calibrationData[1];
+    _bmp085_coeffs.ac2 = _calibrationData[2];
+    _bmp085_coeffs.ac3 = _calibrationData[3];
+    _bmp085_coeffs.ac4 = _calibrationData[4];
+    _bmp085_coeffs.ac5 = _calibrationData[5];
+    _bmp085_coeffs.ac6 = _calibrationData[6];
+    _bmp085_coeffs.b1  = _calibrationData[7];
+    _bmp085_coeffs.b2  = _calibrationData[8];
+    _bmp085_coeffs.mb  = _calibrationData[9];
+    _bmp085_coeffs.mc  = _calibrationData[10];
+    _bmp085_coeffs.md  = _calibrationData[11];
+    _bmp085Mode        = 1; // perform an average of 2 pressure reads
+
+
 
 #ifdef DEBUG  
-  printer->println(F("setup vario done."));
+  printer->println(F("setup vario done."));  
 #endif
   
-//  resetValues(); // not used anymore (min, max, ...)
 }  //end of setup
 
 
 //********************************************************************************************
 //***                            read the sensor                                           ***
 //********************************************************************************************
-void OXS_MS5611::readSensor() {
-   long result = 0;
+void OXS_BMP180::readSensor() {
+long result = 0 ;
 #ifdef  DEBUGVARIOI2C
     printer->print(F("sensorState= "));
     printer->println(varioData.SensorState);
@@ -139,17 +128,17 @@ void OXS_MS5611::readSensor() {
     if (extended2Micros < varioData.lastCommand2Micros) extended2Micros = extended2Micros | 0x80000000 ;
     if ( extended2Micros  > varioData.lastCommand2Micros + 4500){ // wait 9 msec at least before asking for reading the pressure
 //        long result = 0;
-	if(  ! I2c.read( _addr, 0, 3 )) { ; //read 3 bytes from the device after sending a command "00"; keep previous value in case of error 
+	if(  ! I2c.read( BMP180_ADR, 0xF6, 3 )) { ; //read 3 bytes from the device starting from register F6; keep previous value in case of error 
         	result = I2c.receive() ;
          	result <<= 8 ;
          	result |= I2c.receive() ;
          	result <<= 8 ;
          	result |= I2c.receive() ;
-                D1=result;
+                D1=result >> 7; // divide by 2* (8- the parameter for number of averages)
         } else {
               D1 = 0 ; // D1 value are not processed to calculate Alt.
         }      
-        I2c.write( _addr,0x58) ; // ask a conversion of Temperature
+        I2c.write( BMP180_ADR ,0xF4 , 0x2E ) ; // ask a conversion of Temperature sending 2E in register F4
         varioData.lastCommand2Micros = (micros() >>1 ); 
         varioData.SensorState = 2;
     } // end of delay of 9 ms  
@@ -158,10 +147,8 @@ void OXS_MS5611::readSensor() {
     extended2Micros = micros() >> 1 ;
     if (extended2Micros < varioData.lastCommand2Micros) extended2Micros = extended2Micros | 0x80000000 ;
     if ( extended2Micros > varioData.lastCommand2Micros + 4500) { // wait 9000 usec to get Temp with high precision
-          if ( ! I2c.read( _addr, 0, 3 )) { ; //read 3 bytes from the device; keep previous value in case of error
+          if ( ! I2c.read( BMP180_ADR , 0xF6, 2 )) { ; //read 2 bytes from the device in register F6 ; keep previous value in case of error
                 result = I2c.receive() ;
-                result <<= 8 ;
-                result |= I2c.receive() ;
                 result <<= 8 ;
                 result |= I2c.receive() ;
                 D2=result;
@@ -171,7 +158,7 @@ void OXS_MS5611::readSensor() {
   
   } // End of process if SensorState was 1 or 2 
   if (varioData.SensorState==0) {    // ========================== new Pressure and (new or old) Temp are known so Request Pressure immediately and calculate altitude
-    I2c.write( _addr,0x48) ;// ask a conversion of Pressure
+    I2c.write( BMP180_ADR , 0xF4 , 0x74) ;// ask a conversion of Pressure sending 74 in register F4; 74 means an average of 2 reads and so a normal wait time of 7.5 msec
     pressureMicrosPrev1 = pressureMicros ;
     pressureMicros = micros(); // pressureMicros is the timestamp to calculate climbrate between 2 pressures
     varioData.lastCommand2Micros = pressureMicros >> 1 ;
@@ -180,14 +167,57 @@ void OXS_MS5611::readSensor() {
       if (D2Prev == 0) D2Prev = D2 ;
       D2Apply = (D2 + D2Prev ) / 2 ;
       D2Prev = D2 ; 
-      dT = D2Apply - ((long)_calibrationData[5] << 8);
-//      TEMP = (2000 + (((int64_t)dT * (int64_t)_calibrationData[6]) >> 23)) / (float) 1.0 ;
-      varioData.temperature = (2000 + (((int64_t)dT * (int64_t)_calibrationData[6]) >> 23)) ; 
+#if BMP085_USE_DATASHEET_VALS
+    _bmp085_coeffs.ac1 = 408;
+    _bmp085_coeffs.ac2 = -72;
+    _bmp085_coeffs.ac3 = -14383;
+    _bmp085_coeffs.ac4 = 32741;
+    _bmp085_coeffs.ac5 = 32757;
+    _bmp085_coeffs.ac6 = 23153;
+    _bmp085_coeffs.b1  = 6190;
+    _bmp085_coeffs.b2  = 4;
+    _bmp085_coeffs.mb  = -32768;
+    _bmp085_coeffs.mc  = -8711;
+    _bmp085_coeffs.md  = 2868;
+    _bmp085Mode        = 0;
+    D2Apply = 27898 ;
+    D1 = 23843 ;
+#endif      
+      int32_t X1 = (D2Apply - (int32_t)_bmp085_coeffs.ac6) * ((int32_t)_bmp085_coeffs.ac5) >> 15;
+      int32_t X2 = ((int32_t)_bmp085_coeffs.mc << 11) / (X1+(int32_t)_bmp085_coeffs.md);
+      int32_t b5 = X1 + X2 ;
+      varioData.temperature = ( b5 + 8 ) >> 4 ; // = Temperature
+
+      // calcul of pressure.
+      int32_t p ;
+      int32_t b6 = b5 - 4000;
+      int32_t x1 = (_bmp085_coeffs.b2 * ((b6 * b6) >> 12)) >> 11;
+      int32_t x2 = (_bmp085_coeffs.ac2 * b6) >> 11;
+      int32_t x3 = x1 + x2;
+      int32_t b3 = (((((int32_t) _bmp085_coeffs.ac1) * 4 + x3) << _bmp085Mode) + 2) >> 2;
+      x1 = (_bmp085_coeffs.ac3 * b6) >> 13;
+      x2 = (_bmp085_coeffs.b1 * ((b6 * b6) >> 12)) >> 16;
+      x3 = ((x1 + x2) + 2) >> 2;
+      uint32_t b4 = (_bmp085_coeffs.ac4 * (uint32_t) (x3 + 32768)) >> 15;
+      uint32_t b7 = ((uint32_t) (D1 - b3) * (50000 >> _bmp085Mode));
+      if (b7 < 0x80000000) 
+      {
+        p = (b7 << 1) / b4;
+      }
+      else
+      {
+        p = (b7 / b4) << 1;
+      }
+      x1 = (p >> 8) * (p >> 8);
+      x1 = (x1 * 3038) >> 16;
+      x2 = (-7357 * p) >> 16;
+      varioData.rawPressure = (p + ((x1 + x2 + 3791) >> 4)) * 10000;
+
 //      varioData.temperature= TEMP;
 //      OFF  = (((int64_t)_calibrationData[2]) << 16) + ( (_calibrationData[4] * dT) >> 7);
-      OFF  = (((int64_t)_calibrationData[2]) << 16) + ( ( (_calibrationData[4] - alt_temp_compensation ) * dT) >> 7);
-      SENS = (((int64_t)_calibrationData[1]) << 15) + ((_calibrationData[3] * dT) >> 8);
-      varioData.rawPressure= (((((((int64_t) D1) * (int64_t) SENS) >> 21) - OFF) * 10000 ) >> 15) ; // 1013.25 mb gives 1013250000 is a factor to keep higher precision (=1/100 cm).
+//      OFF  = (((int64_t)_calibrationData[2]) << 16) + ( ( (_calibrationData[4] - alt_temp_compensation ) * dT) >> 7);
+//      SENS = (((int64_t)_calibrationData[1]) << 15) + ((_calibrationData[3] * dT) >> 8);
+//      varioData.rawPressure= (((((((int64_t) D1) * (int64_t) SENS) >> 21) - OFF) * 10000 ) >> 15) ; // 1013.25 mb gives 1013250000 is a factor to keep higher precision (=1/100 cm).
       
       // altitude = 44330 * (1.0 - pow(pressure /sealevelPressure,0.1903));
       // other alternative (faster) = 1013.25 = 0 m , 954.61 = 500m , etc...

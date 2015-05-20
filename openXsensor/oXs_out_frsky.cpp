@@ -1,4 +1,7 @@
+// file for FRSKY
+
 #include "oXs_out_frsky.h"
+#ifndef MULTIPLEX
 
 #ifdef DEBUG
 // ************************* Several parameters to help debugging
@@ -31,6 +34,7 @@
 #endif
 
 
+
 extern unsigned long micros( void ) ;
 extern unsigned long millis( void ) ;
 extern void delay(unsigned long ms) ;
@@ -48,7 +52,7 @@ static bool fieldOk ;
 
 //Used by both protocols
 volatile bool sportAvailable = false ;
-int fieldContainsData[][5]  = {  SETUP_DATA_TO_SEND } ; // contains the set up of field to be transmitted
+int fieldContainsData[][5]  = {  SETUP_FRSKY_DATA_TO_SEND } ; // contains the set up of field to be transmitted
 int numberOfFields = sizeof(fieldContainsData) / sizeof(fieldContainsData[0]) ;
 static uint16_t convertToSportId[15] = { FRSKY_SPORT_ID } ; // this array is used to convert an index inside fieldContainsData[][0] into the SPORT field Id (or defaultfield) 
 static uint8_t convertToHubId[15] = { FRSKY_HUB_ID } ; //// this array is used to convert an index inside fieldContainsData[][0] into the Hub field Id (or defaultfield) 
@@ -76,6 +80,11 @@ void OXS_OUT_FRSKY::setup() {
     TRXDDR &= ~( 1 << PIN_SERIALTX ) ;       // PIN is input, tri-stated.
     TRXPORT &= ~( 1 << PIN_SERIALTX ) ;      // PIN is input, tri-stated.
 
+#ifdef FRSKY_TYPE_SPORT
+    sportAvailable = true ;
+#elif defined (FRSKY_TYPE_HUB)
+    sportAvailable = false ;
+#else        
   // Activate pin change interupt on Tx pin
 #if PIN_SERIALTX == 4
     PCMSK2 |= 0x10 ;			// IO4 (PD4) on Arduini mini
@@ -83,20 +92,31 @@ void OXS_OUT_FRSKY::setup() {
     PCMSK2 |= 0x04 ;                    // IO2 (PD2) on Arduini mini
 #else
     #error "This PIN is not supported"
+#endif // test on PIN_SERIALTX
+    delay(1000) ; // this delay has been added because some users reported that SPORT is not recognise with a X6R ; perhaps is it related to the EU firmware (2015)
+#ifdef DEBUG_SPORT_PIN 
+    digitalWrite(DEBUG_SPORT_PIN, HIGH); // Set the pulse used during SPORT detection to HIGH because detecttion is starting
 #endif
 
     PCIFR = (1<<PCIF2) ;	// clear pending interrupt
 
 // to see if SPORT is active, we have to wait at least 12 msec and check bit PCIF2 from PCIFR; if bit is set, it is SPORT
     delay(20) ;
+#ifdef DEBUG_SPORT_PIN
+    digitalWrite(DEBUG_SPORT_PIN, LOW); // Set the pulse used during SPORT detection to LOW because detecttion is done
+#endif    
     if ( ( PCIFR & (1<<PCIF2)) == 0 ) {
         sportAvailable = false ;
-      	initHubUart( &hubData ) ;      	
     }
     else {
         sportAvailable = true ;
-        initSportUart( &sportData ) ;
     }
+#endif // end test on FRSKY_TYPE
+    if ( sportAvailable) {
+        initSportUart( &sportData ) ;
+    } else {
+      	initHubUart( &hubData ) ;
+    }  
 	
 #ifdef DEBUG
       printer->print(F("FRSky Output Module: TX Pin="));
@@ -339,6 +359,11 @@ uint8_t OXS_OUT_FRSKY::readStatusValue( uint8_t fieldToSend) {
           return varioData_2->vSpeed10SecAvailable ;
 #endif
 
+#if defined (VARIO)  &&  defined (VARIO2) 
+      case  VERTICAL_SPEED_A :
+          return averageVSpeedAvailable ; 
+#endif
+
 #if defined (VARIO)  && ( defined (VARIO2)  || defined (AIRSPEED) ) && defined (VARIO_PRIMARY ) && defined (VARIO_SECONDARY ) && defined (PIN_PPM)
       case  PPM_VSPEED :
           return switchVSpeedAvailable ; 
@@ -431,6 +456,10 @@ uint8_t OXS_OUT_FRSKY::nextFieldToSend(  uint8_t indexField) {
       else if ( (fieldContainsData[indexField][1] == VERTICAL_SPEED_2)  && ( varioData_2->climbRateAvailable == KNOWN ) )  { return indexField ; } 
       else if ( (fieldContainsData[indexField][1] == SENSITIVITY_2)  && ( varioData_2->sensitivityAvailable == KNOWN ) )  { return indexField ; } 
       else if ( (fieldContainsData[indexField][1] == ALT_OVER_10_SEC_2)  && ( varioData_2->vSpeed10SecAvailable == KNOWN ) )  { return indexField ; } 
+#endif
+
+#if defined (VARIO)  &&  defined (VARIO2)
+      if ( (fieldContainsData[indexField][1] == VERTICAL_SPEED_A) && ( averageVSpeedAvailable == KNOWN ))  { return indexField ; }        
 #endif
 
 #if defined (VARIO) && ( defined (VARIO2) || defined (AIRSPEED) ) && defined (VARIO_PRIMARY ) && defined (VARIO_SECONDARY )  && defined (PIN_PPM)
@@ -638,6 +667,14 @@ void OXS_OUT_FRSKY::loadSportValueToSend( uint8_t currentFieldToSend) {
 #endif
              break ;       
 #endif  // End vario2    
+
+#if defined (VARIO )  &&  defined (VARIO2)
+      case VERTICAL_SPEED_A : 
+        valueTemp = averageVSpeed ;
+        averageVSpeedAvailable = false ; 
+         fieldID = VARIO_FIRST_ID ;         
+         break ; 
+#endif
 
 
 #if defined (VARIO )  && ( defined (VARIO2) || defined( AIRSPEED) ) && defined (VARIO_PRIMARY ) && defined (VARIO_SECONDARY )  && defined (PIN_PPM)
@@ -1099,6 +1136,14 @@ void OXS_OUT_FRSKY::loadHubValueToSend( uint8_t currentFieldToSend ) {
           
 #endif   // end vario2 
 
+#if defined (VARIO )  &&  defined (VARIO2)
+      case VERTICAL_SPEED_A :
+              if(  fieldOk == true ) {
+                 SendValue((int8_t) fieldToSend , ( ( (int16_t) averageVSpeed * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4] );
+              }   
+          break ;   
+#endif
+
 #if defined (VARIO )  && ( defined (VARIO2) || defined( AIRSPEED) ) && defined (VARIO_PRIMARY ) && defined (VARIO_SECONDARY ) && defined (PIN_PPM)
       case PPM_VSPEED :
               if(  fieldOk == true ) {
@@ -1200,7 +1245,7 @@ void OXS_OUT_FRSKY::loadHubValueToSend( uint8_t currentFieldToSend ) {
 //         break ;
 #endif  // End PIN_CURRENTSENSOR
 
-#if defined (NUMBEROFCELLS)  && (NUMBEROFCELLS > 0)
+#if defined (NUMBEROFCELLS)  && (NUMBEROFCELLS > 0) && (defined (PIN_VOLTAGE_1) || defined (PIN_VOLTAGE_2) || defined (PIN_VOLTAGE_3) || defined (PIN_VOLTAGE_4) || defined (PIN_VOLTAGE_5) || defined (PIN_VOLTAGE_6) ) 
       case  CELLS_1_2 :
 //         if ( (SwitchFrameVariant == 0) && ( voltageData->mVoltCell_1_2_Available ) ) {
              if ( fieldToSend == DEFAULTFIELD ) {
@@ -1430,4 +1475,5 @@ void OXS_OUT_FRSKY::SendCurrentMilliAmps(int32_t milliamps)
 
 //#endif // End of FRSKY_SPORT
 
+#endif   //End of not MULTIPLEX
 

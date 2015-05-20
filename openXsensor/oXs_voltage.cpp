@@ -4,6 +4,7 @@
 //#define DEBUGNEWVALUE
 //#define DEBUGDELAY
 //#define DEBUGCELLCALCULATION
+#define DEBUGLOWVOLTAGE
 #endif
 
 extern unsigned long micros( void ) ;
@@ -134,8 +135,39 @@ void OXS_VOLTAGE::voltageNrIncrease() {
             printer->println( voltageData.mVolt[cntVolt] );
 #endif
           } // if
-        } // End For   
+        } // End For 
+        
 #if defined ( NUMBEROFCELLS ) && (NUMBEROFCELLS > 0)
+        for (uint8_t cellIndex = 0; cellIndex < NUMBEROFCELLS ; cellIndex++) {
+          int32_t mVoltOneCell ;
+          uint8_t prevIndex ;
+          if (cellIndex == 0) {
+            mVoltOneCell = voltageData.mVolt[cellIndex];
+          } else { 
+            mVoltOneCell = voltageData.mVolt[cellIndex] - voltageData.mVolt[prevIndex] ;
+          }
+          prevIndex = cellIndex ;        
+          if (mVoltOneCell  < 500) mVoltOneCell = 0 ;
+          voltageData.mVoltCell[cellIndex]  = mVoltOneCell ;
+          voltageData.mVoltCell_Available[cellIndex] = true ;
+        }
+        voltageData.mVoltCellMin = 0 ;
+        voltageData.mVoltCellTot = 0 ;
+        for (uint8_t cellIndex = 0; cellIndex < NUMBEROFCELLS ; cellIndex++) {
+          if (voltageData.mVoltCell[cellIndex] == 0 ) {
+            break ;
+          } else {
+            if ( (voltageData.mVoltCellMin == 0) || ( voltageData.mVoltCellMin > voltageData.mVoltCell[cellIndex] ) ){
+              voltageData.mVoltCellMin = voltageData.mVoltCell[cellIndex] ;
+            }
+              voltageData.mVoltCellTot = voltageData.mVolt[cellIndex] ;            
+          }  
+        }
+        if ( voltageData.mVoltCellMin > 0 ) {
+          voltageData.mVoltCellMin_Available = true ;
+        }
+        voltageData.mVoltCellTot_Available = true ;
+#ifndef  MULTIPLEX // not multiplex
         if (NUMBEROFCELLS == 1) {
           secondMVolt = 0 ; 
         }
@@ -164,9 +196,27 @@ void OXS_VOLTAGE::voltageNrIncrease() {
             voltageData.mVoltCell_5_6 = calculateCell(voltageData.mVolt[3] , voltageData.mVolt[4] , secondMVolt , 4) ;
             voltageData.mVoltCell_5_6_Available = true ;
         }
-#endif
+#endif // Enf of multiplex/non multiplex
+#endif // ( NUMBEROFCELLS ) && (NUMBEROFCELLS > 0)
         cnt=0;
         lastVoltMillis = millis() ;
+#ifdef SEQUENCE_OUTPUTS
+        lowVoltage = false ;
+#if defined( SEQUENCE_MIN_CELL)  
+        if ( voltageData.mVoltCellMin < SEQUENCE_MIN_CELL) {        
+          lowVoltage = true ;
+        }
+#endif //SEQUENCE_MIN_CELL
+#if defined( SEQUENCE_MIN_VOLT_6) && defined (PIN_VOLTAGE_6 )
+        if ( voltageData.mVolt[5] < SEQUENCE_MIN_VOLT_6) {        
+          lowVoltage = true ;
+        }
+#endif //( SEQUENCE_MIN_VOLT_6) && defined (PIN_VOLTAGE_6 )
+#ifdef DEBUGLOWVOLTAGE
+            printer->print("LowVoltage= ");
+            printer->println(lowVoltage) ;
+#endif
+#endif // SEQUENCE_OUTPUTS
         
       }   // End if VOLT_BUFFER_LENGTH
    }     // End if == 6

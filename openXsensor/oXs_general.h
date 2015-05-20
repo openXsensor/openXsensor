@@ -4,13 +4,16 @@
 #include "oXs_config.h"
 #include <Arduino.h>
 #include "oXs_out_frsky.h"          // one variable is shared between both files
-
+#include "oXs_out_multiplex.h"          // one variable is shared between both files
 
 uint32_t micros( void ) ;
 uint32_t millis( void ) ;
 
 
 //Some IO, timer and interrupt specific defines.
+#define ENABLE_PIN_CHANGE_INTERRUPT( )       ( PCICR |= (1<<PCIE2) )
+#define DISABLE_PIN_CHANGE_INTERRUPT( )      ( PCICR &= ~( 1<<PCIE2 ) )
+#define CLEAR_PIN_CHANGE_INTERRUPT( )         ( PCIFR = (1<<PCIF2) )
 
 #define ENABLE_TIMER_INTERRUPT( )       ( TIMSK1 |= ( 1<< OCIE1A ) )
 #define DISABLE_TIMER_INTERRUPT( )      ( TIMSK1 &= ~( 1<< OCIE1A ) )

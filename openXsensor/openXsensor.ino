@@ -1,10 +1,13 @@
 #include "oXs_config.h"
 #include "oXs_voltage.h"
 #include "oXs_ms5611.h"
+#include "oXs_bmp180.h"
 #include "oXs_4525.h"
 #include "oXs_curr.h"
 #include "oXs_out_frsky.h"
+#include "oXs_out_multiplex.h"
 #include "oXs_general.h"
+#include "Aserial.h"
 
 #ifdef SAVE_TO_EEPROM
   #include <EEPROM.h>
@@ -45,9 +48,15 @@ extern unsigned long micros( void ) ;
 extern unsigned long millis( void ) ;
 static unsigned long extended2Micros ;
 
+//#define DEBUG_BLINK  // this does not require that DEBUG is active.
+
 #ifdef DEBUG
 //#define DEBUGCOMPENSATEDCLIMBRATE
 //#define DEBUGOUTDATATOSERIAL
+//#define DEBUGENTERLOOP
+//#define DEBUGSEQUENCE
+//#define DEBUGPPM
+//#define DEBUGFORCEPPM
 #endif
 
 int freeRam () ;
@@ -59,24 +68,110 @@ void Reset10SecButtonPress() ;
 void SaveToEEProm() ;
 void LoadFromEEProm() ; 
 void ProcessPPMSignal() ;
-unsigned int ReadPPM() ;
+//unsigned int ReadPPM() ;
+void ReadPPM() ;
 bool checkFreeTime() ;
+void setNewSequence() ;
+void checkSequence() ;
+void blinkLed( uint8_t blinkType ) ;
 
 #if defined (VARIO) && defined ( AIRSPEED)
 bool compensatedClimbRateAvailable ;
 bool switchCompensatedClimbRateAvailable ;
 float rawCompensatedClimbRate ; 
 int32_t compensatedClimbRate ;
+#endif
+
+#if defined (VARIO) && ( defined (VARIO2) || defined ( AIRSPEED))
 int32_t switchVSpeed ;
 bool switchVSpeedAvailable ;
 #endif
 
-#ifdef PIN_PPM
-unsigned int ppmus ;
-int prevPpm ;
-int ppm ;
-bool ppmAvailable  ;
+#if defined (VARIO) && defined (VARIO2)
+float averageVSpeedFloat ;
+int32_t averageVSpeed ;
+bool averageVSpeedAvailable ;
 #endif
+
+uint16_t ppmus ; // duration of ppm in usec
+int prevPpm ; //^previous ppm
+int ppm ; // duration of pulse in range -100 / + 100 ; can exceed those limits
+bool ppmAvailable  ;
+
+
+#ifdef SEQUENCE_OUTPUTS
+#ifdef SEQUENCE_m100
+  uint8_t sequence_m100 [] = { SEQUENCE_m100 } ;
+#else
+  uint8_t sequence_m100 [2] = { 0 , 0 } ;
+#endif
+#ifdef SEQUENCE_m75
+  uint8_t sequence_m75 [] = { SEQUENCE_m75 } ;
+#else
+  uint8_t sequence_m75 [2] = { 0 , 0 } ;
+#endif
+#ifdef SEQUENCE_m50
+  uint8_t sequence_m50 [] = { SEQUENCE_m50 } ;
+#else
+  uint8_t sequence_m50 [2] = { 0 , 0 } ;
+#endif
+#ifdef SEQUENCE_m25
+  uint8_t sequence_m25 [] = { SEQUENCE_m25 } ;
+#else
+  uint8_t sequence_m25 [2] = { 0 , 0 } ;
+#endif
+#ifdef SEQUENCE_0
+  uint8_t sequence_0 [] = { SEQUENCE_0 } ;
+#else
+  uint8_t sequence_0 [2] = { 0 , 0 } ;
+#endif
+#ifdef SEQUENCE_25
+  uint8_t sequence_25 [] = { SEQUENCE_25 } ;
+#else
+  uint8_t sequence_25 [2] = { 0 , 0 } ;
+#endif
+#ifdef SEQUENCE_50
+  uint8_t sequence_50 [] = { SEQUENCE_50 } ;
+#else
+  uint8_t sequence_50 [2] = { 0 , 0 } ;
+#endif
+#ifdef SEQUENCE_75
+  uint8_t sequence_75 [] = { SEQUENCE_75 } ;
+#else
+  uint8_t sequence_75 [2] = { 0 , 0 } ;
+#endif
+#ifdef SEQUENCE_100
+  uint8_t sequence_100 [] = { SEQUENCE_100 } ;
+#else
+  uint8_t sequence_100 [2] = { 0 , 0 } ;
+#endif
+#ifdef SEQUENCE_LOW
+  uint8_t sequence_low [] = { SEQUENCE_LOW } ;
+#else
+  uint8_t sequence_low [2] = { 0 , 0 } ;
+#endif
+
+
+    uint16_t sequenceMaxNumber[10] ;  // this array contains the number of events of each sequence
+    uint8_t * sequencePointer[10] ; // this is an array of pointers; each pointer refers to the first element of a 2 dim array.
+    
+    uint8_t *seqRef  ;  // seqRef contains a pointer to the first item of the selected sequence array
+    uint16_t seqMax ; // number of sequences in the selected array
+    uint8_t seqState ; // say if the sequence is starting (0), running (1) or stopped (2)
+    uint16_t seqStep ;  // says the current step in the sequence , first step = 0 ;
+    uint8_t sequenceOutputs = SEQUENCE_OUTPUTS & 0b00111111 ; // Mask to define which pin of portB are outputs
+#ifdef SEQUENCE_UNIT
+    uint16_t sequenceUnit = SEQUENCE_UNIT * 10 ; 
+#else
+    uint16_t sequenceUnit = 10 ; 
+#endif // SEQUENCE_UNIT
+#endif // end of SEQUENCE_OUTPUTS
+
+int8_t prevPpmMain = -100 ; // this value is unusual; so it will forced a change at first call
+bool lowVoltage = false ;
+bool prevLowVoltage = false ;
+
+
 
 volatile bool RpmSet  ;
 volatile uint16_t RpmValue ;
@@ -86,7 +181,7 @@ bool RpmAvailable  ;
 int PWRValue; // calculation field for Vertical speed on PWR
 unsigned long lastMillisPWR ;
 
-float actualPressure  ; // default pressure in pascal; to actualise if vario exist; is used in airspeed calcualtion.
+float actualPressure  ; // default pressure in pascal; to actualise if vario exist; is used in airspeed calculation.
 int sensitivityPpmMapped ;
 int compensationPpmMapped ;
 int32_t test1Value ;// used in order to test the transmission of any value
@@ -109,13 +204,24 @@ OXS_VOLTAGE oXs_Voltage(0);
 #endif  //DEBUG
 #endif
 
+
 #ifdef VARIO
+#ifdef SENSOR_IS_BMP180
+#ifdef DEBUG  
+OXS_BMP180 oXs_MS5611 = OXS_BMP180(Serial);
+#else
+//OXS_BMP180 oXs_MS5611() ;
+OXS_BMP180 oXs_MS5611 = OXS_BMP180();
+#endif  //DEBUG
+
+#else // not a BMP180
 #ifdef DEBUG  
 OXS_MS5611 oXs_MS5611(I2C_MS5611_Add,Serial);
 #else
 OXS_MS5611 oXs_MS5611(I2C_MS5611_Add);
 #endif  //DEBUG
-#endif
+#endif // BMP180 or MS5611 sensor
+#endif // VARIO
 
 
 #ifdef VARIO2
@@ -157,6 +263,19 @@ OXS_OUT_FRSKY oXs_OutFrsky(PIN_SERIALTX);
 //************************************************************************************************** Setup()
 void setup(){
 
+#ifdef DEBUG_SETUP_PIN 
+    pinMode(DEBUG_SETUP_PIN, OUTPUT); // Set the start signal to high to say that set up start
+    digitalWrite(DEBUG_SETUP_PIN, HIGH);
+#endif  
+
+  #ifdef DEBUG_SPORT_PIN 
+    pinMode(DEBUG_SPORT_PIN, OUTPUT); // Set the pulse used during SPORT detection to LOW because detection is not yet started
+    digitalWrite(DEBUG_SPORT_PIN, LOW);
+#endif  
+
+#ifdef DEBUG_BLINK
+  pinMode(PIN_LED, OUTPUT); // The signal LED (used for the function debug loop)
+#endif
 #ifdef DEBUG
   Serial.begin(115200);
   Serial.println(F("openXsensor starting.."));
@@ -165,6 +284,8 @@ void setup(){
   Serial.print(F("freeRam="));  
   Serial.println(freeRam());
 #endif 
+
+
 
 //  sensitivityPpmMapped = 0 ;
   compensationPpmMapped = 100 ;
@@ -243,6 +364,64 @@ void setup(){
 //  RpmValue = 0 ;
   RpmAvailable = false ;
 
+#ifdef SEQUENCE_OUTPUTS
+    sequenceMaxNumber[0] = sizeof(sequence_m100) ; // sizeof(sequence_m100[0]) ;
+    sequenceMaxNumber[1] = sizeof(sequence_m75) ;// sizeof(sequence_m75[0]) ;
+    sequenceMaxNumber[2] = sizeof(sequence_m50) ;// sizeof(sequence_m50[0]) ;
+    sequenceMaxNumber[3] = sizeof(sequence_m25) ;// sizeof(sequence_m25[0]) ;
+    sequenceMaxNumber[4] = sizeof(sequence_0) ;// sizeof(sequence_0[0]) ;
+    sequenceMaxNumber[5] = sizeof(sequence_25) ;// sizeof(sequence_25[0]) ;
+    sequenceMaxNumber[6] = sizeof(sequence_50) ;// sizeof(sequence_50[0]) ;
+    sequenceMaxNumber[7] = sizeof(sequence_75) ;// sizeof(sequence_75[0]) ;
+    sequenceMaxNumber[8] = sizeof(sequence_100) ;// sizeof(sequence_100[0]) ;
+    sequenceMaxNumber[9] = sizeof(sequence_low) ;// sizeof(sequence_100[0]) ;
+    sequencePointer[0] = &sequence_m100[0] ;
+    sequencePointer[1] = &sequence_m75[0] ;
+    sequencePointer[2] = &sequence_m50[0] ;
+    sequencePointer[3] = &sequence_m25[0] ;
+    sequencePointer[4] = &sequence_0[0] ;
+    sequencePointer[5] = &sequence_25[0] ;
+    sequencePointer[6] = &sequence_50[0] ;
+    sequencePointer[7] = &sequence_75[0] ;
+    sequencePointer[8] = &sequence_100[0] ;
+    sequencePointer[9] = &sequence_low[0] ;
+
+     
+#ifdef DEBUG
+    seqRef = sequencePointer[0] ;  // seqTab contains pointers to the sequence array
+    seqMax = sequenceMaxNumber[0] ;
+    Serial.print(F("SeqRef="));  Serial.println( (uint16_t) seqRef) ;
+    Serial.print(F("SeqMax="));  Serial.println( (uint16_t) seqMax) ;
+    Serial.print(F("Sequence_m100="));    
+    for (uint8_t idxDebugSeq = 0 ; idxDebugSeq < (seqMax) ; idxDebugSeq++ ) {
+      Serial.print( *(seqRef + idxDebugSeq ) );
+      Serial.print(F(" , "));
+    }
+    Serial.println(F(" "));
+#endif    
+ 
+ 
+    seqState = 2 ; // declare that sequence is stopped
+    PORTB &= ~sequenceOutputs ; // set all output to LOW
+    DDRB |= sequenceOutputs ; // set pin to output mode
+    
+//#ifdef DEBUGSEQUENCE
+    ppm = -100 ; // fix the sequence to be used by default (e.g. when no PPM signal is present);  
+    setNewSequence( ) ; 
+//#endif
+
+#endif // end of SEQUENCE_OUTPUTS
+
+#ifdef DEBUG_SPORT_PIN 
+    digitalWrite(DEBUG_SPORT_PIN, LOW);
+//    pinMode(DEBUG_SPORT_PIN, INPUT); // Set the pin in input mode because it is not used anymore
+#endif  
+#ifdef DEBUG_SETUP_PIN 
+    digitalWrite(DEBUG_SETUP_PIN, LOW); // Set the setup signal to low to say that set up is done
+//    pinMode(DEBUG_SETUP_PIN, OUTPUT); 
+#endif  
+
+
 
 #ifdef DEBUG
   Serial.println(F("End of general set up"));
@@ -254,7 +433,12 @@ void setup(){
 //                                Main loop                                               ***
 //*******************************************************************************************
 void loop(){  
+#ifdef DEBUGENTERLOOP
+  Serial.print(F("in loop="));  
+  Serial.println(millis());
+#endif 
 
+ 
 #ifdef PIN_PUSHBUTTON
   // Check if a button has been pressed
 #if defined (VARIO) || defined (VARIO2)
@@ -268,6 +452,14 @@ void loop(){
 #endif 
     
     readSensors(); // read all sensors)
+#ifdef DEBUG_BLINK
+  static bool prevBlinkAvailable ;
+  if (  prevBlinkAvailable == false && oXs_MS5611.varioData.climbRateAvailable ) {
+    blinkLed(1) ;
+  }
+  prevBlinkAvailable = oXs_MS5611.varioData.climbRateAvailable ;  
+#endif
+    
     oXs_OutFrsky.sendData(); // choice which data can be send base on availability and some priority logic 
     
 #if defined ( DEBUG ) && defined (DEBUGOUTDATATOSERIAL)
@@ -292,6 +484,33 @@ void loop(){
 #endif
 #endif //VARIO 
 
+#ifdef SEQUENCE_OUTPUTS
+#if (defined( SEQUENCE_MIN_VOLT_6) && defined( PIN_VOLTAGE_6 )) || defined ( SEQUENCE_MIN_CELL ) 
+  if ( (lowVoltage == true) && (prevLowVoltage == false) ) {
+    prevLowVoltage = true ;
+    ppm = 125 ; // fix the sequence to be used when voltage is low  ; it is sequence +125
+    prevPpmMain = -10 ; // will force a new sequence because ppmMain will be different from prevPpmMain
+    setNewSequence() ;
+#ifdef DEBUG
+    Serial.println(F("Start sequence low voltage"));
+#endif
+  }  else if ( (lowVoltage == false) && (prevLowVoltage == true) ) {
+    prevLowVoltage = false ;
+    prevPpmMain = -10 ; //will force a new sequence because ppmMain will be different from prevPpmMain
+#ifdef PIN_PPM
+    if ( ppmus == 0) ppm = -100 ; // force ppm to -100 (default) when no ppm signal is received ,  else it will use the current ppm value
+#else 
+    ppm = -100 ; // if ppm is not configure force to go back to sequence -100 (= default);
+#endif
+    setNewSequence() ; 
+#ifdef DEBUG
+    Serial.println(F("End sequence low voltage"));
+#endif
+  }  
+#endif
+  checkSequence() ; // check if outputs have to be modified because time expired
+#endif
+
 #ifdef SAVE_TO_EEPROM
   static unsigned long LastEEPromMs=millis();
   if (millis()>LastEEPromMs+10000){ // Save Persistant Data To EEProm every 10 seconds
@@ -300,6 +519,21 @@ void loop(){
   }
 #endif
 }          // ****************   end of main loop *************************************
+
+#ifdef DEBUG_BLINK
+void   blinkLed(uint8_t blinkType) {
+  static int16_t blinkDelay = 300 ;
+  static unsigned long nextMillisBlink ;
+  if (millis() > nextMillisBlink ) {
+    if ( digitalRead( PIN_LED ) ) {
+      digitalWrite( PIN_LED , LOW ) ;
+    } else {
+      digitalWrite( PIN_LED , HIGH ) ;      
+    } 
+    nextMillisBlink += blinkDelay ; 
+  }  
+}  
+#endif
 
 //**********************************************************************************************************
 //***                                            Read all the sensors / Inputs                          ****
@@ -316,6 +550,9 @@ void readSensors() {
 #ifdef VARIO
   oXs_MS5611.readSensor(); // Read pressure & temperature on MS5611, calculate Altitude and vertical speed
   if ( oXs_MS5611.varioData.absoluteAltAvailable == true and oXs_MS5611.varioData.rawPressure > 100000.0f ) actualPressure = oXs_MS5611.varioData.rawPressure / 10000.0 ; // this value can be used when calculating the Airspeed
+  test3Value = oXs_MS5611.varioData.temperature; 
+  test3ValueAvailable = true ; 
+
 #endif
 
 #ifdef VARIO2
@@ -332,8 +569,17 @@ void readSensors() {
 #endif  
 #endif // end #ifdef AIRSPEED
 
-
-
+#if defined (VARIO) &&  defined (VARIO2)
+  if( (oXs_MS5611.varioData.averageClimbRateAvailable == true) || ( oXs_MS5611_2.varioData.averageClimbRateAvailable == true) ) {
+    averageVSpeedFloat = ( oXs_MS5611.varioData.climbRateFloat + oXs_MS5611_2.varioData.climbRateFloat ) / 2 ;
+    if ( abs((int32_t)  averageVSpeedFloat - averageVSpeed) > VARIOHYSTERESIS ) {
+          averageVSpeed = (int32_t)  averageVSpeedFloat ;
+    }    
+    averageVSpeedAvailable = true ;
+    oXs_MS5611.varioData.averageClimbRateAvailable = false ;
+    oXs_MS5611_2.varioData.averageClimbRateAvailable = false ;
+  }  
+#endif  
 
 #if defined (VARIO) && ( defined (VARIO2) || defined (AIRSPEED) ) && defined (VARIO_SECONDARY ) && defined( VARIO_PRIMARY )  && defined (PIN_PPM)
   if (( selectedVario == 0) && ( oXs_MS5611.varioData.switchClimbRateAvailable == true ) )  {
@@ -347,7 +593,12 @@ void readSensors() {
       switchVSpeedAvailable = true ;
       oXs_MS5611_2.varioData.switchClimbRateAvailable = false ;
   }
-#endif
+  else if ( ( selectedVario == 3) && ( averageVSpeedAvailable == true )) {
+      switchVSpeed = averageVSpeed ;
+      switchVSpeedAvailable = true ;
+      averageVSpeedAvailable = false ;
+  }
+#endif // end of VARIO2
 #if  defined (AIRSPEED)
   else if ( ( selectedVario == 2) && ( switchCompensatedClimbRateAvailable == true )) {
       switchVSpeed = compensatedClimbRate ;
@@ -442,9 +693,9 @@ void calculateDte () {  // is calculated about every 2O ms each time that an alt
   if (totalEnergyLowPass == 0) { 
     totalEnergyLowPass = totalEnergyHighPass = rawTotalEnergy ; 
   }
-  //test1Value = rawCompensation; 
-  test1Value = 1000; 
-  test1ValueAvailable = true ; 
+//  test1Value = rawCompensation; 
+//  test1Value = 1000; 
+//  test1ValueAvailable = true ; 
   
   //test2Value = rawTotalEnergy; 
   test2Value = 2000; 
@@ -705,14 +956,38 @@ void LoadFromEEProm(){
 /*   use its value to adjust sensitivity                  */
 /**********************************************************/
 #ifdef PIN_PPM
+volatile uint16_t time1 ;
+//uint16_t time3 ;
 void ProcessPPMSignal(){
-  ppmus= ReadPPM();
-//test purpose
-//  ppmus = 1 ;  // test only
+//#ifdef DEBUGPPM
+//    if ( ppmInterruptedCopy > 0)  {
+//        Serial.print(F("I= ")); Serial.println(ppmInterruptedCopy) ;
+//    }  
+//#endif
+  ReadPPM(); // set ppmus to 0 if ppm is not available or has not been colletect X time, other fill ppmus with the (max) pulse duration in usec 
+#ifdef DEBUGFORCEPPM
+//for debuging ppm without having a connection to ppm; force ppm to a value
+  ppmus = ( PPM_MIN_100 + PPM_PLUS_100) / 2 ; // force a ppm equal to 0
+#endif // end of DEBUGFORCEPPM 
   if (ppmus>0){  // if a value has been defined for ppm (in microseconds)
     ppm = map( ppmus , PPM_MIN_100, PPM_PLUS_100, -100 , 100 ) ; // map ppm in order to calibrate between -100 and 100
 //    ppm = 82 ; // test only
     ppmAvailable = true ;
+#ifdef DEBUGPPM
+    static uint16_t ppmCount ;
+    if ( (((int) ppm) - ((int ) prevPpm) > 3 ) || (((int) prevPpm) - ((int ) ppm) > 3 )  )  {
+        Serial.print(F(" us="));  Serial.print(ppmus); Serial.print(F(" c="));  Serial.println(ppmCount);
+        ppmCount = 0 ;
+    }  else {
+      ppmCount++;
+    }  
+#endif
+
+#ifdef SEQUENCE_OUTPUTS
+    if ( ( ( ppm - prevPpm) > 3 ) || (( prevPpm - ppm) > 3 )  )  { // handel ppm only if it changes by more than 3 
+        setNewSequence( ) ;
+    }  
+#else // so if Sequence is not used and so PPM is used for Vario sensitivity 
     if (ppm == prevPpm) {  // test if new value is equal to previous in order to avoid unstabel handling 
     
 #if defined ( VARIO_PRIMARY) && defined ( VARIO_SECONDARY)  && defined (VARIO ) && ( defined (VARIO2) || defined (AIRSPEED) )  && defined (PIN_PPM)
@@ -746,6 +1021,7 @@ void ProcessPPMSignal(){
         }    
 #endif
     } // end ppm == prePpm
+#endif  // end of #ifdef SEQUENCE_OUTPUTS & #else
   }  // end ppm > 0
   prevPpm = ppm ;
 }  // end processPPMSignal
@@ -758,60 +1034,165 @@ void ProcessPPMSignal(){
 
 #ifdef PPM_INTERRUPT
 uint16_t StartTime ;
-uint16_t EndTime ;
-uint8_t PulseTime ;		// A byte to avoid 
+//uint16_t EndTime ;
+ 
 
-#if PIN_PPM == 2
-ISR(INT0_vect, ISR_NOBLOCK)
-#else
+ 
+volatile uint8_t PulseTime ;		// A byte to avoid 
+volatile boolean  PulseTimeAvailable = false ;
+
+#if PIN_PPM == 2 // When pin 2 is used, arduino handle INT0 (see datasheet)
+ISR(INT0_vect, ISR_NOBLOCK)  // NOBLOCK allows other interrupts to be served when this one is activated 
+#else            //// When pin 3 is used, arduino handle INT1
 ISR(INT1_vect, ISR_NOBLOCK)
 #endif
 {
 	cli() ;
 	uint16_t time = TCNT1 ;	// Read timer 1
 	sei() ;
-	if ( EICRA & PPM_INT_EDGE )
+	if ( EICRA & PPM_INT_EDGE ) // a rising edge occurs
 	{
 		StartTime = time ;
-		EICRA &= ~PPM_INT_EDGE ;				// falling edge
+		EICRA &= ~PPM_INT_EDGE ;				// allow a falling edge to generate next interrupt
 	}
 	else
 	{
-		EndTime = time ;		
+//		EndTime = time ;		
 		time -= StartTime ;
 #if F_CPU == 20000000L   // 20MHz clock 
    #error Unsupported clock speed
 #elif F_CPU == 16000000L  // 16MHz clock                                                  
-		time >>= 7 ;		// Nominal 125 to 250
+		time >>= 4 ;		// delay in usec
 #elif F_CPU == 8000000L   // 8MHz clock
-		time >>= 6 ;		// Nominal 125 to 250
+		time >>= 3 ;		// delay in usec
 #else
     #error Unsupported clock speed
 #endif
-		time -= 60 ;		// Nominal 65 to 190
-		if ( time > 255 )
-		{
-			time = 255 ;			
-		}
-		PulseTime = time ;
-		EICRA |= PPM_INT_EDGE ;				// Rising edge
+		
+//                if (  ppmInterrupted == 0  ) { // do not handle PulseTime if pin change interrupt has been delayed by another interrupt (Timer 1 compare A handling)
+		  time1 = time ; 
+                  PulseTimeAvailable = true ;
+//		} else {
+//                ppmInterruptedCopy++ ;  // used in order to test the value outside ISR
+//                }
+//                ppmInterrupted = 0 ;                            // reset indicator about pin change interrupt delay  
+		EICRA |= PPM_INT_EDGE ;				//  allow a Rising edge to generate next interrupt
 	}
 }
 
-unsigned int ReadPPM()
-{
-	unsigned int _ppmus = PulseTime ;
-	_ppmus += 60 ;
-	_ppmus <<= 3 ;	// To microseconds
-	if ((_ppmus >2500) || (_ppmus<500)) return 0 ; // no signal!
-  
-	return _ppmus ;
-}
-
-#endif
-
+void ReadPPM() {
+         static uint8_t ppmIdx ;
+         static uint16_t ppmTemp ;
+         static uint16_t ppmMax ; // highest value of ppmTemp received ; Some ppm measurement are wrong (to low) because there are some interrupt some 
+#define PPM_COUNT_MAX 10 // select the max of 10 ppm
+        cli() ;
+        if ( !PulseTimeAvailable ) { // if no new pulse is available just exit with ppmus = 0
+              ppmus = 0 ;
+              sei() ;  
+        } else { 
+            ppmTemp = time1 ; 
+            PulseTimeAvailable = false ;
+            sei() ;
+            if ( ppmIdx >= PPM_COUNT_MAX ) {
+                ppmus = ppmMax ; // we keep the highest value
+                ppmIdx = 0 ;
+                ppmMax = ppmTemp ; 
+            } else {
+                ppmIdx++ ;
+                if( ppmTemp > ppmMax ) ppmMax = ppmTemp ;  
+            }  // end test on ppmIdx   
+        } // end test on PulseTimeAvailable
+} //end ReadPPM()
+#endif // end #ifdef PPM_INTERRUPT
 
 #endif //PIN_PPM
+
+
+
+
+#ifdef SEQUENCE_OUTPUTS
+void setNewSequence() {                   // **********  setNewSequence( ) **************  handle a new ppm value
+//    int8_t prevPpmMain = -100 ; // this value is unusual; so it will forced a change at first call
+    int16_t ppmAbs = ppm + 114 ;
+    int8_t ppmMain = ppmAbs / 25 ;
+    int8_t ppmRest = ppmAbs % 25 ;
+    if ( (ppmRest > 4) && (ppmMain >= 0) && (ppmMain <= 9) && (ppmMain != prevPpmMain) ) { // process only if valid and different from previous
+#ifdef DEBUGSEQUENCE
+    Serial.println(F(" "));
+    Serial.print(F("ppmMain="));  Serial.println(ppmMain );  
+    Serial.println(F(" "));
+#endif
+       prevPpmMain = ppmMain ;
+       seqRef = sequencePointer[ppmMain] ;  // seqTab contains pointers to the sequence array
+       seqMax = sequenceMaxNumber[ppmMain] ; 
+       seqState = 0 ;
+       seqStep = 0 ;
+#ifdef DEBUGSEQUENCE
+       test1Value = ppmMain; 
+       test1ValueAvailable = true ; 
+#endif
+       checkSequence() ;
+    }    
+}
+
+void checkSequence() {
+  uint8_t portbTemp ;
+  uint8_t portbTempValue ;
+  static uint16_t seqDelay ;
+  static unsigned long  currentMillis ;
+  static unsigned long  nextSequenceMillis ;
+#ifdef DEBUGSEQUENCE
+//    Serial.print(F("seqState="));  Serial.println(seqState );  
+#endif
+
+  if ( seqState == 0 ) {
+    portbTempValue = *(seqRef + 1); 
+    seqDelay = *(seqRef ) * sequenceUnit; //
+    portbTemp =  (~sequenceOutputs) & PORTB; // reset the bit that are controlled
+    PORTB = portbTemp | ( portbTempValue & sequenceOutputs ); // set the bit as defined in the sequence if they have to be controlled
+#ifdef DEBUGSEQUENCE
+    Serial.print(F("seqStep="));  Serial.println( seqStep );
+    Serial.print(F("portbTempValue="));  Serial.println( portbTempValue );
+    Serial.print(F("seqDelay="));  Serial.println( seqDelay );
+    Serial.print(F("portbTemp="));  Serial.println( portbTemp );
+    Serial.print(F("PORTB="));  Serial.println(  portbTempValue & sequenceOutputs );  
+#endif
+    
+    if (seqDelay == 0 ) {
+      seqState = 2 ; // set state to sequence stopped if delay is 0
+    } else {   
+      seqState = 1 ; //says that sequence is running
+      nextSequenceMillis = millis() +  seqDelay ;
+    }  
+  } else if ( seqState == 1 ) { // when sequence is running, check the timestamp to activate next sequence step
+    currentMillis = millis() ;
+    if ( currentMillis >  nextSequenceMillis  ) {
+       seqStep += 2 ; // increase by 2 because there are 2 parameters per step
+      if ( (seqStep + 1)  >=  seqMax  ) seqStep = 0 ; // return to 0 if end is reached
+      portbTempValue = *(seqRef + 1 + seqStep ); 
+      seqDelay = *(seqRef + seqStep) * sequenceUnit ;
+      portbTemp =  (~sequenceOutputs) & PORTB; // reset the bit that are controlled
+      PORTB = portbTemp | ( portbTempValue & sequenceOutputs ); // set the bit as defined in the sequence if they have to be controlled
+      if (seqDelay == 0 ) {
+          seqState = 2 ; // set state to sequence stopped if delay is 0
+      } else {   
+          seqState = 1 ; //says that sequence is running
+          nextSequenceMillis = currentMillis  +  seqDelay ;
+      }
+#ifdef DEBUGSEQUENCE
+      Serial.print(F("seqStep="));  Serial.println( seqStep );
+      Serial.print(F("portbTempValue="));  Serial.println( portbTempValue );
+      Serial.print(F("seqDelay="));  Serial.println( seqDelay );
+      Serial.print(F("portbTemp="));  Serial.println( portbTemp );
+      Serial.print(F("PORTB="));  Serial.println( portbTempValue & sequenceOutputs );  
+#endif
+     
+    } // end  ( currentMillis >  nextSequenceMillis  )
+  }   // end  ( seqState == 0 ) or ( seqState == 1 ) 
+}     // end checkSequence() 
+#endif // end SEQUENCE_OUTPUTS
+
+
 
 #ifdef DEBUG
 //************************************************************   OutputToSerial
