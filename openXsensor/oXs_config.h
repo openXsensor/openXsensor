@@ -1,10 +1,10 @@
-// OpenXsensor https://code.google.com/p/openxsensor/
+// OpenXsensor https://github.com/openXsensor/
 // started by Rainer Schloßhan
 
 //***********************************************************************************************************************
 // Another file in this project (see oXs_config_description.h) provides detailed explanations on how to set up this file.
 //***********************************************************************************************************************
-//  Note: the oXs_config.h file present on this Google site is not always meaningful.
+//  Note: the oXs_config.h file present on the GitHub site is not always meaningful.
 //       It could be that the combination of active/non active parameters is not consistent.
 //       This is just the result of many updates and tests in this document.
 //       So take always care to set up the oXs_config.h file according to your needs and check carefully all options.

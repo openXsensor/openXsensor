@@ -6,7 +6,7 @@
 *  The set up has to be done in the oXs_config.h file.
 *************************************************************************************
 
-See OpenXsensor https://code.google.com/p/openxsensor/
+See OpenXsensor https://github.com/openXsensor/
 started by Rainer Schloßhan
 
 ************************************************************************************************************************
