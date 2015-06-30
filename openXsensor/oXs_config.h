@@ -23,7 +23,7 @@
 //#define FRSKY_TYPE_HUB
 #define SENSOR_ID    0x1B //0x1B 
 // --------- 2 - Serial data pin choice ---------
-#define PIN_SERIALTX      2    // The pin which transmits the serial data to the FrSky telemetry receiver
+#define PIN_SERIALTX      4    // The pin which transmits the serial data to the FrSky telemetry receiver
 
 // --------- 3 - PPM settings ---------
 //#define PIN_PPM           3       // default is 2 but my own device use 3
@@ -34,7 +34,7 @@
 
 // ***** 4.1 - Connecting 1 or 2 MS5611 barometric sensor *****
 #define VARIO // set as comment if there is no vario
-#define SENSOR_IS_BMP180 // set as comment if baro sensor is MS5611
+//#define SENSOR_IS_BMP180 // set as comment if baro sensor is MS5611
 //#define VARIO2 // set as comment if there is no second vario
 
 // ***** 4.2 - Sensitivity predefined by program *****
@@ -55,7 +55,7 @@
 
 // ***** 4.5 - Vertical speeds calculations *****
 #define VARIO_PRIMARY       0        // 0 means first ms5611, 1 means second ms5611 , 2 means vario based on vario 1 + compensation from airspeed , 3 means average of first and second ms5611
-#define VARIO_SECONDARY     2        // 0 means first ms5611, 1 means second ms5611 , 2 means vario based on vario 1 + compensation from airspeed , 3 means average of first and second ms5611
+//#define VARIO_SECONDARY     2        // 0 means first ms5611, 1 means second ms5611 , 2 means vario based on vario 1 + compensation from airspeed , 3 means average of first and second ms5611
 #define SWITCH_VARIO_MIN_AT_PPM 10
 #define SWITCH_VARIO_MAX_AT_PPM 90
 
@@ -166,4 +166,5 @@
 #endif
 
 #endif// End define OXS_CONFIG_h
+
 

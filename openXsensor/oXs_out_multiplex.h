@@ -12,8 +12,8 @@
 
 
 struct t_mbOneData {
-	uint8_t active;
-	uint8_t response[3];
+	uint8_t volatile active;
+	uint8_t volatile response[3];
 } ;
 
 struct t_mbAllData {

@@ -56,7 +56,7 @@ uint8_t ByteStuffByte = 0 ;
 // initially only for Hub
 volatile uint8_t TxHubData[maxSizeBuffer] ;
 volatile uint8_t TxMax ;
-struct t_hubData *ThisHubData = 0 ;
+struct t_hubData * volatile ThisHubData = 0 ;
 
 // initially only for Sport
 uint8_t LastRx ;
@@ -64,8 +64,8 @@ uint8_t TxSportData[7] ;
 uint16_t Crc ;
 uint8_t DataSent ;
 uint8_t SportSync ;
-struct t_sportData *FirstData = 0 ;
-struct t_sportData *ThisSportData = 0 ;
+struct t_sportData * volatile FirstData = 0 ;
+struct t_sportData * volatile ThisSportData = 0 ;
 
 
 
@@ -177,7 +177,7 @@ ISR(TIMER1_COMPA_vect)
 		  TRXDDR &= ~( 1 << PIN_SERIALTX ) ;            // PIN is input
 		  TRXPORT &= ~( 1 << PIN_SERIALTX ) ;           // PIN is tri-stated.
        		  
-                  struct t_sportData *pdata = ThisSportData ;
+                  struct t_sportData * volatile pdata = ThisSportData ;
 		  FORCE_INDIRECT( pdata ) ;
 
 		  pdata->serialSent = 1 ;
@@ -227,7 +227,7 @@ ISR(TIMER1_COMPA_vect)
 			if ( SwUartRXData == SENSOR_ID )
 			{
 		          // This is us
-			  struct t_sportData *pdata = ThisSportData ;
+			  struct t_sportData * volatile pdata = ThisSportData ;
 			  FORCE_INDIRECT( pdata ) ;
 			  //if ( pdata )	             // We have something to send
 			  if   ( sendStatus == LOADED ){     
@@ -502,7 +502,7 @@ ISR(TIMER1_COMPA_vect)
 
 
 
-// End of the code for both protocols +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// End of the code for both Frsky protocols +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
 //____________________Here the code for SPORT interface only ++++++++++++++++++++++++++++++++++++++++++
@@ -686,7 +686,7 @@ void startHubTransmit()
 
 static volatile uint8_t TxMultiplexData[3] ; // array containing the char to transmit (is filled only when a polling address is received 
 static uint8_t firstMultiplexData ;
-struct t_mbAllData  *ThisMultiplexData = 0 ;
+struct t_mbAllData  * volatile ThisMultiplexData = 0 ;
 
 ISR(TIMER1_COMPA_vect)
 {
@@ -743,7 +743,7 @@ ISR(TIMER1_COMPA_vect)
     	            if( !(GET_RX_PIN( ) == 0 )) data |= 0x80 ;          // If a logical 1 is read, let the data mirror this.
 		    SwUartRXData = data ;
     	        } else {	                                     //Done receiving =  8 bits are in SwUartRXData
-                    struct t_mbAllData *pdata = ThisMultiplexData ;
+                    struct t_mbAllData * volatile pdata = ThisMultiplexData ;
 		    FORCE_INDIRECT( pdata ) ;
                     if ( SwUartRXData > MB_MAX_ADRESS ) {
 //                        mb_commandReceived ( SwUartRXData ) ; to implement if wanted in a second phase

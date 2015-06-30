@@ -24,10 +24,10 @@
 //#ifdef FRSKY_SPORT
 struct t_sportData
 {
-	struct t_sportData *next ;
-	uint8_t data[7] ;
-	uint8_t dataLock ;
-	uint8_t serialSent ;
+	struct t_sportData * volatile next ;
+	uint8_t  volatile  data[7] ;
+	uint8_t volatile dataLock ;
+	uint8_t volatile serialSent ;
 } ;
 
 void setSportNewData( struct t_sportData *pdata, uint16_t id, uint32_t value ) ;
@@ -54,9 +54,9 @@ extern volatile uint8_t debug04 ;
 
 struct t_hubData
 {
-	uint8_t data[maxSizeBuffer] ; 
-	uint8_t currentData ; //index of current data
-	uint8_t maxData ;   // max number of data prepared to be send
+	uint8_t volatile data[maxSizeBuffer] ; 
+	uint8_t volatile currentData ; //index of current data
+	uint8_t volatile maxData ;   // max number of data prepared to be send
 } ;
 
 void initHubUart( struct t_hubData *pdata ) ;
