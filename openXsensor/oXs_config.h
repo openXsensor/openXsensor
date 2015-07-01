@@ -19,7 +19,7 @@
 // ***** 1.1 - Multiplex protocol is used (otherwise oXs assumes it is Frsky protocol) *****
 //#define MULTIPLEX
 // ***** 1.2 - FrSky protocol and device ID (required when Sport protocol is used)  *****
-//#define FRSKY_TYPE_SPORT
+#define FRSKY_TYPE_SPORT
 //#define FRSKY_TYPE_HUB
 #define SENSOR_ID    0x1B //0x1B 
 // --------- 2 - Serial data pin choice ---------

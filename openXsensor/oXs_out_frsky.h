@@ -234,6 +234,9 @@ class OXS_OUT_FRSKY {
 
 };
 
+
+
+
 extern int ppm ; 
 extern bool ppmAvailable ;
 extern int32_t compensatedClimbRate ;

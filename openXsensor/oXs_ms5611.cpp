@@ -6,9 +6,9 @@
 //#define DEBUGVARIOI2C
 #endif
 
-extern unsigned long micros( void ) ;
-extern unsigned long millis( void ) ;
-extern void delay(unsigned long ms) ;
+//extern unsigned long micros( void ) ;
+//extern unsigned long millis( void ) ;
+//extern void delay(unsigned long ms) ;
 
 //long result ;
 

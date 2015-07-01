@@ -21,26 +21,25 @@
 #include "oXs_general.h"
 
 
-//#ifdef FRSKY_SPORT
+// used by FRSKY_SPORT protocol
+/*
 struct t_sportData
 {
-	struct t_sportData * volatile next ;
+//	struct t_sportData * volatile next ;
 	uint8_t  volatile  data[7] ;
 	uint8_t volatile dataLock ;
-	uint8_t volatile serialSent ;
+//	uint8_t volatile serialSent ;
 } ;
-
-void setSportNewData( struct t_sportData *pdata, uint16_t id, uint32_t value ) ;
-void setMultiplexNewData( struct t_sportData *pdata, uint16_t id, uint32_t value ) ;
-void initSportUart( struct t_sportData *pdata ) ;
-//void initMultiplexUart( struct t_sportData *pdata ) ;
-void initMultiplexUart( struct t_mbAllData *pdata ) ;
-
-extern uint8_t DataSent ;
-extern uint8_t SportSync ;
+*/
 
 
-extern volatile uint8_t sendStatus ;
+
+void setSportNewData( uint16_t id, uint32_t value ) ;
+void initSportUart() ;
+//void setSportNewData( struct t_sportData * volatile pdata, uint16_t id, uint32_t value ) ;
+//void initSportUart( struct t_sportData * volatile pdata ) ;
+void setMultiplexNewData( struct t_sportData * volatile pdata, uint16_t id, uint32_t value ) ;
+void initMultiplexUart( struct t_mbAllData * volatile pdata ) ;
 
 extern volatile uint8_t debug01 ;
 extern volatile uint8_t debug02 ;
@@ -51,17 +50,18 @@ extern volatile uint8_t debug04 ;
 //#else // Hub protocol ==========================================================
 
 #define maxSizeBuffer 70  // max size of the buffer used to store the data to be sent in the hub protocol
-
+/*
 struct t_hubData
 {
 	uint8_t volatile data[maxSizeBuffer] ; 
 	uint8_t volatile currentData ; //index of current data
 	uint8_t volatile maxData ;   // max number of data prepared to be send
 } ;
+*/
 
-void initHubUart( struct t_hubData *pdata ) ;
+void initHubUart(  ) ;
 //void sendHubByte( uint8_t byte ) ;
-void setHubNewData( struct t_hubData *pdata ) ;
+void setHubNewData(  ) ;
 void startHubTransmit( void ) ;
 
 //#endif // FRSKY_SPORT + HUB

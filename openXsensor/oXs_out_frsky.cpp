@@ -42,13 +42,21 @@ extern void delay(unsigned long ms) ;
 
 
 //used only by Sport protocol
-volatile uint8_t sendStatus ;   // !!! this is used in Aserial too
-struct t_sportData sportData ; 
+extern uint8_t  volatile  sportData[7] ;
+extern uint8_t volatile sportDataLock ;
+extern uint8_t volatile sendStatus ;
+
+
+//struct t_sportData sportData ; 
 
 //used only by Hub protocol
-struct t_hubData hubData ;
+   //struct t_hubData hubData ;
 static int fieldToSend ;
 static bool fieldOk ;
+extern uint8_t volatile hubData[maxSizeBuffer] ; 
+//extern uint8_t volatile hubCurrentData ; //index of current data
+extern uint8_t volatile hubMaxData ;   // max number of data prepared to be send
+
 
 //Used by both protocols
 volatile bool sportAvailable = false ;
@@ -84,7 +92,7 @@ void OXS_OUT_FRSKY::setup() {
     sportAvailable = true ;
 #elif defined (FRSKY_TYPE_HUB)
     sportAvailable = false ;
-#else        
+#else   // we will detect automatically if SPORT is available     
   // Activate pin change interupt on Tx pin
 #if PIN_SERIALTX == 4
     PCMSK2 |= 0x10 ;			// IO4 (PD4) on Arduini mini
@@ -93,7 +101,7 @@ void OXS_OUT_FRSKY::setup() {
 #else
     #error "This PIN is not supported"
 #endif // test on PIN_SERIALTX
-    delay(1000) ; // this delay has been added because some users reported that SPORT is not recognise with a X6R ; perhaps is it related to the EU firmware (2015)
+    delay(1500) ; // this delay has been added because some users reported that SPORT is not recognise with a X6R ; perhaps is it related to the EU firmware (2015)
 #ifdef DEBUG_SPORT_PIN 
     digitalWrite(DEBUG_SPORT_PIN, HIGH); // Set the pulse used during SPORT detection to HIGH because detecttion is starting
 #endif
@@ -113,9 +121,9 @@ void OXS_OUT_FRSKY::setup() {
     }
 #endif // end test on FRSKY_TYPE
     if ( sportAvailable) {
-        initSportUart( &sportData ) ;
+        initSportUart(  ) ;
     } else {
-      	initHubUart( &hubData ) ;
+      	initHubUart( ) ;
     }  
 	
 #ifdef DEBUG
@@ -154,14 +162,14 @@ void OXS_OUT_FRSKY::sendData()
        We have to take care that all types of value (when available) have to be transmitted after each other
        Note : it should be possible to send more values if OXS would reply to more than one device ID because the polling occurs more often
          Still here we will react only to one device ID (see oXs_config.h)
-       We look at the values off each sensor in sequence
+       We look at the values of each sensor in sequence
        Each value has a extra field "available":
-         Available = true = KNOWN when tha value is calculated. It becomes false = UNKNOWN when the value is loaded for transmission.; 
-       There is 1 general status related to the transmission. This "sendStatus" is shared by all values
+         Available = true = KNOWN when that value is calculated. It becomes false = UNKNOWN when the value is loaded for transmission.; 
+       There is one general status related to the transmission. This "sendStatus" is shared by all values
          sendStatus can be  : TO_LOAD, LOADED, SENDING, SEND ; 
              For one value, when the value is available and if sendStatus = TO_LOAD or LOADED, we can load the value (again); 
              It is not allowed to load the value is the sendStatus = SENDING
-             sendStatus goes from TO_LOAD to LOADED when the value is loaded in 'setNewData'; The indicator available of this value become false = UNKNOWN in order to avoid to load it again
+             sendStatus goes from TO_LOAD to LOADED when the value is loaded in 'setSportNewData' (in Aserial); The indicator available of this value become false = UNKNOWN in order to avoid to load it again
              sendStatus goes from LOADED to SENDING when the start bit is received for the right device ID
              sendStatus  goes from SENDING to SEND when all bytes (including Checksum) have been transmitted
        
@@ -917,8 +925,8 @@ void OXS_OUT_FRSKY::loadSportValueToSend( uint8_t currentFieldToSend) {
       prevValue  = prevValue + delta ;
       valueTemp = prevValue ; 
 #endif //End DEBUGWITHFIXVALUE
-      setSportNewData( &sportData, fieldID  ,  (valueTemp * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])  + fieldContainsData[currentFieldToSend][4] ) ; 
-
+//      setSportNewData( &sportData, fieldID  ,  (valueTemp * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])  + fieldContainsData[currentFieldToSend][4] ) ; 
+      setSportNewData( fieldID  ,  (valueTemp * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])  + fieldContainsData[currentFieldToSend][4] ) ; 
 #ifdef DEBUGLOADVALUETOSEND
           printer->print("Loaded at = ");
           printer->print( millis() );
@@ -969,18 +977,18 @@ void OXS_OUT_FRSKY::SendFrame1(){
 #ifdef DEBUGHUBPROTOCOL
   printer->print("FRSky output module: SendFrame1A:");
 #endif
-    hubData.maxData = 0 ; // reset of number of data to send
+    hubMaxData = 0 ; // reset of number of data to send
 #ifdef SEND_FixValue
    SendValue(FRSKY_USERDATA_TEMP1,(int16_t)1234); // Fix value in T1 ; only for test purpose
 #endif
   for (int rowNr = 0 ; rowNr < numberOfFields ; rowNr++) {
-    if ( hubData.maxData < (maxSizeBuffer - 13) ){
+    if ( hubMaxData < (maxSizeBuffer - 13) ){
         loadHubValueToSend( rowNr ) ;    
     }    
   }    
-  if( hubData.maxData > 0 ) {
+  if( hubMaxData > 0 ) {
     sendHubByte(0x5E) ; // End of Frame 1!
-    setHubNewData( &hubData ) ;
+    setHubNewData(  ) ;
   }  
 #ifdef DEBUGHUBPROTOCOL
       printer->print("Data to send = ");
@@ -1020,8 +1028,8 @@ void OXS_OUT_FRSKY::SendValue(uint8_t ID, uint16_t Value) {
 //***************************************************
 void OXS_OUT_FRSKY::sendHubByte( uint8_t byte )
 {	
-	hubData.data[hubData.maxData] = byte ;
-	hubData.maxData ++ ;	
+	hubData[hubMaxData] = byte ;
+	hubMaxData ++ ;	
 }
 
 //***************************************************
