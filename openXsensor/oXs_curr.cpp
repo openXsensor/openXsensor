@@ -1,7 +1,7 @@
 #include "oXs_curr.h"
 
 #ifdef DEBUG
-//#define DEBUGCURRENT
+#define DEBUGCURRENT
 #endif
 
 extern unsigned long micros( void ) ;
@@ -24,17 +24,49 @@ OXS_CURRENT::OXS_CURRENT(uint8_t pinCurrent)
 
 // **************** Setup the Current sensor *********************
 void OXS_CURRENT::setupCurrent( ) {
-#ifdef DEBUG  
-  printer->print("Current sensor on pin:");
-  printer->println(_pinCurrent);
-  printer->print(" milli=");  
-  printer->println(millis());
-
+  uint16_t tempRef ; 
+  float currentDivider = 1.0 ;
+#ifdef USE_INTERNAL_REFERENCE   
+  analogReference(INTERNAL) ;
 #endif
+#if defined(USE_INTERNAL_REFERENCE) && defined(REFERENCE_VOLTAGE) && REFERENCE_VOLTAGE < 2000
+  tempRef = REFERENCE_VOLTAGE  ;
+#elif defined(USE_INTERNAL_REFERENCE) && defined(REFERENCE_VOLTAGE)
+  #error REFERENCE_VOLTAGE must be less than 2000 when USE_INTERNAL_REFERENCE is defined
+#elif defined(USE_INTERNAL_REFERENCE)
+  tempRef = 1100 ;
+#elif defined(REFERENCE_VOLTAGE) && REFERENCE_VOLTAGE > 2000
+  tempRef = REFERENCE_VOLTAGE  ;
+#elif defined(REFERENCE_VOLTAGE)
+  #error REFERENCE_VOLTAGE must be greater than 2000 when USE_INTERNAL_REFERENCE is not defined
+#else 
+  tempRef = 5000 ;
+#endif  
+#if defined(RESISTOR_TO_GROUND_FOR_CURRENT) && defined(RESISTOR_TO_CURRENT_SENSOR)
+  if ( RESISTOR_TO_GROUND_FOR_CURRENT > 0 && RESISTOR_TO_CURRENT_SENSOR > 0) {
+    currentDivider = 1.0 * (RESISTOR_TO_GROUND_FOR_CURRENT + RESISTOR_TO_CURRENT_SENSOR ) / RESISTOR_TO_GROUND_FOR_CURRENT ;
+  }
+#endif 
+  offsetCurrentSteps =  1023.0 * MVOLT_AT_ZERO_AMP / tempRef / currentDivider;
+  mAmpPerStep =  currentDivider * tempRef / MVOLT_PER_AMP / 1.023 ; 
+
   currentData.milliAmpsAvailable = false;
   currentData.consumedMilliAmpsAvailable = false;
 //  currentData.sumCurrent = 0 ;
   resetValues();
+#ifdef DEBUG  
+  printer->print("Current sensor on pin:");
+  printer->println(_pinCurrent);
+  printer->print("Reference voltage:");
+  printer->println(tempRef);
+  printer->print("Offset for current:");
+  printer->println(offsetCurrentSteps);
+  printer->print("mAmp per step:");
+  printer->println(mAmpPerStep);
+  printer->print(" milli=");  
+  printer->println(millis());
+#endif
+  
 }
 
 
@@ -62,7 +94,7 @@ void OXS_CURRENT::readSensor() {
   cnt++ ;
   milliTmp = millis() ;
   if(  milliTmp > ( lastCurrentMillis + 200) ){   // calculate average once per 200 millisec
-      currentData.milliAmps = ((currentData.sumCurrent / cnt) - OFFSET_CURRENT_STEPS ) * MAMP_PER_STEP ;
+      currentData.milliAmps = ((currentData.sumCurrent / cnt) - offsetCurrentSteps ) * mAmpPerStep ;
       if (currentData.milliAmps < 0) currentData.milliAmps = 0 ;
 	  currentData.milliAmpsAvailable = true ;
 //      if(currentData.minMilliAmps>currentData.milliAmps)currentData.minMilliAmps=currentData.milliAmps;

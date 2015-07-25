@@ -26,12 +26,10 @@ started by Rainer Schloßhan
 *   4.6 - Analog vertical speed (optional)
 *  5 - Airspeed sensor settings (optional)
 *  6 - Voltage measurements and current sensor settings (optional)
-*   6.1 - Select the reference (VCC or 1.1 internal voltage reference)
-*   6.2 - Voltages analog pins
-*   6.3 - Voltage measurements calibration parameters
-*   6.4 - Number of lipo cells to measure (and transmit to Tx)
-*   6.5 - Current sensor analog pin
-*   6.6 - Current sensor calibration parameters
+*   6.1 - Voltage Reference to measure voltages and current
+*   6.2 - Voltages parameters
+*   6.3 - Max number of lipo cells to measure (and transmit to Tx)
+*   6.4 - Current sensor parameters
 *  7 - RPM (rotations per minute) sensor settings (optional)
 *  8 - Persistent memory settings (optional)
 *  9 - Data to transmit - This part specifies list of codes to be used and how to combine them
@@ -311,46 +309,41 @@ started by Rainer Schloßhan
 
 **** 6 - Voltage measurements and current sensor settings (optional) ***************************************************
 *
-* 6.1 - Voltage Reference selection (VCC or 1.1V internal)**************************************************************
+* 6.1 - Voltage Reference to measure voltages and current **************************************************************
 *     Current and Voltages can be measured in (1023) steps from or VCC or an 1.1 internal reference.
 *     If VCC is very stable, it is probably more accurate and easier to measure current and voltages based on VCC (so in 1023 steps from VCC).
 *     Still this requires that the voltage applied on Arduino "RAW" pin is regulated or at at least always more than 5.5 volt (in order to let the Arduino board voltage regulates it at 5 volt).
 *     If voltage on "Raw" pin is less than 5.5 volt and changes (e.g. due to servo consumption or low battery) then current and voltage measurements will become wrong.
 *     If VCC can't be very stable (e.g. Arduino is powered via RX by a 4.8 NiMh) and you need only the voltages (no need for the current measurement), then it is possible to measure based on the Arduino 1.1 internal voltage reference.
 *     If you need current measurement too, using internal voltage is not "the" solution because current sensor needs stable voltage too.
-*     Take care that voltage dividers (see below) must be calculated in order that Arduino analog pin voltage do not exceed VCC or 1.1 volt depending on the option you choose.
-*     Uncomment the "#define USE_INTERNAL_REFERENCE" to activate the 1.1 internal voltage reference (otherwise, measurements will be based on VCC).
+*     Take care that voltage dividers (see below) must be setup in order that Arduino analog pin voltage do not exceed VCC or 1.1 volt depending on the option you choose.
+*     - Uncomment the "#define USE_INTERNAL_REFERENCE" to activate the 1.1 internal voltage reference (otherwise, measurements will be based on VCC).
+*     - In order to get best measurements, you can setup the voltage reference being used with line #define REFERENCE_VOLTAGE.
+*       Value must be defined in millivolt (e.g. 5100 for 5.1 Volt) and may not contains decimals;
+*       If ommitted, oXs will automatically apply 1100 (when USE_INTERNAL_REFERENCE is defined) and 5000 (othewise)
+ *
 ************************************************************************************************************************
 //#define USE_INTERNAL_REFERENCE
+#define REFERENCE_VOLTAGE 5000
 
-* 6.2 - Voltages analog Pins *******************************************************************************************
-*     Analog pins (A0 to A7) can be used to measure up to 6 input voltages (please note that depending on manufacturer, some Arduino pro mini have less analog pins available) 
-*     A voltage can be provided by a battery (e.g. a multicell lipo) or a sensor (e.g. a temperature sensor convert the temperature in a voltage that can be measured) 
-*     Note : one analog pin can also be used to measure a current using a current sensor; the set up for a current sensor is described in section 6.5 (see below);
+* 6.2 - Voltages parameters *******************************************************************************************
+*     oXs can measure up to 6 input voltages (please note that depending on manufacturer, some Arduino pro mini have less analog pins available)
+*     In order to measure voltages, you :
+*       - must specify the Analog pins (A0 to A7) connected to a battery (e.g. a multicell lipo) or to a sensor (e.g. a temperature sensor convert the temperature in a voltage that can be measured)
+*       - must specify the values of resistors being used for the voltage dividers (see below)
+*       - can specify offset and/or scaling to apply
+* 
+*     Note : one analog pin can also be used to measure a current using a current sensor; the set up for a current sensor is described in section 6.4 (see below);
 *          Do not use the same analog pin to measure a voltage and a current.
 *     Take care : do NOT use pins A4 and A5 if you use a vario or an airspeed (those pins are reserved for the barometric and pressure sensors).
-*     The Pin value to enter in the oXs_config.h is a number from 0 up to 7 (0 means A0 = analog 0, 1 means A1, ...7 means A7).
+*     
+*    The pins being used to measure some voltages are defined in line #define PIN_VOLTAGE. It is better to put this line as comment (having "//" in front) if no one voltage has to be measured.  
+*     When used, this line must contains 6 values (separated by comma); the first value is used to measure VOLT1, the second VOLT2, ...up to VOLT6 
+*     Each value must be a number from 0 up to 7 (0 means A0 = analog 0, 1 means A1, ...7 means A7) or the value "8" (when a voltage does not have to be measured).
+*     Note: the same alalog pin values can be used in several voltages (e.g. for VOLT1 and VOLT6).
+*     
 *  !! Take care that the voltage applied to Arduino pin may not exceed Vcc (normally 5 volt) or 1.1 volt (if internal reference voltage is used).
 *     It can be that you have to use voltage divider in order to reduce the voltage applied on Arduino pin compared to the voltage you want to measure.
-*     See explanation below about voltage divider and about using VCC or 1.1 internal voltage divider.
-*     Note : all voltages are measured to ground; so, for a multicell lipo, it will be max 4.2 volt for the first cell, 8.4 for the second, 12.6 for the third,... 
-*   
-*     If there is no need to measure some voltage, set the line as comment or remove the line.
-*  Note: the same pin value can be used for several PIN_VOLTAGE (the voltage on this pin will then be measured for each PIN_VOLTAGE setup)                                            
-************************************************************************************************************************
-#define PIN_VOLTAGE_1 0      Pin for measuring Voltage 1 ( analog In Pin! )
-#define PIN_VOLTAGE_2 1      Pin for measuring Voltage 2 ( analog In Pin! )
-#define PIN_VOLTAGE_3 2      Pin for measuring Voltage 3 ( analog In Pin! )
-#define PIN_VOLTAGE_4 3      Pin for measuring Voltage 4 ( analog In Pin! )
-#define PIN_VOLTAGE_5 6      Pin for measuring Voltage 5 ( analog In Pin! )
-#define PIN_VOLTAGE_6 7      Pin for measuring Voltage 6 ( analog In Pin! )
-
-* 6.3 - Voltage measurements calibration parameters ********************************************************************
-*     For each of the 6 voltages, you can set up an offset and a ratio mVolt per ADC step.
-*     The set up is specific for each Arduino and depends mainly on the resistors used as divider (and so on the reference being used).
-*
-*     Arduino can not convert a voltage that exceed the reference (Vcc or 1.1 volt) being used.
-*     If the voltage to measure exceed this value, it has to be divided (scaled down) using a voltage divider.
 *     For each voltage to scale down, proceed as follow:
 *      - make a divider with 2 resistors 
 *
@@ -358,14 +351,14 @@ started by Rainer Schloßhan
 *                 |
 *               __|__   
 *              |     |
-*              |     |   R2           
+*              |     |   R2 (Resistor_To_Voltage)          
 *              |     |              
 *              |_____|          
 *                 |
 *                 |------> mid point = connect to Arduino pin A0,A1,A2,A3, A6 or A7
 *               __|__   
 *              |     |
-*              |     |   R1          
+*              |     |   R1 (Resistor_To_Ground)          
 *              |     |              
 *              |_____|          
 *                 |
@@ -376,53 +369,42 @@ started by Rainer Schloßhan
 *      - R1 could be 10 kOhm; so R2 = R1 * ( ( "max voltage to measure from this sensor"  / VCC [or 1.1 depending on the reference] ) - 1 )
 *         e.g. using 1.1 internal voltage reference and in order to measure max 6 volt with R1 = 10000, then R2 = 10000 * (( 6 / 1.1 ) - 1) = 45545 Ohm; best rounded up to high available value e.g 47000 ohm
 *
-*     Due to errors on resistors, on Vcc or 1.1 volt reference and on ADC it is required, for best result, to calibrate each voltage measurement as follow:
-*      - set parameters in oXs_config.h  :
-*            - choose to measure based on VCC or 1.1 internal voltage (and (un)comment line "#define USE_INTERNAL_REFERENCE"
-*            - set first OFFSET = 0 (default value)
-*            - set first MVOLT_PER_STEP = 1 (default value)
-*            - select a field to transmit the desired voltage (e.g. T1) and fill the line  "#define SETUP_DATA_TO_SEND" accordingly 
+*    The resistors used in voltage dividers have to be specified in lines #define RESISTOR_TO_GROUND and #define RESISTOR_TO_VOLTAGE.
+*    Eeach line, must contains 6 values (one for each voltage); each value represent the resistance in Ohm or kOhm but use the same unit for both lines. 
+*    If no divider is used for some voltage, set both resistors to 0 (zero)
+*    If no divider at all is used, lines can be commented (adding "//" in front)
+*     
+*     In order to get best voltage measurements, oXs can be calibrated. This optional process allows to compensate tolerances on resistors and on Arduino ADC (analog to digital converter).
+*     To calibrate each voltage measurement proceed as follow in order to find the best values to be set up in lines #define OFFSET_VOLTAGE  and #define SCALE_VOLTAGE
+*      - set parameters in oXs_config.h  
+*            - letting  OFFSET_VOLTAGE = 0 and SCALE_VOLTAGE = 1 (so adding no compensation)
+*            - selecting a field to transmit the desired voltage (e.g. T1 for VOLT3) and fill the line  "#define SETUP_DATA_TO_SEND" accordingly 
 *      - load the program in Arduino 
 *      - apply several different voltages on End point (not exceeding the max voltage allowed based on R1 and R2)
 *      - for each applied voltage, measure the applied voltage with a voltmeter and read the value received on telemetry panel on Tx  
-*      - set the values in excel (or on a graphic) and calculate the best values for MVOLT_PER_STEP and OFFSET (using a linear regression)
+*      - set the values in excel (or on a graphic) and calculate the best values OFFSET_VOLTAGE and SCALE_VOLTAGE (using a linear regression)
 *     If this seems too complex, just use 2 voltages as different as possible (but in the range of the normal values you want to measure)
 *     and apply calculation based on following example:        .
 *      I expect voltage to be normally between 4 volt and 6 volt, so I apply 2 voltages close to those values to End point
-*        - for first voltage, voltmeter gives 3510 millivolt and telemetry gives 533
-*        - for second voltage, voltmeter gives 5900 millivolt and telemetry gives 904
-*      So MVOLT_PER_STEP = (5900-3510) / (904-533) = 6.4420
-*      So OFFSET = 3510 - (533 * 6.4420 ) = 76
+*        - for first voltage, voltmeter gives 3510 millivolt and telemetry gives 3622
+*        - for second voltage, voltmeter gives 5900 millivolt and telemetry gives 6013
+*      Then SCALE_VOLTAGE = (5900-3510) / (6013-3622) = 0.99958
+*      and OFFSET_VOLTAGE = -3510 + (3622 * 0.99958 ) = 110
 *  Note: You can apply the same principle if you are measuring something else than a voltage.
 *         E.g. You can calibrate a temperature sensor and set the calibration parameter in order to get degree on the TX display.
-*  Note: when some pins are not used for voltage measurement, you can set them as comment or remove them. Anyway, if they exist, they will be discarded.
-*
-*  Note : if you can't calibrate (e.g. you do not have a voltmeter and want that OXS gives the battery voltage, you can normally calculate the theoretical values based on this formula:
-*         OFFSET = 0
-*         MVOLT_PER_STEP = V / 1023 * (R1 + R2) / R1  where 
-*                     - V (in milliVolt) is Vcc (e.g. 5000) or internal 1.1 ref. (e.g. 1100) depending on the reference you use
-*                     - R1 and R2 are the resistors used for the divider or 1 if no divider is used
-*
-*     #define OFFSET_1             0         Offset to apply for first voltage (= voltage 1) (default value = 0)
-*     #define MVOLT_PER_STEP_1       1       millivolt per step from Analog to Digital Converter for first voltage (initial calibration value = 1)
-*     #define OFFSET_2             0         Offset to apply for second voltage 
-*     #define MVOLT_PER_STEP_2       1       millivolt per step from Analog to Digital Converter for second voltage
-*     etc. up to 6
+*     
+*     Line #define OFFSET_VOLTAGE  and #define SCALE_VOLTAGE are optional (can be put as comment adding "//" in front)
+*     If defined, each line must contains 6 values. Use 0 (for offset) and 1 (for scale) if no calibration is done for some voltage.
+*     
 ************************************************************************************************************************
-#define OFFSET_1             0   
-#define MVOLT_PER_STEP_1       4.89  // = 5000 / 1023 (if Vcc = 5 volt)     
-#define OFFSET_2             0    
-#define MVOLT_PER_STEP_2       1    
-#define OFFSET_3             0       
-#define MVOLT_PER_STEP_3       1
-#define OFFSET_4             0        
-#define MVOLT_PER_STEP_4       1        
-#define OFFSET_5             0        
-#define MVOLT_PER_STEP_5       1        
-#define OFFSET_6             0        
-#define MVOLT_PER_STEP_6       1        
+#define PIN_VOLTAGE         0 , 1 , 2 , 3 , 8 , 8             
+#define RESISTOR_TO_GROUND 12 , 20 , 30 , 40 , 50 , 60           // set value to 0 when no divider is used for one of this voltage
+#define RESISTOR_TO_VOLTAGE 50 , 100.1 , 200, 300 , 500 , 600    // set value to 0 when no divider is used for one of this voltage
+#define OFFSET_VOLTAGE      0 , 0 , 0 , 0 , 0 , 0                // can be negative, must be integer
+#define SCALE_VOLTAGE       1 , 1 , 1 , 1 , 1 , 1                // can be negative, can have decimals
 
-* 6.4 - Number of Lipo cell to measure  (and transmit to Tx) ***********************************************************
+
+* 6.3 - Max number of Lipo cell to measure  (and transmit to Tx) ***********************************************************
 *     The different voltages measured under 6.3 are all related to the ground.
 *     OXS can use some of them to calculate the voltage of some lipo cells.
 *     Define here the max number of cell voltages of a lipo you want to transmit; value can be 0 (no cells),1,2,3,4,5,6.
@@ -432,27 +414,29 @@ started by Rainer Schloßhan
 *     TX will also identify the cell with the lowest voltage and display it in a field named "Cell".
 *     TX has also a special screen where all voltages will be displayed (see Taranis manual).
 *     E.g. if number of cells = 3, 
-*           voltage on cell 1 will be voltage measured on PIN_Voltage1
-*           voltage on cell 2 will be the difference between voltages measure on PIN_VOLTAGE_2 and PIN_VOLTAGE_1
-*           voltage on cell 3 will be the difference between voltages measure on PIN_VOLTAGE_3 and PIN_VOLTAGE_2
+*           voltage on cell 1 will be voltage measured on the first pin defined in PIN_Voltage
+*           voltage on cell 2 will be the difference between voltages measure on second pin and first pin (so VOLT2 - VOLT1)
+*           voltage on cell 3 will be the difference between voltages measure on third pin and second pin (so VOLT3 - VOLT2)
 *           etc.
-*     When transmitting cell voltages, you may NOT FORGET to configure the PIN_VOLTAGE_x and to configure the calibration parameters too .
+*     When transmitting cell voltages, you may NOT FORGET to configure the PIN_VOLTAGE, RESISTOR_TO_GROUND, RESISTOR_TO_VOLTAGE (and optionaly the calibration parameters too) .
 *     Pins voltage in excess may be used in order to transmit other voltages (e.g. from a temperature sensor)
-*     E.g. if NUMBEROFCELLS = 3, PIN_VOLTAGE_1 must be connected to cell 1 (via a voltage divider calculated for about 4.5 volt
-*                                PIN_VOLTAGE_2 must be connected to cell 2 (via a voltage divider calculated for about 9 volt
-*                                PIN_VOLTAGE_3 must be connected to cell 3 (via a voltage divider calculated for about 13 volt
-*                                PIN_VOLTAGE_4, 5 and/or 6 may still be used for other data (temperature, current, ...)
+*     E.g. if NUMBEROFCELLS = 3, First pin (in the list of 6) must be connected to cell 1 (via a voltage divider calculated for about 4.5 volt
+*                                Second pin must be connected to cell 2 (via a voltage divider calculated for about 9 volt
+*                                Third pin  must be connected to cell 3 (via a voltage divider calculated for about 13 volt
+*                                Other pins may still be used for other data (temperature, current, ...)
 *     Notes: You must use voltage dividers to scale down the voltages on each pin of the lipo balance plug
 *            If you use the 1.1 internal reference, you can set all R1 = 10 kOhm. Then R2 could best be
 *                   33 kOhm for Voltage1, 68 kOhm for Voltage2, 120 kOhm for Voltage3 and 150 kOhm for voltage4
-*            Please note that the more cells you have the more inaccurate the measurements become.
+*            Please note that the more cells you have the more inaccurate the measurements become specially if you do not calibrate the voltages.
 *            Probably, it make no sense to measure more that 3 or 4 cells individually
 *            If you don't want to transmit cell voltage, set value to 0 (zero) or comment the line.
-*            This parameter defines the max number of cells you expect to transmit. If OXS is connected to a lipo having less cells, OXS will send 0 volt for the "missing" cells
+*            This parameter defines the max number of cells you expect to transmit. 
+*            If OXS is connected to a lipo having less cells, OXS will send 0 volt for the "missing" cells which still let the TX calculate the total voltage and the lowest cell voltagen 
 ************************************************************************************************************************
 #define NUMBEROFCELLS    3 
 
-* 6.5 - Current sensor analog pin **************************************************************************************
+
+* 6.4 - Current sensor  parameters   **************************************************************************************
 *     It is possible to measure a current (and current consumption) if a current sensor is connected.
 *     Connecting a current sensor is an optional feature.
 *     It requires some additional hardware. It can be an IC like ACS712 (for 5, 20, 30 amp) or ACS758 (for 50, 100, 150, 200 amp).
@@ -462,34 +446,33 @@ started by Rainer Schloßhan
 *     If a current sensor is used, do not to use a pin that is already used by a voltage.
 *  !! Take care that the voltage applied to Arduino pin may not exceed Vcc (normally 5 volt) or 1.1 volt (if internal reference voltage is used).
 *     It can be that you have to use a voltage divider in order to reduce the voltage applied on Arduino pin.
-*     See explanation above (6.3) about voltage divider.
+*     See explanation above (6.2) about voltage divider.
 *     Take care : do NOT use pins A4 and A5 if you use a vario or an airspeed (those pins are reserved for the barometric and pressure sensors).
 * Note: The current sensor is normally powered by the 5 volt VCC from OXS (same as the vario sensor).
 *       There are bidirectional sensor and unidirectional sensor.
-*       For bidirectional, output is normally equal to VCC/2 when current = 0 Amp, for unidirectional, output is normally 0,6 volt at 0 Amp.
+*       For bidirectional, output is normally equal to VCC/2 when current = 0 Amp and, for unidirectional, output is normally 0,6 volt at 0 Amp.
 *       If OXS is connected to a battery giving less than 5.2 volt, the supply voltage for the current sensor will vary with the OXS supply voltage.
 *       Therefore VCC/2 ( = O amp) will varies with VCC.
 *       This is an issue if the Arduino ADC is configured to use the 1.1 volt internal reference.
 *       So, in this case it is better to configure the ADC in order to use VCC as reference for conversion.
-*       In order to use a current sensor, you have to uncomment the line //#define PIN_CURRENTSENSOR and to specify the calibrations
-************************************************************************************************************************
-//#define PIN_CURRENTSENSOR   2
-
-* 6.6 - Current sensor calibration parameters **************************************************************************
-*     Current sensor has normally to be calibrated based on 2 parameters :
-*        OFFSET_CURRENT_STEPS  =  Offset to apply for current; normal value is 1024/2 for a bidirectional sensor because 0 Amp gives VCC/2 (or 1.1 V/2 when using a divider).
-*                                 Still for unidirectional sensor, voltage at 0 amp is 0.6 volt for 5 volt Vcc; so offset should then normally be 1024 * 0.6 /5 = 123.
-*        MAMP_PER_STEP         =  milliAmp per step from Analog to Digital Converter; the value depend on the sensitivity of the sensor (and on an eventual voltage divider).
-*                                 If no divider is used, the value of MAMP_PER_STEP is normally equal to V (in mvolt) / (sensitivity in mV/Amp * 1.023) where:
-*                                     - V is Vcc (e.g. 5000) or internal 1.1 ref (e.g. 1100) depending on the reference you use
-*                                     - Sensitivity is normally given in the datasheet from your sensor.
-*                                         E.g. For a ACS758LCB-050U, sensitivity is 60 mv/Amp
-*                                              So if using 5 volt Vcc => 5000 / (60 * 1.023) = 81.5.
+*       In order to use a current sensor, you have to uncomment the line //#define PIN_CURRENTSENSOR and specify the Arduino pin connected to the current sensor. 
+*       You must also define 2 parameters depending of the type of sensor being use; those parameters are given in the datasheet of the sensor).
+*         - MVOLT_AT_ZERO_AMP  =  milliVolt generated by the sensor when current is 0 Amp: normal value is :
+*                                       - for a bidirectional sensor  : Vcc from current sensor / 2 (so = 2500 if sensor is connected to Arduino Vcc and Arduino Vcc is 5 Volt).
+*                                       - 600 for unidirectional sensor 
+*         - MVOLT_PER_AMP       =  milliVolt per Amp. The value depend on the sensitivity of the sensor (e.g. an ACS712ELCTR-30A-T has a sensitivity of 66 mvolt/A, a ACS758LCB-050U has a sensitivity of 60 mv/Amp)
+*        
+*        If you use the 1.1 internal reference to measure voltagse and current, you must also use a voltage divider in order to scale down the voltage produced by the current sensor.
+*        See the section 6.2 above about voltage divider. The principle are just the same but the names of the 2 paraameters are:
+*          - RESISTOR_TO_GROUND_FOR_CURRENT
+*          - RESISTOR_TO_CURRENT_SENSOR 
 *        Note: those parameters are automatically discarded when PIN-CURRENTSENSOR is not defined (= set as comment).
 ************************************************************************************************************************
-#define OFFSET_CURRENT_STEPS         0         66mv offset (set to zero for now)
-#define MAMP_PER_STEP                0.9775    INA282 with 0.1 ohm shunt gives 5000mv/A
-
+//#define PIN_CURRENTSENSOR      2
+#define MVOLT_AT_ZERO_AMP        600
+#define MVOLT_PER_AMP            60
+#define RESISTOR_TO_GROUND_FOR_CURRENT  10
+#define RESISTOR_TO_CURRENT_SENSOR      40
 
 **** 7 - RPM (rotations per minute) sensor settings (optional) ***************************************************************************
 *      It is possible to measure RPM using a sensor connected to pin ICP (=PB0, = pin 8) of OXS.
@@ -569,12 +552,12 @@ started by Rainer Schloßhan
 *    SENSITIVITY_2      none     Vario sensitivity (2)                             NOT allowed 
 *    ALT_OVER_10_SEC     m       Difference of Altitude over 10 last sec (1)       NOT allowed
 *    ALT_OVER_10_SEC_2   m       Difference of Altitude over 10 last sec (2)       NOT allowed
-*    VOLT1             mV(5)     Value based on (milli)Volt on PIN_VOLTAGE_1       NOT allowed
-*    VOLT2             mV(5)     Value based on (milli)Volt on PIN_VOLTAGE_2       NOT allowed
-*    VOLT3             mV(5)     Value based on (milli)Volt on PIN_VOLTAGE_3       NOT allowed
-*    VOLT4             mV(5)     Value based on (milli)Volt on PIN_VOLTAGE_4       NOT allowed
-*    VOLT5             mV(5)     Value based on (milli)Volt on PIN_VOLTAGE_5       NOT allowed
-*    VOLT6             mV(5)     Value based on (milli)Volt on PIN_VOLTAGE_6       NOT allowed
+*    VOLT1             mV(5)     Value read on first PIN_VOLTAGE                   NOT allowed
+*    VOLT2             mV(5)     Value read on 2d PIN_VOLTAGE                      NOT allowed
+*    VOLT3             mV(5)     Value read on 3d PIN_VOLTAGE                      NOT allowed
+*    VOLT4             mV(5)     Value read on 4th PIN_VOLTAGE                     NOT allowed
+*    VOLT5             mV(5)     Value read on 5th PIN_VOLTAGE                     NOT allowed
+*    VOLT6             mV(5)     Value read on 6th PIN_VOLTAGE                     NOT allowed
 *    CELLS_1_2        special    Volt of cells 1 & 2                                 Mandatory             Cell & Cells
 *    CELLS_3_4        special    Volt of cells 3 & 4                                 Mandatory             Cell & Cells
 *    CELLS_5_6        special    Volt of cells 5 & 6                                 Mandatory             Cell & Cells
@@ -588,12 +571,12 @@ started by Rainer Schloßhan
 *    REL_ALTIMETER       cm      Relative altitude (1)                       Not implemented in FRSKY protocol                 1m
 *    REL_ALTIMETER_2     cm      Relative altitude (2)                       Not implemented in FRSKY protocol                 1m
 *    ALTIMETER_MAX       cm      Max relative altitude (1)                   Not implemented in FRSKY protocol                 1m
-*    CELL_1             mV(5)    Value based on (milli)Volt on PIN_VOLTAGE_1 Not implemented in FRSKY protocol                 0.1V
-*    CELL_2             mV(5)    Value based on mVolt on PIN_VOLTAGE_1 & 2   Not implemented in FRSKY protocol                 0.1V
-*    CELL_3             mV(5)    Value based on mVolt on PIN_VOLTAGE_2 & 3   Not implemented in FRSKY protocol                 0.1V
-*    CELL_4             mV(5)    Value based on mVolt on PIN_VOLTAGE_3 & 4   Not implemented in FRSKY protocol                 0.1V
-*    CELL_5             mV(5)    Value based on mVolt on PIN_VOLTAGE_4 & 5   Not implemented in FRSKY protocol                 0.1V
-*    CELL_6             mV(5)    Value based on mVolt on PIN_VOLTAGE_5 & 6   Not implemented in FRSKY protocol                 0.1V
+*    CELL_1             mV(5)    Value based on first PIN_VOLTAGE            Not implemented in FRSKY protocol                 0.1V
+*    CELL_2             mV(5)    Value based on first and 2d PIN_VOLTAGE     Not implemented in FRSKY protocol                 0.1V
+*    CELL_3             mV(5)    Value based on 2d and 3d PIN_VOLTAGE        Not implemented in FRSKY protocol                 0.1V
+*    CELL_4             mV(5)    Value based on 3d and 4th PIN_VOLTAGE       Not implemented in FRSKY protocol                 0.1V
+*    CELL_5             mV(5)    Value based on 4th and 5th PIN_VOLTAGE      Not implemented in FRSKY protocol                 0.1V
+*    CELL_6             mV(5)    Value based on 5th and 6th PIN_VOLTAGE      Not implemented in FRSKY protocol                 0.1V
 *    CELL_MIN           mV(5)    Value based on CELL_1 ... CELL_6            Not implemented in FRSKY protocol                 0.1V
 *    CELL_TOT           mV(5)    Value based on VOLT1...VOLT6                Not implemented in FRSKY protocol                 0.1V
 
@@ -776,11 +759,11 @@ started by Rainer Schloßhan
 *      Note: when a sequence name is not defined, oXs handles it like it would be defined with 0 , 0b000000 (so no repeat, all outputs LOW)
 * - Finally you can (but it is not mandatory) set up the condition(s) for a low voltage detection. When a voltage becomes too low, oXs starts automatically SEQUENCE_LOW (and discard PPM channel)
 *     A low voltage condition can be set up based on 1 or 2 voltage(s):
-*         - the voltage on the Arduino pin defined by parameter PIN_VOLTAGE_6; this set up is achived by a line like : #define SEQUENCE_MIN_VOLT_6 6000 where 6000 is the "low" voltage in mVolt.
-*           Note: if you use this option, do not forget to define PIN_VOLTAGE_6 , OFFSET_6 and MVOLT_PER_STEP_6        
-*                 the pin defined in PIN_VOLTAGE_6 can be the same as another PIN_VOLTAGE; this can be useful if you want to set up both low voltage parameters
+*         - the voltage on the Arduino pin defined by the 6th parameter PIN_VOLTAGE; this set up is achived by a line like : #define SEQUENCE_MIN_VOLT_6 6000 where 6000 is the "low" voltage in mVolt.
+*           Note: if you use this option, do not forget assign a pin number to the 6th parameter in #define PIN_VOLTAGE and to fill (if requested) the 6th parameter of other voltage parameters.        
+*                 The pin defined in the 6th parameter of PIN_VOLTAGE can be the same as another parameter in PIN_VOLTAGE; this can be useful if you want to set up low voltage parameters too.
 *         - the lowest lipo cell voltage; this set up is achived by a line like : #define SEQUENCE_MIN_CELL 3000 where 3000 is the "low" voltage in mVolt.
-*           Note: if you use this option, do not forget to define PIN_VOLTAGE_1 , OFFSET_1 , MVOLT_PER_STEP_1 , PIN_VOLTAGE_2 , OFFSET_2 , MVOLT_PER_STEP_2 , etc ... and NUMBEROFCELLS        
+*           Note: if you use this option, do not forget to define the other voltage parameters PIN_VOLTAGE , etc ... and NUMBEROFCELLS        
 *     Note:  when no one low voltage parameter is defined, oXs will not automatically start SEQUENCE_LOW.
 *            when both voltage parameters are defined, oXs will automatically start SEQUENCE_LOW as soon as one of the 2 voltages becomes low.
 *            If you want that oXs notifies a low voltage detection do not forget to also define SEQUENCE_LOW (otherwise, oXs will just set all output pins to LOW)

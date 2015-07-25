@@ -194,9 +194,7 @@ bool test3ValueAvailable ;
 uint8_t selectedVario ; // identify the vario to be used when switch vario with PPM is active (0 = first MS5611) 
 
 // Create instances of the used classes
-                        // Mike, there is no need creating this class if there is no voltage to measure because this version does not read Internal ref regarding VCC anymore (even for measuring current)
-  // to do : adapt the test on defined (PIN_VOLTAGE_...) because actual config.h expects now that all PIN_VOLTAGE_ are defined ; a value > 7 means it is not used. 
-#if defined( PIN_VOLTAGE_1 ) || defined( PIN_VOLTAGE_2 ) || defined( PIN_VOLTAGE_3 ) || defined( PIN_VOLTAGE_4 ) || defined( PIN_VOLTAGE_5 ) || defined( PIN_VOLTAGE_6 ) 
+#ifdef PIN_VOLTAGE
 #ifdef DEBUG  
 OXS_VOLTAGE oXs_Voltage(Serial);
 #else
@@ -303,9 +301,9 @@ void setup(){
   pinMode(PIN_LED, OUTPUT); // The signal LED (used for the function push button)
 
   // Invoke all setup methods and set reference
-  // to do : adapt the test on defined (PIN_VOLTAGE_...) because actual config.h expects now that all PIN_VOLTAGE_ are defined ; a value > 7 means it is not used. 
-#if (defined PIN_VOLTAGE_1 && PIN_VOLTAGE_1 < 8) || (defined PIN_VOLTAGE_2 && PIN_VOLTAGE_2 < 8) ||(defined PIN_VOLTAGE_3 && PIN_VOLTAGE_3 < 8) ||(defined PIN_VOLTAGE_4 && PIN_VOLTAGE_4 < 8) ||(defined PIN_VOLTAGE_5 && PIN_VOLTAGE_5 < 8) ||(defined PIN_VOLTAGE_6 && PIN_VOLTAGE_6 < 8)  
-  oXs_Voltage.setupDivider(); 
+
+#ifdef PIN_VOLTAGE
+  oXs_Voltage.setupVoltage(); 
   oXs_OutFrsky.voltageData=&oXs_Voltage.voltageData; 
 #endif
 
@@ -485,7 +483,7 @@ void loop(){
 #endif //VARIO 
 
 #ifdef SEQUENCE_OUTPUTS
-#if (defined( SEQUENCE_MIN_VOLT_6) && defined( PIN_VOLTAGE_6 )) || defined ( SEQUENCE_MIN_CELL ) 
+#if (defined( SEQUENCE_MIN_VOLT_6) || defined ( SEQUENCE_MIN_CELL ) 
   if ( (lowVoltage == true) && (prevLowVoltage == false) ) {
     prevLowVoltage = true ;
     ppm = 125 ; // fix the sequence to be used when voltage is low  ; it is sequence +125
@@ -613,7 +611,7 @@ void readSensors() {
 #endif // end  defined (VARIO) && ( defined (VARIO2) || defined (AIRSPEED) ) && defined (VARIO_SECONDARY ) && defined( VARIO_PRIMARY ) && defined (VARIO_SECONDARY) && defined (PIN_PPM)
 
 
-#if (defined PIN_VOLTAGE_1 && PIN_VOLTAGE_1 < 8) || (defined PIN_VOLTAGE_2 && PIN_VOLTAGE_2 < 8) ||(defined PIN_VOLTAGE_3 && PIN_VOLTAGE_3 < 8) ||(defined PIN_VOLTAGE_4 && PIN_VOLTAGE_4 < 8) ||(defined PIN_VOLTAGE_5 && PIN_VOLTAGE_5 < 8) ||(defined PIN_VOLTAGE_6 && PIN_VOLTAGE_6 < 8)  
+#ifdef PIN_VOLTAGE
     if (checkFreeTime()) oXs_Voltage.readSensor();    // read voltage only if there enough time to avoid delaying vario reading
 #endif   // end voltage
 
@@ -823,9 +821,6 @@ void Reset1SecButtonPress()
 //  oXs_MS5611_2.resetValues() ;
 //#endif
 
-//#ifdef PIN_VOLTAGE_DIVIDER
-//  oXs_Voltage.resetValues();
-//#endif
 }
 
 void Reset3SecButtonPress()

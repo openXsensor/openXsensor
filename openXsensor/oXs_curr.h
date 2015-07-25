@@ -36,6 +36,8 @@ private:
   HardwareSerial* printer;
 #endif
   byte _pinCurrent;
+  float offsetCurrentSteps ;
+  float mAmpPerStep ; 
 
 };
 

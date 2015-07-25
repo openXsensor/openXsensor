@@ -248,42 +248,32 @@ uint8_t OXS_OUT_FRSKY::formatOneValue( uint8_t currentFieldToSend) {
         break ;
 #endif  // End defined (VARIO) && defined ( AIRSPEED)
 
-#ifdef PIN_VOLTAGE_1
+#ifdef PIN_VOLTAGE
       case VOLT1 :  
          if (! voltageData->mVoltAvailable[0]  ) return 0;
          valueTemp = voltageData->mVolt[0] / 100;
          voltageData->mVoltAvailable[0] = false ;
          break ;
-#endif         
-#ifdef PIN_VOLTAGE_2
       case VOLT2 :  
          if ( ! voltageData->mVoltAvailable[1]  ) return 0;
          valueTemp = voltageData->mVolt[1] / 100 ;
          voltageData->mVoltAvailable[1] = false ;
           break ;
-#endif         
-#ifdef PIN_VOLTAGE_3
       case VOLT3 :  
          if ( ! voltageData->mVoltAvailable[2]  ) return 0;
          valueTemp = voltageData->mVolt[2] / 100 ;
          voltageData->mVoltAvailable[2] = false ;
           break ;
-#endif         
-#ifdef PIN_VOLTAGE_4
       case VOLT4 :  
          if ( ! voltageData->mVoltAvailable[3]  ) return 0;
          valueTemp = voltageData->mVolt[3] / 100 ;
          voltageData->mVoltAvailable[3] = false ;
           break ;
-#endif         
-#ifdef PIN_VOLTAGE_5
       case VOLT5 :  
          if ( ! voltageData->mVoltAvailable[4]  ) return 0;
          valueTemp = voltageData->mVolt[4] / 100 ;
          voltageData->mVoltAvailable[4] = false ;
           break ;
-#endif         
-#ifdef PIN_VOLTAGE_6
       case VOLT6 :  
          if ( ! voltageData->mVoltAvailable[5]  ) return 0;
          valueTemp = voltageData->mVolt[5] / 100 ;

@@ -1,11 +1,13 @@
 #include "oXs_voltage.h"
  
 #ifdef DEBUG
-//#define DEBUGNEWVALUE
+#define DEBUGNEWVALUE
 //#define DEBUGDELAY
 //#define DEBUGCELLCALCULATION
-#define DEBUGLOWVOLTAGE
+//#define DEBUGLOWVOLTAGE
 #endif
+
+#ifdef PIN_VOLTAGE
 
 extern unsigned long micros( void ) ;
 extern unsigned long millis( void ) ;
@@ -24,52 +26,78 @@ OXS_VOLTAGE::OXS_VOLTAGE(uint8_t x)
 }
 
 // **************** Setup the Current sensor *********************
-void OXS_VOLTAGE::setupDivider( void ) {
+void OXS_VOLTAGE::setupVoltage( void ) {
+  uint16_t tempRef ;
 #ifdef USE_INTERNAL_REFERENCE   
   analogReference(INTERNAL) ;
-  voltageData.mVoltPin[0] = 8 ;
-  voltageData.mVoltPin[1] = 8 ;
-  voltageData.mVoltPin[2] = 8 ;
-  voltageData.mVoltPin[3] = 8 ;
-  voltageData.mVoltPin[4] = 8 ;
-  voltageData.mVoltPin[5] = 8 ;
+#endif
+#ifdef PIN_VOLTAGE  
+  uint8_t tempPin[6 ] = { PIN_VOLTAGE };
+#else
+  uint8_t tempPin[6 ] = { 8 , 8 , 8 , 8 , 8 , 8 } ;
 #endif  
-#ifdef PIN_VOLTAGE_1
-  voltageData.mVoltPin[0] = PIN_VOLTAGE_1 ;
-  voltageData.offset[0] = OFFSET_1 ;
-  voltageData.mVoltPerStep[0] = MVOLT_PER_STEP_1 ;
-#endif  
-#ifdef PIN_VOLTAGE_2
-  voltageData.mVoltPin[1] = PIN_VOLTAGE_2 ;
-  voltageData.offset[1] = OFFSET_2 ;
-  voltageData.mVoltPerStep[1] = MVOLT_PER_STEP_2 ;
-#endif  
-#ifdef PIN_VOLTAGE_3
-  voltageData.mVoltPin[2] = PIN_VOLTAGE_3 ;
-  voltageData.offset[2] = OFFSET_3 ;
-  voltageData.mVoltPerStep[2] = MVOLT_PER_STEP_3 ;
-#endif  
-#ifdef PIN_VOLTAGE_4
-  voltageData.mVoltPin[3] = PIN_VOLTAGE_4 ;
-  voltageData.offset[3] = OFFSET_4 ;
-  voltageData.mVoltPerStep[3] = MVOLT_PER_STEP_4 ;
-#endif  
-#ifdef PIN_VOLTAGE_5
-  voltageData.mVoltPin[4] = PIN_VOLTAGE_5 ;
-  voltageData.offset[4] = OFFSET_5 ;
-  voltageData.mVoltPerStep[4] = MVOLT_PER_STEP_5 ;
-#endif  
-#ifdef PIN_VOLTAGE_6
-  voltageData.mVoltPin[5] = PIN_VOLTAGE_6 ;
-  voltageData.offset[5] = OFFSET_6 ;
-  voltageData.mVoltPerStep[5] = MVOLT_PER_STEP_6 ;
+#ifdef RESISTOR_TO_GROUND 
+  float tempResistorToGround[6] = { RESISTOR_TO_GROUND } ;
+#else
+  float tempResistorToGround[6] = { 0 , 0 , 0 , 0 , 0 , 0 } ;
+#endif
+#ifdef RESISTOR_TO_VOLTAGE  
+  float tempResistorToVoltage[6] = { RESISTOR_TO_VOLTAGE } ;
+#else
+  float tempResistorToVoltage[6] = { 0 , 0 , 0 , 0 , 0 , 0 } ;
+#endif
+#ifdef OFFSET_VOLTAGE  
+  int tempOffsetVoltage[6] = { OFFSET_VOLTAGE} ;
+#else 
+  int tempOffsetVoltage[6] =  { 0 , 0 , 0 , 0 , 0 , 0 } ;
+#endif
+#ifdef SCALE_VOLTAGE   
+  float tempScaleVoltage[6] = { SCALE_VOLTAGE }  ;
+#else
+  float tempScaleVoltage[6] =  { 1 , 1 , 1 , 1 , 1 , 1 } ;
+#endif
+ 
+#if defined(USE_INTERNAL_REFERENCE) && defined(REFERENCE_VOLTAGE) && REFERENCE_VOLTAGE < 2000
+  tempRef = REFERENCE_VOLTAGE  ;
+#elif defined(USE_INTERNAL_REFERENCE) && defined(REFERENCE_VOLTAGE)
+  #error REFERENCE_VOLTAGE must be less than 2000 when USE_INTERNAL_REFERENCE is defined
+#elif defined(USE_INTERNAL_REFERENCE)
+  tempRef = 1100 ;
+#elif defined(REFERENCE_VOLTAGE) && REFERENCE_VOLTAGE > 2000
+  tempRef = REFERENCE_VOLTAGE  ;
+#elif defined(REFERENCE_VOLTAGE)
+  #error REFERENCE_VOLTAGE must be greater than 2000 when USE_INTERNAL_REFERENCE is not defined
+#else 
+  tempRef = 5000 ;
 #endif  
 
+#ifdef DEBUG  
+  printer->print("Reference voltage:");
+  printer->println(tempRef);
+#endif
 
   for (int cntInit = 0 ; cntInit < 6 ; cntInit++) {
-    pinMode(voltageData.mVoltPin[cntInit],INPUT);
+    if ( tempPin[ cntInit ] < 8 ) {
+      voltageData.mVoltPin[cntInit] =  tempPin[ cntInit ] ;
+      pinMode(voltageData.mVoltPin[cntInit],INPUT);
+    } else {
+      voltageData.mVoltPin[cntInit] = 8 ;
+    }
+    voltageData.offset[cntInit] = tempOffsetVoltage[ cntInit ] ;
+    if ( tempResistorToGround[cntInit] > 0 && tempResistorToVoltage[cntInit] > 0 && tempScaleVoltage[cntInit] > 0 ) {
+      voltageData.mVoltPerStep[cntInit] = tempRef / 1023.0 * ( tempResistorToGround[cntInit] + tempResistorToVoltage[cntInit] ) / tempResistorToGround[cntInit]  * tempScaleVoltage[cntInit];
+    } else {
+      voltageData.mVoltPerStep[cntInit] = tempRef / 1023.0 ;  
+    }
     voltageData.sumVoltage[cntInit] = 0 ;
     voltageData.mVoltAvailable[cntInit] = false ; 
+#ifdef DEBUG  
+    printer->print("Voltage:"); printer->print( cntInit + 1 );
+    printer->print(" , pin="); printer->print( voltageData.mVoltPin[cntInit] );
+    printer->print(" , offset="); printer->print( voltageData.offset[cntInit] );
+    printer->print("  , mVoltPerStep="); printer->println( voltageData.mVoltPerStep[cntInit] );
+#endif
+    
   }
 //  voltageData.atLeastOneVoltage = ( voltageData.mVoltPin[0] < 8 || voltageData.mVoltPin[1] < 8 || voltageData.mVoltPin[2] < 8 ||voltageData.mVoltPin[3] < 8 ||voltageData.mVoltPin[4] < 8 || voltageData.mVoltPin[5] < 8 ) ;
 }
@@ -273,3 +301,5 @@ uint32_t OXS_VOLTAGE::calculateCell(int32_t V0 , int32_t V1 , int32_t V2 , int c
   return (cell_2 << 20) | (cell_1 << 8) | ( ( (int32_t) NUMBEROFCELLS)<<4 ) | (int32_t) cellId ;
 }
 #endif // end calculateCell
+
+#endif // end of PIN_VOLTAGE

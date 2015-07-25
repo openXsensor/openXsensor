@@ -13,8 +13,8 @@ struct VOLTAGEDATA {
   bool mVoltAvailable[6] ;
   
   byte mVoltPin[6] ;            // Arduino pin number to use to read each voltage (See hardware setting in oXs_config.h)  
-  int offset[6] ;               // offset to apply while converting ADC to millivolt (See setting in oXs_config.h)  
-  float mVoltPerStep[6] ;       // rate to apply while converting ADC to millivolt (See setting in oXs_config.h)  
+  int offset[6] ;            // offset to apply while converting ADC to millivolt (See setting in oXs_config.h)  
+  float mVoltPerStep[6] ;            // rate to apply while converting ADC to millivolt (See setting in oXs_config.h)  
 //  bool atLeastOneVoltage ;      // true if there is at least one voltage to measure
   
   int32_t sumVoltage[6] ;       // use to calculate average voltage     
@@ -47,7 +47,7 @@ class OXS_VOLTAGE {
     OXS_VOLTAGE( uint8_t x );
 #endif
     VOLTAGEDATA voltageData ;
-	void setupDivider( void );
+	void setupVoltage( void );
 	void readSensor();
 	void resetValues();
     

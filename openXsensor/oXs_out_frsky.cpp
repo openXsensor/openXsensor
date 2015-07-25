@@ -1,4 +1,4 @@
-// file for FRSKY
+// file for FRSKY telemetry
 
 #include "oXs_out_frsky.h"
 #ifndef MULTIPLEX
@@ -320,27 +320,17 @@ void OXS_OUT_FRSKY::sendSportData()
 uint8_t OXS_OUT_FRSKY::readStatusValue( uint8_t fieldToSend) {
   switch ( fieldContainsData[fieldToSend][1] )
     {
-#ifdef PIN_VOLTAGE_1
+#ifdef PIN_VOLTAGE
      case  VOLT1 :
           return voltageData->mVoltAvailable[0] ;    
-#endif         
-#ifdef PIN_VOLTAGE_2
      case  VOLT2 :
           return voltageData->mVoltAvailable[1] ;
-#endif         
-#ifdef PIN_VOLTAGE_3
      case  VOLT3 :
           return voltageData->mVoltAvailable[2] ;
-#endif         
-#ifdef PIN_VOLTAGE_4
      case  VOLT4 :
           return voltageData->mVoltAvailable[3] ;
-#endif         
-#ifdef PIN_VOLTAGE_5
      case  VOLT5 :
           return voltageData->mVoltAvailable[4] ;
-#endif         
-#ifdef PIN_VOLTAGE_6
      case  VOLT6 :
           return voltageData->mVoltAvailable[5] ;     
 #endif          
@@ -485,23 +475,13 @@ uint8_t OXS_OUT_FRSKY::nextFieldToSend(  uint8_t indexField) {
 #endif
 
          
-#ifdef PIN_VOLTAGE_1
-      if ( (fieldContainsData[indexField][1] == VOLT1) && ( voltageData->mVoltAvailable[0] == KNOWN ) ) { return indexField ; } 
-#endif         
-#ifdef PIN_VOLTAGE_2
-      if ( (fieldContainsData[indexField][1] == VOLT2) && ( voltageData->mVoltAvailable[1] == KNOWN ) ) { return indexField ; } 
-#endif         
-#ifdef PIN_VOLTAGE_3
-      if ( (fieldContainsData[indexField][1] == VOLT3) && ( voltageData->mVoltAvailable[2] == KNOWN ) ) { return indexField ; } 
-#endif         
-#ifdef PIN_VOLTAGE_4
-      if ( (fieldContainsData[indexField][1] == VOLT4) && ( voltageData->mVoltAvailable[3] == KNOWN ) ) { return indexField ; } 
-#endif         
-#ifdef PIN_VOLTAGE_5
-      if ( (fieldContainsData[indexField][1] == VOLT5) && ( voltageData->mVoltAvailable[4] == KNOWN ) ) { return indexField ; } 
-#endif         
-#ifdef PIN_VOLTAGE_6
-      if ( (fieldContainsData[indexField][1] == VOLT6) && ( voltageData->mVoltAvailable[5] == KNOWN ) ) { return indexField ; } 
+#ifdef PIN_VOLTAGE
+      if ( (fieldContainsData[indexField][1] == VOLT1) && ( voltageData->mVoltAvailable[0] == KNOWN ) && ( voltageData->mVoltPin[0] < 8 ) ) { return indexField ; } 
+      if ( (fieldContainsData[indexField][1] == VOLT2) && ( voltageData->mVoltAvailable[1] == KNOWN ) && ( voltageData->mVoltPin[1] < 8 ) ) { return indexField ; } 
+      if ( (fieldContainsData[indexField][1] == VOLT3) && ( voltageData->mVoltAvailable[2] == KNOWN ) && ( voltageData->mVoltPin[2] < 8 ) ) { return indexField ; } 
+      if ( (fieldContainsData[indexField][1] == VOLT4) && ( voltageData->mVoltAvailable[3] == KNOWN ) && ( voltageData->mVoltPin[3] < 8 ) ) { return indexField ; } 
+      if ( (fieldContainsData[indexField][1] == VOLT5) && ( voltageData->mVoltAvailable[4] == KNOWN ) && ( voltageData->mVoltPin[4] < 8 ) ) { return indexField ; } 
+      if ( (fieldContainsData[indexField][1] == VOLT6) && ( voltageData->mVoltAvailable[5] == KNOWN ) && ( voltageData->mVoltPin[5] < 8 ) ) { return indexField ; } 
 #endif         
 
 #if defined (PIN_CURRENTSENSOR)
@@ -728,7 +708,7 @@ void OXS_OUT_FRSKY::loadSportValueToSend( uint8_t currentFieldToSend) {
 
 
 
-#ifdef PIN_VOLTAGE_1
+#ifdef PIN_VOLTAGE
       case VOLT1 :  
          valueTemp = voltageData->mVolt[0] ;
          voltageData->mVoltAvailable[0] = false ;
@@ -743,8 +723,6 @@ void OXS_OUT_FRSKY::loadSportValueToSend( uint8_t currentFieldToSend) {
           StartVolt1 = micros() ;
 #endif 
           break ;
-#endif         
-#ifdef PIN_VOLTAGE_2
       case VOLT2 :  
          valueTemp = voltageData->mVolt[1] ;
          voltageData->mVoltAvailable[1] = false ;
@@ -759,26 +737,18 @@ void OXS_OUT_FRSKY::loadSportValueToSend( uint8_t currentFieldToSend) {
           StartVolt2 = micros() ;
 #endif          
           break ;
-#endif         
-#ifdef PIN_VOLTAGE_3
       case VOLT3 :  
          valueTemp = voltageData->mVolt[2] ;
          voltageData->mVoltAvailable[2] = false ;
           break ;
-#endif         
-#ifdef PIN_VOLTAGE_4
       case VOLT4 :  
          valueTemp = voltageData->mVolt[3] ;
          voltageData->mVoltAvailable[3] = false ;
           break ;
-#endif         
-#ifdef PIN_VOLTAGE_5
       case VOLT5 :  
          valueTemp = voltageData->mVolt[4] ;
          voltageData->mVoltAvailable[4] = false ;
           break ;
-#endif         
-#ifdef PIN_VOLTAGE_6
       case VOLT6 :  
          valueTemp = voltageData->mVolt[5] ;
          voltageData->mVoltAvailable[5] = false ;
@@ -915,7 +885,7 @@ void OXS_OUT_FRSKY::loadSportValueToSend( uint8_t currentFieldToSend) {
 
       }  // end Switch
       if ( (fieldContainsData[currentFieldToSend][0] != DEFAULTFIELD)  ) fieldID = convertToSportId[ fieldContainsData[currentFieldToSend][0]] ;
-      if ( (fieldID >= VFAS_FIRST_ID) && (fieldID <= VFAS_LAST_ID) ) valueTemp = valueTemp * 10 ;
+      if ( (fieldID >= VFAS_FIRST_ID) && (fieldID <= VFAS_LAST_ID) ) valueTemp = valueTemp / 10 ;
 #ifdef DEBUGWITHFIXVALUE
       static int delta = 1 ;
       static int32_t prevValue = 0 ;
@@ -1189,32 +1159,22 @@ void OXS_OUT_FRSKY::loadHubValueToSend( uint8_t currentFieldToSend ) {
 #endif  // End defined (VARIO) && defined ( AIRSPEED)
 
 
-#ifdef PIN_VOLTAGE_1 
+#ifdef PIN_VOLTAGE 
       case VOLT1 :  
          SendVoltX( 0 , currentFieldToSend) ;
          break ;
-#endif         
-#ifdef PIN_VOLTAGE_2
       case VOLT2 :  
          SendVoltX( 1 , currentFieldToSend) ;
           break ;
-#endif         
-#ifdef PIN_VOLTAGE_3
       case VOLT3 :  
          SendVoltX( 2 , currentFieldToSend) ;
           break ;
-#endif         
-#ifdef PIN_VOLTAGE_4
       case VOLT4 :  
          SendVoltX( 3 , currentFieldToSend) ;
           break ;
-#endif         
-#ifdef PIN_VOLTAGE_5
       case VOLT5 :  
          SendVoltX( 4 , currentFieldToSend) ;
          break ;
-#endif         
-#ifdef PIN_VOLTAGE_6
       case VOLT6 :  
          SendVoltX( 5 , currentFieldToSend) ;
          break ;
@@ -1253,7 +1213,7 @@ void OXS_OUT_FRSKY::loadHubValueToSend( uint8_t currentFieldToSend ) {
 //         break ;
 #endif  // End PIN_CURRENTSENSOR
 
-#if defined (NUMBEROFCELLS)  && (NUMBEROFCELLS > 0) && (defined (PIN_VOLTAGE_1) || defined (PIN_VOLTAGE_2) || defined (PIN_VOLTAGE_3) || defined (PIN_VOLTAGE_4) || defined (PIN_VOLTAGE_5) || defined (PIN_VOLTAGE_6) ) 
+#if defined (NUMBEROFCELLS)  && (NUMBEROFCELLS > 0) && defined (PIN_VOLTAGE) 
       case  CELLS_1_2 :
 //         if ( (SwitchFrameVariant == 0) && ( voltageData->mVoltCell_1_2_Available ) ) {
              if ( fieldToSend == DEFAULTFIELD ) {
@@ -1322,7 +1282,7 @@ void OXS_OUT_FRSKY::loadHubValueToSend( uint8_t currentFieldToSend ) {
 }  // End function  loadValueToSend (Frame 1)
 
 
-#if (defined PIN_VOLTAGE_1 && PIN_VOLTAGE_1 < 8) || (defined PIN_VOLTAGE_2 && PIN_VOLTAGE_2 < 8) ||(defined PIN_VOLTAGE_3 && PIN_VOLTAGE_3 < 8) ||(defined PIN_VOLTAGE_4 && PIN_VOLTAGE_4 < 8) ||(defined PIN_VOLTAGE_5 && PIN_VOLTAGE_5 < 8) ||(defined PIN_VOLTAGE_6 && PIN_VOLTAGE_6 < 8)  
+#ifdef PIN_VOLTAGE
 /**********************************************************/
 /* SendVoltX => send a voltage                 */
 /**********************************************************/
