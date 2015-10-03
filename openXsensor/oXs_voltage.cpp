@@ -1,7 +1,7 @@
 #include "oXs_voltage.h"
  
 #ifdef DEBUG
-#define DEBUGNEWVALUE
+//#define DEBUGNEWVALUE
 //#define DEBUGDELAY
 //#define DEBUGCELLCALCULATION
 //#define DEBUGLOWVOLTAGE
@@ -102,6 +102,8 @@ void OXS_VOLTAGE::setupVoltage( void ) {
 //  voltageData.atLeastOneVoltage = ( voltageData.mVoltPin[0] < 8 || voltageData.mVoltPin[1] < 8 || voltageData.mVoltPin[2] < 8 ||voltageData.mVoltPin[3] < 8 ||voltageData.mVoltPin[4] < 8 || voltageData.mVoltPin[5] < 8 ) ;
 }
 
+
+
 // Maximum voltage that is allowed (theoretical) on the voltage divider is 5/R2/(R1+R2);
 
   static byte voltageNr = 0;
@@ -148,7 +150,8 @@ void OXS_VOLTAGE::voltageNrIncrease() {
       if(millis() > ( lastVoltMillis + 500) ){   // calculate average only once every 500 msec 
         for (int cntVolt = 0 ; cntVolt < 6 ; cntVolt++) {      
           if ( voltageData.mVoltPin[cntVolt] < 8) {
-            voltageData.mVolt[cntVolt] = (voltageData.sumVoltage[cntVolt] / cnt  * voltageData.mVoltPerStep[cntVolt] ) + voltageData.offset[cntVolt];
+            voltageData.mVolt[cntVolt] = round( ((float) voltageData.sumVoltage[cntVolt]  * voltageData.mVoltPerStep[cntVolt] ) / (float) cnt  ) + voltageData.offset[cntVolt];
+//            voltageData.mVolt[cntVolt] = (voltageData.sumVoltage[cntVolt] / cnt  * voltageData.mVoltPerStep[cntVolt] ) + voltageData.offset[cntVolt];
 //            voltageData.mVolt[cntVolt] = (1 + cntVolt) * 3000 + cntVolt * (millis() & 0xFF)  ; // this is just to test the cell calculation ; !!!!!!!!!!!to be removed
             voltageData.mVoltAvailable[cntVolt] = true ;
             voltageData.sumVoltage[cntVolt] = 0 ;
@@ -252,10 +255,6 @@ void OXS_VOLTAGE::voltageNrIncrease() {
 
 
 
-void OXS_VOLTAGE::resetValues() {
-  // not used currently
-}    
-
 
 int OXS_VOLTAGE::readVoltage( int value ) { // value is the index in an aray giving the pin to read
   //******** First discharge the capacitor of ADCMux to ground in order to avoid that measurement from another pin has an impact on this measurement  
@@ -273,6 +272,13 @@ int OXS_VOLTAGE::readVoltage( int value ) { // value is the index in an aray giv
   delayMicroseconds(100); // Wait for ADMux to settle 
   return analogRead(voltageData.mVoltPin[value]); // use the second measurement
 }
+
+
+void OXS_VOLTAGE::resetValues() {
+  // not used currently
+}    
+
+
 
 #if defined ( NUMBEROFCELLS ) && (NUMBEROFCELLS > 0 )
 // calculate 2 cell voltages, make some checks and format in Frsky format.

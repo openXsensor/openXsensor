@@ -23,7 +23,7 @@
 #endif
 
 #define FORCE_INDIRECT(ptr) __asm__ __volatile__ ("" : "=e" (ptr) : "0" (ptr))
-
+#define GPS_SENSOR_ID 0x83  // Id normally used by Frsky for Gps.
 
 static volatile uint8_t state ;                  //!< Holds the state of the UART.
 static volatile unsigned char SwUartTXData ;     //!< Data to be transmitted.
@@ -75,6 +75,10 @@ uint16_t Crc ;
 uint8_t  volatile  sportData[7] ;
 uint8_t volatile sportDataLock ;
 uint8_t volatile sendStatus ;
+uint8_t volatile gpsSendStatus ; 
+uint8_t volatile gpsSportDataLock ;
+uint8_t volatile gpsSportData[7] ;
+uint8_t currentSensorId ; // save the sensor id being received and on which oXs will reply (can be the main sensor id or GPS sensor id) 
 
 
 
@@ -180,8 +184,16 @@ ISR(TIMER1_COMPA_vect)
             		}
             	  else  // 8 bytes have been send
             		{
-            		  state = WAITING ;
+#ifdef GPS_INSTALLED  // fill status depending on sensorId being handled
+                  if ( currentSensorId == GPS_SENSOR_ID ) {
+                    gpsSendStatus = SEND ;
+                  } else {
+                    sendStatus = SEND ;
+                  }
+#else
                   sendStatus = SEND ;
+#endif
+                  state = WAITING ;
             		  OCR1A += DELAY_3500 ;		// 3.5mS gap before listening
             		  TRXDDR &= ~( 1 << PIN_SERIALTX ) ;            // PIN is input
             		  TRXPORT &= ~( 1 << PIN_SERIALTX ) ;           // PIN is tri-stated.
@@ -275,7 +287,7 @@ ISR(TIMER1_COMPA_vect)
                          				TxSportData[6] = sportData[6] ;
                                                         
 			                      }
-			                      else
+			                      else // locked
 			                      {	// Discard frame to be sent if data is locked
                         				TxSportData[0] = 0 ;
                         				TxSportData[1] = 0 ;
@@ -287,16 +299,44 @@ ISR(TIMER1_COMPA_vect)
                         		}
 			                      state = TxPENDING ;
                             sendStatus = SENDING ;
+                            currentSensorId = SwUartRXData ; // save the sensorId being handled (can be the main one or the code for GPS).
                             OCR1A += ( DELAY_400 - TICKS2WAITONESPORT) ;		// 400 uS gap before sending
-                         }
-                			  else
+                         } // end LOADED
+                			  else // No data are loaded (so there is no data yet available)
                 			  {
                 			    // Wait for idle time
                 			    state = WAITING ;
                 			    OCR1A += DELAY_3500 ;		// 3.5mS gap before listening
                 			  }
-                		  }
-                			else // it is not the expected device ID
+                  		} 
+                		  else if ( SwUartRXData == GPS_SENSOR_ID ) {
+                          if   ( gpsSendStatus == LOADED ){     
+                            if ( gpsSportDataLock == 0 ) {
+                                TxSportData[0] = gpsSportData[0] ;
+                                TxSportData[1] = gpsSportData[1] ;
+                                TxSportData[2] = gpsSportData[2] ;
+                                TxSportData[3] = gpsSportData[3] ;
+                                TxSportData[4] = gpsSportData[4] ;
+                                TxSportData[5] = gpsSportData[5] ;
+                                TxSportData[6] = gpsSportData[6] ;
+                             }
+                            else // locked
+                            { // Discard frame to be sent if data is locked
+                                TxSportData[0] = 0 ;
+                                TxSportData[1] = 0 ;
+                                TxSportData[2] = 0 ;
+                                TxSportData[3] = 0 ;
+                                TxSportData[4] = 0 ;
+                                TxSportData[5] = 0 ;
+                                TxSportData[6] = 0 ;
+                            }
+                            state = TxPENDING ;
+                            gpsSendStatus = SENDING ;
+                            currentSensorId = SwUartRXData ; // save the sensorId being handled (can be the main one or the code for GPS).
+                            OCR1A += ( DELAY_400 - TICKS2WAITONESPORT) ;    // 400 uS gap before sending
+                          } // end LOADED 
+                      } // end GPS_SENSOR_ID
+                			else // polling on a sensorId that does not request a reply
                 			{
                 			    state = WAITING ;
                 			    OCR1A += DELAY_3500 ;		// 3.5mS gap before listening

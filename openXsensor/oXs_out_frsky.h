@@ -8,6 +8,7 @@
 #include "oXs_curr.h" // we need the currentdata struct
 #include "oXs_voltage.h" // we need the arduinodata struct
 #include "Aserial.h"
+#include "oXs_gps.h"  // we need the function to send the gps data
 
 #ifndef MULTIPLEX
 

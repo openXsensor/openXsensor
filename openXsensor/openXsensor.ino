@@ -8,6 +8,7 @@
 #include "oXs_out_multiplex.h"
 #include "oXs_general.h"
 #include "Aserial.h"
+#include "oXs_gps.h"
 
 #ifdef SAVE_TO_EEPROM
   #include <EEPROM.h>
@@ -194,14 +195,6 @@ bool test3ValueAvailable ;
 uint8_t selectedVario ; // identify the vario to be used when switch vario with PPM is active (0 = first MS5611) 
 
 // Create instances of the used classes
-#ifdef PIN_VOLTAGE
-#ifdef DEBUG  
-OXS_VOLTAGE oXs_Voltage(Serial);
-#else
-OXS_VOLTAGE oXs_Voltage(0);
-#endif  //DEBUG
-#endif
-
 
 #ifdef VARIO
 #ifdef SENSOR_IS_BMP180
@@ -238,8 +231,13 @@ OXS_4525 oXs_4525(I2C_4525_Add);
 #endif  //DEBUG
 #endif
 
-
-
+#ifdef PIN_VOLTAGE
+#ifdef DEBUG  
+OXS_VOLTAGE oXs_Voltage(Serial);
+#else
+OXS_VOLTAGE oXs_Voltage(0);
+#endif  //DEBUG
+#endif
 
 #ifdef PIN_CURRENTSENSOR
 #ifdef DEBUG  
@@ -248,6 +246,15 @@ OXS_CURRENT oXs_Current(PIN_CURRENTSENSOR,Serial);
 OXS_CURRENT oXs_Current(PIN_CURRENTSENSOR);
 #endif //DEBUG
 #endif
+
+#ifdef GPS_INSTALLED
+#ifdef DEBUG
+OXS_GPS oXs_Gps(Serial);
+#else
+OXS_GPS oXs_Gps(0);
+#endif //DEBUG
+#endif
+
 
 #ifdef DEBUG  
 OXS_OUT_FRSKY oXs_OutFrsky(PIN_SERIALTX,Serial);
@@ -259,6 +266,7 @@ OXS_OUT_FRSKY oXs_OutFrsky(PIN_SERIALTX);
 #define FORCE_INDIRECT(ptr) __asm__ __volatile__ ("" : "=e" (ptr) : "0" (ptr))
 
 //************************************************************************************************** Setup()
+
 void setup(){
 
 #ifdef DEBUG_SETUP_PIN 
@@ -274,8 +282,15 @@ void setup(){
 #ifdef DEBUG_BLINK
   pinMode(PIN_LED, OUTPUT); // The signal LED (used for the function debug loop)
 #endif
-#ifdef DEBUG
-  Serial.begin(115200);
+
+uint32_t baudRateHardwareUart = 115200L ; // default value when GPS is not used
+#ifdef GPS_INSTALLED
+  baudRateHardwareUart = 38400 ; // when GPS is used, baudrate is reduced.
+  Serial.begin( baudRateHardwareUart );
+#endif
+
+#ifdef DEBUG 
+  Serial.begin( baudRateHardwareUart );
   Serial.println(F("openXsensor starting.."));
   Serial.print(F(" milli="));  
   Serial.println(millis());
@@ -336,6 +351,10 @@ void setup(){
 #if defined (VARIO) && defined ( AIRSPEED)
   compensatedClimbRateAvailable = false;
   compensatedClimbRate = 0;
+#endif
+
+#ifdef GPS_INSTALLED
+  oXs_Gps.setupGps();
 #endif
 
   oXs_OutFrsky.setup();
@@ -618,6 +637,11 @@ void readSensors() {
 #ifdef PIN_CURRENTSENSOR
     if (checkFreeTime()) oXs_Current.readSensor() ; // Do not perform calculation if there is less than 2000 usec before MS5611 ADC is available =  (9000 - 2000)/2
 #endif             // End PIN_CURRENTSENSOR
+
+#ifdef GPS_INSTALLED
+    if (checkFreeTime()) oXs_Gps.readGps() ; // Do not perform calculation if there is less than 2000 usec before MS5611 ADC is available =  (9000 - 2000)/2
+#endif             // End GPS_INSTALLED
+
 
 #ifdef MEASURE_RPM
   if (millis() > ( lastRpmMillis + 200) ){  // allow transmission of RPM only once every 200 msec

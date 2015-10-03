@@ -120,7 +120,7 @@ private:
 }; // end class OXS_MS5611
 
 
-#endif // OXS_MS5611
+#endif // OXS_BMP180
 
 
 

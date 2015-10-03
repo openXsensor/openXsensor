@@ -26,7 +26,7 @@
 #define SENSOR_ID    0x1B //0x1B 
 
 // --------- 2 - Serial data pin choice ---------
-#define PIN_SERIALTX      4    // The pin which transmits the serial data to the FrSky telemetry receiver
+#define PIN_SERIALTX      4    // The pin which transmits the serial data to the FrSky telemetry receiver, Usually pin 4
 
 // --------- 3 - PPM settings ---------
 //#define PIN_PPM           3       // default is 2 but my own device use 3
@@ -81,7 +81,7 @@
 
 // ***** 6.1 - Voltage Reference to measure voltages and current *****
 //#define USE_INTERNAL_REFERENCE  // uncomment this line if you use 1.1 volt internal reference instead of Vcc
-#define REFERENCE_VOLTAGE 4970    // set value in milliVolt; if commented, oXs will use or 1100 (if internal ref is used) or 5000 (othewise) 
+#define REFERENCE_VOLTAGE 4970    // set value in milliVolt; if commented, oXs will use or 1100 (if internal ref is used) or 5000 (if internal ref is not used) 
 
 // ***** 6.2 - Voltage parameters *****
 #define PIN_VOLTAGE         8  , 8     , 8   , 3    , 8   , 8               // set this line as comment if no one voltage have to be measured, set a value to 8 for the voltage(s) not to be measured.
@@ -111,8 +111,8 @@
 // ***** 9.1 - Frsky data *****
 #define SETUP_FRSKY_DATA_TO_SEND    \
                         DEFAULTFIELD , ALTIMETER , 1 , 1 , 0 ,\
-                        DEFAULTFIELD , VERTICAL_SPEED , 1 , 1 , 0 ,\
-                        Vfas , VOLT4 , 1 , 1 ,0 
+                        DEFAULTFIELD , VERTICAL_SPEED , 1 , 1 , 0 
+//                        Vfas , VOLT4 , 1 , 1 ,0 
 //                        T2 , TEST3 , 1 , 1, 0
 /*
                         VSpd , PPM_VSPEED , 1 , 1 ,0 , \
@@ -148,10 +148,18 @@
 #define SEQUENCE_LOW    10 , 0b100000 ,10 , 0b000000   // sequence for Low voltage
 //#define SEQUENCE_MIN_VOLT_6 4000 // sequence_100 will be activated if voltage 6 is lower that the value.
 #define SEQUENCE_MIN_CELL   3000 // sequence_100 will be activated if lowest cell is lower that the value.
+
+// --------- xx - GPS is installed or not ------------------------------------------------------------------------------------------------
+#define GPS_INSTALLED
+
 // --------- 11 - Reserved for developer. DEBUG must be activated here when we want to debug one or several functions in some other files. ---------
-//#define DEBUG
+#define DEBUG
 
 #ifdef DEBUG
+#include "HardwareSerial.h"
+#endif
+
+#ifdef GPS_INSTALLED
 #include "HardwareSerial.h"
 #endif
 

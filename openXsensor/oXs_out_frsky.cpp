@@ -151,6 +151,9 @@ void OXS_OUT_FRSKY::sendData()
 {
   if (sportAvailable) {
 	sendSportData( ) ;
+#ifdef GPS_INSTALLED
+  FrSkySportSensorGpsSend() ;
+#endif  
   } else {
 	sendHubData( ) ;
   }
@@ -169,9 +172,9 @@ void OXS_OUT_FRSKY::sendData()
          sendStatus can be  : TO_LOAD, LOADED, SENDING, SEND ; 
              For one value, when the value is available and if sendStatus = TO_LOAD or LOADED, we can load the value (again); 
              It is not allowed to load the value is the sendStatus = SENDING
-             sendStatus goes from TO_LOAD to LOADED when the value is loaded in 'setSportNewData' (in Aserial); The indicator available of this value become false = UNKNOWN in order to avoid to load it again
-             sendStatus goes from LOADED to SENDING when the start bit is received for the right device ID
-             sendStatus  goes from SENDING to SEND when all bytes (including Checksum) have been transmitted
+             sendStatus goes from TO_LOAD to LOADED (in the main loop) when the value is loaded in 'setSportNewData' (in Aserial); The indicator available of this value become false = UNKNOWN in order to avoid to load it again
+             sendStatus goes from LOADED to SENDING (in the interrupt) when the start bit is received for the right device ID 
+             sendStatus  goes from SENDING to SEND (in the interrupt) when all bytes (including Checksum) have been transmitted
        
        When sendStatus is :
         - "TO_LOAD:
