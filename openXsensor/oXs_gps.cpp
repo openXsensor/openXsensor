@@ -1,5 +1,5 @@
 #include "oXs_gps.h"
-#include "oXs_out_frsky.h" // used for the GPS status
+//#include "oXs_out_frsky.h" // used for the GPS status
 #include <avr/pgmspace.h>
 
 #ifdef DEBUG
@@ -27,8 +27,8 @@ int32_t GPS_altitude;              // altitude in mm
 bool    GPS_altitudeAvailable;
 uint16_t GPS_speed_3d;              // speed in cm/s
 bool    GPS_speed_3dAvailable;
-uint16_t GPS_speed;                 // speed in cm/s
-bool    GPS_speedAvailable ;
+uint16_t GPS_speed_2d;                 // speed in cm/s
+bool    GPS_speed_2dAvailable ;
 uint32_t GPS_ground_course ;     // degrees with 5 decimals
 bool    GPS_ground_courseAvailable;
 
@@ -43,11 +43,7 @@ uint16_t GPS_packetCount = 0;
 //uint8_t GPS_svinfo_quality[GPS_SV_MAXSATS]; // Bitfield Qualtity
 //uint8_t GPS_svinfo_cno[GPS_SV_MAXSATS];     // Carrier to Noise Ratio (Signal Strength)
 bool GPS_fix ; // true if gps data are available.
-
 static uint8_t _msg_id; //used to identify the message type when reading the gps, is used also when buffer is parsed 
-
-#define GPS_DATA_COUNT 5
-
 
 // Receive buffer
 static union {
@@ -309,7 +305,8 @@ static bool next_fix;
     case MSG_VELNED:   // here we should add the 3d speed (if accurate enough
         GPS_speed_3d  = _buffer.velned.speed_3d;  // cm/s
         GPS_speed_3dAvailable = GPS_fix ;
-        GPS_speed = _buffer.velned.speed_2d;    // cm/s
+        GPS_speed_2d = _buffer.velned.speed_2d;    // cm/s
+        GPS_speed_2dAvailable = GPS_fix ;
         GPS_ground_course = _buffer.velned.heading_2d ;     // Heading 2D deg with 5 decimals
         GPS_ground_courseAvailable = GPS_fix ;
         _new_speed = true;
@@ -317,7 +314,7 @@ static bool next_fix;
   printer->print(F("Gps spd 3d: "));
   printer->print(GPS_speed_3d);
   printer->print(F(" 2d: "));
-  printer->print(GPS_speed);
+  printer->print(GPS_speed_2d);
   printer->print(F(" course: "));
   printer->println(GPS_ground_course);
 #endif        
@@ -335,86 +332,4 @@ static bool next_fix;
     return false;
 }
 
- //!! shared with Aserial
-extern uint8_t volatile gpsSendStatus ; 
-extern uint8_t volatile gpsSportDataLock ;
-extern uint8_t volatile gpsSportData[7] ;
-
-void FrSkySportSensorGpsSend(void)
-{
-  // gpsSendStatus can be TO_LOAD, LOADED, SENDING, SEND ; it is managed here and in Aserial
-  // new data is uploaded only gpsSendStatus == SEND or TO_LOAD
-  // each GPS data is loaded in sequence but only if available (otherwise this data is skipped)
-  static uint8_t gpsDataIdx ;
-  static uint16_t gpsSportId ;
-  static uint32_t gpsSportValue ;
-  static uint8_t gpsSimulateCount ;
-//   Serial.println(F("S gdps"));
-  if (gpsSendStatus == SEND || gpsSendStatus == TO_LOAD) { 
-            gpsDataIdx++;  // handle next GPS data; if not available, this field will be skipped.
-            if(gpsDataIdx >= GPS_DATA_COUNT) {
-              gpsDataIdx = 0;
-            }
-            switch(gpsDataIdx)
-            {
-              case 0: //longitude
-                if (!GPS_lonAvailable) return ;
-                GPS_lonAvailable = false ;
-                gpsSportId = GPS_LONG_LATI_FIRST_ID ;
-#ifdef DEBUGSIMULATEGPS
-                gpsSportValue = ((( ((uint32_t)( GPS_lon < 0 ? -GPS_lon : GPS_lon)) * 6 / 100 ) + gpsSimulateCount++ )& 0x3FFFFFFF) | 0x80000000;
-#else                
-                gpsSportValue = (( ((uint32_t)( GPS_lon < 0 ? -GPS_lon : GPS_lon)) * 6 / 100 ) & 0x3FFFFFFF)  | 0x80000000;
-#endif                
-                if(GPS_lon < 0) gpsSportValue |= 0x40000000;
-                break;
-              case 1: //latitude
-                if (!GPS_latAvailable) return ;
-                GPS_latAvailable = false ;
-                gpsSportId = GPS_LONG_LATI_FIRST_ID ;
-                gpsSportValue = ((  ((uint32_t)( GPS_lat < 0 ? -GPS_lat : GPS_lat)) * 6 / 100 ) & 0x3FFFFFFF ) ;
-                if(GPS_lat < 0) gpsSportValue |= 0x40000000;
-                break;
-              case 2: // GPS_altitude
-                if (!GPS_altitudeAvailable) return ;
-                GPS_altitudeAvailable = false ;
-                gpsSportId = GPS_ALT_FIRST_ID ;
-#ifdef DEBUGSIMULATEGPS
-                gpsSportValue = (GPS_altitude / 10) + gpsSimulateCount++; // convert mm in cm 
-#else                
-                gpsSportValue = GPS_altitude / 10; // convert mm in cm 
-#endif                
-                break;
-              case 3: // GPS_speed_3d  // could be 2D
-                if (!GPS_speed_3dAvailable) return ; 
-                GPS_speed_3dAvailable = false ;
-                gpsSportId = GPS_SPEED_FIRST_ID ;
-                gpsSportValue = GPS_speed_3d * 7 / 36 ; // convert cm/s in 1/10 of knots (factor = 0.1944)
-                break;
-              case 4: //GPS_ground_courseAvailable
-                if (!GPS_ground_courseAvailable) return ;
-                GPS_ground_courseAvailable = false ;
-                gpsSportId = GPS_COURS_FIRST_ID ;
-                gpsSportValue = GPS_ground_course / 1000; // convert from degree * 100000 to degree * 100 
-                break;
-              default:
-                return ;
-            } // end case    
-            gpsSportDataLock = 1 ;
-            gpsSportData[0] = 0x10 ;
-            gpsSportData[1] = gpsSportId ; // low byte
-            gpsSportData[2] = gpsSportId >> 8 ; // hight byte
-            gpsSportData[3] = gpsSportValue ;
-            gpsSportData[4] = gpsSportValue >> 8 ;
-            gpsSportData[5] = gpsSportValue >> 16 ;
-            gpsSportData[6] = gpsSportValue >> 24 ;
-            gpsSportDataLock = 0 ;
-#ifdef DEBUGSENDGPS
-  Serial.print(F("ID: "));
-  Serial.println(gpsSportId , HEX);
-#endif
-
-            gpsSendStatus = LOADED ; // from here data can be sent by the interrupt in Aserial
-  } // end test on gpsSendStatus == SEND or TOLOAD          
-} // end function
 

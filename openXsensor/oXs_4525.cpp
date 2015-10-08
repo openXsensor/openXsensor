@@ -194,7 +194,11 @@ void OXS_4525::readSensor() {
         if (airSpeedMillis > nextAirSpeedMillis){ // publish airspeed only once every xx ms
               nextAirSpeedMillis = airSpeedMillis + 200 ;
               if ( smoothAirSpeed >  300) {  // normally send only if positive and greater than 300 cm/sec , otherwise send 0 but for test we keep all values to check for drift  
-                  airSpeedData.airSpeed = smoothAirSpeed * 0.1943844492 ; // from cm/sec to 1/10 knot
+#ifdef AIRSPEED_IN_KMH  // uncomment this line if GPS speed has to be in knot instead of km/h
+                  airSpeedData.airSpeed = smoothAirSpeed * 0.36 ; // from cm/sec to 1/10 km/h
+#else
+                  airSpeedData.airSpeed = smoothAirSpeed * 0.1943844492 ; // from cm/sec to 1/10 knot/h
+#endif
               } else {
                   airSpeedData.airSpeed = 0 ;
               }    

@@ -140,10 +140,8 @@ private:
 
 };
 
-//bool gpsNewFrameUBLOX(uint8_t data) ;
-//bool UBLOX_parse_gps(void) ;
 
-void FrSkySportSensorGpsSend() ;
+
 
 #endif // OXS_GPS_h
 

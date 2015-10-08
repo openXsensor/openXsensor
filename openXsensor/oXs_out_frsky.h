@@ -8,7 +8,7 @@
 #include "oXs_curr.h" // we need the currentdata struct
 #include "oXs_voltage.h" // we need the arduinodata struct
 #include "Aserial.h"
-#include "oXs_gps.h"  // we need the function to send the gps data
+//#include "oXs_gps.h"  // we need the function to send the gps data
 
 #ifndef MULTIPLEX
 
@@ -16,7 +16,7 @@
 //#define DEBUG_SPORT_PIN 6  // allows to send a pulse on an output pin during the enlapsed time that Arduino checks for SPORT 
 
 #define INTERVAL_FRAME1 200
-//#define INTERVAL_FRAME2 1000
+#define INTERVAL_FRAME2 1000  // used by GPS
 
 // FrSky new DATA IDs (2 bytes) (copied from openTX telemetry/frsky_sport.cpp on 11 jul 2014)
 #define ALT_FIRST_ID            0x0100
@@ -215,11 +215,14 @@ class OXS_OUT_FRSKY {
     uint8_t readStatusValue( uint8_t currentValueType) ;
     void loadSportValueToSend(  uint8_t ValueTypeToLoad) ;
     uint8_t nextFieldToSend(  uint8_t indexField) ;
+    void FrSkySportSensorGpsSend() ;
+
 
 // used by Hub protocol
     void sendHubData() ;
     void loadHubValueToSend(  uint8_t ValueTypeToLoad) ;
     void SendFrame1();
+    void SendFrame2();
     void SendValue(uint8_t ID, uint16_t Value);
     void SendCellVoltage(uint32_t voltage);
     void SendGPSDist(uint16_t dist);
@@ -260,7 +263,41 @@ extern bool RpmAvailable ;
 #endif // MEASURE_RPM
 
 
+
 #endif // Enf of ndef MULTIPLEX
+
+#ifdef GPS_INSTALLED
+// **********************
+// GPS data being read
+// **********************
+extern int32_t GPS_lon;               // longitude in degree with 7 decimals, (neg for S)
+extern bool    GPS_lonAvailable; 
+extern int32_t GPS_lat;               // latitude   in degree with 7 decimals, (neg for ?)
+extern bool    GPS_latAvailable;
+
+extern int32_t GPS_altitude;              // altitude in mm
+extern bool    GPS_altitudeAvailable;
+extern uint16_t GPS_speed_3d;              // speed in cm/s
+extern bool    GPS_speed_3dAvailable;
+extern uint16_t GPS_speed;                 // speed in cm/s
+extern bool    GPS_speedAvailable ;
+extern uint32_t GPS_ground_course ;     // degrees with 5 decimals
+extern bool    GPS_ground_courseAvailable;
+
+//uint8_t GPS_numSat;
+//uint16_t GPS_hdop = 9999;           // Compute GPS quality signal
+//uint16_t GPS_packetCount = 0;
+//uint32_t GPS_svInfoReceivedCount = 0; // SV = Space Vehicle, counter increments each time SV info is received.
+//uint8_t GPS_update = 0;             // it's a binary toggle to distinct a GPS position update
+//uint8_t GPS_numCh;                          // Number of channels
+//uint8_t GPS_svinfo_chn[GPS_SV_MAXSATS];     // Channel number
+//uint8_t GPS_svinfo_svid[GPS_SV_MAXSATS];    // Satellite ID
+//uint8_t GPS_svinfo_quality[GPS_SV_MAXSATS]; // Bitfield Qualtity
+//uint8_t GPS_svinfo_cno[GPS_SV_MAXSATS];     // Carrier to Noise Ratio (Signal Strength)
+extern bool GPS_fix ; // true if gps data are available.
+#endif // End of GPS_INSTALLED
+
+
 #endif // OXS_OUT_FRSKY_h
 
 

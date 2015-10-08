@@ -49,7 +49,7 @@ extern volatile uint8_t debug04 ;
 
 //#else // Hub protocol ==========================================================
 
-#define maxSizeBuffer 70  // max size of the buffer used to store the data to be sent in the hub protocol
+#define MAXSIZEBUFFER 70  // max size of the buffer used to store the data to be sent in the hub protocol
 /*
 struct t_hubData
 {

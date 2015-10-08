@@ -68,7 +68,8 @@
 #define ANALOG_VSPEED_MAX  3
 
 // --------- 5 - Airspeed settings ---------
-//#define AIRSPEED    MS4525
+#define AIRSPEED    MS4525
+#define AIRSPEED_IN_KMH  // uncomment this line if airspeed has to be in knot instead of km/h (openTx 2.0 expect knot while openTx 2.1 expect km/h) 
 
 #define AIRSPEED_RESET_AT_PPM   100
 
@@ -150,8 +151,9 @@
 #define SEQUENCE_MIN_CELL   3000 // sequence_100 will be activated if lowest cell is lower that the value.
 
 // --------- xx - GPS is installed or not ------------------------------------------------------------------------------------------------
-#define GPS_INSTALLED
-
+#define GPS_INSTALLED  // uncomment this line if a GPS is connected
+#define GPS_SPEED_IN_KMH  // uncomment this line if GPS speed has to be in knot instead of km/h 
+#define GPS_SPEED_3D // uncomment this line if GPS speed has to be the 2d speed instead of the 3d speed (note: 3d is probably less accurate - to test) 
 // --------- 11 - Reserved for developer. DEBUG must be activated here when we want to debug one or several functions in some other files. ---------
 #define DEBUG
 

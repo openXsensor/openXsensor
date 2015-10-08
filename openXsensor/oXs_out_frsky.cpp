@@ -53,7 +53,7 @@ extern uint8_t volatile sendStatus ;
    //struct t_hubData hubData ;
 static int fieldToSend ;
 static bool fieldOk ;
-extern uint8_t volatile hubData[maxSizeBuffer] ; 
+extern uint8_t volatile hubData[MAXSIZEBUFFER] ; 
 //extern uint8_t volatile hubCurrentData ; //index of current data
 extern uint8_t volatile hubMaxData ;   // max number of data prepared to be send
 
@@ -65,7 +65,7 @@ int numberOfFields = sizeof(fieldContainsData) / sizeof(fieldContainsData[0]) ;
 static uint16_t convertToSportId[15] = { FRSKY_SPORT_ID } ; // this array is used to convert an index inside fieldContainsData[][0] into the SPORT field Id (or defaultfield) 
 static uint8_t convertToHubId[15] = { FRSKY_HUB_ID } ; //// this array is used to convert an index inside fieldContainsData[][0] into the Hub field Id (or defaultfield) 
 static uint8_t currentFieldToSend = 0 ; 
-
+extern volatile uint8_t state ;                  //!< Holds the state of the UART.
 
 
 #ifdef DEBUG  
@@ -915,17 +915,123 @@ void OXS_OUT_FRSKY::loadSportValueToSend( uint8_t currentFieldToSend) {
 #endif
 }  // End function
 
+
+ //!! shared with Aserial
+extern uint8_t volatile gpsSendStatus ; 
+extern uint8_t volatile gpsSportDataLock ;
+extern uint8_t volatile gpsSportData[7] ;
+#define GPS_DATA_COUNT 5
+
+void OXS_OUT_FRSKY::FrSkySportSensorGpsSend(void)
+{
+  // gpsSendStatus can be TO_LOAD, LOADED, SENDING, SEND ; it is managed here and in Aserial
+  // new data is uploaded only gpsSendStatus == SEND or TO_LOAD
+  // each GPS data is loaded in sequence but only if available (otherwise this data is skipped)
+  static uint8_t gpsDataIdx ;
+  static uint16_t gpsSportId ;
+  static uint32_t gpsSportValue ;
+#ifdef DEBUGSIMULATEGPS
+  static uint8_t gpsSimulateCount ;
+#endif  
+//   Serial.println(F("S gdps"));
+  if (gpsSendStatus == SEND || gpsSendStatus == TO_LOAD) { 
+            gpsDataIdx++;  // handle next GPS data; if not available, this field will be skipped.
+            if(gpsDataIdx >= GPS_DATA_COUNT) {
+              gpsDataIdx = 0;
+            }
+            switch(gpsDataIdx)
+            {
+              case 0: //longitude
+                if (!GPS_lonAvailable) return ;
+                GPS_lonAvailable = false ;
+                gpsSportId = GPS_LONG_LATI_FIRST_ID ;
+#ifdef DEBUGSIMULATEGPS
+                gpsSportValue = ((( ((uint32_t)( GPS_lon < 0 ? -GPS_lon : GPS_lon)) * 6 / 100 ) + gpsSimulateCount++ )& 0x3FFFFFFF) | 0x80000000;
+#else                
+                gpsSportValue = (( ((uint32_t)( GPS_lon < 0 ? -GPS_lon : GPS_lon)) * 6 / 100 ) & 0x3FFFFFFF)  | 0x80000000;
+#endif                
+                if(GPS_lon < 0) gpsSportValue |= 0x40000000;
+                break;
+              case 1: //latitude
+                if (!GPS_latAvailable) return ;
+                GPS_latAvailable = false ;
+                gpsSportId = GPS_LONG_LATI_FIRST_ID ;
+                gpsSportValue = ((  ((uint32_t)( GPS_lat < 0 ? -GPS_lat : GPS_lat)) * 6 / 100 ) & 0x3FFFFFFF ) ;
+                if(GPS_lat < 0) gpsSportValue |= 0x40000000;
+                break;
+              case 2: // GPS_altitude
+                if (!GPS_altitudeAvailable) return ;
+                GPS_altitudeAvailable = false ;
+                gpsSportId = GPS_ALT_FIRST_ID ;
+#ifdef DEBUGSIMULATEGPS
+                gpsSportValue = (GPS_altitude / 10) + gpsSimulateCount++; // convert mm in cm 
+#else                
+                gpsSportValue = GPS_altitude / 10; // convert mm in cm 
+#endif                
+                break;
+              case 3: // GPS_speed_3d  // could be 2D
+#ifdef GPS_SPEED_3D
+                if (!GPS_speed_3dAvailable) return ; 
+                GPS_speed_3dAvailable = false ;
+                gpsSportId = GPS_SPEED_FIRST_ID ;
+#ifdef GPS_SPEED_IN_KMH
+                gpsSportValue = GPS_speed_3d * 36 / 100 ; // convert cm/s in 1/10 of km/h (factor = 0.36)
+#else                                
+                gpsSportValue = GPS_speed_3d * 7 / 36 ; // convert cm/s in 1/10 of knots (factor = 0.1944)
+#endif // end of GPS_SPEED_IN_KMH
+                break;
+#else                   // use gps_Speed_2d
+                if (!GPS_speed_2dAvailable) return ; 
+                GPS_speed_2dAvailable = false ;
+                gpsSportId = GPS_SPEED_FIRST_ID ;
+#ifdef GPS_SPEED_IN_KMH
+                gpsSportValue = GPS_speed_2d * 36 / 100 ; // convert cm/s in 1/10 of km/h (factor = 0.36)
+#else                                
+                gpsSportValue = GPS_speed_2d * 7 / 36 ; // convert cm/s in 1/10 of knots (factor = 0.1944)
+#endif // end of GPS_SPEED_IN_KMH
+                break;
+#endif //  enf of GPS_SPEED_3D             
+              case 4: //GPS_ground_courseAvailable
+                if (!GPS_ground_courseAvailable) return ;
+                GPS_ground_courseAvailable = false ;
+                gpsSportId = GPS_COURS_FIRST_ID ;
+                gpsSportValue = GPS_ground_course / 1000; // convert from degree * 100000 to degree * 100 
+                break;
+              default:
+                return ;
+            } // end case    
+            gpsSportDataLock = 1 ;
+            gpsSportData[0] = 0x10 ;
+            gpsSportData[1] = gpsSportId ; // low byte
+            gpsSportData[2] = gpsSportId >> 8 ; // hight byte
+            gpsSportData[3] = gpsSportValue ;
+            gpsSportData[4] = gpsSportValue >> 8 ;
+            gpsSportData[5] = gpsSportValue >> 16 ;
+            gpsSportData[6] = gpsSportValue >> 24 ;
+            gpsSportDataLock = 0 ;
+#ifdef DEBUGSENDGPS
+  Serial.print(F("ID: "));
+  Serial.println(gpsSportId , HEX);
+#endif
+
+            gpsSendStatus = LOADED ; // from here data can be sent by the interrupt in Aserial
+  } // end test on gpsSendStatus == SEND or TOLOAD          
+} // end function
+
+
+
+
 // -------------------------End of SPORT protocol--------------------------------------------------------------------------------------
 
 //========================= Hub protocol ==========================================
 void OXS_OUT_FRSKY::sendHubData()  // for Hub protocol
 {
   static uint32_t lastMsFrame1=0;
-//  static unsigned int lastMsFrame2=0;
+  static unsigned int lastMsFrame2=0;
   static uint32_t temp ;
 
   temp = millis() ;
-  if ( (temp-lastMsFrame1) >= INTERVAL_FRAME1  ) {
+  if (  (state == IDLE) && (temp-lastMsFrame1) >= INTERVAL_FRAME1  ) {
 #ifdef DEBUGHUBPROTOCOL
      printer->print("Send Data at = ");
      printer->println( millis() );
@@ -939,10 +1045,12 @@ void OXS_OUT_FRSKY::sendHubData()  // for Hub protocol
 //    if(SwitchFrameVariant==2)SwitchFrameVariant=0 ;
   }
 //  second frame was never used; if activated again, then we have to take care that orginal data are already sent before filling the buffer
-//  if ( (temp-lastMsFrame2) > INTERVAL_FRAME2  ) {
-//    lastMsFrame2=temp;
-//    SendFrame2();
-//  }
+#ifdef GPS_INSTALLED
+  if ( (state == IDLE ) && (temp-lastMsFrame2) > INTERVAL_FRAME2  ) {
+    lastMsFrame2=temp;
+    SendFrame2();
+  }
+#endif
 }  // end sendData Hub protocol
 
 //======================================================================================================Send Frame 1A via serial
@@ -955,10 +1063,74 @@ void OXS_OUT_FRSKY::SendFrame1(){
    SendValue(FRSKY_USERDATA_TEMP1,(int16_t)1234); // Fix value in T1 ; only for test purpose
 #endif
   for (int rowNr = 0 ; rowNr < numberOfFields ; rowNr++) {
-    if ( hubMaxData < (maxSizeBuffer - 13) ){
+    if ( hubMaxData < (MAXSIZEBUFFER - 13) ){
         loadHubValueToSend( rowNr ) ;    
     }    
   }    
+  if( hubMaxData > 0 ) {
+    sendHubByte(0x5E) ; // End of Frame 1!
+    setHubNewData(  ) ;
+  }  
+#ifdef DEBUGHUBPROTOCOL
+      printer->print("Data to send = ");
+      for (int cntPrint = 0 ; cntPrint < hubData.maxData ; cntPrint++) {
+        printer->print(" ");
+        printer->print(hubData.data[cntPrint] , HEX);
+      }
+     printer->println(" "); 
+#endif
+  
+}
+
+
+#define FRSKY_USERDATA_GPS_ALT_B    0x01  // Altitude m
+#define FRSKY_USERDATA_GPS_ALT_A    0x09  // Altitude in centimeter
+#define FRSKY_USERDATA_GPS_SPEED_B  0x11  // Speed knots
+#define FRSKY_USERDATA_GPS_LONG_B   0x12  // Longitude (DDMM)
+#define FRSKY_USERDATA_GPS_LAT_B    0x13  // Latitude (DDMM)
+#define FRSKY_USERDATA_GPS_CURSE_B  0x14  // Course degrees
+#define FRSKY_USERDATA_GPS_SPEED_A  0x19  // Speed 2 decimals of knots
+#define FRSKY_USERDATA_GPS_LONG_A   0x1A  // Longitude (.MMMM)
+#define FRSKY_USERDATA_GPS_LAT_A    0x1B  // Latitude (.MMMM)
+#define FRSKY_USERDATA_GPS_CURSE_A  0x1C  // // Course 2 decimals of degrees
+#define FRSKY_USERDATA_GPS_LONG_EW  0x22  //(uint16_t)(flon < 0 ? 'W' : 'E')
+#define FRSKY_USERDATA_GPS_LAT_EW   0x23  //(uint16_t)(lat < 0 ? 'S' : 'N')
+#define FRSKY_USERDATA_GPS_DIST     0x3C
+
+
+//======================================================================================================Send Frame 2 via serial
+void OXS_OUT_FRSKY::SendFrame2(){
+#ifdef DEBUGHUBPROTOCOL
+  printer->print(F("FRSky output module: SendFrame2:"));
+#endif
+  hubMaxData = 0 ; // reset of number of data to send
+// here we fill the buffer with all GPS data
+// GPS_lon             // longitude in degree with 7 decimals, (neg for S)
+// GPS_lat             // latitude   in degree with 7 decimals, (neg for ?)
+// GPS_altitude;       // altitude in mm
+// GPS_speed_3d;       // speed in cm/s
+// GPS_speed;          // speed in cm/s
+// GPS_ground_course ; // degrees with 5 decimals
+
+  uint32_t absLongLat = abs(GPS_lat) ;
+  uint32_t decimalPartOfDegree = (absLongLat % 10000000 );
+  uint32_t minWith7Decimals = decimalPartOfDegree * 60 ;
+  SendValue(FRSKY_USERDATA_GPS_LAT_B , (uint16_t) (((absLongLat / 10000000L) * 100 ) +  (minWith7Decimals / 10000000L )) ) ; // Latitude (DDMM)
+  SendValue(FRSKY_USERDATA_GPS_LAT_A , (uint16_t) (( minWith7Decimals % 10000000L) / 1000 ) ) ; // Latitude (.MMMM)
+  SendValue(FRSKY_USERDATA_GPS_LAT_EW , (uint16_t)(GPS_lat < 0 ? 'S' : 'N')) ;
+  absLongLat = abs(GPS_lon) ;
+  decimalPartOfDegree = (absLongLat % 10000000 );
+  minWith7Decimals = decimalPartOfDegree * 60 ;
+  SendValue(FRSKY_USERDATA_GPS_LONG_B , (uint16_t) (((absLongLat / 10000000L) * 100 ) +  (minWith7Decimals / 10000000L )) ) ; // Longitude (DDMM)
+  SendValue(FRSKY_USERDATA_GPS_LONG_A , (uint16_t) (( minWith7Decimals % 10000000L) / 1000 ) ) ;   // Longitude (.MMMM)
+  SendValue(FRSKY_USERDATA_GPS_LONG_EW , (uint16_t)(GPS_lon < 0 ? 'W' : 'E')) ;
+  SendValue(FRSKY_USERDATA_GPS_ALT_B ,  (int16_t) GPS_altitude / 1000 ); // Altitude m
+  SendValue(FRSKY_USERDATA_GPS_ALT_A , (uint16_t) ( (abs(GPS_altitude) % 1000 ) / 10 ) ) ; // Altitude in centimeter
+  uint32_t GPSSpeedKnot = GPS_speed_3d * 1944 ; // speed in knots with 5 décimals (1 cm/sec = 0,0194384 knot)
+  SendValue(FRSKY_USERDATA_GPS_SPEED_B , (uint16_t) ( GPSSpeedKnot / 100000) ) ;  // Speed knots
+  SendValue(FRSKY_USERDATA_GPS_SPEED_A , (uint16_t) ( (GPSSpeedKnot % 100000 ) /1000) ) ; // Speed 2 decimals of knots
+  SendValue(FRSKY_USERDATA_GPS_CURSE_B , (uint16_t) ( GPS_ground_course / 100000 ) ) ;  // Course degrees
+  SendValue(FRSKY_USERDATA_GPS_CURSE_A , (uint16_t) ( (GPS_ground_course % 100000) / 1000 ) ) ;   // // Course 2 decimals of degrees
   if( hubMaxData > 0 ) {
     sendHubByte(0x5E) ; // End of Frame 1!
     setHubNewData(  ) ;
@@ -985,12 +1157,12 @@ void OXS_OUT_FRSKY::SendValue(uint8_t ID, uint16_t Value) {
   sendHubByte(ID);
 
   if ( (tmp1 == 0x5E) || (tmp1 == 0x5D) ){ 
-	tmp1 ^= 0x60 ;
+	      tmp1 ^= 0x60 ;
         sendHubByte(0x5D);
   }
   sendHubByte(tmp1);  
   if ( (tmp2 == 0x5E) || (tmp2 == 0x5D) ){ 
-	tmp2 ^= 0x60 ;
+	      tmp2 ^= 0x60 ;
         sendHubByte(0x5D);
   }
   sendHubByte(tmp2);

@@ -25,7 +25,7 @@
 #define FORCE_INDIRECT(ptr) __asm__ __volatile__ ("" : "=e" (ptr) : "0" (ptr))
 #define GPS_SENSOR_ID 0x83  // Id normally used by Frsky for Gps.
 
-static volatile uint8_t state ;                  //!< Holds the state of the UART.
+volatile uint8_t state ;                  //!< Holds the state of the UART.
 static volatile unsigned char SwUartTXData ;     //!< Data to be transmitted.
 static volatile unsigned char SwUartTXBitCount ; //!< TX bit counter.
 static volatile uint8_t SwUartRXData ;           //!< Storage for received bits.
@@ -55,11 +55,10 @@ uint8_t ByteStuffByte = 0 ;
 
 
 // initially only for Hub
-volatile uint8_t TxHubData[maxSizeBuffer] ;
-volatile uint8_t TxMax ;
+//volatile uint8_t TxHubData[] ;
+//volatile uint8_t TxMax ;
 //struct t_hubData * volatile ThisHubData = 0 ;
-uint8_t volatile hubData[maxSizeBuffer] ; 
-//uint8_t volatile hubCurrentData ; //index of current data
+uint8_t volatile hubData[MAXSIZEBUFFER] ; 
 uint8_t volatile hubMaxData ;   // max number of data prepared to be send
 
 
@@ -454,9 +453,9 @@ ISR(TIMER1_COMPA_vect)
 
   // Go to idle after stop bit was sent.
           case TRANSMIT_STOP_BIT: //************************************* We send a stop bit
-		if ( ++TxCount < TxMax) 		// Have we sent all bytes?
+		if ( ++TxCount < hubMaxData) 		// Have we sent all bytes?
 		{
-      SwUartTXData = TxHubData[TxCount] ;			        
+      SwUartTXData = hubData[TxCount] ;			        
       SET_TX_PIN() ;                        // Send a logic 0 on the TX_PIN.
 	    OCR1A = TCNT1 + TICKS2WAITONEHUB ;       // Count one period into the future.
 		  SwUartTXBitCount = 0 ;
@@ -466,7 +465,7 @@ ISR(TIMER1_COMPA_vect)
 	        else  // all bytes have been send
 		{
 		  TxCount = 0 ;
-      TxMax = 0 ;
+//      TxMax = 0 ;
       state = WAITING ;
       //sendStatus = SEND ;
       OCR1A += DELAY_100 ;	// 100uS gap
@@ -511,7 +510,7 @@ ISR(TIMER1_COMPA_vect)
 
 	case WAITING :
   	
-    	       DISABLE_TIMER_INTERRUPT() ;		// Stop the timer interrupts.
+    	   DISABLE_TIMER_INTERRUPT() ;		// Stop the timer interrupts.
 	       state = IDLE ;                           // Go back to idle.
 //	       PCIFR = (1<<PCIF2) ;			// clear pending interrupt
 //	       PCICR |= (1<<PCIE2) ;			// pin change interrupt enabled
@@ -685,7 +684,7 @@ void initHubUart( )
 	
   //Internal State Variable
   state = IDLE ;
-  TxMax = 0 ;
+//  TxMax = 0 ;
   TxCount = 0 ;
 
 #if DEBUGASERIAL
@@ -697,16 +696,16 @@ void initHubUart( )
 void setHubNewData(  )
 {
   if ( (TxCount == 0) && (hubMaxData > 0) ) {
-    for (int cntNewData = 0 ; cntNewData < hubMaxData ; cntNewData++) {
-          TxHubData[cntNewData] = hubData[cntNewData] ;
-      }
-      TxMax = hubMaxData  ;
+//    for (int cntNewData = 0 ; cntNewData < hubMaxData ; cntNewData++) {
+//          TxHubData[cntNewData] = hubData[cntNewData] ;
+//      }
+//      TxMax = hubMaxData  ;
 #ifdef DEBUGSETNEWDATA
           Serial.print("set new data at ");
           Serial.print( millis() );
           Serial.print(" ");  
-          for (int cntNewData = 0 ; cntNewData < pdata->maxData ; cntNewData++) {
-            Serial.print( pdata->data[cntNewData] , HEX );
+          for (int cntNewData = 0 ; hubMaxData ; cntNewData++) {
+            Serial.print( hubData[cntNewData] , HEX );
             Serial.print(" ");
           }
           Serial.println(" ");        
@@ -727,7 +726,7 @@ void startHubTransmit()
  	CLEAR_TIMER_INTERRUPT() ;         // Clear interrupt bits
 	sei() ;
   SwUartTXBitCount = 0 ;
-	SwUartTXData = TxHubData[0] ;
+	SwUartTXData = hubData[0] ;
 	//TxNotEmpty = 0 ;
   state = TRANSMIT ;
  	ENABLE_TIMER_INTERRUPT() ;        // Enable timer1 interrupt on again
