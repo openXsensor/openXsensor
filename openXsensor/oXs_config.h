@@ -153,7 +153,7 @@
 // --------- 11 - GPS ------------------------------------------------------------------------------------------------
 #define GPS_INSTALLED     // uncomment this line if a GPS is connected
 #define GPS_SPEED_IN_KMH  // uncomment this line if GPS speed has to be sent in knot instead of km/h 
-//#define GPS_SPEED_3D      // uncomment this line if GPS speed has to be the 2d speed instead of the 3d speed (note: 3d is probably less accurate - to test) 
+//#define GPS_SPEED_3D      // uncomment this line if GPS speed has to be the 3d speed instead of the 2d speed (note: 3d is probably less accurate - to test) 
 
 // --------- xx - Reserved for developer. DEBUG must be activated here when we want to debug one or several functions in some other files. ---------
 #define DEBUG
