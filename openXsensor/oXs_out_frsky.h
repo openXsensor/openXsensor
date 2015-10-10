@@ -279,6 +279,8 @@ extern int32_t GPS_altitude;              // altitude in mm
 extern bool    GPS_altitudeAvailable;
 extern uint16_t GPS_speed_3d;              // speed in cm/s
 extern bool    GPS_speed_3dAvailable;
+extern uint16_t GPS_speed_2d;              // speed in cm/s
+extern bool    GPS_speed_2dAvailable;
 extern uint16_t GPS_speed;                 // speed in cm/s
 extern bool    GPS_speedAvailable ;
 extern uint32_t GPS_ground_course ;     // degrees with 5 decimals

@@ -70,8 +70,8 @@ OXS_GPS::OXS_GPS( uint8_t x )
 
 // **************** Setup the GPS sensor *********************
 #define SOFT_TX_BIT 6  // define which port is used to send the set up to the GPS (here pin arduino 6 = Port D6 is used 
-#define SOFT_TX_DDR DDRD
-#define SOFT_TX_PORT PORTD
+#define SOFT_TX_DDR DDRD  // specify the port being used for this pin
+#define SOFT_TX_PORT PORTD  // specify the port being used for this pin
 
 #define MICROSECONDS_OVERHEAD_ADJUST 0
 
