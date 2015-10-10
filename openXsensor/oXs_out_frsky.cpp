@@ -975,7 +975,7 @@ void OXS_OUT_FRSKY::FrSkySportSensorGpsSend(void)
                 GPS_speed_3dAvailable = false ;
                 gpsSportId = GPS_SPEED_FIRST_ID ;
 #ifdef GPS_SPEED_IN_KMH
-                gpsSportValue = ( GPS_speed_3d * 36 ) / 10 ; // convert cm/s in 1/100 of km/h (factor = 3.6)
+                gpsSportValue = ( ((uint32_t) GPS_speed_3d) * 36 )  ; // convert cm/s in 1/100 of km/h (factor = 3.6)
 #else                                
                 gpsSportValue = ( ((uint32_t) GPS_speed_3d) * 700 ) / 36  ; // convert cm/s in 1/100 of knots (factor = 19.44)
 #endif // end of GPS_SPEED_IN_KMH
@@ -985,7 +985,7 @@ void OXS_OUT_FRSKY::FrSkySportSensorGpsSend(void)
                 GPS_speed_2dAvailable = false ;
                 gpsSportId = GPS_SPEED_FIRST_ID ;
 #ifdef GPS_SPEED_IN_KMH
-                gpsSportValue = ( GPS_speed_2d * 36 ) / 10 ; // convert cm/s in 1/100 of km/h (factor = 3.6)
+                gpsSportValue = ( ((uint32_t) GPS_speed_2d) * 36 )  ; // convert cm/s in 1/100 of km/h (factor = 3.6)
 #else                                
                 gpsSportValue = ( ((uint32_t) GPS_speed_2d) * 700 ) / 36 ; // convert cm/s in 1/1000 of knots (factor = 19.44)
                 Serial.print(F("2d Knot:"));Serial.println(gpsSportValue); 
