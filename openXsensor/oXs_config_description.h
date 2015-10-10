@@ -801,19 +801,24 @@ started by Rainer Schloßhan
 *              So, when you connect the usb to serial adapter to the Arduino, you should disconnect at least the GPS TX pin from the Arduino Rx pin.  
 *              Personnaly I use a connector between Arduino and GPS module and so I can disconnect totally the GPS module.
 * Software points of attention
-*    UBLOX GPS module are delivered with a default configuration (generating automatically e.g some NMEA messages at 9600 bauds at a refresh rate of 1 hz).
-*    oXs assumes that GPS is working at 9600 baud at startup and sent some commands in order to
+*    UBLOX GPS module are normally delivered with a default configuration (generating automatically e.g some NMEA messages at 9600 bauds at a refresh rate of 1 hz).
+*    oXs assumes that, at start up, GPS is working at 9600 bauds. oXs sent then some commands in order to
 *       - disable all NMEA messages
 *       - activates some UBX messages
 *       - increase frequency of calculation (to 5 Hz instead of 1hz)
 *       - set up the baud rate to 38400 instead of 9600.
 *    Those parameters are not saved in the GPS (because some GPS modules does not allow it). So, oXs will send those commands at each power on.   
-*    If you oXs does not send GPS data, please check that your GPS module has still the default configuration (most important is that it is configured to get UBX messages at 9600 bauds). 
-*       An easy way to check the GPS configuration is to connect the GPS module ot a 3.3 volt FTDI (USB to serial adapter) and to use a free software named "u-center". 
+*    If you oXs does not send GPS data, please check that your GPS module has still the default configuration (most important is that it is configured to receive UBX command messages at 9600 bauds). 
+*       An easy way to check the GPS configuration is to connect the GPS module to a 3.3 volt FTDI ( or USB to serial adapter) and to use a free software named "u-center". 
 *       This software is available on the official web site of UBLOX. More info is easily available on the web. 
-* 
- */
+*  OXs allows to modify some parameters in the config.h file:
+*     -   #define GPS_INSTALLED      : uncomment this line if a GPS is connected and has to transmit his data
+*     -   #define GPS_SPEED_IN_KMH   : uncomment this line if GPS speed has to be sent in km/h instead of knot/h 
+*     -   #define GPS_SPEED_3D       : uncomment this line if GPS speed has to be the 3d speed instead of the 2d speed (note: 3d is probably less accurate - to test)
+*     
 ************************************************************************************************************************ 
+
+
 
 **** xx - Reserved for developer. **************************************************************************************
 * DEBUG must be activated here when you want to debug one or several functions in some other files.

@@ -946,9 +946,9 @@ void OXS_OUT_FRSKY::FrSkySportSensorGpsSend(void)
                 GPS_lonAvailable = false ;
                 gpsSportId = GPS_LONG_LATI_FIRST_ID ;
 #ifdef DEBUGSIMULATEGPS
-                gpsSportValue = ((( ((uint32_t)( GPS_lon < 0 ? -GPS_lon : GPS_lon)) * 6 / 100 ) + gpsSimulateCount++ )& 0x3FFFFFFF) | 0x80000000;
+                gpsSportValue = ((( (((uint32_t)( GPS_lon < 0 ? -GPS_lon : GPS_lon)) * 6 ) / 100 ) + gpsSimulateCount++ )& 0x3FFFFFFF) | 0x80000000;
 #else                
-                gpsSportValue = (( ((uint32_t)( GPS_lon < 0 ? -GPS_lon : GPS_lon)) * 6 / 100 ) & 0x3FFFFFFF)  | 0x80000000;
+                gpsSportValue = (( (((uint32_t)( GPS_lon < 0 ? -GPS_lon : GPS_lon)) * 6 )/ 100 ) & 0x3FFFFFFF)  | 0x80000000;
 #endif                
                 if(GPS_lon < 0) gpsSportValue |= 0x40000000;
                 break;
@@ -956,7 +956,7 @@ void OXS_OUT_FRSKY::FrSkySportSensorGpsSend(void)
                 if (!GPS_latAvailable) return ;
                 GPS_latAvailable = false ;
                 gpsSportId = GPS_LONG_LATI_FIRST_ID ;
-                gpsSportValue = ((  ((uint32_t)( GPS_lat < 0 ? -GPS_lat : GPS_lat)) * 6 / 100 ) & 0x3FFFFFFF ) ;
+                gpsSportValue = ((  (((uint32_t)( GPS_lat < 0 ? -GPS_lat : GPS_lat)) * 6 )/ 100 ) & 0x3FFFFFFF ) ;
                 if(GPS_lat < 0) gpsSportValue |= 0x40000000;
                 break;
               case 2: // GPS_altitude
@@ -975,9 +975,9 @@ void OXS_OUT_FRSKY::FrSkySportSensorGpsSend(void)
                 GPS_speed_3dAvailable = false ;
                 gpsSportId = GPS_SPEED_FIRST_ID ;
 #ifdef GPS_SPEED_IN_KMH
-                gpsSportValue = GPS_speed_3d * 36 / 100 ; // convert cm/s in 1/10 of km/h (factor = 0.36)
+                gpsSportValue = ( GPS_speed_3d * 36 ) / 10 ; // convert cm/s in 1/100 of km/h (factor = 3.6)
 #else                                
-                gpsSportValue = GPS_speed_3d * 7 / 36 ; // convert cm/s in 1/10 of knots (factor = 0.1944)
+                gpsSportValue = ( ((uint32_t) GPS_speed_3d) * 700 ) / 36  ; // convert cm/s in 1/100 of knots (factor = 19.44)
 #endif // end of GPS_SPEED_IN_KMH
                 break;
 #else                   // use gps_Speed_2d
@@ -985,9 +985,10 @@ void OXS_OUT_FRSKY::FrSkySportSensorGpsSend(void)
                 GPS_speed_2dAvailable = false ;
                 gpsSportId = GPS_SPEED_FIRST_ID ;
 #ifdef GPS_SPEED_IN_KMH
-                gpsSportValue = GPS_speed_2d * 36 / 100 ; // convert cm/s in 1/10 of km/h (factor = 0.36)
+                gpsSportValue = ( GPS_speed_2d * 36 ) / 10 ; // convert cm/s in 1/100 of km/h (factor = 3.6)
 #else                                
-                gpsSportValue = GPS_speed_2d * 7 / 36 ; // convert cm/s in 1/10 of knots (factor = 0.1944)
+                gpsSportValue = ( ((uint32_t) GPS_speed_2d) * 700 ) / 36 ; // convert cm/s in 1/1000 of knots (factor = 19.44)
+                Serial.print(F("2d Knot:"));Serial.println(gpsSportValue); 
 #endif // end of GPS_SPEED_IN_KMH
                 break;
 #endif //  enf of GPS_SPEED_3D             
