@@ -53,7 +53,7 @@
 #define SENSITIVITY_PPM_MAX 100      // common value for vario is 100
 
 // ***** 4.4 - Hysteresis parameter & Alt compensation based on sensor temp *****
-#define VARIOHYSTERESIS 5
+#define VARIOHYSTERESIS 0
 //#define ALT_TEMP_COMPENSATION 800
 
 // ***** 4.5 - Vertical speeds calculations *****
@@ -85,14 +85,14 @@
 #define REFERENCE_VOLTAGE 4970    // set value in milliVolt; if commented, oXs will use or 1100 (if internal ref is used) or 5000 (if internal ref is not used) 
 
 // ***** 6.2 - Voltage parameters *****
-#define PIN_VOLTAGE         8  , 8     , 8   , 3    , 8   , 8               // set this line as comment if no one voltage have to be measured, set a value to 8 for the voltage(s) not to be measured.
+#define PIN_VOLTAGE         0  , 8     , 8   , 8    , 8   , 8               // set this line as comment if no one voltage have to be measured, set a value to 8 for the voltage(s) not to be measured.
 #define RESISTOR_TO_GROUND  12 , 20    , 30  , 19.8 , 50  , 60               // set value to 0 when no divider is used for a voltage, can contains decimals 
 #define RESISTOR_TO_VOLTAGE 50 , 100.1 , 200 , 39   , 500 , 600              // set value to 0 when no divider is used for a voltage, can contains decimals 
-#define OFFSET_VOLTAGE      -1 , 0     , 0   , 0    , 0   , 0                // optionnal, can be negative, must be integer
+#define OFFSET_VOLTAGE      0 , 0     , 0   , 0    , 0   , 0                // optionnal, can be negative, must be integer
 #define SCALE_VOLTAGE      1.1 , 1     ,  1  , 1.004, 1   , 1                // optionnal, can be negative, can have decimals
 
 // ***** 6.3 - Max number of Lipo cells to measure (and transmit to Tx) *****
-#define NUMBEROFCELLS 1  // keep this line but set value to 0 (zero) if you do not want to transmit cell voltage.
+//#define NUMBEROFCELLS 1  // keep this line but set value to 0 (zero) if you do not want to transmit cell voltage.
 
 // ***** 6.4 - Current parameters  *****
 //#define PIN_CURRENTSENSOR   3
@@ -111,9 +111,14 @@
 // --------- 9 - Data to transmit ---------
 // ***** 9.1 - Frsky data *****
 #define SETUP_FRSKY_DATA_TO_SEND    \
-                        DEFAULTFIELD , ALTIMETER , 1 , 1 , 0 ,\
-                        DEFAULTFIELD , VERTICAL_SPEED , 1 , 1 , 0 ,\
-                        Vfas , VOLT4 , 1 , 1 ,0 
+                        DEFAULTFIELD , AIR_SPEED , 1 , 1 ,0 , \
+                        DEFAULTFIELD , ALTIMETER , 1 , 1 , 0 , \
+                        DEFAULTFIELD , VERTICAL_SPEED , 1 , 1 , 0 , \
+                        AccX , TEST1 , 1 , 1 ,0 , \
+                        AccY , TEST2 , 1 , 1 ,0 , \
+                        AccZ , TEST3 , 1 , 1 ,0 , \
+                        Vfas , VOLT1 , 1 , 1 , 0 
+
 //                        T2 , TEST3 , 1 , 1, 0
 /*
                         VSpd , PPM_VSPEED , 1 , 1 ,0 , \
@@ -151,12 +156,12 @@
 #define SEQUENCE_MIN_CELL   3000 // sequence_100 will be activated if lowest cell is lower that the value.
 
 // --------- 11 - GPS ------------------------------------------------------------------------------------------------
-#define GPS_INSTALLED     // uncomment this line if a GPS is connected
+//#define GPS_INSTALLED     // uncomment this line if a GPS is connected
 #define GPS_SPEED_IN_KMH  // uncomment this line if GPS speed has to be sent in km/h instead of knot/h 
 //#define GPS_SPEED_3D      // uncomment this line if GPS speed has to be the 3d speed instead of the 2d speed (note: 3d is probably less accurate - to test) 
 
 // --------- xx - Reserved for developer. DEBUG must be activated here when we want to debug one or several functions in some other files. ---------
-#define DEBUG
+//#define DEBUG
 
 #ifdef DEBUG
 #include "HardwareSerial.h"

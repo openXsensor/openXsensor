@@ -925,16 +925,18 @@ extern uint8_t volatile gpsSportData[7] ;
 void OXS_OUT_FRSKY::FrSkySportSensorGpsSend(void)
 {
   // gpsSendStatus can be TO_LOAD, LOADED, SENDING, SEND ; it is managed here and in Aserial
-  // new data is uploaded only gpsSendStatus == SEND or TO_LOAD
+  // new data is uploaded only when gpsSendStatus == SEND or TO_LOAD
   // each GPS data is loaded in sequence but only if available (otherwise this data is skipped)
   static uint8_t gpsDataIdx ;
   static uint16_t gpsSportId ;
   static uint32_t gpsSportValue ;
+  static uint32_t gpsLastLoadedMillis ;
 #ifdef DEBUGSIMULATEGPS
   static uint8_t gpsSimulateCount ;
 #endif  
 //   Serial.println(F("S gdps"));
-  if (gpsSendStatus == SEND || gpsSendStatus == TO_LOAD) { 
+
+  if  ((gpsSendStatus == SEND || gpsSendStatus == TO_LOAD) && (millis() - gpsLastLoadedMillis > 200 ) ){  // send only one data per 200 msec (to test if it help locking found on the Tx log)
             gpsDataIdx++;  // handle next GPS data; if not available, this field will be skipped.
             if(gpsDataIdx >= GPS_DATA_COUNT) {
               gpsDataIdx = 0;

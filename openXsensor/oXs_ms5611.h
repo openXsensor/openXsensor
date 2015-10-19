@@ -40,8 +40,8 @@ struct VARIODATA {
   
   unsigned long lastCommand2Micros ; // used to avoid some task (reading voltage sensor, currentsensor, ..) when barometric data should be soon available for reading 
                                      // = micro divided by 2 to avoid overflow on comparison
-
 };
+
 
 class OXS_MS5611 {
 public:

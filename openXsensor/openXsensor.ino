@@ -555,6 +555,10 @@ void   blinkLed(uint8_t blinkType) {
 //**********************************************************************************************************
 //***                                            Read all the sensors / Inputs                          ****
 //**********************************************************************************************************
+extern uint16_t i2cPressureError ;
+extern uint16_t i2cTemperatureError ;
+extern uint16_t i2cReadCount ;
+
 void readSensors() {   
 //#ifdef DEBUG
 //  Serial.println(F("in readSensors"));  
@@ -567,9 +571,12 @@ void readSensors() {
 #ifdef VARIO
   oXs_MS5611.readSensor(); // Read pressure & temperature on MS5611, calculate Altitude and vertical speed
   if ( oXs_MS5611.varioData.absoluteAltAvailable == true and oXs_MS5611.varioData.rawPressure > 100000.0f ) actualPressure = oXs_MS5611.varioData.rawPressure / 10000.0 ; // this value can be used when calculating the Airspeed
-  test3Value = oXs_MS5611.varioData.temperature; 
+  test1Value = i2cReadCount ; 
+  test1ValueAvailable = true ; 
+  test2Value = i2cPressureError ; 
+  test2ValueAvailable = true ; 
+  test3Value = i2cTemperatureError ; 
   test3ValueAvailable = true ; 
-
 #endif
 
 #ifdef VARIO2
@@ -716,12 +723,10 @@ void calculateDte () {  // is calculated about every 2O ms each time that an alt
     totalEnergyLowPass = totalEnergyHighPass = rawTotalEnergy ; 
   }
 //  test1Value = rawCompensation; 
-//  test1Value = 1000; 
 //  test1ValueAvailable = true ; 
   
   //test2Value = rawTotalEnergy; 
-  test2Value = 2000; 
-  test2ValueAvailable = true ; 
+  //test2ValueAvailable = true ; 
   
   totalEnergyLowPass += 0.085 * ( rawTotalEnergy - totalEnergyLowPass) ;
   totalEnergyHighPass += 0.1 * ( rawTotalEnergy - totalEnergyHighPass) ;

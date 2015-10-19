@@ -10,6 +10,12 @@
 //extern unsigned long millis( void ) ;
 //extern void delay(unsigned long ms) ;
 
+uint16_t i2cPressureError ;
+uint16_t i2cTemperatureError ;
+uint16_t i2cReadCount ;
+
+
+
 //long result ;
 
 
@@ -148,7 +154,9 @@ void OXS_MS5611::readSensor() {
                 D1=result;
         } else {
               D1 = 0 ; // D1 value are not processed to calculate Alt.
-        }      
+              i2cPressureError++ ; // for debugging, count the number of read errors on pressure
+        }
+        i2cReadCount++ ;  // for debugging I2C count the number of Pressure and Temperature reads
         I2c.write( _addr,0x58) ; // ask a conversion of Temperature
         varioData.lastCommand2Micros = (micros() >>1 ); 
         varioData.SensorState = 2;
@@ -165,7 +173,9 @@ void OXS_MS5611::readSensor() {
                 result <<= 8 ;
                 result |= I2c.receive() ;
                 D2=result;
-          }      
+          } else {     
+          i2cTemperatureError++ ; // for debugging, count the number of read errors on temperature
+          }
           varioData.SensorState=0; // 
     }  // End of process if temperature can be read 
   
