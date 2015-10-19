@@ -915,7 +915,7 @@ void OXS_OUT_FRSKY::loadSportValueToSend( uint8_t currentFieldToSend) {
 #endif
 }  // End function
 
-
+#ifdef GPS_INSTALLED
  //!! shared with Aserial
 extern uint8_t volatile gpsSendStatus ; 
 extern uint8_t volatile gpsSportDataLock ;
@@ -1019,7 +1019,7 @@ void OXS_OUT_FRSKY::FrSkySportSensorGpsSend(void)
   } // end test on gpsSendStatus == SEND or TOLOAD          
 } // end function
 
-
+#endif // of of GPS_INSTALLED
 
 
 // -------------------------End of SPORT protocol--------------------------------------------------------------------------------------
@@ -1028,9 +1028,11 @@ void OXS_OUT_FRSKY::FrSkySportSensorGpsSend(void)
 void OXS_OUT_FRSKY::sendHubData()  // for Hub protocol
 {
   static uint32_t lastMsFrame1=0;
-  static unsigned int lastMsFrame2=0;
   static uint32_t temp ;
-
+#ifdef GPS_INSTALLED  
+  static unsigned int lastMsFrame2=0;
+#endif
+  
   temp = millis() ;
   if (  (state == IDLE) && (temp-lastMsFrame1) >= INTERVAL_FRAME1  ) {
 #ifdef DEBUGHUBPROTOCOL
@@ -1099,7 +1101,8 @@ void OXS_OUT_FRSKY::SendFrame1(){
 #define FRSKY_USERDATA_GPS_DIST     0x3C
 
 
-//======================================================================================================Send Frame 2 via serial
+#ifdef GPS_INSTALLED
+//======================================================================================================Send Frame 2 via serial used for GPS
 void OXS_OUT_FRSKY::SendFrame2(){
 #ifdef DEBUGHUBPROTOCOL
   printer->print(F("FRSky output module: SendFrame2:"));
@@ -1133,7 +1136,7 @@ void OXS_OUT_FRSKY::SendFrame2(){
   SendValue(FRSKY_USERDATA_GPS_CURSE_B , (uint16_t) ( GPS_ground_course / 100000 ) ) ;  // Course degrees
   SendValue(FRSKY_USERDATA_GPS_CURSE_A , (uint16_t) ( (GPS_ground_course % 100000) / 1000 ) ) ;   // // Course 2 decimals of degrees
   if( hubMaxData > 0 ) {
-    sendHubByte(0x5E) ; // End of Frame 1!
+    sendHubByte(0x5E) ; // End of Frame 2!
     setHubNewData(  ) ;
   }  
 #ifdef DEBUGHUBPROTOCOL
@@ -1146,7 +1149,7 @@ void OXS_OUT_FRSKY::SendFrame2(){
 #endif
   
 }
-
+#endif // end of GPS_INSTALLED
 
 /**********************************************************/
 /* SendValue => send a value as frsky sensor hub data     */

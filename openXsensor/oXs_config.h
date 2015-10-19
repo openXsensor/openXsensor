@@ -112,8 +112,8 @@
 // ***** 9.1 - Frsky data *****
 #define SETUP_FRSKY_DATA_TO_SEND    \
                         DEFAULTFIELD , ALTIMETER , 1 , 1 , 0 ,\
-                        DEFAULTFIELD , VERTICAL_SPEED , 1 , 1 , 0 
-//                        Vfas , VOLT4 , 1 , 1 ,0 
+                        DEFAULTFIELD , VERTICAL_SPEED , 1 , 1 , 0 ,\
+                        Vfas , VOLT4 , 1 , 1 ,0 
 //                        T2 , TEST3 , 1 , 1, 0
 /*
                         VSpd , PPM_VSPEED , 1 , 1 ,0 , \
