@@ -115,8 +115,8 @@
                         DEFAULTFIELD , ALTIMETER , 1 , 1 , 0 , \
                         DEFAULTFIELD , VERTICAL_SPEED , 1 , 1 , 0 , \
                         AccX , TEST1 , 1 , 1 ,0 , \
-                        AccY , TEST2 , 1 , 1 ,0 , \
-                        AccZ , TEST3 , 1 , 1 ,0 , \
+                        T1 , TEST2 , 1 , 1 ,0 , \
+                        T2 , TEST3 , 1 , 1 ,0 , \
                         Vfas , VOLT1 , 1 , 1 , 0 
 
 //                        T2 , TEST3 , 1 , 1, 0

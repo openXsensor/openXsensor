@@ -134,6 +134,7 @@ void OXS_MS5611::setup() {
 //********************************************************************************************
 //***                            read the sensor                                           ***
 //********************************************************************************************
+#define WAIT_I2C_TIME 9000 // normally we have to wait 9000 usec 
 void OXS_MS5611::readSensor() {
    long result = 0;
 #ifdef  DEBUGVARIOI2C
@@ -143,7 +144,7 @@ void OXS_MS5611::readSensor() {
   if (varioData.SensorState==1) { // ========================= Read the pressure
     extended2Micros = micros() >> 1 ;
     if (extended2Micros < varioData.lastCommand2Micros) extended2Micros = extended2Micros | 0x80000000 ;
-    if ( extended2Micros  > varioData.lastCommand2Micros + 4500){ // wait 9 msec at least before asking for reading the pressure
+    if ( extended2Micros  > (varioData.lastCommand2Micros + ( WAIT_I2C_TIME / 2 ) ) ) { // wait 9 msec at least before asking for reading the pressure
 //        long result = 0;
 	if(  ! I2c.read( _addr, 0, 3 )) { ; //read 3 bytes from the device after sending a command "00"; keep previous value in case of error 
         	result = I2c.receive() ;
@@ -165,7 +166,7 @@ void OXS_MS5611::readSensor() {
   else if (varioData.SensorState==2){ // =========================  
     extended2Micros = micros() >> 1 ;
     if (extended2Micros < varioData.lastCommand2Micros) extended2Micros = extended2Micros | 0x80000000 ;
-    if ( extended2Micros > varioData.lastCommand2Micros + 4500) { // wait 9000 usec to get Temp with high precision
+    if ( extended2Micros > ( varioData.lastCommand2Micros + (WAIT_I2C_TIME / 2) )) { // wait 9000 usec to get Temp with high precision
           if ( ! I2c.read( _addr, 0, 3 )) { ; //read 3 bytes from the device; keep previous value in case of error
                 result = I2c.receive() ;
                 result <<= 8 ;

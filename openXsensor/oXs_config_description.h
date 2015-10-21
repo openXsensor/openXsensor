@@ -343,6 +343,10 @@ started by Rainer Schloßhan
 *     Each value must be a number from 0 up to 7 (0 means A0 = analog 0, 1 means A1, ...7 means A7) or the value "8" (when a voltage does not have to be measured).
 *     Note: the same alalog pin values can be used in several voltages (e.g. for VOLT1 and VOLT6).
 *     
+*     Note: If lipo voltage to be measured, it MUST start from VOLT1 for 1s, VOLT2 for 2s....., other voltages may be measured but need to be after number of cells to be measured
+*         and the cel number MUST be specified in "numberofcells" (see next section)
+*         The Ax pin number can be at random depending on which pin is connected for each cell.
+*         
 *  !! Take care that the voltage applied to Arduino pin may not exceed Vcc (normally 5 volt) or 1.1 volt (if internal reference voltage is used).
 *     It can be that you have to use voltage divider in order to reduce the voltage applied on Arduino pin compared to the voltage you want to measure.
 *     For each voltage to scale down, proceed as follow:
@@ -398,11 +402,12 @@ started by Rainer Schloßhan
 *     If defined, each line must contains 6 values. Use 0 (for offset) and 1 (for scale) if no calibration is done for some voltage.
 *     
 ************************************************************************************************************************
-#define PIN_VOLTAGE         0 , 1 , 2 , 3 , 8 , 8             
-#define RESISTOR_TO_GROUND 12 , 20 , 30 , 40 , 50 , 60           // set value to 0 when no divider is used for one of this voltage
-#define RESISTOR_TO_VOLTAGE 50 , 100.1 , 200, 300 , 500 , 600    // set value to 0 when no divider is used for one of this voltage
-#define OFFSET_VOLTAGE      0 , 0 , 0 , 0 , 0 , 0                // can be negative, must be integer
-#define SCALE_VOLTAGE       1 , 1 , 1 , 1 , 1 , 1                // can be negative, can have decimals
+                           VOLT1  VOLT2  VOLT3  VOLT4  VOLT5  VOLT6 
+#define PIN_VOLTAGE         2    , 0    , 2   ,  3 ,     8 ,    8             
+#define RESISTOR_TO_GROUND 12   , 20 ,   30 ,   40 ,    50 ,   60           // set value to 0 when no divider is used for one of this voltage
+#define RESISTOR_TO_VOLTAGE 50, 100.1 , 200,   300 ,   500 ,  600           // set value to 0 when no divider is used for one of this voltage
+#define OFFSET_VOLTAGE      0 ,    0 ,    0 ,    0 ,     0 ,    0           // can be negative, must be integer
+#define SCALE_VOLTAGE       1 ,    1 ,    1 ,    1 ,     1 ,    1           // can be negative, can have decimals
 
 
 * 6.3 - Max number of Lipo cell to measure  (and transmit to Tx) ***********************************************************
@@ -420,6 +425,7 @@ started by Rainer Schloßhan
 *           voltage on cell 3 will be the difference between voltages measure on third pin and second pin (so VOLT3 - VOLT2)
 *           etc.
 *     When transmitting cell voltages, you may NOT FORGET to configure the PIN_VOLTAGE, RESISTOR_TO_GROUND, RESISTOR_TO_VOLTAGE (and optionaly the calibration parameters too) .
+*     The pins MUST start and sequenced from VOLT1,2,3,4.. for 1s, 2s,....
 *     Pins voltage in excess may be used in order to transmit other voltages (e.g. from a temperature sensor)
 *     E.g. if NUMBEROFCELLS = 3, First pin (in the list of 6) must be connected to cell 1 (via a voltage divider calculated for about 4.5 volt
 *                                Second pin must be connected to cell 2 (via a voltage divider calculated for about 9 volt
@@ -467,7 +473,13 @@ started by Rainer Schloßhan
 *        See the section 6.2 above about voltage divider. The principle are just the same but the names of the 2 paraameters are:
 *          - RESISTOR_TO_GROUND_FOR_CURRENT
 *          - RESISTOR_TO_CURRENT_SENSOR 
-*        Note: those parameters are automatically discarded when PIN-CURRENTSENSOR is not defined (= set as comment).
+*  Note: those parameters are automatically discarded when PIN-CURRENTSENSOR is not defined (= set as comment).
+*  Note: When current sensor is used, oXs can also calculate and transmit current consumption (milliAh) and Fuel (in % going down from 100% to 0%).
+*        If you want the last one, then use a setup like "Fuel , MILLIAH , -100 , 4000 ,0" in "data to transmit section" (and replace 4000 by the capacity - in milliAmph - of your battery) (see below).
+*        Still, with Tx using openTx or Ersky9x software, it is better to let the Tx calculates those values by it self based on the current. 
+*               This ensure that values are consistent; it allows to reset the values on Tx side; it allows to change the value of the battery capacity on Tx side (so without having to reload another set up in Arduino oXs).    
+*               E.g on Ersky9x, in Telemetry menu set up "current source"  set "FAS"; in "mAh Alarm", set the mah you want for alarm to sound and select warning sound/voice, 
+*               ie 70% of 2200 mAh lipo, use 1540. then the FUEL percentage will start from 100% count down to 0% when 1540 is consumed.
 ************************************************************************************************************************
 //#define PIN_CURRENTSENSOR      2
 #define MVOLT_AT_ZERO_AMP        600
@@ -615,9 +627,12 @@ started by Rainer Schloßhan
 *   A3                   Not available for D series Rx, Can be used for one of VOLT1, VOLT2,...VOLT6 or sensitivity, PPM, ...
 *   A4                   Not available for D series Rx, Can be used for one of VOLT1, VOLT2,...VOLT6 or sensitivity, PPM, ...
 *   ASpd 1/10 of knot    AIR_SPEED , Not available for D series Rx
-*   Cell & Cells         CELLS_1_2 & CELLS_3_4 & CELLS_5_6
+*   Cell & Cells         CELLS_1_2 & CELLS_3_4 & CELLS_5_6 (cell is the lowest cell and cells the total voltage)
 *
-**** General set up to define which measurements are transmitted and how ***********************************************
+* Note: in Ersky9: 
+*    Alt is in custom display in ERSKY9x but there is also a Alt displays on the screenvaving the v1-v6 which is from GPS altitude 
+*    
+***** General set up to define which measurements are transmitted and how ***********************************************
 *     You MUST specify ONE ROW for EACH OXS measurement to transmit to Tx.
 *     The content of the line is different for Multiplex and for Frsky sprotocol
 * 9.1 Multiplex protocol : each row must contains:
@@ -685,13 +700,13 @@ started by Rainer Schloßhan
 *    - as Altitude : the altitude measurement,
 *    - as Vertical speed : the vertical speed measurement
 *    - as Current : the current measurement
-*    - as Fuel : the current consumption in % for an accu of 4000mAmph starting at 100% 
+*    - as Fuel : the current consumption in % for an accu of 4000mAmph starting at 100% (still best to avoid sending Fuel when Tx can calculate it - see current section) 
 *    - as Temperature T1 : the VOLT6 measurement divided by 100
 *               #define SETUP_FRSKY_DATA_TO_SEND    \
 *                        DEFAULTFIELD , ALTIMETER , 1 , 1 , 0 ,\
 *                        DEFAULTFIELD , VERTICAL_SPEED , 1 , 1 ,0 ,\
 *                        DEFAULTFIELD , CURRENTMA , 1 , 1 , 0,\
-*                        Fuel , MILLIAH , -100 , 4000 ,0, \
+*                        Fuel , MILLIAH , -100 , 4000 ,0, \        
 *                        T1 , VOLT6, 1 , 100, 0
 * When the Cell voltages have to be transmitted, the voltages are transmitted by group of 2 over SPORT protocol.
 *    For uniformity, the cell voltages are also calculated/saved by group of 2 for the Hub protocol even if they are all transmitted in one frame.
