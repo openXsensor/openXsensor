@@ -24,6 +24,7 @@ started by Rainer Schloßhan
 *   4.4 - Hysteresis parameter & Alt compensation based on sensor temp 
 *   4.5 - Different vertical speeds calculations (optional)
 *   4.6 - Analog vertical speed (optional)
+*   4.7 - Calculating glider ratio, average sink/climb rate, average altitude gain/loose
 *  5 - Airspeed sensor settings (optional)
 *  6 - Voltage measurements and current sensor settings (optional)
 *   6.1 - Voltage Reference to measure voltages and current
@@ -63,8 +64,8 @@ started by Rainer Schloßhan
 *     In SPORT protocol, there may be several sensors connected on the same bus (e.g. a GPS) but each sensor must have a different SENSOR_ID.
 *     So, you have to define a SENSOR_ID for your OXS that is different from sensor Id of other sensors.
 *     You define the SENSOR_ID with this line : #define SENSOR_ID    0x1B 
-*     Valid values are 0x1B, 0xBA, ... (there are 28 values)     
-*     Here the default sensor_IDs used by FrSky for their own sensors (Physical IDs + CRC), so it's better not to use those ones.
+*     Valid values are 0x00, 0xA1, 0x22, 0x83, 0xE4, 0x45, 0xC6, 0x67, 0x48, 0xE9, 0x6A, 0xCB, 0xAC, 0x0D, 0x8E, 0x2F, 0xD0, 0x71,  0xF2, 0x53, 0x34, 0x95, 0x16, 0xB7, 0x98, 0x39, 0xBA, 0x1B
+*     Here the default sensor_IDs used by FrSky for their own sensors (Physical IDs + CRC), so it's better not to use those ones if you use oXs and Frsky sensor simultanously.
 *       #define DATA_ID_VARIO  0x00  0
 *       #define DATA_ID_FLVSS  0xA1  1
 *       #define DATA_ID_FAS    0x22  2
@@ -257,6 +258,32 @@ started by Rainer Schloßhan
 #define PIN_ANALOG_VSPEED   3
 #define ANALOG_VSPEED_MIN -3
 #define ANALOG_VSPEED_MAX  3
+
+* 4.7  - Calculating glider ratio, average sink/climb rate, average altitude gain/lost *********************************
+*     oXs can calculate and transmit some values over an enlapsed time of several seconds (e.g 5 or 10 sec)
+*     The calculated values are :
+*        - altitude gain/lost over the enlapsed time
+*        - averaged sink/climb rate  ( = difference of altitude / enlapsed time )
+*        - glider ratio (= distance / difference of altitude) (in fact = speed * time / difference of altitude )
+*     Those values required that an airspeed sensor and/or a GPS is connected
+*     Distance = (airspeed or the GPS ground) speed * enlapsed time.
+*     Glider ratio e.g. is a parameter that can be use to fine tune the setup of the glider. It makes only sense if the speed is quite regular.
+*     So oXs calculates the glider ratio only when the speed does not change by more than a defined % over the enlapsed time. This % can be defined by the user in SPEED_TOLERANCE.
+*     When the speed change exceed the defined %, then glider ratio is fixed to a dummy value = 10000. It is possible to test on this value on Tx side to (de)activate a logical switch.
+*     In order to setup those calculations, you have to define:
+*        - the enlapsed time (in second) ; typical values could be between 5 and 10
+*        - the source of the speed being used for the glider ratio. 2 values are allowed: BASED_ON_AIRSPEED and BASED_ON_GPS_SPEED 
+*        - the max % tolerance on speed change (e.g. mean 5 %)
+*     Note: oXs performs/transmit 10 calculations over the enlapsed time. 
+*         E.g. if enlapsed time is 10 sec, oXs will calculate using the speed and altitude from 10 sec ago and the current values        
+*     Note: in this version of oXs, if you want to sent the calculated field you have to fill the data to transmit section using following code
+*         - TEST1 for altitudeDifference ; 
+*         - TEST2 for averageVspeed ; 
+*         - TEST3 for gliderRatio ; 
+*************************************************************************************************************************
+#define AVERAGING_EVERY_X_SEC       10        // elapsed time for averaging in second
+#define SPEED_TOLERANCE              5        // in % of speed)
+#define GLIDER_RATIO          BASED_ON_AIRSPEED
 
 ************************************************************************************************************************
 * Note : it is not required to comment the sensitivity, hysteresis, OutputClimbRateMin/Max, ... parameters when a vario,

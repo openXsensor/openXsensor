@@ -96,7 +96,7 @@ void I2C::begin()
   // initialize twi prescaler and bit rate
   cbi(TWSR, TWPS0);
   cbi(TWSR, TWPS1);
-  TWBR = ((F_CPU / 100000) - 16) / 2;
+  TWBR = ((F_CPU / 100000) - 16) / 2; //use 100khz ; for 400khz use TWBR = ((F_CPU / 400000) - 16) / 2;  
   // enable twi module and acks
   TWCR = _BV(TWEN) | _BV(TWEA); 
 }

@@ -67,6 +67,11 @@
 #define ANALOG_VSPEED_MIN -3
 #define ANALOG_VSPEED_MAX  3
 
+// ***** 4.7  - Calculating glider ratio, average sink/climb rate, average altitude gain/lost *********
+#define AVERAGING_EVERY_X_SEC 10  // normal value between 5 and 10
+#define SPEED_TOLERANCE   5 // in % of speed)
+#define GLIDER_RATIO BASED_ON_AIRSPEED
+
 // --------- 5 - Airspeed settings ---------
 #define AIRSPEED    MS4525
 #define AIRSPEED_IN_KMH  // uncomment this line if airspeed has to be in knot instead of km/h (openTx 2.0 expect knot while openTx 2.1 expect km/h) 
@@ -162,6 +167,9 @@
 
 // --------- xx - Reserved for developer. DEBUG must be activated here when we want to debug one or several functions in some other files. ---------
 //#define DEBUG
+#define BASED_ON_AIRSPEED 0
+#define BASED_ON_GPS_SPEED 1
+#define AVERAGING_DELAY_MILLISEC  AVERAGING_TOLERANCE * 100   
 
 #ifdef DEBUG
 #include "HardwareSerial.h"

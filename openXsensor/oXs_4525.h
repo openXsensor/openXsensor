@@ -17,7 +17,7 @@ struct AIRSPEEDDATA {
   int32_t compensation ; // in km/h (no decimal)
   bool compensationAvailable ;
   bool airspeedReset ;
-
+  float smoothAirSpeed ;    //cm/sec
 
 
    
@@ -65,7 +65,7 @@ private:
    float abs_deltaDifPressureAdc ;
 
    float expoSmooth4525_adc_auto ;
-   float smoothAirSpeed ;    //cm/sec
+//   float smoothAirSpeed ;    //cm/sec
 
    unsigned long  airSpeedMillis ; //save time when airspeed is made available
    unsigned long  nextAirSpeedMillis ; //next time that airspeed must be available

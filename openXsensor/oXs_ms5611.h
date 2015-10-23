@@ -85,7 +85,7 @@ private:
     unsigned long pressureMicrosPrev2 ; // save the previous of the previous pressureMicros
     unsigned long altMillis ;
     unsigned long nextAltMillis   ;  // save when Altitude has to be calculated; altitude is available only after 3200 in order to get a stable value (less temperature drift)
-    unsigned long nextAverageAltMillis  ; // save when AverageAltitude has to be calculated
+//    unsigned long nextAverageAltMillis  ; // save when AverageAltitude has to be calculated
       
     float climbRate2AltFloat  ;
     

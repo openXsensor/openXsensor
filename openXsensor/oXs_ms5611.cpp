@@ -61,8 +61,8 @@ void OXS_MS5611::setup() {
   sensitivityMin = SENSITIVITY_MIN ; // set the min smoothing to the default value
   varioData.delaySmooth = 20000 ; // delay between 2 altitude calculation = 20msec = 20000 usec
   nextAltMillis  =  5000 ;  // in msec; save when Altitude has to be calculated; altitude is available only after some delay in order to get a stable value (less temperature drift)
-  nextAverageAltMillis =  nextAltMillis ;  // in msec ; save when AverageAltitude has to be calculated
-  nextAverageAltMillis =  nextAltMillis ; 
+//  nextAverageAltMillis =  nextAltMillis ;  // in msec ; save when AverageAltitude has to be calculated
+//  nextAverageAltMillis =  nextAltMillis ; 
  //   static long lastResultPressure = 0 ; // used to replace a new pressure by an oldone if collected pressure is wrong (at some time we got wring values)
  //   static long lastResultTemp = 0 ; // idem for temperature
     
@@ -267,6 +267,7 @@ void OXS_MS5611::readSensor() {
       varioData.switchClimbRateAvailable = true ; // inform readsensors() that a switchable vspeed is available
       varioData.averageClimbRateAvailable = true ; // inform readsensors() that a vspeed is available to calculate the average
       // AltitudeAvailable is set to true only once every 100 msec in order to give priority to climb rate on SPORT
+/*
       altMillis = millis() ;
       if (altMillis > nextAltMillis){
         nextAltMillis = altMillis + 100 ;
@@ -289,6 +290,7 @@ void OXS_MS5611::readSensor() {
             }  
         }  
       } // end If (altMillis > nextAltMillis)
+*/
 #ifdef DEBUGDATA
       static bool firstPrintAlt = true ;
       if (firstPrintAlt == true) {

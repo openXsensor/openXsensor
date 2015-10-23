@@ -194,6 +194,18 @@ bool test3ValueAvailable ;
 
 uint8_t selectedVario ; // identify the vario to be used when switch vario with PPM is active (0 = first MS5611) 
 
+// ********** variables used to calculate glider ratio (and other averages)
+#if defined  (VARIO) && defined (AVERAGING_EVERY_X_SEC) && AVERAGING_EVERY_X_SEC > 5
+        int32_t last10Altitude[10] ; // in cm
+        int16_t last10Speed[10] ;
+        uint8_t last10Idx = 0 ;
+        int32_t gliderRatio ;
+        int32_t altitudeDifference ;
+        int32_t averageVspeed ;
+        unsigned long prevAverageAltMillis  ; // save when AverageAltitude has to be calculated
+        void calculateAverages();
+#endif
+
 // Create instances of the used classes
 
 #ifdef VARIO
@@ -381,6 +393,14 @@ uint32_t baudRateHardwareUart = 115200L ; // default value when GPS is not used
 //  RpmValue = 0 ;
   RpmAvailable = false ;
 
+#if defined  (VARIO) && defined (AVERAGING_EVERY_X_SEC) && AVERAGING_EVERY_X_SEC > 5
+        for ( uint8_t i = 0 ; i < 10 ; i++) {
+          last10Altitude[i] = last10Speed[i] = 0 ;
+          prevAverageAltMillis = millis() + 5000 ; // wait 5 sec before calculating those data
+        }
+#endif
+
+
 #ifdef SEQUENCE_OUTPUTS
     sequenceMaxNumber[0] = sizeof(sequence_m100) ; // sizeof(sequence_m100[0]) ;
     sequenceMaxNumber[1] = sizeof(sequence_m75) ;// sizeof(sequence_m75[0]) ;
@@ -552,6 +572,10 @@ void   blinkLed(uint8_t blinkType) {
 }  
 #endif
 
+
+
+
+
 //**********************************************************************************************************
 //***                                            Read all the sensors / Inputs                          ****
 //**********************************************************************************************************
@@ -571,12 +595,12 @@ void readSensors() {
 #ifdef VARIO
   oXs_MS5611.readSensor(); // Read pressure & temperature on MS5611, calculate Altitude and vertical speed
   if ( oXs_MS5611.varioData.absoluteAltAvailable == true and oXs_MS5611.varioData.rawPressure > 100000.0f ) actualPressure = oXs_MS5611.varioData.rawPressure / 10000.0 ; // this value can be used when calculating the Airspeed
-  test1Value = i2cReadCount ; 
-  test1ValueAvailable = true ; 
-  test2Value = i2cPressureError ; 
-  test2ValueAvailable = true ; 
-  test3Value = i2cTemperatureError ; 
-  test3ValueAvailable = true ; 
+//  test1Value = i2cReadCount ; 
+//  test1ValueAvailable = true ; 
+//  test2Value = i2cPressureError ; 
+//  test2ValueAvailable = true ; 
+//  test3Value = i2cTemperatureError ; 
+//  test3ValueAvailable = true ; 
 #endif
 
 #ifdef VARIO2
@@ -661,9 +685,17 @@ void readSensors() {
         lastRpmMillis = millis() ;
   }      
 #endif
+
+#if defined  (VARIO) && defined (AVERAGING_EVERY_X_SEC) && AVERAGING_EVERY_X_SEC > 5
+        calculateAverages();
+#endif        
     
   //Serial.println(F("Go out of read sensor"));
 }                  // ************** end of readSensors ********************************************
+
+
+
+
 
 
 //***************** checkFreeTime ********* if there is at least 2000 usec before the next MS5611 read (in order to avoid delaying it 
@@ -772,6 +804,54 @@ void calculateDte () {  // is calculated about every 2O ms each time that an alt
 } // end calculateDte  
 #endif    // #if defined (VARIO) && defined ( AIRSPEED) 
 // ***************************** end calculate Dte ***********************************************
+
+
+//****************************** Calculate averages and glider ratio ********************************************
+#if defined  (VARIO) && defined (AVERAGING_EVERY_X_SEC) && AVERAGING_EVERY_X_SEC > 5
+void calculateAverages( ){
+        int16_t averageSpeed ;
+        int16_t averageSpeedRate = 100 ;
+        int16_t tempSpeed ;
+        static uint8_t flag10ValuesFilled ;
+        if ( (uint16_t) (millis() - prevAverageAltMillis) > ( AVERAGING_EVERY_X_SEC * 100 )){ // calculation of the averaging has to be done
+            altitudeDifference = ( oXs_MS5611.varioData.absoluteAlt - last10Altitude[last10Idx] ) ;
+            averageVspeed = altitudeDifference / AVERAGING_EVERY_X_SEC ;
+            gliderRatio = 10000 ;                                          // default value for glider ratio
+#if defined (GLIDER_RATIO) &&( ( defined(AIRSPEED) && GLIDER_RATIO == BASED_ON_AIRSPEED ) || (defined ( GPS_INSTALLED ) && GLIDER_RATIO == BASED_ON_GPS_SPEED ) )
+#if GLIDER_RATIO == BASED_ON_AIRSPEED && defined(AIRSPEED) 
+            tempSpeed = oXs_4525.airSpeedData.smoothAirSpeed ;                                            // use airspeed (cm/sec)
+#elif GLIDER_RATIO == BASED_ON_GPS_SPEED && defined(GPS_INSTALLED)
+            tempSpeed = 0 ;                                                                               // use GPS speed still to implement with GPS (value to set in cm/s)
+#endif            
+            averageSpeed = (tempSpeed + last10Speed[last10Idx] ) / 2;
+            if (abs(averageSpeed) > 300 ) {                                                               // do not calculate when speed is to low
+              averageSpeedRate = (abs(( tempSpeed - last10Speed[last10Idx])) * 100 ) / averageSpeed ; 
+            } 
+            if ( ( averageSpeedRate < SPEED_TOLERANCE ) && ( altitudeDifference < -10 ) ) {               // do not calculate when altitude difference is to low
+              gliderRatio =  (- averageSpeed) * AVERAGING_EVERY_X_SEC / altitudeDifference  ;
+            } 
+#endif // end of calculating glider ratio            
+            last10Altitude[last10Idx] = oXs_MS5611.varioData.absoluteAlt ;
+            last10Speed[last10Idx] = tempSpeed = 0 ;
+            last10Idx++ ;
+            if ( last10Idx >= 10 ) {
+              last10Idx = 0 ;
+              flag10ValuesFilled = 1 ;
+            }
+            prevAverageAltMillis += ( AVERAGING_EVERY_X_SEC * 100 ) ; // calculate only once every x millisec (X in millisec = second /10 * 1000)
+            if (flag10ValuesFilled) {
+                test1Value = altitudeDifference ; 
+                test1ValueAvailable = true ; 
+                test2Value = averageVspeed ; 
+                test2ValueAvailable = true ; 
+                test3Value = gliderRatio ; 
+                test3ValueAvailable = true ; 
+            }
+        }
+}        
+#endif
+//********end calculate glider ratio************************************************************************************************
+
 
 
 
