@@ -36,7 +36,7 @@ volatile uint8_t debugUartRx ;
 
 volatile uint8_t ppmInterrupted ; // This flag is activated at the end of handling interrupt on Timer 1 Compare A if during this interrupt handling an interrupt on pin change (INT0 or INT1) occurs
                          // in this case, ppm will be wrong and has to be discarded       
-
+uint8_t sensorId ;
 
 #ifndef MULTIPLEX
 // Here the code for both Frsky protocols +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -244,7 +244,7 @@ ISR(TIMER1_COMPA_vect)
 #endif
 		                if ( LastRx == 0x7E )
 		                {
-                  			if ( SwUartRXData == SENSOR_ID )
+                  			if ( SwUartRXData == sensorId )
                   			{
 //                          struct t_sportData * volatile pdata = ThisSportData ;
 //                  			  FORCE_INDIRECT( pdata ) ;
@@ -558,8 +558,20 @@ ISR(TIMER1_COMPA_vect)
 //  This function will set up pins to transmit and receive on. Control of Timer0 and External interrupt 0.
 void initSportUart(  )           //*************** initialise UART pour SPORT
 {
-//    FirstData = ThisSportData = pdata ;
-    
+#if defined ( SPORT_SENSOR_ID )  && SPORT_SENSOR_ID >= 1 && SPORT_SENSOR_ID <= 28  
+    #define ID_MIN_1 (SPORT_SENSOR_ID - 1)
+    #define BIT0   ( ID_MIN_1 & 0x01 )
+    #define BIT1   (( ID_MIN_1 >> 1) & 0x01 )
+    #define BIT2   (( ID_MIN_1 >> 2) & 0x01 )
+    #define BIT3   (( ID_MIN_1 >> 3) & 0x01 )
+    #define BIT4   (( ID_MIN_1 >> 4) & 0x01 )
+    #define BIT5   (BIT0 xor BIT1 xor BIT2) 
+    #define BIT6   (BIT2 xor BIT3 xor BIT4) 
+    #define BIT7   (BIT0 xor BIT2 xor BIT4) 
+    sensorId = ID_MIN_1 | (BIT5 << 5) | (BIT6 << 6) | (BIT7 << 7) ;
+#else
+  #error "SPORT_SENSOR_ID must be between 1 and 28 (included)"
+#endif     
     //PORT
     TRXDDR &= ~( 1 << PIN_SERIALTX ) ;       // PIN is input.
     TRXPORT &= ~( 1 << PIN_SERIALTX ) ;      // PIN is tri-stated.

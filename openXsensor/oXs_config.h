@@ -23,7 +23,7 @@
 // ***** 1.2 - FrSky protocol and device ID (required when Sport protocol is used)  *****
 //#define FRSKY_TYPE_SPORT   // when uncommented, it forces oXs to apply only SPORT protocol, otherwise, oXs detects automatically if protocol has to be SPORT or HUB
 //#define FRSKY_TYPE_HUB   // when uncommented, it forces oXs to apply only HUB protocol, otherwise, oXs detects automatically if protocol has to be SPORT or HUB
-#define SENSOR_ID    0x1B //0x1B 
+#define SPORT_SENSOR_ID    27 // value must be between 1 and 28 
 
 // --------- 2 - Serial data pin choice ---------
 #define PIN_SERIALTX      4    // The pin which transmits the serial data to the FrSky telemetry receiver, Usually pin 4

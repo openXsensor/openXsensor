@@ -61,21 +61,21 @@ started by Rainer Schloßhan
 *       Note: if both lines are uncommented, SPORT will get the priority over HUB.
 *             Take care that some telemetry fields exist only for the SPORT protocol (see section 8).
 *     For the HUB protocol, only one OXS may be connected to the receiver (other sensors are not allowed). 
-*     In SPORT protocol, there may be several sensors connected on the same bus (e.g. a GPS) but each sensor must have a different SENSOR_ID.
-*     So, you have to define a SENSOR_ID for your OXS that is different from sensor Id of other sensors.
-*     You define the SENSOR_ID with this line : #define SENSOR_ID    0x1B 
-*     Valid values are 0x00, 0xA1, 0x22, 0x83, 0xE4, 0x45, 0xC6, 0x67, 0x48, 0xE9, 0x6A, 0xCB, 0xAC, 0x0D, 0x8E, 0x2F, 0xD0, 0x71,  0xF2, 0x53, 0x34, 0x95, 0x16, 0xB7, 0x98, 0x39, 0xBA, 0x1B
-*     Here the default sensor_IDs used by FrSky for their own sensors (Physical IDs + CRC), so it's better not to use those ones if you use oXs and Frsky sensor simultanously.
-*       #define DATA_ID_VARIO  0x00  0
-*       #define DATA_ID_FLVSS  0xA1  1
-*       #define DATA_ID_FAS    0x22  2
-*       #define DATA_ID_GPS    0x83  3
-*       #define DATA_ID_RPM    0xE4  4
-*       #define DATA_ID_SP2UH  0x45  5
-*       #define DATA_ID_SP2UR  0xC6  6
+*     In SPORT protocol, there may be several sensors connected on the same bus (e.g. a GPS) but each sensor must have a different SPORT_SENSOR_ID.
+*     So, you have to set up the SENSOR_ID for your OXS that is different from sensor Id of other sensors.
+*     You define the SPORT_SENSOR_ID with this line : #define SPORT_SENSOR_ID    27 
+*     Value must be between 1 and 28 (included)
+*     Here the default sensor_IDs used by FrSky for their own sensors, so it's better not to use those ones if you use oXs and Frsky sensor simultanously.
+*       VARIO    0
+*       FLVSS    1
+*       FAS      2
+*       GPS      3
+*       RPM      4
+*       SP2UH    5
+*       SP2UR    6
 ************************************************************************************************************************
 //#define MULTIPLEX
-#define SENSOR_ID    0x1B   
+#define SPORT_SENSOR_ID    27   
 
 
 **** 2 - Serial data pin ***********************************************************************************************
