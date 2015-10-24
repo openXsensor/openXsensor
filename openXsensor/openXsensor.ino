@@ -595,12 +595,14 @@ void readSensors() {
 #ifdef VARIO
   oXs_MS5611.readSensor(); // Read pressure & temperature on MS5611, calculate Altitude and vertical speed
   if ( oXs_MS5611.varioData.absoluteAltAvailable == true and oXs_MS5611.varioData.rawPressure > 100000.0f ) actualPressure = oXs_MS5611.varioData.rawPressure / 10000.0 ; // this value can be used when calculating the Airspeed
-//  test1Value = i2cReadCount ; 
-//  test1ValueAvailable = true ; 
-//  test2Value = i2cPressureError ; 
-//  test2ValueAvailable = true ; 
-//  test3Value = i2cTemperatureError ; 
-//  test3ValueAvailable = true ; 
+/* // used to debug spring of Altitude
+  test1Value = i2cReadCount ; 
+  test1ValueAvailable = true ; 
+  test2Value = i2cPressureError ; 
+  test2ValueAvailable = true ; 
+  test3Value = i2cTemperatureError ; 
+  test3ValueAvailable = true ; 
+*/  
 #endif
 
 #ifdef VARIO2
@@ -836,7 +838,7 @@ void calculateAverages( ){
             last10Idx++ ;
             if ( last10Idx >= 10 ) {
               last10Idx = 0 ;
-              flag10ValuesFilled = 1 ;
+              flag10ValuesFilled = 1 ;    // to change
             }
             prevAverageAltMillis += ( AVERAGING_EVERY_X_SEC * 100 ) ; // calculate only once every x millisec (X in millisec = second /10 * 1000)
             if (flag10ValuesFilled) {

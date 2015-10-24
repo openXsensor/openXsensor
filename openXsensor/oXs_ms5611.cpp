@@ -267,7 +267,6 @@ void OXS_MS5611::readSensor() {
       varioData.switchClimbRateAvailable = true ; // inform readsensors() that a switchable vspeed is available
       varioData.averageClimbRateAvailable = true ; // inform readsensors() that a vspeed is available to calculate the average
       // AltitudeAvailable is set to true only once every 100 msec in order to give priority to climb rate on SPORT
-/*
       altMillis = millis() ;
       if (altMillis > nextAltMillis){
         nextAltMillis = altMillis + 100 ;
@@ -279,6 +278,7 @@ void OXS_MS5611::readSensor() {
         varioData.relativeAltAvailable = true ;
         if ( varioData.relativeAlt > varioData.relativeAltMax ) varioData.relativeAltMax = varioData.relativeAlt ;
         varioData.relativeAltMaxAvailable = true ;
+/*
         if ( altMillis > nextAverageAltMillis ){ // calculation of the difference of altitude (in m) between the 10 last sec
             nextAverageAltMillis = altMillis + 500 ; // calculate only once every 500 msec
             varioData.vSpeed10Sec = (varioData.absoluteAlt - varioData.prevAlt[varioData.idxPrevAlt]) /100 ;
@@ -289,8 +289,8 @@ void OXS_MS5611::readSensor() {
                 varioData.vSpeed10SecAvailable = true ;
             }  
         }  
-      } // end If (altMillis > nextAltMillis)
 */
+      } // end If (altMillis > nextAltMillis)
 #ifdef DEBUGDATA
       static bool firstPrintAlt = true ;
       if (firstPrintAlt == true) {

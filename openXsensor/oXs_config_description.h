@@ -63,19 +63,19 @@ started by Rainer Schloßhan
 *     For the HUB protocol, only one OXS may be connected to the receiver (other sensors are not allowed). 
 *     In SPORT protocol, there may be several sensors connected on the same bus (e.g. a GPS) but each sensor must have a different SPORT_SENSOR_ID.
 *     So, you have to set up the SENSOR_ID for your OXS that is different from sensor Id of other sensors.
-*     You define the SPORT_SENSOR_ID with this line : #define SPORT_SENSOR_ID    27 
+*     You define the SPORT_SENSOR_ID with this line : #define SPORT_SENSOR_ID    28 
 *     Value must be between 1 and 28 (included)
 *     Here the default sensor_IDs used by FrSky for their own sensors, so it's better not to use those ones if you use oXs and Frsky sensor simultanously.
-*       VARIO    0
-*       FLVSS    1
-*       FAS      2
-*       GPS      3
-*       RPM      4
-*       SP2UH    5
-*       SP2UR    6
+*       VARIO    1
+*       FLVSS    2
+*       FAS      3
+*       GPS      4
+*       RPM      5
+*       SP2UH    6
+*       SP2UR    7
 ************************************************************************************************************************
 //#define MULTIPLEX
-#define SPORT_SENSOR_ID    27   
+#define SPORT_SENSOR_ID    28   
 
 
 **** 2 - Serial data pin ***********************************************************************************************

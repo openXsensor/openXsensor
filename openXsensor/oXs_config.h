@@ -23,7 +23,7 @@
 // ***** 1.2 - FrSky protocol and device ID (required when Sport protocol is used)  *****
 //#define FRSKY_TYPE_SPORT   // when uncommented, it forces oXs to apply only SPORT protocol, otherwise, oXs detects automatically if protocol has to be SPORT or HUB
 //#define FRSKY_TYPE_HUB   // when uncommented, it forces oXs to apply only HUB protocol, otherwise, oXs detects automatically if protocol has to be SPORT or HUB
-#define SPORT_SENSOR_ID    27 // value must be between 1 and 28 
+#define SPORT_SENSOR_ID    28 // value must be between 1 and 28 
 
 // --------- 2 - Serial data pin choice ---------
 #define PIN_SERIALTX      4    // The pin which transmits the serial data to the FrSky telemetry receiver, Usually pin 4
@@ -69,8 +69,8 @@
 
 // ***** 4.7  - Calculating glider ratio, average sink/climb rate, average altitude gain/lost *********
 #define AVERAGING_EVERY_X_SEC 10  // normal value between 5 and 10
-#define SPEED_TOLERANCE   5 // in % of speed)
-#define GLIDER_RATIO BASED_ON_AIRSPEED
+#define SPEED_TOLERANCE   5       // in % of speed)
+#define GLIDER_RATIO BASED_ON_AIRSPEED   // fill in with   BASED_ON_AIRSPEED  or BASED_ON_GPS_SPEED
 
 // --------- 5 - Airspeed settings ---------
 #define AIRSPEED    MS4525
