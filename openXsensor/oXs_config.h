@@ -74,7 +74,7 @@
 
 // --------- 5 - Airspeed settings ---------
 #define AIRSPEED    MS4525
-#define AIRSPEED_IN_KMH  // uncomment this line if airspeed has to be in knot instead of km/h (openTx 2.0 expect knot while openTx 2.1 expect km/h) 
+#define AIRSPEED_IN_KMH  // uncomment this line if airspeed has to be in km/h instead of knot/h (openTx 2.0 expect knot/h while openTx 2.1 expect km/h) 
 
 #define AIRSPEED_RESET_AT_PPM   100
 

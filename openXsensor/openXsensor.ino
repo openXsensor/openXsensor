@@ -818,7 +818,7 @@ void calculateAverages( ){
         if ( (uint16_t) (millis() - prevAverageAltMillis) > ( AVERAGING_EVERY_X_SEC * 100 )){ // calculation of the averaging has to be done
             altitudeDifference = ( oXs_MS5611.varioData.absoluteAlt - last10Altitude[last10Idx] ) ;
             averageVspeed = altitudeDifference / AVERAGING_EVERY_X_SEC ;
-            gliderRatio = 10000 ;                                          // default value for glider ratio
+            gliderRatio = 0 ;                                          // default value for glider ratio (or when it makes no sense)
 #if defined (GLIDER_RATIO) &&( ( defined(AIRSPEED) && GLIDER_RATIO == BASED_ON_AIRSPEED ) || (defined ( GPS_INSTALLED ) && GLIDER_RATIO == BASED_ON_GPS_SPEED ) )
 #if GLIDER_RATIO == BASED_ON_AIRSPEED && defined(AIRSPEED) 
             tempSpeed = oXs_4525.airSpeedData.smoothAirSpeed ;                                            // use airspeed (cm/sec)
@@ -830,7 +830,8 @@ void calculateAverages( ){
               averageSpeedRate = (abs(( tempSpeed - last10Speed[last10Idx])) * 100 ) / averageSpeed ; 
             } 
             if ( ( averageSpeedRate < SPEED_TOLERANCE ) && ( altitudeDifference < -10 ) ) {               // do not calculate when altitude difference is to low
-              gliderRatio =  (- averageSpeed) * AVERAGING_EVERY_X_SEC / altitudeDifference  ;
+              gliderRatio =  (- averageSpeed) * AVERAGING_EVERY_X_SEC * 10 / altitudeDifference  ;        // *10 is done in order to add a decimal
+              if ( gliderRatio > 500) gliderRatio = 0 ;                                                   // when gliderRatio is > (50.0 *10) it it not realistic
             } 
 #endif // end of calculating glider ratio            
             last10Altitude[last10Idx] = oXs_MS5611.varioData.absoluteAlt ;

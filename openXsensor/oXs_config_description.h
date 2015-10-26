@@ -313,6 +313,10 @@ started by Rainer Schloßhan
 * The easiest is to configure a TX mixer that will generate a pulse of e.g. 1 sec with this value (e.g. 100).
 * Please note that the request for recalibration should be send only when the airspeed (on the probe) is really zero otherwise it would generate wrong measurements.
 *
+* oXs can send the airspeed in (1/10) of knot/h or in (1/10) km/h. For openTx 2.1.x, you must use the km/h option, for previous version the knot/h option.
+* To activate the km/h option, activate this line #define AIRSPEED_IN_KMH
+* Put this line as comment to activate the knot/h option
+*
 * OXS can also use the airspeed measurements in order to calculate a compensated vario named PRANDTL_DTE (=delta total energy).
 * See the web for more informations about dTE (= electronically compensated vario).
 * The principle is to try to detect only true air movement by neutralising the up and down resulting from elevator changes.
@@ -326,6 +330,7 @@ started by Rainer Schloßhan
 *     COMPENSATION_PPM_MAX     maximum compensation; in % ; default 120
 ************************************************************************************************************************
 #define AIRSPEED  MS4525
+#define AIRSPEED_IN_KMH  // uncomment this line if airspeed has to be in km/h instead of knot/h (openTx 2.0 expect knot/h while openTx 2.1 expect km/h) 
 
 #define AIRSPEED_RESET_AT_PPM   100
 
