@@ -809,7 +809,7 @@ void calculateDte () {  // is calculated about every 2O ms each time that an alt
 
 
 //****************************** Calculate averages and glider ratio ********************************************
-#if defined  (VARIO) && defined (AVERAGING_EVERY_X_SEC) && AVERAGING_EVERY_X_SEC > 5
+#if defined  (VARIO) && defined (AVERAGING_EVERY_X_SEC) && AVERAGING_EVERY_X_SEC >= 5
 void calculateAverages( ){
         int16_t averageSpeed ;
         int16_t averageSpeedRate = 100 ;
@@ -830,7 +830,7 @@ void calculateAverages( ){
               averageSpeedRate = (abs(( tempSpeed - last10Speed[last10Idx])) * 100 ) / averageSpeed ; 
             } 
             if ( ( averageSpeedRate < SPEED_TOLERANCE ) && ( altitudeDifference < -10 ) ) {               // do not calculate when altitude difference is to low
-              gliderRatio =  (- averageSpeed) * AVERAGING_EVERY_X_SEC * 10 / altitudeDifference  ;        // *10 is done in order to add a decimal
+              gliderRatio = ((int32_t) (- averageSpeed)) * AVERAGING_EVERY_X_SEC * 10 / altitudeDifference  ;        // *10 is done in order to add a decimal
               if ( gliderRatio > 500) gliderRatio = 0 ;                                                   // when gliderRatio is > (50.0 *10) it it not realistic
             } 
 #endif // end of calculating glider ratio            
