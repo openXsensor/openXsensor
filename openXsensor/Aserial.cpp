@@ -898,7 +898,7 @@ void initMultiplexUart( struct t_mbAllData * volatile pdata )           //******
 
 
 // ! \brief  External interrupt service routine.  ********************
-//  Interrupt on Pin Change to detect change on level on SPORT signal (= could be a start bit)
+//  Interrupt on Pin Change to detect change on level on Multiplex signal (= could be a start bit)
 //
 // The falling edge in the beginning of the start
 //  bit will trig this interrupt. The state will
@@ -907,7 +907,7 @@ void initMultiplexUart( struct t_mbAllData * volatile pdata )           //******
 //  from the falling edge. At that instant the
 //  code should sample the first data bit.
 //
-//  note  initSoftwareUart( void ) must be called in advance.
+//  note  initMultiplexUart( void ) must be called in advance.
 //
 // This is the pin change interrupt for port D
 // This assumes it is the only pin change interrupt
@@ -916,12 +916,12 @@ void initMultiplexUart( struct t_mbAllData * volatile pdata )           //******
 ISR(PCINT2_vect)
 {
 	if (!( TRXPIN & ( 1 << PIN_SERIALTX ) )) {			// Pin is low = start bit 
-		DISABLE_PIN_CHANGE_INTERRUPT()  ;			// pin change interrupt disabled
-		state = RECEIVE ;                 // Change state
+		        DISABLE_PIN_CHANGE_INTERRUPT()  ;			// pin change interrupt disabled
+		        state = RECEIVE ;                 // Change state
   	        DISABLE_TIMER_INTERRUPT() ;       // Disable timer to change its registers.
-        	OCR1A = TCNT1 + TICKS2WAITONE_HALFMULTIPLEX - INTERRUPT_EXEC_CYCL - INTERRUPT_EARLY_BIAS ; // Count one and a half period into the future.
+        	  OCR1A = TCNT1 + TICKS2WAITONE_HALFMULTIPLEX - INTERRUPT_EXEC_CYCL - INTERRUPT_EARLY_BIAS ; // Count one and a half period into the future.
 #if DEBUGASERIAL
-	        PORTC |= 1 ;
+            PORTC |= 1 ;
 #endif
   	        SwUartRXBitCount = 0 ;            // Clear received bit counter.
   	        CLEAR_TIMER_INTERRUPT() ;         // Clear interrupt bits
@@ -933,14 +933,6 @@ ISR(PCINT2_vect)
 
 }  // end ISR pin change
 
-uint8_t returnState() {
-    return state ;
-}  
-
-uint8_t returnDebugUartRx() {
-    return debugUartRx ;
-}  
-
-#endif 
+#endif // end of multiplex protocol
 
 

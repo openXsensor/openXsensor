@@ -126,8 +126,6 @@ class OXS_OUT_FRSKY {
     AIRSPEEDDATA* airSpeedData ;
     CURRENTDATA* currentData ;
     VOLTAGEDATA* voltageData ;
-//    MB_DATA1_T mb_data[16];
- //   uint8_t currentValueType ; //e.g. = ALTIMETER, VERTICAL_SPEED, = field_Id to transmit  
     void setup();
     void sendData();
     
@@ -139,20 +137,9 @@ class OXS_OUT_FRSKY {
 #endif
 
 // used by Multiplex protocol
-//void  formatMultiplexData( ) ;
-void formatAllMultiplexData() ; 
-uint8_t readStatusValue( uint8_t currentValueType) ;
-uint8_t formatOneValue ( uint8_t currentFieldToSend ) ;
-void setMultiplexNewData(  uint16_t id, int32_t value  , uint8_t alarm) ;
-
-
-// used by SPORT protocol
- //  void sendMultiplexData() ;
-//    uint8_t readStatusValue( uint8_t currentValueType) ;
-//    void loadSportValueToSend(  uint8_t ValueTypeToLoad) ;
-//    uint8_t nextFieldToSend(  uint8_t indexField) ;
-
-
+    void formatAllMultiplexData() ; 
+    uint8_t formatOneValue ( uint8_t currentFieldToSend ) ;
+    void setMultiplexNewData(  uint16_t id, int32_t value  , uint8_t alarm) ;
 };
 
 extern int ppm ; 
