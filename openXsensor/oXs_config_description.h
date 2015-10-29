@@ -80,10 +80,10 @@ started by Rainer Schloßhan
 *   OXS has to be connected to the receiver in order to transmit his data.
 *   Therefore, one DIGITAL Arduino pin that has to be connected to "Rx" pin from receiver (for D series RX) or to S.Port signal pin (for X series RX).
 *   You must specify the Arduino pin being used.
-*   Default: 4 ; allowed values are 0 up to 7 but take care not using the same pin for 2 features.
+*   Default: 4 ; allowed values are 2 or 4 but take care not using the same pin for 2 features.
 ************************************************************************************************************************
 #define PIN_SERIALTX  4
-                                
+
 
 **** 3 - PPM settings **************************************************************************************************
 *   OXS can (optionally) read a PPM Signal coming from Tx.
