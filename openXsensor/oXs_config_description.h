@@ -778,6 +778,7 @@ started by Rainer Schloßhan
 * You can then select the parts that you want to debug by uncommenting the specifics DEBUG parameters you want in each file
 * Note: OXS allows to transmit 3 fields named TEST1, TEST2, TEST3. You can fill those fields with whatever you want where you want if you want to transmit additional data to the Tx.
 * Just fill in test1Value (or 2, 3) with an int32_t and test1ValueAvailable (or 2, 3) with true and add those OXS measurements in the data to be sent section. 
+* Enabling DEBUG will allow to use Arduino Serial Monitor (115200 baud) to see init data and live sensor values
 ************************************************************************************************************************
 //#define DEBUG
 
