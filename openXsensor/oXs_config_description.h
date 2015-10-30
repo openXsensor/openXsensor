@@ -265,7 +265,6 @@ started by Rainer Schloßhan
 *        - enlapsed time used to calculate glider ratio and average sink/climb rate
 *        - averaged sink/climb rate  ( = difference of altitude / enlapsed time )
 *        - glider ratio (= distance / difference of altitude) (in fact = airspeed * enlapsed time / difference of altitude )
-*     Those values required an airspeed sensor and a vario.
 *     Glider ratio is a parameter that can be use e.g. to fine tune the setup of the glider. It makes only sense if the speeds are quite regular.
 *     So oXs calculates only when:      
 *         - the airspeed does not change by more than a defined % (compared to the beginning of the enlapsed time). This % can be defined by the user in SPEED_TOLERANCE.
@@ -277,7 +276,9 @@ started by Rainer Schloßhan
 *         - TEST1 for enlapsed time (in 1/10 of sec) 
 *         - TEST2 for averageVspeed (in cm/sec like Vspeed)
 *         - TEST3 for gliderRatio (in 1/10 of units)
-*     In order to activate the calculations, you must have a vario, an airspeed and uncomment the 4 lines of parameters    
+*     Glider ratio requires an airspeed sensor and a vario; 
+*     Averaged sink/climb rate can be calculated even without an airspeed (but in this case tolerance on airspeed is discarded)
+*     In order to activate the calculations, you must uncomment the 4 lines of parameters    
 *     In order to deactivate the calculation, it is enough to put the line GLIDER_RATIO_CALCULATED_AFTER_X_SEC as comment
 *************************************************************************************************************************
 #define GLIDER_RATIO_CALCULATED_AFTER_X_SEC       10        // minimum elapsed time (in sec) to transmit calculations
