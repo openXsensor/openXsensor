@@ -194,8 +194,9 @@ bool test3ValueAvailable ;
 uint8_t selectedVario ; // identify the vario to be used when switch vario with PPM is active (0 = first MS5611) 
 
 // ********** variables used to calculate glider ratio (and other averages)
-#if defined  (VARIO) && defined (AVERAGING_EVERY_X_SEC) && AVERAGING_EVERY_X_SEC > 5
+
 /*   // first method
+#if defined  (VARIO) && defined (AVERAGING_EVERY_X_SEC) && AVERAGING_EVERY_X_SEC > 5
         int32_t last10Altitude[10] ; // in cm
         int16_t last10Speed[10] ;
         uint8_t last10Idx = 0 ;
@@ -206,6 +207,7 @@ uint8_t selectedVario ; // identify the vario to be used when switch vario with 
         void calculateAverages();
 */
 // second method
+#if defined  (VARIO) && defined (GLIDER_RATIO_CALCULATED_AFTER_X_SEC) && GLIDER_RATIO_CALCULATED_AFTER_X_SEC > 5
         void calculateAverages();
 
 #endif
@@ -694,7 +696,13 @@ void readSensors() {
   }      
 #endif
 
+/* first method for glider ratio
 #if defined  (VARIO) && defined (AVERAGING_EVERY_X_SEC) && AVERAGING_EVERY_X_SEC > 5
+        calculateAverages();
+#endif        
+*/
+// second method
+#if defined  (VARIO) && defined (GLIDER_RATIO_CALCULATED_AFTER_X_SEC) && GLIDER_RATIO_CALCULATED_AFTER_X_SEC > 5
         calculateAverages();
 #endif        
     
@@ -865,7 +873,7 @@ void calculateAverages( ){
 
 
 //  second method of averaging
-#if defined  (VARIO) && defined (AVERAGING_EVERY_X_SEC) && AVERAGING_EVERY_X_SEC >= 5 && defined(AIRSPEED)
+#if defined  (VARIO) && defined (GLIDER_RATIO_CALCULATED_AFTER_X_SEC) && GLIDER_RATIO_CALCULATED_AFTER_X_SEC >= 5 && defined(AIRSPEED)
 void calculateAverages( ){
         static int32_t altitudeAtT0 ; // in cm
         static int32_t distanceSinceT0 ; // in cm
@@ -896,7 +904,7 @@ void calculateAverages( ){
             } else {                                                      // within tolerance, calculate glider ratio and average sinking  
                 secFromT0 =  ( millis() - millisAtT0 ) / 100 ;            // in 1/10 of sec
                 distanceSinceT0 += oXs_4525.airSpeedData.smoothAirSpeed / (1000 /  500) ;  // to adapt if delay is different.
-                if (  secFromT0 >  AVERAGING_EVERY_X_SEC * 10 ) {         // *10 because secFromT0 is in 1/10 of sec 
+                if (  secFromT0 >  GLIDER_RATIO_CALCULATED_AFTER_X_SEC * 10 ) {         // *10 because secFromT0 is in 1/10 of sec 
                     gliderRatio = distanceSinceT0  * 10 / altitudeDifference  ;        // when gliderRatio is > (50.0 *10) it it not realistic (*10 is done in order to add a decimal)
                     if ( gliderRatio > 500) gliderRatio = 0 ;                                                   // 
                     averageVspeedSinceT0 = altitudeDifference * 10 / secFromT0  ;      // * 10 because secFromT0 is in 1/10 of sec

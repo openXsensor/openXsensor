@@ -259,31 +259,32 @@ started by Rainer Schloßhan
 #define ANALOG_VSPEED_MIN -3
 #define ANALOG_VSPEED_MAX  3
 
-* 4.7  - Calculating glider ratio, average sink/climb rate, average altitude gain/lost *********************************
-*     oXs can calculate and transmit some values over an enlapsed time of several seconds (e.g 5 or 10 sec)
+* 4.7  - Calculating glider ratio, average sink/climb rate ***************************************************************
+*     oXs can calculate and transmit glider ratio and average sink/climb rate when airspeed and vspeed stay within some tolerances for more than X seconds (e.g 5 or 10 sec)
 *     The calculated values are :
-*        - altitude gain/lost over the enlapsed time
+*        - enlapsed time used to calculate glider ratio and average sink/climb rate
 *        - averaged sink/climb rate  ( = difference of altitude / enlapsed time )
-*        - glider ratio (= distance / difference of altitude) (in fact = speed * time / difference of altitude )
-*     Those values required that an airspeed sensor and/or a GPS is connected
-*     Distance = (airspeed or the GPS ground) speed * enlapsed time.
-*     Glider ratio e.g. is a parameter that can be use to fine tune the setup of the glider. It makes only sense if the speed is quite regular.
-*     So oXs calculates the glider ratio only when the speed does not change by more than a defined % over the enlapsed time. This % can be defined by the user in SPEED_TOLERANCE.
-*     When the speed change exceed the defined %, then glider ratio is fixed to a dummy value = 10000. It is possible to test on this value on Tx side to (de)activate a logical switch.
-*     In order to setup those calculations, you have to define:
-*        - the enlapsed time (in second) ; typical values could be between 5 and 10
-*        - the source of the speed being used for the glider ratio. 2 values are allowed: BASED_ON_AIRSPEED and BASED_ON_GPS_SPEED 
-*        - the max % tolerance on speed change (e.g. mean 5 %)
-*     Note: oXs performs/transmit 10 calculations over the enlapsed time. 
-*         E.g. if enlapsed time is 10 sec, oXs will calculate using the speed and altitude from 10 sec ago and the current values        
+*        - glider ratio (= distance / difference of altitude) (in fact = airspeed * enlapsed time / difference of altitude )
+*     Those values required an airspeed sensor and a vario.
+*     Glider ratio is a parameter that can be use e.g. to fine tune the setup of the glider. It makes only sense if the speeds are quite regular.
+*     So oXs calculates only when:      
+*         - the airspeed does not change by more than a defined % (compared to the beginning of the enlapsed time). This % can be defined by the user in SPEED_TOLERANCE.
+*         - the vertical speed stays withing a range of value defined by the user in VSPEED_MIN_TOLERANCE  and VSPEED_MAX_TOLERANCE
+*     Every 0.5 sec, oXs checks if the current measurements are within the tolerance. 
+*     If oXs is out of tolerance, it resets all calculations using the last (=current) measurements as new references. Glider ratio and average sink/climb are set to 0 
+*     If oXs is within tolerance since more than a user defined enlapsed time (defined by GLIDER_RATIO_CALCULATED_AFTER_X_SEC), it performs the calculations
 *     Note: in this version of oXs, if you want to sent the calculated field you have to fill the data to transmit section using following code
-*         - TEST1 for altitudeDifference ; 
-*         - TEST2 for averageVspeed ; 
-*         - TEST3 for gliderRatio ; 
+*         - TEST1 for enlapsed time (in 1/10 of sec) 
+*         - TEST2 for averageVspeed (in cm/sec like Vspeed)
+*         - TEST3 for gliderRatio (in 1/10 of units)
+*     In order to activate the calculations, you must have a vario, an airspeed and uncomment the 4 lines of parameters    
+*     In order to deactivate the calculation, it is enough to put the line GLIDER_RATIO_CALCULATED_AFTER_X_SEC as comment
 *************************************************************************************************************************
-#define AVERAGING_EVERY_X_SEC       10        // elapsed time for averaging in second
-#define SPEED_TOLERANCE              5        // in % of speed)
-#define GLIDER_RATIO          BASED_ON_AIRSPEED
+#define GLIDER_RATIO_CALCULATED_AFTER_X_SEC       10        // minimum elapsed time (in sec) to transmit calculations
+#define SPEED_TOLERANCE              5                      // in % of speed
+#define VSPEED_MIN_TOLERANCE -200                           // out of tolerance when Vspeed is lower than this value (cm/sec)
+#define VSPEED_MAX_TOLERANCE  -10                           // out of tolerance when Vspeed is upper than this value (cm/sec)
+
 
 ************************************************************************************************************************
 * Note : it is not required to comment the sensitivity, hysteresis, OutputClimbRateMin/Max, ... parameters when a vario,
