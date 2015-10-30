@@ -1,4 +1,4 @@
-// file for FRSKY telemetry
+// file for FRSKY telemetry (SPORT and HUB)
 
 #include "oXs_out_frsky.h"
 #ifndef MULTIPLEX
@@ -39,18 +39,13 @@ extern unsigned long micros( void ) ;
 extern unsigned long millis( void ) ;
 extern void delay(unsigned long ms) ;
 
-
-
 //used only by Sport protocol
 extern uint8_t  volatile  sportData[7] ;
 extern uint8_t volatile sportDataLock ;
 extern uint8_t volatile sendStatus ;
 
 
-//struct t_sportData sportData ; 
-
 //used only by Hub protocol
-   //struct t_hubData hubData ;
 static int fieldToSend ;
 static bool fieldOk ;
 extern uint8_t volatile hubData[MAXSIZEBUFFER] ; 
@@ -69,9 +64,9 @@ extern volatile uint8_t state ;                  //!< Holds the state of the UAR
 
 
 #ifdef DEBUG  
-OXS_OUT_FRSKY::OXS_OUT_FRSKY(uint8_t pinTx,HardwareSerial &print)
+OXS_OUT::OXS_OUT(uint8_t pinTx,HardwareSerial &print)
 #else
-OXS_OUT_FRSKY::OXS_OUT_FRSKY(uint8_t pinTx)
+OXS_OUT::OXS_OUT(uint8_t pinTx)
 #endif
 {
   _pinTx = pinTx ;    
@@ -82,22 +77,22 @@ OXS_OUT_FRSKY::OXS_OUT_FRSKY(uint8_t pinTx)
 
 
 // **************** Setup the FRSky OutputLib *********************
-void OXS_OUT_FRSKY::setup() {
+void OXS_OUT::setup() {
 // here we look if sport is available or not; when available, sport protocol must be activated otherwise hub protocol
     //initilalise PORT
     TRXDDR &= ~( 1 << PIN_SERIALTX ) ;       // PIN is input, tri-stated.
     TRXPORT &= ~( 1 << PIN_SERIALTX ) ;      // PIN is input, tri-stated.
 
 #ifdef FRSKY_TYPE_SPORT
-    sportAvailable = true ;
+    sportAvailable = true ;     // force the SPORT protocol
 #elif defined (FRSKY_TYPE_HUB)
-    sportAvailable = false ;
-#else   // we will detect automatically if SPORT is available     
-  // Activate pin change interupt on Tx pin
+    sportAvailable = false ;    // force the HUB protocol
+#else                           // we will detect automatically if SPORT is available     
+                                      // Activate pin change interupt on Tx pin
 #if PIN_SERIALTX == 4
-    PCMSK2 |= 0x10 ;			// IO4 (PD4) on Arduini mini
+    PCMSK2 |= 0x10 ;			            // IO4 (PD4) on Arduini mini
 #elif PIN_SERIALTX == 2
-    PCMSK2 |= 0x04 ;                    // IO2 (PD2) on Arduini mini
+    PCMSK2 |= 0x04 ;                  // IO2 (PD2) on Arduini mini
 #else
     #error "This PIN is not supported"
 #endif // test on PIN_SERIALTX
@@ -106,12 +101,10 @@ void OXS_OUT_FRSKY::setup() {
     digitalWrite(DEBUG_SPORT_PIN, HIGH); // Set the pulse used during SPORT detection to HIGH because detecttion is starting
 #endif
 
-    PCIFR = (1<<PCIF2) ;	// clear pending interrupt
-
-// to see if SPORT is active, we have to wait at least 12 msec and check bit PCIF2 from PCIFR; if bit is set, it is SPORT
-    delay(20) ;
+    PCIFR = (1<<PCIF2) ;	            // clear pending interrupt
+    delay(20) ;                      // to see if SPORT is active, we have to wait at least 12 msec and check bit PCIF2 from PCIFR; if bit is set, it is SPORT
 #ifdef DEBUG_SPORT_PIN
-    digitalWrite(DEBUG_SPORT_PIN, LOW); // Set the pulse used during SPORT detection to LOW because detecttion is done
+    digitalWrite(DEBUG_SPORT_PIN, LOW); // Set the pulse used during SPORT detection to LOW because detection is done
 #endif    
     if ( ( PCIFR & (1<<PCIF2)) == 0 ) {
         sportAvailable = false ;
@@ -144,10 +137,10 @@ void OXS_OUT_FRSKY::setup() {
           printer->println(fieldContainsData[rowNr][4]);
       }    
 #endif
+}  // end of setup
 
-}
 
-void OXS_OUT_FRSKY::sendData()
+void OXS_OUT::sendData()
 {
   if (sportAvailable) {
 	sendSportData( ) ;
@@ -188,7 +181,7 @@ void OXS_OUT_FRSKY::sendData()
   
    */
 
-void OXS_OUT_FRSKY::sendSportData()
+void OXS_OUT::sendSportData()
 {  
 #ifdef DEBUGSENDDATASTATUS
     printer->print("Begining sendData at = ");
@@ -320,7 +313,7 @@ void OXS_OUT_FRSKY::sendSportData()
 // Check if a value is available (return = KNOWN or UNKNOWN) 
 // fieldToSend = index of a field 
 //**************************************************************
-uint8_t OXS_OUT_FRSKY::readStatusValue( uint8_t fieldToSend) {
+uint8_t OXS_OUT::readStatusValue( uint8_t fieldToSend) {
   switch ( fieldContainsData[fieldToSend][1] )
     {
 #ifdef PIN_VOLTAGE
@@ -428,7 +421,7 @@ uint8_t OXS_OUT_FRSKY::readStatusValue( uint8_t fieldToSend) {
 // Search the next (index of) field to transmit 
 // 
 //**************************************************************************************
-uint8_t OXS_OUT_FRSKY::nextFieldToSend(  uint8_t indexField) {
+uint8_t OXS_OUT::nextFieldToSend(  uint8_t indexField) {
 // First we look for a value that is available (KNOWN); search occurs in sequence starting from the first next value
 #ifdef DEBUGNEXTVALUETYPE
       printer->print("nextFieldToSend - Original index = ");
@@ -529,7 +522,7 @@ uint8_t OXS_OUT_FRSKY::nextFieldToSend(  uint8_t indexField) {
 // Load the value to transmit in a temp field that will be transmitted when start bit will be recieved
 // flag this value as "UNKNOWN" (Unknown)
 //************************************
-void OXS_OUT_FRSKY::loadSportValueToSend( uint8_t currentFieldToSend) {
+void OXS_OUT::loadSportValueToSend( uint8_t currentFieldToSend) {
   static int32_t valueTemp ;
   int fieldID ;
   fieldID = 0 ;
@@ -915,6 +908,8 @@ void OXS_OUT_FRSKY::loadSportValueToSend( uint8_t currentFieldToSend) {
 #endif
 }  // End function
 
+
+
 #ifdef GPS_INSTALLED
  //!! shared with Aserial
 extern uint8_t volatile gpsSendStatus ; 
@@ -922,7 +917,7 @@ extern uint8_t volatile gpsSportDataLock ;
 extern uint8_t volatile gpsSportData[7] ;
 #define GPS_DATA_COUNT 5
 
-void OXS_OUT_FRSKY::FrSkySportSensorGpsSend(void)
+void OXS_OUT::FrSkySportSensorGpsSend(void)
 {
   // gpsSendStatus can be TO_LOAD, LOADED, SENDING, SEND ; it is managed here and in Aserial
   // new data is uploaded only when gpsSendStatus == SEND or TO_LOAD
@@ -1027,7 +1022,7 @@ void OXS_OUT_FRSKY::FrSkySportSensorGpsSend(void)
 // -------------------------End of SPORT protocol--------------------------------------------------------------------------------------
 
 //========================= Hub protocol ==========================================
-void OXS_OUT_FRSKY::sendHubData()  // for Hub protocol
+void OXS_OUT::sendHubData()  // for Hub protocol
 {
   static uint32_t lastMsFrame1=0;
   static uint32_t temp ;
@@ -1059,7 +1054,7 @@ void OXS_OUT_FRSKY::sendHubData()  // for Hub protocol
 }  // end sendData Hub protocol
 
 //======================================================================================================Send Frame 1A via serial
-void OXS_OUT_FRSKY::SendFrame1(){
+void OXS_OUT::SendFrame1(){
 #ifdef DEBUGHUBPROTOCOL
   printer->print("FRSky output module: SendFrame1A:");
 #endif
@@ -1105,7 +1100,7 @@ void OXS_OUT_FRSKY::SendFrame1(){
 
 #ifdef GPS_INSTALLED
 //======================================================================================================Send Frame 2 via serial used for GPS
-void OXS_OUT_FRSKY::SendFrame2(){
+void OXS_OUT::SendFrame2(){
 #ifdef DEBUGHUBPROTOCOL
   printer->print(F("FRSky output module: SendFrame2:"));
 #endif
@@ -1153,10 +1148,11 @@ void OXS_OUT_FRSKY::SendFrame2(){
 }
 #endif // end of GPS_INSTALLED
 
-/**********************************************************/
-/* SendValue => send a value as frsky sensor hub data     */
-/**********************************************************/
-void OXS_OUT_FRSKY::SendValue(uint8_t ID, uint16_t Value) {
+
+// ******************************************************** //
+// SendValue => send a value as frsky sensor hub data       //
+// ******************************************************** //
+void OXS_OUT::SendValue(uint8_t ID, uint16_t Value) {
   uint8_t tmp1 = Value & 0x00ff;
   uint8_t tmp2 = (Value & 0xff00)>>8;
   sendHubByte(0x5E) ;
@@ -1177,16 +1173,17 @@ void OXS_OUT_FRSKY::SendValue(uint8_t ID, uint16_t Value) {
 //***************************************************
 // Put a byte in the buffer
 //***************************************************
-void OXS_OUT_FRSKY::sendHubByte( uint8_t byte )
+void OXS_OUT::sendHubByte( uint8_t byte )
 {	
 	hubData[hubMaxData] = byte ;
 	hubMaxData ++ ;	
 }
 
+
 //***************************************************
 // Search the value, format it and put it in a buffer
 //***************************************************
-void OXS_OUT_FRSKY::loadHubValueToSend( uint8_t currentFieldToSend ) {
+void OXS_OUT::loadHubValueToSend( uint8_t currentFieldToSend ) {
 //  static int16_t valueTemp ;
 //  static int fieldToSend ;
 //  static bool fieldOk ;
@@ -1464,10 +1461,10 @@ void OXS_OUT_FRSKY::loadHubValueToSend( uint8_t currentFieldToSend ) {
 
 
 #ifdef PIN_VOLTAGE
-/**********************************************************/
-/* SendVoltX => send a voltage                 */
-/**********************************************************/
-void OXS_OUT_FRSKY::SendVoltX( uint8_t VoltToSend , uint8_t indexFieldToSend) {
+// ********************************************************** //
+//  SendVoltX => send a voltage                              //
+// ********************************************************* //
+void OXS_OUT::SendVoltX( uint8_t VoltToSend , uint8_t indexFieldToSend) {
 //        if ( (SwitchFrameVariant == 0) && (  voltageData->mVoltAvailable[VoltToSend] == true )) {
            if ( fieldOk == true ) {
              SendValue((int8_t) fieldToSend ,(int16_t) ( ( voltageData->mVolt[VoltToSend] * fieldContainsData[indexFieldToSend][2] / fieldContainsData[indexFieldToSend][3])) + fieldContainsData[indexFieldToSend][4] );
@@ -1477,10 +1474,10 @@ void OXS_OUT_FRSKY::SendVoltX( uint8_t VoltToSend , uint8_t indexFieldToSend) {
 }
 
 #if defined (NUMBEROFCELLS)  && (NUMBEROFCELLS > 0)
-/**********************************************************/
-/* SendCellVoltage => send a cell voltage                 */
-/**********************************************************/
-void OXS_OUT_FRSKY::SendCellVoltage( uint32_t voltage) {
+// ********************************************************** //
+// SendCellVoltage => send a cell voltage                     //
+// ********************************************************** //
+void OXS_OUT::SendCellVoltage( uint32_t voltage) {
   static byte cellID ;
     static uint16_t cellVolt;
   // For SPORT, cell voltage is formatted as (hex) 12 34 56 78 where 123 = volt of cell n+1 (divided by 2), 456 idem for cell n, 7 = max number of cell and 8 = n (number of cell)
@@ -1503,43 +1500,43 @@ void OXS_OUT_FRSKY::SendCellVoltage( uint32_t voltage) {
 #endif // end cell
 #endif // enf of 6 voltage
 
-/**********************************/
-/* SendGPSDist => send 0..32768   */
-/**********************************/
-void OXS_OUT_FRSKY::SendGPSDist(uint16_t dist) {// ==> Field "Dist" in open9x
+// ********************************** //
+//  SendGPSDist => send 0..32768      //
+// ********************************** //
+void OXS_OUT::SendGPSDist(uint16_t dist) {// ==> Field "Dist" in open9x
   SendValue(0x3C,uint16_t(dist)); //>> DIST
 }
 
-/************************************************************/
-/* SendTemperature1/2 =>  tempc in 1/100th of degree celsius */
-/* Display Range in openTX: -3276,8..32768=-3276,8C..+3276,C */
-/************************************************************/
-void OXS_OUT_FRSKY::SendTemperature1(int16_t tempc) {
+// ************************************************************ //
+//  SendTemperature1/2 =>  tempc in 1/100th of degree celsius   //
+// Display Range in openTX: -3276,8..32768=-3276,8C..+3276,C    //
+// ************************************************************ //
+void OXS_OUT::SendTemperature1(int16_t tempc) {
   SendValue(FRSKY_USERDATA_TEMP1, tempc);
 }
-void OXS_OUT_FRSKY::SendTemperature2(int16_t tempc) {
+void OXS_OUT::SendTemperature2(int16_t tempc) {
   SendValue(FRSKY_USERDATA_TEMP2, tempc);
 }
-/*************************************/
-/* SendRPM => Send Rounds Per Minute */
-/*************************************/
-//void OXS_OUT_FRSKY::SendRPM(uint16_t rpm) {
+// ************************************* //
+// SendRPM => Send Rounds Per Minute     //
+// ************************************* //
+//void OXS_OUT::SendRPM(uint16_t rpm) {
 //  byte blades=2;
 //  rpm = uint16_t((float)rpm/(60/blades));  
 //  SendValue(FRSKY_USERDATA_RPM, rpmValue);
 //}
 
-/*************************************/
-/* SendFuel => SendFuel Level        */
-/*************************************/
-void OXS_OUT_FRSKY::SendFuel(uint16_t fuel) {
+// ************************************* //
+// SendFuel => SendFuel Level            //
+// ************************************* //
+void OXS_OUT::SendFuel(uint16_t fuel) {
   SendValue(FRSKY_USERDATA_FUEL, fuel);
 }
 
-/**********************************/
-/* SendAlt => Send ALtitude in cm */
-/**********************************/
-void OXS_OUT_FRSKY::SendAlt(long altcm)
+// ********************************** //
+// SendAlt => Send ALtitude in cm     //
+// *********************************  //
+void OXS_OUT::SendAlt(long altcm)
 {
   uint16_t Centimeter =  uint16_t(abs(altcm)%100);
   long Meter;
@@ -1554,12 +1551,12 @@ void OXS_OUT_FRSKY::SendAlt(long altcm)
   SendValue(FRSKY_USERDATA_BARO_ALT_B, (int16_t)Meter);
   SendValue(FRSKY_USERDATA_BARO_ALT_A, Centimeter);
 }
-/****************************************************************/
-/* SendGPSAlt - send the a value to the GPS altitude field      */
-/* parameter: altitude in cm between -3276800 and 3276799       */
-/* cm will not be displayed                                     */
-/****************************************************************/
-void OXS_OUT_FRSKY::SendGPSAlt(long altcm)
+// **************************************************************** //
+// SendGPSAlt - send the a value to the GPS altitude field          //
+// parameter: altitude in cm between -3276800 and 3276799           //
+// cm will not be displayed                                         //
+// **************************************************************** //
+void OXS_OUT::SendGPSAlt(long altcm)
 {
   uint16_t Centimeter =  uint16_t(abs(altcm)%100);
   long Meter;
@@ -1582,12 +1579,12 @@ void OXS_OUT_FRSKY::SendGPSAlt(long altcm)
 }
 
 
-/****************************************************************/
-/* SendGPSSpeed - send the a value to the GPS speed             */
-/* value is split in 2 fields                                   */
-/* knots and 1/10 of knots                                      */
-/****************************************************************/
-void OXS_OUT_FRSKY::SendGPSSpeed(long speedknots)
+// **************************************************************** //
+// SendGPSSpeed - send the a value to the GPS speed                 //
+// value is split in 2 fields                                       //
+// knots and 1/10 of knots                                          //
+// **************************************************************** //
+void OXS_OUT::SendGPSSpeed(long speedknots)
 {
   uint16_t knotDecimal =  uint16_t(abs(speedknots)%10);
   long knots;
@@ -1609,12 +1606,12 @@ void OXS_OUT_FRSKY::SendGPSSpeed(long speedknots)
   SendValue(FRSKY_USERDATA_GPS_SPEED_A, knotDecimal);
 }
 
-/***********************************************/
-/* SendCurrentMilliAmps => Send Current        */
-/* current will be transmitted as 1/10th of A  */
-/* Range: -32768..32767 => disp -327,6..3276,7 */
-/***********************************************/
-void OXS_OUT_FRSKY::SendCurrentMilliAmps(int32_t milliamps) 
+// *********************************************** //
+// SendCurrentMilliAmps => Send Current            //
+// current will be transmitted as 1/10th of A      //
+// Range: -32768..32767 => disp -327,6..3276,7     //
+// *********************************************** //
+void OXS_OUT::SendCurrentMilliAmps(int32_t milliamps) 
 {
 #ifdef ForceAbsolutCurrent
   milliamps=abs(milliamps);
@@ -1624,5 +1621,737 @@ void OXS_OUT_FRSKY::SendCurrentMilliAmps(int32_t milliamps)
 
 //#endif // End of FRSKY_SPORT
 
+
+// ********************************** Here the code to handle the UART communication with the receiver
+#ifdef DEBUG
+//#define DEBUGSETNEWDATA
+//#define DEBUGASERIAL
+#endif
+
+#define FORCE_INDIRECT(ptr) __asm__ __volatile__ ("" : "=e" (ptr) : "0" (ptr))
+#define GPS_SENSOR_ID 0x83  // Id normally used by Frsky for Gps.
+
+volatile uint8_t state ;                  //!< Holds the state of the UART.
+static volatile unsigned char SwUartTXData ;     //!< Data to be transmitted.
+static volatile unsigned char SwUartTXBitCount ; //!< TX bit counter.
+static volatile uint8_t SwUartRXData ;           //!< Storage for received bits.
+static volatile uint8_t SwUartRXBitCount ;       //!< RX bit counter.
+static volatile uint8_t TxCount ;
+
+volatile uint8_t debugUartRx ;
+
+volatile uint8_t ppmInterrupted ; // This flag is activated at the end of handling interrupt on Timer 1 Compare A if during this interrupt handling an interrupt on pin change (INT0 or INT1) occurs
+                         // in this case, ppm will be wrong and has to be discarded       
+uint8_t sensorId ;
+
+
+// Here the code for both Frsky protocols +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//! \brief  Timer1 interrupt service routine. *************** interrupt between 2 bits (handled by timer1)
+//
+//  Timer1 will ensure that bits are written and
+//  read at the correct instants in time.
+//  The state variable will ensure context
+//  switching between transmit and recieve.
+//  If state should be something else, the
+//  variable is set to IDLE. IDLE is regarded
+//  as a safe state/mode.
+
+//For Frsky only
+uint8_t ByteStuffByte = 0 ;
+
+// initially only for Hub
+//volatile uint8_t TxHubData[] ;
+//volatile uint8_t TxMax ;
+//struct t_hubData * volatile ThisHubData = 0 ;
+uint8_t volatile hubData[MAXSIZEBUFFER] ; 
+uint8_t volatile hubMaxData ;   // max number of data prepared to be send
+
+// initially only for Sport
+uint8_t LastRx ;
+uint8_t TxSportData[7] ;
+uint16_t Crc ;
+//uint8_t DataSent ;
+//uint8_t SportSync ;
+//struct t_sportData * volatile FirstData = 0 ;
+//struct t_sportData * volatile ThisSportData = 0 ;
+uint8_t  volatile  sportData[7] ;
+uint8_t volatile sportDataLock ;
+uint8_t volatile sendStatus ;
+uint8_t volatile gpsSendStatus ; 
+uint8_t volatile gpsSportDataLock ;
+uint8_t volatile gpsSportData[7] ;
+uint8_t currentSensorId ; // save the sensor id being received and on which oXs will reply (can be the main sensor id or GPS sensor id) 
+
+
+ISR(TIMER1_COMPA_vect)
+{
+  if ( sportAvailable ) {    // ++++++++ here only for SPORT protocol ++++++++++++++++++++++++++++++++++
+  switch (state)
+  {
+  // Transmit Byte.
+    case TRANSMIT :   // Output the TX buffer.************ on envoie des bits de data
+#if DEBUGASERIAL
+          PORTC |= 1 ;
+#endif
+          if( SwUartTXBitCount < 8 )
+          {
+            if( SwUartTXData & 0x01 )
+            {           // If the LSB of the TX buffer is 1:
+              CLEAR_TX_PIN() ;                    // Send a logic 1 on the TX_PIN.
+            }
+            else
+            {                                // Otherwise:
+              SET_TX_PIN() ;                      // Send a logic 0 on the TX_PIN.
+            }
+            SwUartTXData = SwUartTXData >> 1 ;    // Bitshift the TX buffer and
+            SwUartTXBitCount += 1 ;               // increment TX bit counter.
+          }
+          else    //Send stop bit.
+          {
+            CLEAR_TX_PIN();                         // Output a logic 1.
+            state = TRANSMIT_STOP_BIT;
+                //ENABLE_TIMER0_INT() ;                   // Allow this in now.
+          }
+          OCR1A += TICKS2WAITONESPORT ;  // Count one period into the future.
+  
+  /*              
+              // Here another code in order to avoid going out of interrupt during transmission
+                
+                while ( SwUartTXBitCount < 8) {
+                if( SwUartTXData & 0x01 )
+        {           // If the LSB of the TX buffer is 1:
+                    CLEAR_TX_PIN() ;                    // Send a logic 1 on the TX_PIN.
+                  }
+                else
+        {                                // Otherwise:
+                    SET_TX_PIN() ;                      // Send a logic 0 on the TX_PIN.
+                  }
+                SwUartTXData = SwUartTXData >> 1 ;    // Bitshift the TX buffer and
+                SwUartTXBitCount += 1 ;               // increment TX bit counter.
+                  OCR1A += TICKS2WAITONESPORT ;  // Count one period into the future.
+                  //digitalWrite(PIN_LED, HIGH );
+                  do { }
+                    while ( !(TIFR1 & (1 << OCF1A) ) ) ; 
+                  CLEAR_TIMER_INTERRUPT( ) ; 
+                  //digitalWrite(PIN_LED, LOW );
+                  
+                  
+              } // end while 8 bits have been sent
+                              
+                CLEAR_TX_PIN();                         // Output a logic 1.
+              state = TRANSMIT_STOP_BIT;
+    //ENABLE_TIMER0_INT() ;                 // Allow this in now.
+              OCR1A += TICKS2WAITONESPORT ;  // Count one period into the future.
+                CLEAR_TIMER_INTERRUPT( ) ;
+*/
+#if DEBUGASERIAL
+          PORTC &= ~1 ;
+#endif
+          break ;
+
+  // Go to idle after stop bit was sent.
+          case TRANSMIT_STOP_BIT: //************************************* We send a stop bit
+                if ( ByteStuffByte || (++TxCount < 8 ) )    // Have we sent 8 bytes?
+                {
+                  if ( ByteStuffByte )
+                  {
+                    SwUartTXData = ByteStuffByte ;
+                    ByteStuffByte = 0 ;
+                  }
+                  else
+                  {
+                      if ( TxCount < 7 )    // Data (or crc)?
+                      {
+                          SwUartTXData = TxSportData[TxCount] ;
+                          Crc += SwUartTXData ; //0-1FF
+                          Crc += Crc >> 8 ; //0-100
+                          Crc &= 0x00ff ;
+                      }
+                      else
+                      {
+                          SwUartTXData = 0xFF-Crc ; // prepare sending check digit
+                      }
+                      if ( ( SwUartTXData == 0x7E ) || ( SwUartTXData == 0x7D ) )
+                      {
+                        ByteStuffByte = SwUartTXData ^ 0x20 ;
+                        SwUartTXData = 0x7D ;         
+                      }
+                  }
+                  SET_TX_PIN() ;                    // Send a logic 0 on the TX_PIN.
+                  OCR1A = TCNT1 + TICKS2WAITONESPORT ;   // Count one period into the future.
+                  SwUartTXBitCount = 0 ;
+                  state = TRANSMIT ;
+                  //DISABLE_TIMER0_INT() ;      // For the byte duration
+                }
+                else  // 8 bytes have been send
+                {
+#ifdef GPS_INSTALLED  // fill status depending on sensorId being handled
+                  if ( currentSensorId == GPS_SENSOR_ID ) {
+                    gpsSendStatus = SEND ;
+                  } else {
+                    sendStatus = SEND ;
+                  }
+#else
+                  sendStatus = SEND ;
+#endif
+                  state = WAITING ;
+                  OCR1A += DELAY_3500 ;   // 3.5mS gap before listening
+                  TRXDDR &= ~( 1 << PIN_SERIALTX ) ;            // PIN is input
+                  TRXPORT &= ~( 1 << PIN_SERIALTX ) ;           // PIN is tri-stated.
+                        
+//                  struct t_sportData * volatile pdata = ThisSportData ;
+//                  FORCE_INDIRECT( pdata ) ;
+            
+//                  pdata->serialSent = 1 ;
+//                  DataSent = 1 ;
+//                  SportSync = 1 ;
+//                  pdata = pdata->next ;
+//                  if ( pdata == 0 )                  // Wrap at end
+//                    {
+//                  pdata = FirstData ;
+//                    }
+//                  ThisSportData = pdata ;
+                }
+
+               break ;
+               
+//#ifdef FRSKY_SPORT
+     case RECEIVE :  // Start bit has been received and we will read bits of data      
+            OCR1A += TICKS2WAITONESPORT ;                    // Count one period after the falling edge is trigged.
+            //Receiving, LSB first.
+            {
+                    uint8_t data ;        // Use a temporary local storage
+                    data = SwUartRXBitCount ;
+                    if( data < 8 )                          // If 8 bits are not yet read
+                    {
+                        SwUartRXBitCount = data + 1 ;
+                        data = SwUartRXData ;
+                        data >>= 1 ;            // Shift due to receiving LSB first.
+#if DEBUGASERIAL
+                        PORTC &= ~1 ;
+#endif
+                        if( GET_RX_PIN( ) == 0 )
+                        {
+                            data |= 0x80 ;                    // If a logical 1 is read, let the data mirror this.
+                        }
+#if DEBUGASERIAL
+                        PORTC |= 1 ;
+#endif
+                        SwUartRXData = data ;
+                    }
+                    else  //Done receiving =  8 bits are in SwUartRXData
+                    {
+#if DEBUGASERIAL
+                    PORTC &= ~1 ;
+#endif
+                    if ( LastRx == 0x7E )
+                    {
+                        if ( SwUartRXData == sensorId )
+                        {
+//                          struct t_sportData * volatile pdata = ThisSportData ;
+//                          FORCE_INDIRECT( pdata ) ;
+                          //if ( pdata )               // We have something to send
+                          if   ( sendStatus == LOADED ){     
+                            if ( sportDataLock == 0 ) {
+/*          This part can help debug the transmission of a value,      Mike it could be set in a #ifdef
+                                switch (idToSend) { 
+                                     case VARIO_ID :
+                                       idToSend = DIVIDER_VOLTAGE_ID ;
+                                       break ;
+                                     case DIVIDER_VOLTAGE_ID :
+                                       idToSend = VCC_ID ;
+                                       break ;
+                                      case VCC_ID :
+                                       idToSend =  ALT_ID ;
+                                       break ;
+                                      default :
+                                       idToSend = VARIO_ID ;
+                                 } 
+                                
+                                idToSend = DIVIDER_VOLTAGE_ID ;
+
+                                TxData[0] = 0x10 ;
+              TxData[1] = idToSend ; // partie basse de l ID pour une valeur
+        TxData[2] = idToSend >> 8 ;
+        TxData[3] = TxData[3] + 1 ;
+        TxData[4] = 0 ;
+        TxData[5] = 0 ;
+        TxData[6] = 0 ;
+
+ */                               
+                                TxSportData[0] = sportData[0] ;
+                                TxSportData[1] = sportData[1] ;
+                                TxSportData[2] = sportData[2] ;
+                                TxSportData[3] = sportData[3] ;
+                                TxSportData[4] = sportData[4] ;
+                                TxSportData[5] = sportData[5] ;
+                                TxSportData[6] = sportData[6] ;
+                                                        
+                            }
+                            else // locked
+                            { // Discard frame to be sent if data is locked
+                                TxSportData[0] = 0 ;
+                                TxSportData[1] = 0 ;
+                                TxSportData[2] = 0 ;
+                                TxSportData[3] = 0 ;
+                                TxSportData[4] = 0 ;
+                                TxSportData[5] = 0 ;
+                                TxSportData[6] = 0 ;
+                            }
+                            state = TxPENDING ;
+                            sendStatus = SENDING ;
+                            currentSensorId = SwUartRXData ; // save the sensorId being handled (can be the main one or the code for GPS).
+                            OCR1A += ( DELAY_400 - TICKS2WAITONESPORT) ;    // 400 uS gap before sending
+                         } // end LOADED
+                        else // No data are loaded (so there is no data yet available)
+                        {
+                          // Wait for idle time
+                          state = WAITING ;
+                          OCR1A += DELAY_3500 ;   // 3.5mS gap before listening
+                        }
+                      } 
+                      else if ( SwUartRXData == GPS_SENSOR_ID ) {
+                          if   ( gpsSendStatus == LOADED ){     
+                            if ( gpsSportDataLock == 0 ) {
+                                TxSportData[0] = gpsSportData[0] ;
+                                TxSportData[1] = gpsSportData[1] ;
+                                TxSportData[2] = gpsSportData[2] ;
+                                TxSportData[3] = gpsSportData[3] ;
+                                TxSportData[4] = gpsSportData[4] ;
+                                TxSportData[5] = gpsSportData[5] ;
+                                TxSportData[6] = gpsSportData[6] ;
+                             }
+                            else // locked
+                            { // Discard frame to be sent if data is locked
+                                TxSportData[0] = 0 ;
+                                TxSportData[1] = 0 ;
+                                TxSportData[2] = 0 ;
+                                TxSportData[3] = 0 ;
+                                TxSportData[4] = 0 ;
+                                TxSportData[5] = 0 ;
+                                TxSportData[6] = 0 ;
+                            }
+                            state = TxPENDING ;
+                            gpsSendStatus = SENDING ;
+                            currentSensorId = SwUartRXData ; // save the sensorId being handled (can be the main one or the code for GPS).
+                            OCR1A += ( DELAY_400 - TICKS2WAITONESPORT) ;    // 400 uS gap before sending
+                          } // end LOADED 
+                      } // end GPS_SENSOR_ID
+                      else // polling on a sensorId that does not request a reply
+                      {
+                          state = WAITING ;
+                          OCR1A += DELAY_3500 ;   // 3.5mS gap before listening
+//                          SportSync = 1 ;
+                      }
+                      }
+                      else // Previous code is not equal to x7E 
+                      {
+                          DISABLE_TIMER_INTERRUPT() ;         // Stop the timer interrupts.
+                          state = IDLE ;                                  // Go back to idle.
+                          PCIFR = ( 1<<PCIF2 ) ;        // clear pending interrupt
+                          PCICR |= ( 1<<PCIE2 ) ;       // pin change interrupt enabled
+                          //PORTC |= 2 ;
+                      }
+                      LastRx = SwUartRXData ;
+                   } // End receiving  1 bit or 1 byte (8 bits)
+               }
+          break ;
+  
+  case TxPENDING :
+#if DEBUGASERIAL
+      PORTC |= 1 ;
+#endif
+      TRXDDR |= ( 1 << PIN_SERIALTX ) ;       // PIN is output
+            SET_TX_PIN() ;                          // Send a logic 0 on the TX_PIN.
+      OCR1A = TCNT1 + TICKS2WAITONESPORT ;         // Count one period into the future.
+      SwUartTXBitCount = 0 ;
+      Crc = SwUartTXData = TxSportData[0] ;
+      TxCount = 0 ;
+      state = TRANSMIT ;
+      //DISABLE_TIMER0_INT() ;        // For the byte duration
+#if DEBUGASERIAL
+      PORTC &= ~1 ;
+#endif
+        break ;
+//#endif // end of Frsky_Port
+
+  case WAITING :
+//#ifdef FRSKY_SPORT
+             DISABLE_TIMER_INTERRUPT() ;    // Stop the timer interrupts.
+         state = IDLE ;                           // Go back to idle.
+         PCIFR = ( 1<<PCIF2 ) ;     // clear pending interrupt
+         PCICR |= ( 1<<PCIE2 ) ;      // pin change interrupt enabled
+                break ;
+
+  // Unknown state.
+    default:        
+          state = IDLE;                               // Error, should not occur. Going to a safe state.
+  } // End CASE
+ } // end sportAvailable == true
+ else { //  ++++++++ here only for Hub protocol ++++++++++++++++++++++++++++++++++
+ //  ***********************************************  Hub protocol *****************************
+  switch (state)
+  {
+  // Transmit Byte.
+    case TRANSMIT :   // Output the TX buffer.************ on envoie des bits de data
+#if DEBUGASERIAL
+          PORTC |= 1 ;
+#endif
+          if( SwUartTXBitCount < 8 )
+          {
+            if( SwUartTXData & 0x01 )
+            {           // If the LSB of the TX buffer is 1:
+              CLEAR_TX_PIN() ;                    // Send a logic 1 on the TX_PIN.
+            }
+            else
+            {                                // Otherwise:
+              SET_TX_PIN() ;                      // Send a logic 0 on the TX_PIN.
+            }
+            SwUartTXData = SwUartTXData >> 1 ;    // Bitshift the TX buffer and
+            SwUartTXBitCount += 1 ;               // increment TX bit counter.
+          }
+          else    //Send stop bit.
+          {
+            CLEAR_TX_PIN();                         // Output a logic 1.
+            state = TRANSMIT_STOP_BIT;
+                //ENABLE_TIMER0_INT() ;                   // Allow this in now.
+          }
+          OCR1A += TICKS2WAITONEHUB ;  // Count one period into the future.
+  
+  /*              
+              // Here another code in order to avoid going out of interrupt during transmission
+                
+                while ( SwUartTXBitCount < 8) {
+                if( SwUartTXData & 0x01 )
+        {           // If the LSB of the TX buffer is 1:
+                    CLEAR_TX_PIN() ;                    // Send a logic 1 on the TX_PIN.
+                  }
+                else
+        {                                // Otherwise:
+                    SET_TX_PIN() ;                      // Send a logic 0 on the TX_PIN.
+                  }
+                SwUartTXData = SwUartTXData >> 1 ;    // Bitshift the TX buffer and
+                SwUartTXBitCount += 1 ;               // increment TX bit counter.
+                  OCR1A += TICKS2WAITONEHUB ;  // Count one period into the future.
+                  //digitalWrite(PIN_LED, HIGH );
+                  do { }
+                    while ( !(TIFR1 & (1 << OCF1A) ) ) ; 
+                  CLEAR_TIMER_INTERRUPT( ) ; 
+                  //digitalWrite(PIN_LED, LOW );
+                  
+                  
+              } // end while 8 bits have been sent
+                              
+                CLEAR_TX_PIN();                         // Output a logic 1.
+              state = TRANSMIT_STOP_BIT;
+    //ENABLE_TIMER0_INT() ;                 // Allow this in now.
+              OCR1A += TICKS2WAITONEHUB ;  // Count one period into the future.
+                CLEAR_TIMER_INTERRUPT( ) ;
+*/
+#if DEBUGASERIAL
+        PORTC &= ~1 ;
+#endif
+          break ;
+
+  // Go to idle after stop bit was sent.
+          case TRANSMIT_STOP_BIT: //************************************* We send a stop bit
+    if ( ++TxCount < hubMaxData)    // Have we sent all bytes?
+    {
+      SwUartTXData = hubData[TxCount] ;             
+      SET_TX_PIN() ;                        // Send a logic 0 on the TX_PIN.
+      OCR1A = TCNT1 + TICKS2WAITONEHUB ;       // Count one period into the future.
+      SwUartTXBitCount = 0 ;
+      state = TRANSMIT ;
+      //DISABLE_TIMER0_INT() ;    // For the byte duration
+    }
+          else  // all bytes have been send
+    {
+      TxCount = 0 ;
+//      TxMax = 0 ;
+      state = WAITING ;
+      //sendStatus = SEND ;
+      OCR1A += DELAY_100 ;  // 100uS gap
+      //OCR1A += ((uint16_t)3500 * 16 ) ; // 3.5mS gap before listening
+      //TRXDDR &= ~( 1 << PIN_SERIALTX );   // PIN is input, tri-stated.
+      //TRXPORT &= ~( 1 << PIN_SERIALTX );  // PIN is input, tri-stated.
+            
+//      struct t_hubData *pdata = ThisHubData ;
+//      FORCE_INDIRECT( pdata ) ;
+                  
+
+      //pdata->serialSent = 1 ;
+      //DataSent = 1 ;
+      //SportSync = 1 ;
+      //pdata = pdata->next ;
+      //if ( pdata == 0 )           // Wrap at end
+      //  {
+      //  pdata = FirstData ;
+      //  }
+      //ThisData = pdata ;
+    }
+
+// here original code
+/*
+    if ( TxNotEmpty )
+    {
+                        SET_TX_PIN() ;                    // Send a logic 0 on the TX_PIN.
+              OCR1A = TCNT1 + TICKS2WAITONE ;   // Count one period into the future.
+      SwUartTXData = ByteToSend ;   // Grab byte
+      TxNotEmpty = 0 ;      // Mark 'sent'
+      state = TRANSMIT ;
+            SwUartTXBitCount = 0 ;
+    }
+    else
+    {
+      OCR1A += ((uint16_t)100*16) ;    // 100uS gap 
+                  state = WAITING ;                  // Go back to idle.
+    }
+*/
+               break ;
+               
+
+  case WAITING :
+    
+         DISABLE_TIMER_INTERRUPT() ;    // Stop the timer interrupts.
+         state = IDLE ;                           // Go back to idle.
+//         PCIFR = (1<<PCIF2) ;     // clear pending interrupt
+//         PCICR |= (1<<PCIE2) ;      // pin change interrupt enabled
+
+// here original code from Mike
+/*
+    if ( TxNotEmpty )
+    {
+                        SET_TX_PIN() ;                    // Send a logic 0 on the TX_PIN.
+              OCR1A = TCNT1 + TICKS2WAITONE ;   // Count one period into the future.
+      SwUartTXData = ByteToSend ;   // Grab byte
+      TxNotEmpty = 0 ;      // Mark 'sent'
+      state = TRANSMIT ;
+            SwUartTXBitCount = 0 ;
+    }
+    else
+    {
+                      DISABLE_TIMER_INTERRUPT() ;    // Stop the timer interrupts.
+                  state = IDLE ;                     // Go back to idle.
+    }
+*/
+
+    
+                break ;
+
+  // Unknown state.
+    default:        
+          state = IDLE;                               // Error, should not occur. Going to a safe state.
+  } // End CASE
+
+ } // end "else sport" = end Hub
+//#ifdef PPM_INTERRUPT
+//  if ( EIFR & PPM_INT_BIT)  ppmInterrupted = 1 ;
+//#endif
+} // End of ISR
+
+
+// End of the code for both Frsky protocols +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+//____________________Here the code for SPORT interface only ++++++++++++++++++++++++++++++++++++++++++
+
+//brief  Function to initialize the UART for Sport protocol
+//  This function will set up pins to transmit and receive on. Control of Timer0 and External interrupt 0.
+void initSportUart(  )           //*************** initialise UART pour SPORT
+{
+#if defined ( SPORT_SENSOR_ID )  && SPORT_SENSOR_ID >= 1 && SPORT_SENSOR_ID <= 28  
+    #define ID_MIN_1 (SPORT_SENSOR_ID - 1)
+    #define BIT0   ( ID_MIN_1 & 0x01 )
+    #define BIT1   (( ID_MIN_1 >> 1) & 0x01 )
+    #define BIT2   (( ID_MIN_1 >> 2) & 0x01 )
+    #define BIT3   (( ID_MIN_1 >> 3) & 0x01 )
+    #define BIT4   (( ID_MIN_1 >> 4) & 0x01 )
+    #define BIT5   (BIT0 xor BIT1 xor BIT2) 
+    #define BIT6   (BIT2 xor BIT3 xor BIT4) 
+    #define BIT7   (BIT0 xor BIT2 xor BIT4) 
+    sensorId = ID_MIN_1 | (BIT5 << 5) | (BIT6 << 6) | (BIT7 << 7) ;
+#else
+  #error "SPORT_SENSOR_ID must be between 1 and 28 (included)"
+#endif     
+    //PORT
+    TRXDDR &= ~( 1 << PIN_SERIALTX ) ;       // PIN is input.
+    TRXPORT &= ~( 1 << PIN_SERIALTX ) ;      // PIN is tri-stated.
+
+  // External interrupt
+  
+#if PIN_SERIALTX == 4
+    PCMSK2 |= 0x10 ;      // IO4 (PD4) on Arduini mini
+#elif PIN_SERIALTX == 2
+    PCMSK2 |= 0x04 ;                    // IO2 (PD2) on Arduini mini
+#else
+    #error "This PIN is not supported"
+#endif
+
+    PCIFR = (1<<PCIF2) ;  // clear pending interrupt
+    PCICR |= (1<<PCIE2) ; // pin change interrupt enabled
+
+    // Internal State Variable
+    state = IDLE ;
+
+#if DEBUGASERIAL
+  DDRC = 0x03 ;   // PC0,1 as o/p debug
+  PORTC = 0 ;
+#endif
+}
+
+
+void setSportNewData( uint16_t id, uint32_t value )
+{
+  sportDataLock = 1 ;
+  sportData[0] = 0x10 ;
+  sportData[1] = id ; // low byte
+  sportData[2] = id >> 8 ; // hight byte
+  sportData[3] = value ;
+  sportData[4] = value >> 8 ;
+  sportData[5] = value >> 16 ;
+  sportData[6] = value >> 24 ;
+  sportDataLock = 0 ;
+  
+//  pdata->dataLock = 1 ;
+//  pdata->data[0] = 0x10 ;
+//  pdata->data[1] = id ; // low byte
+//  pdata->data[2] = id >> 8 ; // hight byte
+//  pdata->data[3] = value ;
+//  pdata->data[4] = value >> 8 ;
+//  pdata->data[5] = value >> 16 ;
+//  pdata->data[6] = value >> 24 ;
+//  pdata->dataLock = 0 ;
+
+#ifdef DEBUGSETNEWDATA                                         
+        Serial.print("set new data at ");
+        Serial.print( millis());
+        Serial.print(" ");
+        Serial.print( pdata->data[0] , HEX );
+        Serial.print(" ");
+        Serial.print( pdata->data[1] , HEX );
+        Serial.print(" ");
+        Serial.print( pdata->data[2] , HEX );
+        Serial.print(" ");
+        Serial.print( pdata->data[3] , HEX );
+        Serial.print(" ");
+        Serial.print( pdata->data[4] , HEX );
+        Serial.print(" ");
+        Serial.print( pdata->data[5] , HEX );
+        Serial.print(" ");
+        Serial.print( pdata->data[6] , HEX );
+        Serial.println(" ");
+#endif
+              
+}
+
+// ! \brief  External interrupt service routine.  ********************
+//  Interrupt on Pin Change to detect change on level on SPORT signal (= could be a start bit)
+//
+// The falling edge in the beginning of the start
+//  bit will trig this interrupt. The state will
+//  be changed to RECEIVE, and the timer interrupt
+//  will be set to trig one and a half bit period
+//  from the falling edge. At that instant the
+//  code should sample the first data bit.
+//
+//  note  initSoftwareUart( void ) must be called in advance.
+//
+// This is the pin change interrupt for port D
+// This assumes it is the only pin change interrupt
+// on this port
+//#ifdef FRSKY_SPORT
+ISR(PCINT2_vect)
+{
+  if ( TRXPIN & ( 1 << PIN_SERIALTX ) ) {     // Pin is high = start bit (inverted)
+    DISABLE_PIN_CHANGE_INTERRUPT()  ;     // pin change interrupt disabled
+//PORTC &= ~2 ;
+    state = RECEIVE ;                 // Change state
+            DISABLE_TIMER_INTERRUPT() ;       // Disable timer to change its registers.
+          OCR1A = TCNT1 + TICKS2WAITONE_HALFSPORT - INTERRUPT_EXEC_CYCL - INTERRUPT_EARLY_BIAS ; // Count one and a half period into the future.
+#if DEBUGASERIAL
+          PORTC |= 1 ;
+#endif
+            SwUartRXBitCount = 0 ;            // Clear received bit counter.
+            CLEAR_TIMER_INTERRUPT() ;         // Clear interrupt bits
+            ENABLE_TIMER_INTERRUPT() ;        // Enable timer1 interrupt on again
+  }
+//#ifdef PPM_INTERRUPT
+//  if ( EIFR & PPM_INT_BIT)  ppmInterrupted = 1 ;
+//#endif
+
+}
+
+
+
+
+
+
+//____________________Here the code for HUB interface only ++++++++++++++++++++++++++++++++++++++++++
+//brief  Function to initialize the UART for Sport protocol
+//  This function will set up pins to transmit and receive on. Control of Timer0 and External interrupt 0.
+void initHubUart( )
+{
+//  ThisHubData = pdata ;
+  TRXPORT &= ~( 1 << PIN_SERIALTX ) ;      // PIN is low
+  TRXDDR |= ( 1 << PIN_SERIALTX ) ;        // PIN is output.
+  
+  //Internal State Variable
+  state = IDLE ;
+//  TxMax = 0 ;
+  TxCount = 0 ;
+
+#if DEBUGASERIAL
+  DDRC = 0x03 ;   // PC0,1 as o/p debug
+  PORTC = 0 ;
+#endif
+}
+
+void setHubNewData(  )
+{
+  if ( (TxCount == 0) && (hubMaxData > 0) ) {
+//    for (int cntNewData = 0 ; cntNewData < hubMaxData ; cntNewData++) {
+//          TxHubData[cntNewData] = hubData[cntNewData] ;
+//      }
+//      TxMax = hubMaxData  ;
+#ifdef DEBUGSETNEWDATA
+          Serial.print("set new data at ");
+          Serial.print( millis() );
+          Serial.print(" ");  
+          for (int cntNewData = 0 ; hubMaxData ; cntNewData++) {
+            Serial.print( hubData[cntNewData] , HEX );
+            Serial.print(" ");
+          }
+          Serial.println(" ");        
+#endif          
+      startHubTransmit() ;
+  }    
+}
+
+void startHubTransmit()
+{
+  if ( state != IDLE )
+  {
+    return ;
+  }
+  SET_TX_PIN() ;                    // Send a logic 0 on the TX_PIN.
+  cli() ;
+  OCR1A = TCNT1 + TICKS2WAITONEHUB ;   // Count one period into the future.
+  CLEAR_TIMER_INTERRUPT() ;         // Clear interrupt bits
+  sei() ;
+  SwUartTXBitCount = 0 ;
+  SwUartTXData = hubData[0] ;
+  //TxNotEmpty = 0 ;
+  state = TRANSMIT ;
+  ENABLE_TIMER_INTERRUPT() ;        // Enable timer1 interrupt on again
+#if DEBUGASERIAL
+  PORTC &= ~1 ;
+#endif
+
+}
+// end of function that are hub specific
+
+
+
+//********************************** End of code to handle the UART communication with the receiver
 #endif   //End of not MULTIPLEX
 

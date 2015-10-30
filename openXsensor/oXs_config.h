@@ -70,7 +70,9 @@
 // ***** 4.7  - Calculating glider ratio, average sink/climb rate, average altitude gain/lost *********
 #define AVERAGING_EVERY_X_SEC 10  // normal value between 5 and 10
 #define SPEED_TOLERANCE   5       // in % of speed)
-#define GLIDER_RATIO BASED_ON_AIRSPEED   // fill in with   BASED_ON_AIRSPEED  or BASED_ON_GPS_SPEED
+//#define GLIDER_RATIO BASED_ON_AIRSPEED   // fill in with   BASED_ON_AIRSPEED  or BASED_ON_GPS_SPEED
+#define VSPEED_MIN_TOLERANCE -200        // out of tolerance when Vspeed is lower than this value
+#define VSPEED_MAX_TOLERANCE  -10        // out of tolerance when Vspeed is upper than this value
 
 // --------- 5 - Airspeed settings ---------
 #define AIRSPEED    MS4525

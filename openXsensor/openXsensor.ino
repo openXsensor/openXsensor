@@ -7,7 +7,6 @@
 #include "oXs_out_frsky.h"
 #include "oXs_out_multiplex.h"
 #include "oXs_general.h"
-#include "Aserial.h"
 #include "oXs_gps.h"
 
 #ifdef SAVE_TO_EEPROM
@@ -15,7 +14,7 @@
   #include "EEPROMAnything.h"
 #endif
 
-#include "Aserial.h"
+//#include "Aserial.h"
 
 #ifdef PIN_PPM
  #if PIN_PPM == 2
@@ -196,6 +195,7 @@ uint8_t selectedVario ; // identify the vario to be used when switch vario with 
 
 // ********** variables used to calculate glider ratio (and other averages)
 #if defined  (VARIO) && defined (AVERAGING_EVERY_X_SEC) && AVERAGING_EVERY_X_SEC > 5
+/*   // first method
         int32_t last10Altitude[10] ; // in cm
         int16_t last10Speed[10] ;
         uint8_t last10Idx = 0 ;
@@ -204,6 +204,10 @@ uint8_t selectedVario ; // identify the vario to be used when switch vario with 
         int32_t averageVspeed ;
         unsigned long prevAverageAltMillis  ; // save when AverageAltitude has to be calculated
         void calculateAverages();
+*/
+// second method
+        void calculateAverages();
+
 #endif
 
 // Create instances of the used classes
@@ -269,9 +273,9 @@ OXS_GPS oXs_Gps(0);
 
 
 #ifdef DEBUG  
-OXS_OUT_FRSKY oXs_OutFrsky(PIN_SERIALTX,Serial);
+OXS_OUT oXs_Out(PIN_SERIALTX,Serial);
 #else
-OXS_OUT_FRSKY oXs_OutFrsky(PIN_SERIALTX);
+OXS_OUT oXs_Out(PIN_SERIALTX);
 #endif
 
                             // Mike I do not understand this instruction; could you explain
@@ -331,13 +335,13 @@ uint32_t baudRateHardwareUart = 115200L ; // default value when GPS is not used
 
 #ifdef PIN_VOLTAGE
   oXs_Voltage.setupVoltage(); 
-  oXs_OutFrsky.voltageData=&oXs_Voltage.voltageData; 
+  oXs_Out.voltageData=&oXs_Voltage.voltageData; 
 #endif
 
 
 #ifdef VARIO
   oXs_MS5611.setup();
-  oXs_OutFrsky.varioData=&oXs_MS5611.varioData; 
+  oXs_Out.varioData=&oXs_MS5611.varioData; 
 #ifdef PIN_ANALOG_VSPEED
   lastMillisPWR = 3500 ; // So we will wait for 3.5 sec before generating a Vertical speed on PWM
   analogWrite(PIN_ANALOG_VSPEED,255/5*1.6); // initialize the output pin 
@@ -346,18 +350,18 @@ uint32_t baudRateHardwareUart = 115200L ; // default value when GPS is not used
 
 #ifdef VARIO2
   oXs_MS5611_2.setup();
-  oXs_OutFrsky.varioData_2=&oXs_MS5611_2.varioData; 
+  oXs_Out.varioData_2=&oXs_MS5611_2.varioData; 
 #endif // vario
 
 
 #ifdef AIRSPEED
   oXs_4525.setup();
-  oXs_OutFrsky.airSpeedData=&oXs_4525.airSpeedData; 
+  oXs_Out.airSpeedData=&oXs_4525.airSpeedData; 
 #endif // end AIRSPEED
 
 #ifdef PIN_CURRENTSENSOR
   oXs_Current.setupCurrent( );
-  oXs_OutFrsky.currentData=&oXs_Current.currentData;
+  oXs_Out.currentData=&oXs_Current.currentData;
 #endif
 
 #if defined (VARIO) && defined ( AIRSPEED)
@@ -369,7 +373,7 @@ uint32_t baudRateHardwareUart = 115200L ; // default value when GPS is not used
   oXs_Gps.setupGps();
 #endif
 
-  oXs_OutFrsky.setup();
+  oXs_Out.setup();
 
 #ifdef SAVE_TO_EEPROM
   LoadFromEEProm();
@@ -393,12 +397,14 @@ uint32_t baudRateHardwareUart = 115200L ; // default value when GPS is not used
 //  RpmValue = 0 ;
   RpmAvailable = false ;
 
+/* was used in first method
 #if defined  (VARIO) && defined (AVERAGING_EVERY_X_SEC) && AVERAGING_EVERY_X_SEC > 5
         for ( uint8_t i = 0 ; i < 10 ; i++) {
           last10Altitude[i] = last10Speed[i] = 0 ;
           prevAverageAltMillis = millis() + 5000 ; // wait 5 sec before calculating those data
         }
 #endif
+*/
 
 
 #ifdef SEQUENCE_OUTPUTS
@@ -497,7 +503,7 @@ void loop(){
   prevBlinkAvailable = oXs_MS5611.varioData.climbRateAvailable ;  
 #endif
     
-    oXs_OutFrsky.sendData(); // choice which data can be send base on availability and some priority logic 
+    oXs_Out.sendData(); // choice which data can be send base on availability and some priority logic 
     
 #if defined ( DEBUG ) && defined (DEBUGOUTDATATOSERIAL)
     OutputToSerial() ; 
@@ -807,8 +813,10 @@ void calculateDte () {  // is calculated about every 2O ms each time that an alt
 #endif    // #if defined (VARIO) && defined ( AIRSPEED) 
 // ***************************** end calculate Dte ***********************************************
 
-
+/*
 //****************************** Calculate averages and glider ratio ********************************************
+
+/*             First method
 #if defined  (VARIO) && defined (AVERAGING_EVERY_X_SEC) && AVERAGING_EVERY_X_SEC >= 5
 void calculateAverages( ){
         int16_t averageSpeed ;
@@ -853,6 +861,58 @@ void calculateAverages( ){
         }
 }        
 #endif
+*/
+
+
+//  second method of averaging
+#if defined  (VARIO) && defined (AVERAGING_EVERY_X_SEC) && AVERAGING_EVERY_X_SEC >= 5 && defined(AIRSPEED)
+void calculateAverages( ){
+        static int32_t altitudeAtT0 ; // in cm
+        static int32_t distanceSinceT0 ; // in cm
+        static int32_t averageVspeedSinceT0 ; //in cm/sec
+        static int16_t aSpeedAtT0 ;
+        static uint16_t secFromT0 ;  // in 1/10 sec
+        static uint32_t millisAtT0 ;
+        static int32_t gliderRatio ;
+        static unsigned long prevAverageAltMillis =  millis() + 5000 ; // wait 5 sec before calculating those data ; // save when AverageAltitude has to be calculated
+        int32_t altitudeDifference ;
+//        static uint8_t flagValidForLongTime ;
+
+        int16_t speedTolerance = 100 ;
+
+        if ( (uint16_t) (millis() - prevAverageAltMillis) >   500 ) { // check on tolerance has to be done
+            altitudeDifference = oXs_MS5611.varioData.absoluteAlt -altitudeAtT0  ;
+            if ( (aSpeedAtT0 > 300) && ( oXs_4525.airSpeedData.smoothAirSpeed > 300 )  \
+                 && ( oXs_MS5611.varioData.climbRate >=  VSPEED_MIN_TOLERANCE ) && ( oXs_MS5611.varioData.climbRate <=  VSPEED_MAX_TOLERANCE ) \
+                 && ( altitudeDifference < -10 ) ) {
+                  speedTolerance = (abs( oXs_4525.airSpeedData.smoothAirSpeed - aSpeedAtT0) * 100L ) / aSpeedAtT0 ;
+            }
+            if ( speedTolerance > SPEED_TOLERANCE ) {                     // if out of tolerance then reset           
+                altitudeAtT0 = oXs_MS5611.varioData.absoluteAlt ;
+                aSpeedAtT0 = oXs_4525.airSpeedData.smoothAirSpeed ;
+                secFromT0 = 0 ;
+                distanceSinceT0 = 0 ;
+//                flagValidForLongTime = false ;
+            } else {                                                      // within tolerance, calculate glider ratio and average sinking  
+                secFromT0 =  ( millis() - millisAtT0 ) / 100 ;            // in 1/10 of sec
+                distanceSinceT0 += oXs_4525.airSpeedData.smoothAirSpeed / (1000 /  500) ;  // to adapt if delay is different.
+                if (  secFromT0 >  AVERAGING_EVERY_X_SEC * 10 ) {         // *10 because secFromT0 is in 1/10 of sec 
+                    gliderRatio = distanceSinceT0  * 10 / altitudeDifference  ;        // when gliderRatio is > (50.0 *10) it it not realistic (*10 is done in order to add a decimal)
+                    if ( gliderRatio > 500) gliderRatio = 0 ;                                                   // 
+                    averageVspeedSinceT0 = altitudeDifference * 10 / secFromT0  ;      // * 10 because secFromT0 is in 1/10 of sec
+                }
+             }
+            prevAverageAltMillis += 500  ; 
+            test1Value = secFromT0 ; 
+            test1ValueAvailable = true ; 
+            test2Value = averageVspeedSinceT0 ; 
+            test2ValueAvailable = true ; 
+            test3Value = gliderRatio ; 
+            test3ValueAvailable = true ; 
+        }
+}        
+#endif
+
 //********end calculate glider ratio************************************************************************************************
 
 
