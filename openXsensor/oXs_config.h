@@ -88,6 +88,7 @@
 
 // ***** 6.1 - Voltage Reference to measure voltages and current *****
 //#define USE_INTERNAL_REFERENCE  // uncomment this line if you use 1.1 volt internal reference instead of Vcc
+//#define USE_EXTERNAL_REFERENCE  // uncomment this line if you use an external reference instead of Vcc
 #define REFERENCE_VOLTAGE 4970    // set value in milliVolt; if commented, oXs will use or 1100 (if internal ref is used) or 5000 (if internal ref is not used) 
 
 // ***** 6.2 - Voltage parameters *****

@@ -28,11 +28,19 @@ void OXS_CURRENT::setupCurrent( ) {
   float currentDivider = 1.0 ;
 #ifdef USE_INTERNAL_REFERENCE   
   analogReference(INTERNAL) ;
+#elif defined(USE_EXTERNAL_REFERENCE)
+    analogReference(EXTERNAL) ;
 #endif
 #if defined(USE_INTERNAL_REFERENCE) && defined(REFERENCE_VOLTAGE) && REFERENCE_VOLTAGE < 2000
   tempRef = REFERENCE_VOLTAGE  ;
 #elif defined(USE_INTERNAL_REFERENCE) && defined(REFERENCE_VOLTAGE)
   #error REFERENCE_VOLTAGE must be less than 2000 when USE_INTERNAL_REFERENCE is defined
+#elif defined(USE_EXTERNAL_REFERENCE)
+#ifndef REFERENCE_VOLTAGE
+  #error REFERENCE_VOLTAGE must be defined when USE_EXTERNAL_REFERENCE is defined
+#else
+  tempRef = REFERENCE_VOLTAGE  ;
+#endif
 #elif defined(USE_INTERNAL_REFERENCE)
   tempRef = 1100 ;
 #elif defined(REFERENCE_VOLTAGE) && REFERENCE_VOLTAGE > 2000
@@ -79,11 +87,13 @@ void OXS_CURRENT::readSensor() {
 //  static unsigned long UpdateMs=0;
   static unsigned long milliTmp = millis() ;
 #ifdef USE_INTERNAL_REFERENCE
-  ADMUX = _BV(REFS1) | _BV(REFS0) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1) | _BV(MUX0); // binary = 11 00 1111 (11 = use VRef as max, 1111 = measure ground level)
+  ADMUX = _BV(REFS1) | _BV(REFS0) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1) | _BV(MUX0); // binary = 11 00 1111 (11 = use internal VRef as max, 1111 = measure ground level)
+#elif defined(USE_EXTERNAL_REFERENCE)
+  ADMUX =  _BV(MUX3) | _BV(MUX2) | _BV(MUX1) | _BV(MUX0);                          // binary = 00 00 1111 (00 = use external VRef as max, 1111 = measure ground level)
 #else
-  ADMUX =  _BV(REFS0) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1) | _BV(MUX0); // binary = 01 00 1111 (01 = use Vcc as max, 1111 = measure ground level)
+  ADMUX =  _BV(REFS0) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1) | _BV(MUX0);             // binary = 01 00 1111 (01 = use Vcc as max, 1111 = measure ground level)
 #endif
-    delayMicroseconds(200); // Wait for Vref to settle 
+  delayMicroseconds(200); // Wait for Vref to settle 
   ADCSRA |= _BV(ADSC); // Start conversion
   while (bit_is_set(ADCSRA,ADSC)); // wait that conversion is done
 

@@ -345,20 +345,23 @@ started by Rainer Schloßhan
 **** 6 - Voltage measurements and current sensor settings (optional) ***************************************************
 *
 * 6.1 - Voltage Reference to measure voltages and current **************************************************************
-*     Current and Voltages can be measured in (1023) steps from or VCC or an 1.1 internal reference.
+*     Current and Voltages can be measured in (1023) steps from or VCC , from an 1.1 internal reference or from an external reference.
 *     If VCC is very stable, it is probably more accurate and easier to measure current and voltages based on VCC (so in 1023 steps from VCC).
 *     Still this requires that the voltage applied on Arduino "RAW" pin is regulated or at least always more than 5.5 volt (in order to let the Arduino board voltage regulates it at 5 volt).
 *     If voltage on "Raw" pin is less than 5.5 volt and changes (e.g. due to servo consumption or low battery) then current and voltage measurements will become wrong.
 *     If VCC can't be very stable (e.g. Arduino is powered via RX by a 4.8 NiMh) and you need only the voltages (no need for the current measurement), then it is possible to measure based on the Arduino 1.1 internal voltage reference.
 *     If you need current measurement too, using internal voltage is not "the" solution because current sensor needs stable voltage too.
-*     Take care that voltage dividers (see below) must be setup in order that Arduino analog pin voltage do not exceed VCC or 1.1 volt depending on the option you choose.
+*     Take care that voltage dividers (see below) must be setup in order that Arduino analog pin voltage do not exceed VCC or 1.1 volt or the external voltage depending on the option you choose.
 *     - Uncomment the "#define USE_INTERNAL_REFERENCE" to activate the 1.1 internal voltage reference (otherwise, measurements will be based on VCC).
+*     - Uncomment the "#define USE_EXTERNAL_REFERENCE" to activate the external voltage reference (otherwise, measurements will be based on VCC).
+*        Note: in order to use an external reference, you have to use add a voltage reference device to your Arduino. This is quite difficult on Arduino pro mimi because the AREF pin is not available on the pin headers
 *     - In order to get best measurements, you can setup the voltage reference being used with line #define REFERENCE_VOLTAGE.
 *       Value must be defined in millivolt (e.g. 5100 for 5.1 Volt) and may not contains decimals;
 *       If ommitted, oXs will automatically apply 1100 (when USE_INTERNAL_REFERENCE is defined) and 5000 (othewise)
- *
+*       When external reference is used, REFERENCE_VOLTAGE must be specified
 ************************************************************************************************************************
 //#define USE_INTERNAL_REFERENCE
+//#define USE_EXTERNAL_REFERENCE  // uncomment this line if you use an external reference instead of Vcc
 #define REFERENCE_VOLTAGE 5000
 
 * 6.2 - Voltages parameters *******************************************************************************************
@@ -402,7 +405,8 @@ started by Rainer Schloßhan
 *              |_____|          
 *                 |
 *                 ------>  connect to Ground
-*
+*        Note: a capacitor (e.g. 100nf) could be added too between ground and Arduino Analog pin in order to get more stable values.
+*         
 *      - R1 and R2 are chosen to make sure that voltage apply to Arduino is quiet close to ( but never exceed) VCC or 1.1 volt depending on your choice regarding the current & voltage measurement (see here above)
 *      - Volt on Arduino pin = VCC (or 1.1 volt) = "max voltage to measure from this sensor" * R1 / (R1 + R2)
 *      - R1 could be 10 kOhm; so R2 = R1 * ( ( "max voltage to measure from this sensor"  / VCC [or 1.1 depending on the reference] ) - 1 )
