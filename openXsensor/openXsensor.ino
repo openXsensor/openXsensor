@@ -873,7 +873,10 @@ void calculateAverages( ){
 
 
 //  second method of averaging
-#if defined  (VARIO) && defined (GLIDER_RATIO_CALCULATED_AFTER_X_SEC) && GLIDER_RATIO_CALCULATED_AFTER_X_SEC >= 5 && defined(AIRSPEED)
+#if defined  (VARIO) && defined (GLIDER_RATIO_CALCULATED_AFTER_X_SEC) && GLIDER_RATIO_CALCULATED_AFTER_X_SEC >= 5 
+#if defined (GLIDER_RATIO_CALCULATED_AFTER_X_SEC) && GLIDER_RATIO_CALCULATED_AFTER_X_SEC < 5
+#error  when defined, GLIDER_RATIO_CALCULATED_AFTER_X_SEC must be greater or equal to 5 (sec)
+#endif
 void calculateAverages( ){
         static int32_t altitudeAtT0 ; // in cm
         static int32_t distanceSinceT0 ; // in cm
@@ -884,27 +887,29 @@ void calculateAverages( ){
         static int32_t gliderRatio ;
         static unsigned long prevAverageAltMillis =  millis() + 5000 ; // wait 5 sec before calculating those data ; // save when AverageAltitude has to be calculated
         int32_t altitudeDifference ;
-//        static uint8_t flagValidForLongTime ;
+        unsigned long currentGliderMillis = millis() ;
+        bool aSpeedWithinTolerance = true ;  
 
-        int16_t speedTolerance = 100 ;
-
-        if ( (uint16_t) (millis() - prevAverageAltMillis) >   500 ) { // check on tolerance has to be done
+        if ( (uint16_t) (currentGliderMillis - prevAverageAltMillis) >   500 ) { // check on tolerance has to be done
             altitudeDifference = oXs_MS5611.varioData.absoluteAlt -altitudeAtT0  ;
-            if ( (aSpeedAtT0 > 300) && ( oXs_4525.airSpeedData.smoothAirSpeed > 300 )  \
-                 && ( oXs_MS5611.varioData.climbRate >=  VSPEED_MIN_TOLERANCE ) && ( oXs_MS5611.varioData.climbRate <=  VSPEED_MAX_TOLERANCE ) \
-                 && ( altitudeDifference < -10 ) ) {
-                  speedTolerance = (abs( oXs_4525.airSpeedData.smoothAirSpeed - aSpeedAtT0) * 100L ) / aSpeedAtT0 ;
+            secFromT0 =  ( currentGliderMillis - millisAtT0 ) / 100 ;            // in 1/10 of sec
+#if defined AIRSPEED
+            if ( (aSpeedAtT0 > 300) && ( oXs_4525.airSpeedData.smoothAirSpeed > 300 ) ) {
+                aSpeedWithinTolerance = ( (abs( oXs_4525.airSpeedData.smoothAirSpeed - aSpeedAtT0) * 100L ) / aSpeedAtT0 ) <= SPEED_TOLERANCE ;
+            } else {
+                aSpeedWithinTolerance = false ;
             }
-            if ( speedTolerance > SPEED_TOLERANCE ) {                     // if out of tolerance then reset           
+#endif            
+            if (  ( oXs_MS5611.varioData.climbRate <  VSPEED_MIN_TOLERANCE ) || ( oXs_MS5611.varioData.climbRate >  VSPEED_MAX_TOLERANCE ) \
+                || ( altitudeDifference < -10 ) || ( aSpeedWithinTolerance == false ) ) { 
                 altitudeAtT0 = oXs_MS5611.varioData.absoluteAlt ;
                 aSpeedAtT0 = oXs_4525.airSpeedData.smoothAirSpeed ;
                 secFromT0 = 0 ;
                 distanceSinceT0 = 0 ;
-//                flagValidForLongTime = false ;
+                millisAtT0 = currentGliderMillis ;
             } else {                                                      // within tolerance, calculate glider ratio and average sinking  
-                secFromT0 =  ( millis() - millisAtT0 ) / 100 ;            // in 1/10 of sec
                 distanceSinceT0 += oXs_4525.airSpeedData.smoothAirSpeed / (1000 /  500) ;  // to adapt if delay is different.
-                if (  secFromT0 >  GLIDER_RATIO_CALCULATED_AFTER_X_SEC * 10 ) {         // *10 because secFromT0 is in 1/10 of sec 
+                if (  secFromT0 >=  GLIDER_RATIO_CALCULATED_AFTER_X_SEC * 10 ) {         // *10 because secFromT0 is in 1/10 of sec 
                     gliderRatio = distanceSinceT0  * 10 / altitudeDifference  ;        // when gliderRatio is > (50.0 *10) it it not realistic (*10 is done in order to add a decimal)
                     if ( gliderRatio > 500) gliderRatio = 0 ;                                                   // 
                     averageVspeedSinceT0 = altitudeDifference * 10 / secFromT0  ;      // * 10 because secFromT0 is in 1/10 of sec
