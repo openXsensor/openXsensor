@@ -87,7 +87,7 @@ void OXS_VOLTAGE::setupVoltage( void ) {
     if ( tempResistorToGround[cntInit] > 0 && tempResistorToVoltage[cntInit] > 0 && tempScaleVoltage[cntInit] > 0 ) {
       voltageData.mVoltPerStep[cntInit] = tempRef / 1023.0 * ( tempResistorToGround[cntInit] + tempResistorToVoltage[cntInit] ) / tempResistorToGround[cntInit]  * tempScaleVoltage[cntInit];
     } else {
-      voltageData.mVoltPerStep[cntInit] = tempRef / 1023.0 ;  
+      voltageData.mVoltPerStep[cntInit] = tempRef / 1023.0  * tempScaleVoltage[cntInit];  
     }
     voltageData.sumVoltage[cntInit] = 0 ;
     voltageData.mVoltAvailable[cntInit] = false ; 
