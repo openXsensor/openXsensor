@@ -14,26 +14,15 @@ extern unsigned long millis( void ) ;
 extern void delay(unsigned long ms) ;
 
 struct t_mbAllData multiplexData ;
-
-//used only by Sport protocol
-volatile uint8_t sendStatus ;   // !!! this is used in Aserial too
-//struct t_sportData sportData ; 
-
-
-//Used by both protocols
-
+volatile uint8_t sendStatus ;   
 int fieldContainsData[][7]  = {  SETUP_MULTIPLEX_DATA_TO_SEND } ; // contains the set up of field to be transmitted, the first field contains the Multiplex adress to be used for this measurement
 int numberOfFields = sizeof(fieldContainsData) / sizeof(fieldContainsData[0]) ;
 uint8_t multiplexUnit[] = { MULTIPLEX_UNITS } ; // contains the unit code (4 bits) for each OXS measurement
-//static uint8_t convertToMultiplexId[15] = { MULTIPLEX_ID } ; //// this array is used to convert an index inside fieldContainsData[][0] into the Multiplex field Id (or defaultfield)
-//static uint8_t currentFieldToSend = 0 ; 
-
-
 
 #ifdef DEBUG  
-OXS_OUT_FRSKY::OXS_OUT_FRSKY(uint8_t pinTx,HardwareSerial &print)
+OXS_OUT::OXS_OUT(uint8_t pinTx,HardwareSerial &print)
 #else
-OXS_OUT_FRSKY::OXS_OUT_FRSKY(uint8_t pinTx)
+OXS_OUT::OXS_OUT(uint8_t pinTx)
 #endif
 {
   _pinTx = pinTx ;    
@@ -43,8 +32,8 @@ OXS_OUT_FRSKY::OXS_OUT_FRSKY(uint8_t pinTx)
 } // end constructor
 
 
-// **************** Setup the FRSky OutputLib *********************
-void OXS_OUT_FRSKY::setup() {
+// **************** Setup the OutputLib *********************
+void OXS_OUT::setup() {
 
     //initilalise PORT
     TRXDDR &= ~( 1 << PIN_SERIALTX ) ;       // PIN is input, tri-stated.
@@ -86,7 +75,7 @@ void OXS_OUT_FRSKY::setup() {
      }  
      for ( int mbIndex = 0 ; mbIndex < numberOfFields ;   mbIndex++ ) {
        multiplexData.mbData[fieldContainsData[mbIndex][0]].response[0] = ( fieldContainsData[mbIndex][0] << 4) | ( multiplexUnit[ fieldContainsData[mbIndex][1] ] );
-       multiplexData.mbData[fieldContainsData[mbIndex][0]].response[1] = MB_NOVALUE ; // low byte 
+       multiplexData.mbData[fieldContainsData[mbIndex][0]].response[1] = (uint8_t) MB_NOVALUE ; // low byte 
        multiplexData.mbData[fieldContainsData[mbIndex][0]].response[2] = MB_NOVALUE >> 8 ; // hight byte
        multiplexData.mbData[fieldContainsData[mbIndex][0]].active = AVAILABLE ;
      }  
@@ -115,15 +104,8 @@ multiplexData.mbData[15].response[2] = 0xAA ;
 
 
 
-void OXS_OUT_FRSKY::sendData()
+void OXS_OUT::sendData()
 {
-  	formatAllMultiplexData( ) ;
-  
-}
-
-
-void OXS_OUT_FRSKY::formatAllMultiplexData()
-{  
     for ( uint8_t mbIndex = 0 ; mbIndex < numberOfFields ;   mbIndex++ ) {
             formatOneValue( mbIndex ) ;
     }
@@ -134,11 +116,11 @@ void OXS_OUT_FRSKY::formatAllMultiplexData()
 // process occurs only if measurement has been flagged as available by the sensor
 // return 0 if data has been processed; return the internal code of the measurement otherwise
 //************************************
-uint8_t OXS_OUT_FRSKY::formatOneValue( uint8_t currentFieldToSend) {
+uint8_t OXS_OUT::formatOneValue( uint8_t currentFieldToSend) {
   static int32_t valueTemp ;
   static uint8_t alarm ;
-  int fieldID ;
-  fieldID = 0 ;
+//  int fieldID ;
+//  fieldID = 0 ;
   valueTemp = 0 ; 
 
   switch ( fieldContainsData[currentFieldToSend][1] ) {
@@ -383,9 +365,11 @@ uint8_t OXS_OUT_FRSKY::formatOneValue( uint8_t currentFieldToSend) {
 }  // End function
 
 
-void OXS_OUT_FRSKY::setMultiplexNewData(  uint16_t id, int32_t value , uint8_t alarm)
+void OXS_OUT::setMultiplexNewData(  uint16_t id, int32_t value , uint8_t alarm)
 {
-int32_t valueOrig = value ;
+#ifdef DEBUGSETNEWDATA
+        int32_t valueOrig = value ;
+#endif        
         multiplexData.mbData[id].active = LOCKED ;
         value = value << 1 ;
         value += alarm ;
@@ -414,6 +398,203 @@ int32_t valueOrig = value ;
 #endif
               
 }
+
+//---------------------------------- Here the code to handle the UART  
+#ifdef DEBUG
+//#define DEBUGSETNEWDATA
+//#define DEBUGASERIAL
+#endif
+
+#define FORCE_INDIRECT(ptr) __asm__ __volatile__ ("" : "=e" (ptr) : "0" (ptr))
+
+volatile uint8_t state ;                  //!< Holds the state of the UART.
+static volatile unsigned char SwUartTXData ;     //!< Data to be transmitted.
+static volatile unsigned char SwUartTXBitCount ; //!< TX bit counter.
+static volatile uint8_t SwUartRXData ;           //!< Storage for received bits.
+static volatile uint8_t SwUartRXBitCount ;       //!< RX bit counter.
+static volatile uint8_t TxCount ;
+
+volatile uint8_t debugUartRx ;
+
+volatile uint8_t ppmInterrupted ; // This flag is activated at the end of handling interrupt on Timer 1 Compare A if during this interrupt handling an interrupt on pin change (INT0 or INT1) occurs
+                         // in this case, ppm will be wrong and has to be discarded       
+//uint8_t sensorId ;
+
+static volatile uint8_t TxMultiplexData[3] ; // array containing the char to transmit (is filled only when a polling address is received 
+//static uint8_t firstMultiplexData ;
+struct t_mbAllData  * volatile ThisMultiplexData = 0 ;
+
+ISR(TIMER1_COMPA_vect)
+{
+  switch (state)
+  {
+      case TRANSMIT :   // startbit has been sent, it is time to output now 8 bits and 1 stop bit
+#if DEBUGASERIAL
+          PORTC |= 1 ;
+#endif
+          if( SwUartTXBitCount < 8 ) {            // If not 8 bits have been sent
+            if( SwUartTXData & 0x01 ) {           // If the LSB of the TX buffer is 1:
+              SET_TX_PIN_MB() ;
+            } else {                                // Otherwise:
+              CLEAR_TX_PIN_MB() ;                     // Send a logic 0 on the TX_PIN
+            }
+            SwUartTXData = SwUartTXData >> 1 ;    // Bitshift the TX buffer and
+            SwUartTXBitCount += 1 ;               // increment TX bit counter.
+          } else {    //Send stop bit.
+            SET_TX_PIN_MB() ;                             // Output a logic 1.
+            state = TRANSMIT_STOP_BIT;
+          }
+          OCR1A += TICKS2WAITONEMULTIPLEX ;  // Count one period into the future.
+#if DEBUGASERIAL
+        PORTC &= ~1 ;
+#endif
+          break ;
+
+    case TRANSMIT_STOP_BIT:                    //************************************* handling after the stop bit has been sent
+        if (  ++TxCount < 3  ) {   //  there are 3 bytes to send in the Multiplex interface ?
+              SwUartTXData = TxMultiplexData[TxCount] ;
+//                  SwUartTXData = TxCount ;
+              CLEAR_TX_PIN_MB();                     // Send a logic 0 on the TX_PIN as start bit  
+              OCR1A = TCNT1 + TICKS2WAITONEMULTIPLEX ;   // Count one period into the future.
+              SwUartTXBitCount = 0 ;
+              state = TRANSMIT ;
+        } else {                     // 3 bytes have already been sent
+              state = WAITING ;
+ //                 sendStatus = SEND ;
+              OCR1A += DELAY_2000;    // 2mS gap before listening
+              TRXDDR &= ~( 1 << PIN_SERIALTX ) ;            // PIN is input
+              TRXPORT &= ~( 1 << PIN_SERIALTX ) ;           // PIN is tri-stated.
+        }
+        break ;
+
+        case RECEIVE :  // Start bit has been received and we will read bits of data receiving, LSB first.     
+              OCR1A += TICKS2WAITONEMULTIPLEX ;                    // Count one period after the falling edge is trigged.
+              uint8_t data ;                     // Use a temporary local storage (it save some bytes (and perhaps time)
+              data = SwUartRXBitCount ;
+              if( data < 8 ) {                                     //If 8 bits are not yet read
+                  SwUartRXBitCount = data + 1 ;
+                  data = SwUartRXData ;
+                  data >>= 1 ;                         // Shift due to receiving LSB first.
+                  if( !(GET_RX_PIN( ) == 0 )) data |= 0x80 ;          // If a logical 1 is read, let the data mirror this.
+                  SwUartRXData = data ;
+               } else {                                      //Done receiving =  8 bits are in SwUartRXData
+                   struct t_mbAllData * volatile pdata = ThisMultiplexData ;
+                   FORCE_INDIRECT( pdata ) ;
+                   if ( SwUartRXData > MB_MAX_ADRESS ) {
+//                        mb_commandReceived ( SwUartRXData ) ; to implement if wanted in a second phase
+                        state = WAITING ;
+                        OCR1A += DELAY_4000 ;                // 4mS gap before listening (take care that 4096 is the max we can wait because timer 1 is 16 bits and prescaler = 1)
+                   } else  {
+                        if  ( pdata->mbData[ SwUartRXData ] . active == AVAILABLE )  { 
+                          TxMultiplexData[0] = pdata->mbData[SwUartRXData].response[0] ;
+                          TxMultiplexData[1] = pdata->mbData[SwUartRXData].response[1] ;
+                          TxMultiplexData[2] = pdata->mbData[SwUartRXData].response[2] ;
+                          if ( (TxMultiplexData[2] != (MB_NOVALUE>>8)) || (TxMultiplexData[1] != (MB_NOVALUE & 0xff)) ) pdata->mbData [ SwUartRXData ] . active = NOT_AVAILABLE ;      // this line could be set in comment if we want to send same data and not only when a new calculation is done
+                              state = TxPENDING ;
+                              OCR1A += ( DELAY_1600 - TICKS2WAITONEMULTIPLEX) ;      // 1.6ms gap before sending
+                          } else {                                                           // Status was not AVAILABLE, so there are no data ready to send
+                              state = WAITING ;
+                              OCR1A += DELAY_4000 ;   // 4mS gap before listening (take care that 4096 is the max we can wait because timer 1 is 16 bits and prescaler = 1)
+                          }
+                   } // end receiving 1 byte
+           } // End receiving  1 bit or 1 byte (8 bits)
+        break ;
+  
+      case TxPENDING :                                         //End of delay before sending data has occurs
+            CLEAR_TX_PIN_MB() ;                          // Send a start bit (logic 0 on the TX_PIN).
+            OCR1A = TCNT1 + TICKS2WAITONEMULTIPLEX ;         // Count one period into the future.
+            SwUartTXBitCount = 0 ;
+            SwUartTXData = TxMultiplexData[0] ;
+            TxCount = 0 ;
+            state = TRANSMIT ;
+            break ;
+
+    case WAITING :                                  // At the end of wait time, stop timer interrupt but allow pin change interrupt in order to allow to detect incoming data
+           DISABLE_TIMER_INTERRUPT() ;    // Stop the timer interrupts.
+           state = IDLE ;                           // Go back to idle.
+           CLEAR_PIN_CHANGE_INTERRUPT() ;   // clear pending pin change interrupt
+           ENABLE_PIN_CHANGE_INTERRUPT() ;    // pin change interrupt enabled
+            break ;
+
+  // Unknown state.
+    default:        
+          state = IDLE;                               // Error, should not occur. Going to a safe state.
+  } // End CASE
+//#ifdef PPM_INTERRUPT
+//  if ( EIFR & PPM_INT_BIT)  ppmInterrupted = 1 ;
+//#endif
+
+} // End of ISR
+
+
+
+//brief  Function to initialize the UART for multiplex protocol
+//  This function will set up pins to transmit and receive on. Control of Timer1 and pin change interrupt 0.
+void initMultiplexUart( struct t_mbAllData * volatile pdata )           //*************** initialise UART for Multiplex
+{
+    ThisMultiplexData = pdata ;              // this allows the ISR routine to get access to the data in OXS_Out_Multiplex
+    
+    //PORT
+    TRXDDR &= ~( 1 << PIN_SERIALTX ) ;       // PIN is input.
+    TRXPORT &= ~( 1 << PIN_SERIALTX ) ;      // PIN is tri-stated.
+
+  // External interrupt
+  
+#if PIN_SERIALTX == 4
+    PCMSK2 |= 0x10 ;      // IO4 (PD4) on Arduini mini
+#elif PIN_SERIALTX == 2
+    PCMSK2 |= 0x04 ;                    // IO2 (PD2) on Arduini mini
+#else
+    #error "This PIN is not supported"
+#endif
+    CLEAR_PIN_CHANGE_INTERRUPT() ;
+    ENABLE_PIN_CHANGE_INTERRUPT() ; 
+    state = IDLE ;     // Internal State Variable
+
+#if DEBUGASERIAL
+    DDRC = 0x01 ;   // PC0 as o/p debug = pin A0 !!!!
+    PORTC = 0 ; 
+#endif
+}
+
+
+// ! \brief  External interrupt service routine.  ********************
+//  Interrupt on Pin Change to detect change on level on Multiplex signal (= could be a start bit)
+//
+// The falling edge in the beginning of the start
+//  bit will trig this interrupt. The state will
+//  be changed to RECEIVE, and the timer interrupt
+//  will be set to trig one and a half bit period
+//  from the falling edge. At that instant the
+//  code should sample the first data bit.
+//
+//  note  initMultiplexUart( void ) must be called in advance.
+//
+// This is the pin change interrupt for port D
+// This assumes it is the only pin change interrupt
+// on this port
+
+ISR(PCINT2_vect)
+{
+  if (!( TRXPIN & ( 1 << PIN_SERIALTX ) )) {      // Pin is low = start bit 
+            DISABLE_PIN_CHANGE_INTERRUPT()  ;     // pin change interrupt disabled
+            state = RECEIVE ;                 // Change state
+            DISABLE_TIMER_INTERRUPT() ;       // Disable timer to change its registers.
+            OCR1A = TCNT1 + TICKS2WAITONE_HALFMULTIPLEX - INTERRUPT_EXEC_CYCL - INTERRUPT_EARLY_BIAS ; // Count one and a half period into the future.
+#if DEBUGASERIAL
+            PORTC |= 1 ;
+#endif
+            SwUartRXBitCount = 0 ;            // Clear received bit counter.
+            CLEAR_TIMER_INTERRUPT() ;         // Clear interrupt bits
+            ENABLE_TIMER_INTERRUPT() ;        // Enable timer1 interrupt on again
+  }
+//#ifdef PPM_INTERRUPT
+//  if ( EIFR & PPM_INT_BIT)  ppmInterrupted = 1 ;
+//#endif
+
+}  // end ISR pin change
+
+
 
 
 // -------------------------End of Multiplex protocol--------------------------------------------------------------------------------------

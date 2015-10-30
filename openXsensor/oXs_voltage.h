@@ -8,7 +8,6 @@ struct VOLTAGEDATA {
   bool available;    // to remove afterward
   uint16_t vrefMilliVolts;          // in mV the internal measured voltage Reference ; to remove afterward
   
-  
   int32_t mVolt[6] ;             // in mV 
   bool mVoltAvailable[6] ;
   
@@ -18,7 +17,6 @@ struct VOLTAGEDATA {
 //  bool atLeastOneVoltage ;      // true if there is at least one voltage to measure
   
   int32_t sumVoltage[6] ;       // use to calculate average voltage     
-
 
   uint32_t mVoltCell[6] ;
   bool mVoltCell_Available [6];
