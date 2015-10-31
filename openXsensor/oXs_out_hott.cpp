@@ -471,26 +471,30 @@ ISR(TIMER1_COMPA_vect)
                   if( !(GET_RX_PIN( ) == 0 )) data |= 0x80 ;          // If a logical 1 is read, let the data mirror this.
                   SwUartRXData = data ;
                } else {                                      //Done receiving =  8 bits are in SwUartRXData
-                   struct t_mbAllData * volatile pdata = ThisMultiplexData ;
-                   FORCE_INDIRECT( pdata ) ;
-                   if ( SwUartRXData > MB_MAX_ADRESS ) {
-//                        mb_commandReceived ( SwUartRXData ) ; to implement if wanted in a second phase
-                        state = WAITING ;
-                        OCR1A += DELAY_4000 ;                // 4mS gap before listening (take care that 4096 is the max we can wait because timer 1 is 16 bits and prescaler = 1)
-                   } else  {
-                        if  ( pdata->mbData[ SwUartRXData ] . active == AVAILABLE )  { 
-                          TxMultiplexData[0] = pdata->mbData[SwUartRXData].response[0] ;
-                          TxMultiplexData[1] = pdata->mbData[SwUartRXData].response[1] ;
-                          TxMultiplexData[2] = pdata->mbData[SwUartRXData].response[2] ;
-                          if ( (TxMultiplexData[2] != (MB_NOVALUE>>8)) || (TxMultiplexData[1] != (MB_NOVALUE & 0xff)) ) pdata->mbData [ SwUartRXData ] . active = NOT_AVAILABLE ;      // this line could be set in comment if we want to send same data and not only when a new calculation is done
-                              state = TxPENDING ;
-                              OCR1A += ( DELAY_1600 - TICKS2WAITONEMULTIPLEX) ;      // 1.6ms gap before sending
-                          } else {                                                           // Status was not AVAILABLE, so there are no data ready to send
-                              state = WAITING ;
-                              OCR1A += DELAY_4000 ;   // 4mS gap before listening (take care that 4096 is the max we can wait because timer 1 is 16 bits and prescaler = 1)
-                          }
-                   } // end receiving 1 byte
-           } // End receiving  1 bit or 1 byte (8 bits)
+                  if ( LastRx == HOTT_BINARY_MODE_REQUEST_ID ) {                    // if the previous byte identifies a polling for a reply in binary format
+                           if ( SwUartRXData <> HOTT_TELEMETRY_GAM_SENSOR_ID ) {
+                                state = WAITING ;
+                                OCR1A += DELAY_4000 ;                // 4mS gap before listening (take care that 4096 is the max we can wait because timer 1 is 16 bits and prescaler = 1)
+                           } else  {                                 // the sensor has to reply (if it has data; here we assume it has always data and the data will be in the Hott buffer)
+                               updateHottBuffer = true ;
+                               state = TxPENDING ;
+                               OCR1A += ( DELAY_4000 - TICKS2WAITONEHOTT) ;                   // 4ms gap before sending
+       !!!!!!!!!!!!!!!!!!!                         
+                            } // end last byte was a polling code
+
+                  } else {                                // Previous code is not equal to HOTT_BINARY_MODE_REQUEST_ID , enter to iddle mode                                  
+                      DISABLE_TIMER_INTERRUPT() ;         // Stop the timer interrupts.
+                      state = IDLE ;                      // Go back to idle.
+                      PCIFR = ( 1<<PCIF2 ) ;              // clear pending interrupt
+                      PCICR |= ( 1<<PCIE2 ) ;             // pin change interrupt enabled
+                  }
+                  LastRx = SwUartRXData ;
+               } // End receiving  1 bit or 1 byte (8 bits)
+
+
+
+                   
+              } // End receiving  1 bit or 1 byte (8 bits)
         break ;
   
       case TxPENDING :                                         //End of delay before sending data has occurs

@@ -40,21 +40,22 @@ struct t_mbAllData {
 // Hott protocol v4 delay
 #define HOTTV4_TX_DELAY 1600 // Delai entre octets
 
-//Graupner #33620 Electric Air Module (EAM)
-#define HOTT_TELEMETRY_GEA_SENSOR_ID    0x8E // Electric Air Module ID
+// first byte sent by Rx for polling can have 2 values
 #define HOTT_BINARY_MODE_REQUEST_ID      0x80
 #define HOTT_TEXT_MODE_REQUEST_ID       0x7f
-#define HOTT_TELEMETRY_GAM_SENSOR_ID    0x8d
 
-//Graupner #33600 Gps module
-#define HOTT_TELEMETRY_GPS_SENSOR_ID    0x8a
+// in binary mode, second byte identifies one of 4 sensor types
+#define HOTT_TELEMETRY_GEA_SENSOR_ID    0x8E // Electric Air Module ID
+#define HOTT_TELEMETRY_GAM_SENSOR_ID    0x8d  
+#define HOTT_TELEMETRY_GPS_SENSOR_ID    0x8a //Graupner #33600 Gps module
+#define HOTT_TELEMETRY_VARIO_SENSOR_ID  0x89 //Graupner #33601 Vario Module
+// note : when sensor relies, it sent first 2 bytes with the value = ??????????????? and then it starts a set of bytes depending on the type of sensor.
+
+
+// in text mode, second byte identifies one of 4 sensor types
 #define HOTT_GPS_SENSOR_TEXT_ID 0xA0 // GPS Module ID          
 
-//Graupner #33601 Vario Module
-#define HOTT_TELEMETRY_VARIO_SENSOR_ID  0x89
-
-
-// GENERAL AIR MODULE 
+// structure of GENERAL AIR MODULE 
 struct HOTT_GAM_MSG {
   byte start_byte;          //#01 start byte constant value 0x7c
   byte gam_sensor_id;       //#02 EAM sensort id. constat value 0x8d=GENRAL AIR MODULE
@@ -90,7 +91,7 @@ struct HOTT_GAM_MSG {
                   0x1A  26  Z  Max. Altitude Z
                         */
   byte sensor_id;                       //#04 constant value 0xd0
-  byte alarm_invers1; //#05 alarm bitmask. Value is displayed inverted
+  byte alarm_invers1;                   //#05 alarm bitmask. Value is displayed inverted
               //Bit#  Alarm field
             // 0    all cell voltage
             // 1    Battery 1
@@ -100,7 +101,7 @@ struct HOTT_GAM_MSG {
             // 5    Fuel
             // 6    mAh
             // 7    Altitude
-  byte alarm_invers2;     //#06 alarm bitmask. Value is displayed inverted
+  byte alarm_invers2;                    //#06 alarm bitmask. Value is displayed inverted
                 //Bit#  Alarm Field
                 // 0    main power current
                 // 1    main power voltage
@@ -145,7 +146,7 @@ struct HOTT_GAM_MSG {
   byte min_cell_volt_num;               //#38 number of the cell with the lowest voltage
   uint16_t rpm2;                        //#39 LSB 2nd RPM in 10 RPM steps. 100 == 1000rpm
           //#40 MSB
-  byte general_error_number;        //#41 General Error Number (Voice Error == 12) TODO: more documentation
+  byte general_error_number;            //#41 General Error Number (Voice Error == 12) TODO: more documentation
   byte pressure;                        //#42 High pressure up to 16bar. 0,1bar scale. 20 == 2.0bar
   byte version;                         //#43 version number (Bytes 35 .43 new but not yet in the record in the display!)
   byte stop_byte;                       //#44 stop byte 0x7D

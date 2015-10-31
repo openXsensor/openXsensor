@@ -923,7 +923,7 @@ void calculateAverages( ){
 #endif                
                 if (  secFromT0 >=  GLIDER_RATIO_CALCULATED_AFTER_X_SEC * 10 ) {         // *10 because secFromT0 is in 1/10 of sec 
 #ifdef AIRSPEED
-                    gliderRatio = distanceSinceT0  * 10 / altitudeDifference  ;        // when gliderRatio is > (50.0 *10) it it not realistic (*10 is done in order to add a decimal)
+                    gliderRatio = distanceSinceT0  * -10 / altitudeDifference  ;        // when gliderRatio is > (50.0 *10) it it not realistic (*10 is done in order to add a decimal)
                     if ( gliderRatio > 500) gliderRatio = 0 ;                                                   // 
 #endif                    
                     averageVspeedSinceT0 = altitudeDifference * 10 / secFromT0  ;      // * 10 because secFromT0 is in 1/10 of sec

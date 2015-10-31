@@ -1941,21 +1941,19 @@ ISR(TIMER1_COMPA_vect)
                       {
                           state = WAITING ;
                           OCR1A += DELAY_3500 ;   // 3.5mS gap before listening
-//                          SportSync = 1 ;
                       }
-                      }
-                      else // Previous code is not equal to x7E 
-                      {
-                          DISABLE_TIMER_INTERRUPT() ;         // Stop the timer interrupts.
-                          state = IDLE ;                                  // Go back to idle.
-                          PCIFR = ( 1<<PCIF2 ) ;        // clear pending interrupt
-                          PCICR |= ( 1<<PCIE2 ) ;       // pin change interrupt enabled
-                          //PORTC |= 2 ;
-                      }
-                      LastRx = SwUartRXData ;
-                   } // End receiving  1 bit or 1 byte (8 bits)
-               }
-          break ;
+                  }    // received 1 byte and was equal to 0x7E
+                  else // Previous code is not equal to x7E 
+                  {
+                      DISABLE_TIMER_INTERRUPT() ;         // Stop the timer interrupts.
+                      state = IDLE ;                                  // Go back to idle.
+                      PCIFR = ( 1<<PCIF2 ) ;        // clear pending interrupt
+                      PCICR |= ( 1<<PCIE2 ) ;       // pin change interrupt enabled
+                  }
+                  LastRx = SwUartRXData ;
+               } // End receiving  1 bit or 1 byte (8 bits)
+           }
+        break ;
   
   case TxPENDING :
 #if DEBUGASERIAL
