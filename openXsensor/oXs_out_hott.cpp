@@ -41,24 +41,21 @@ void OXS_OUT::setup() {
 
   // Activate pin change interupt on Tx pin
 #if PIN_SERIALTX == 4
-    PCMSK2 |= 0x10 ;			// IO4 (PD4) on Arduini mini
+    PCMSK2 |= 0x10 ;			              // IO4 (PD4) on Arduini mini
 #elif PIN_SERIALTX == 2
     PCMSK2 |= 0x04 ;                    // IO2 (PD2) on Arduini mini
 #else
     #error "This PIN is not supported"
 #endif
-
-    PCIFR = (1<<PCIF2) ;	// clear pending interrupt
-
-    //initMultiplexUart( &sportData ) ;
-    initMultiplexUart( &multiplexData ) ;
+    PCIFR = (1<<PCIF2) ;               	// clear pending interrupt
+    initHottUart( &hottData ) ;         
 	
 #ifdef DEBUG
-      printer->print(F("Multiplex Output Module: TX Pin="));
+      printer->print(F("Hott Output Module: TX Pin="));
       printer->println(_pinTx);
       printer->print(F(" milli="));  
       printer->println(millis());
-      printer->println(F("Multiplex Output Module: Setup!"));
+      printer->println(F("Hott Output Module: Setup!"));
       printer->print(F("Number of fields to send = "));
       printer->println(numberOfFields);
       for (int rowNr = 0 ; rowNr < numberOfFields ; rowNr++) {
@@ -365,12 +362,12 @@ uint8_t OXS_OUT::formatOneValue( uint8_t currentFieldToSend) {
 }  // End function
 
 
-void OXS_OUT::setMultiplexNewData(  uint16_t id, int32_t value , uint8_t alarm)
+void OXS_OUT::setHottNewData(  uint16_t id, int32_t value , uint8_t alarm)
 {
 #ifdef DEBUGSETNEWDATA
         int32_t valueOrig = value ;
 #endif        
-        multiplexData.mbData[id].active = LOCKED ;
+        hottData.mbData[id].active = LOCKED ;
         value = value << 1 ;
         value += alarm ;
         multiplexData.mbData[id].response[1] = value ;	
@@ -439,34 +436,32 @@ ISR(TIMER1_COMPA_vect)
             SwUartTXData = SwUartTXData >> 1 ;    // Bitshift the TX buffer and
             SwUartTXBitCount += 1 ;               // increment TX bit counter.
           } else {    //Send stop bit.
-            SET_TX_PIN_MB() ;                             // Output a logic 1.
+            SET_TX_PIN_MB() ;                             // Output a logic 1. (in high impedance)
             state = TRANSMIT_STOP_BIT;
           }
-          OCR1A += TICKS2WAITONEMULTIPLEX ;  // Count one period into the future.
+          OCR1A += TICKS2WAITONEHOTT ;  // Count one period into the future.
 #if DEBUGASERIAL
         PORTC &= ~1 ;
 #endif
           break ;
 
     case TRANSMIT_STOP_BIT:                    //************************************* handling after the stop bit has been sent
-        if (  ++TxCount < 3  ) {   //  there are 3 bytes to send in the Multiplex interface ?
-              SwUartTXData = TxMultiplexData[TxCount] ;
-//                  SwUartTXData = TxCount ;
+        if (  ++TxCount < 3  ) {   // !!!!!!!! to change with number of byte to transmit
+              SwUartTXData = TxHottData[TxCount] ;
               CLEAR_TX_PIN_MB();                     // Send a logic 0 on the TX_PIN as start bit  
-              OCR1A = TCNT1 + TICKS2WAITONEMULTIPLEX ;   // Count one period into the future.
+              OCR1A = TCNT1 + TICKS2WAITONEHOTT ;   // Count one period into the future.
               SwUartTXBitCount = 0 ;
               state = TRANSMIT ;
-        } else {                     // 3 bytes have already been sent
+        } else {                                        // all bytes have already been sent
               state = WAITING ;
- //                 sendStatus = SEND ;
-              OCR1A += DELAY_2000;    // 2mS gap before listening
+              OCR1A += DELAY_2000;                      // 2mS gap before listening
               TRXDDR &= ~( 1 << PIN_SERIALTX ) ;            // PIN is input
               TRXPORT &= ~( 1 << PIN_SERIALTX ) ;           // PIN is tri-stated.
         }
         break ;
 
         case RECEIVE :  // Start bit has been received and we will read bits of data receiving, LSB first.     
-              OCR1A += TICKS2WAITONEMULTIPLEX ;                    // Count one period after the falling edge is trigged.
+              OCR1A += TICKS2WAITONEHOTT ;                    // Count one period after the falling edge is trigged.
               uint8_t data ;                     // Use a temporary local storage (it save some bytes (and perhaps time)
               data = SwUartRXBitCount ;
               if( data < 8 ) {                                     //If 8 bits are not yet read
@@ -499,19 +494,19 @@ ISR(TIMER1_COMPA_vect)
         break ;
   
       case TxPENDING :                                         //End of delay before sending data has occurs
-            CLEAR_TX_PIN_MB() ;                          // Send a start bit (logic 0 on the TX_PIN).
-            OCR1A = TCNT1 + TICKS2WAITONEMULTIPLEX ;         // Count one period into the future.
+            CLEAR_TX_PIN_MB() ;                                // Send a start bit (logic 0 on the TX_PIN).
+            OCR1A = TCNT1 + TICKS2WAITONEHOTT ;                // Count one period into the future.
             SwUartTXBitCount = 0 ;
-            SwUartTXData = TxMultiplexData[0] ;
+            SwUartTXData = TxHottData[0] ;
             TxCount = 0 ;
             state = TRANSMIT ;
             break ;
 
     case WAITING :                                  // At the end of wait time, stop timer interrupt but allow pin change interrupt in order to allow to detect incoming data
-           DISABLE_TIMER_INTERRUPT() ;    // Stop the timer interrupts.
+           DISABLE_TIMER_INTERRUPT() ;              // Stop the timer interrupts.
            state = IDLE ;                           // Go back to idle.
-           CLEAR_PIN_CHANGE_INTERRUPT() ;   // clear pending pin change interrupt
-           ENABLE_PIN_CHANGE_INTERRUPT() ;    // pin change interrupt enabled
+           CLEAR_PIN_CHANGE_INTERRUPT() ;           // clear pending pin change interrupt
+           ENABLE_PIN_CHANGE_INTERRUPT() ;          // pin change interrupt enabled
             break ;
 
   // Unknown state.
