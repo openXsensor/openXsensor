@@ -6,6 +6,7 @@
 #include "oXs_curr.h"
 #include "oXs_out_frsky.h"
 #include "oXs_out_multiplex.h"
+//#include "oXs_out_hott.h"
 #include "oXs_general.h"
 #include "oXs_gps.h"
 
@@ -893,7 +894,10 @@ void calculateAverages( ){
         if ( (uint16_t) (currentGliderMillis - prevAverageAltMillis) >   500 ) { // check on tolerance has to be done
             altitudeDifference = oXs_MS5611.varioData.absoluteAlt -altitudeAtT0  ;
             secFromT0 =  ( currentGliderMillis - millisAtT0 ) / 100 ;            // in 1/10 of sec
-#if defined AIRSPEED
+#ifdef DEBUG_GLIDER8RATIO
+            serial.print((F("secFromT0: ")); serial.println( secFromT0 ) ;
+#endif
+#ifdef AIRSPEED
             if ( (aSpeedAtT0 > 300) && ( oXs_4525.airSpeedData.smoothAirSpeed > 300 ) ) {
                 aSpeedWithinTolerance = ( (abs( oXs_4525.airSpeedData.smoothAirSpeed - aSpeedAtT0) * 100L ) / aSpeedAtT0 ) <= SPEED_TOLERANCE ;
             } else {
@@ -901,17 +905,25 @@ void calculateAverages( ){
             }
 #endif            
             if (  ( oXs_MS5611.varioData.climbRate <  VSPEED_MIN_TOLERANCE ) || ( oXs_MS5611.varioData.climbRate >  VSPEED_MAX_TOLERANCE ) \
-                || ( altitudeDifference < -10 ) || ( aSpeedWithinTolerance == false ) ) { 
+                || ( altitudeDifference > -10 ) || ( aSpeedWithinTolerance == false ) ) { 
                 altitudeAtT0 = oXs_MS5611.varioData.absoluteAlt ;
                 aSpeedAtT0 = oXs_4525.airSpeedData.smoothAirSpeed ;
                 secFromT0 = 0 ;
                 distanceSinceT0 = 0 ;
                 millisAtT0 = currentGliderMillis ;
+#ifdef DEBUG_GLIDER8RATIO
+            serial.println((F("Reset")); 
+#endif
+
             } else {                                                      // within tolerance, calculate glider ratio and average sinking  
+#ifdef AIRSPEED
                 distanceSinceT0 += oXs_4525.airSpeedData.smoothAirSpeed / (1000 /  500) ;  // to adapt if delay is different.
+#endif                
                 if (  secFromT0 >=  GLIDER_RATIO_CALCULATED_AFTER_X_SEC * 10 ) {         // *10 because secFromT0 is in 1/10 of sec 
+#ifdef AIRSPEED
                     gliderRatio = distanceSinceT0  * 10 / altitudeDifference  ;        // when gliderRatio is > (50.0 *10) it it not realistic (*10 is done in order to add a decimal)
                     if ( gliderRatio > 500) gliderRatio = 0 ;                                                   // 
+#endif                    
                     averageVspeedSinceT0 = altitudeDifference * 10 / secFromT0  ;      // * 10 because secFromT0 is in 1/10 of sec
                 }
              }

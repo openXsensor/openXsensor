@@ -44,8 +44,8 @@ started by Rainer Schloßhan
 
 
 **** 1 - Protocol & Frsky sensor_ID to be used **********************************************************************
-* Currently oXs supports only 2 telemetry protocols : Multiplex & Frsky
-* Both are not supported simultanously; if you activate the Multiplex, the Frsky is disactivated (and the opposite) 
+* Currently oXs supports 3 telemetry protocols : Multiplex , Frsky and Hott (=Graupner)
+* Both are not supported simultanously; e.g. if you activate the Multiplex, the Frsky is disactivated (and the opposite) 
 * 1.1 Multiplex protocol
 *       in order to activate the Multiplex protocol, simply uncomment the line //#define MULTIPLEX
 * 1.2 Frsky protocol and device ID (required when Sport protocol is used)
@@ -73,10 +73,12 @@ started by Rainer Schloßhan
 *       RPM      5
 *       SP2UH    6
 *       SP2UR    7
+* 1.3 Hott protocol
+*       in order to activate the Hott protocol, simply uncomment the line //#define HOTT
 ************************************************************************************************************************
 //#define MULTIPLEX
 #define SPORT_SENSOR_ID    28   
-
+//#define HOTT
 
 **** 2 - Serial data pin ***********************************************************************************************
 *   OXS has to be connected to the receiver in order to transmit his data.
