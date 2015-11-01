@@ -10,7 +10,9 @@
 //#include <Arduino.h>
 #include "oXs_general.h"
 
-#ifndef MULTIPLEX
+#define FRSKY  ( defined(MULTIPLEX) || defined ( HOTT) )
+#if ( FRSKY == false )
+
 
 //#define DEBUG_SETUP_PIN 5  // allows to send a pulse on an output pin during the enlapsed time that Arduino runs the set up 
 //#define DEBUG_SPORT_PIN 6  // allows to send a pulse on an output pin during the enlapsed time that Arduino checks for SPORT 
@@ -406,10 +408,10 @@ uint32_t millis( void ) ;
     #define DELAY_400  ((uint16_t)400.0 * 20.0 /16.0 )
     #define DELAY_100  ((uint16_t)100.0 * 20.0 /16.0 )
   #elif F_CPU == 16000000L   // 16MHz clock                                                  
-    #define DELAY_4000 ((uint16_t) (1000L * 16) )     
-    #define DELAY_3500 ((uint16_t) (1000L * 16) )         
-    #define DELAY_2000 ((uint16_t) (1000L * 16) )     
-    #define DELAY_1600 ((uint16_t) (1000L * 16) )     
+    #define DELAY_4000 ((uint16_t) (4000L * 16) )     
+    #define DELAY_3500 ((uint16_t) (3500L * 16) )         
+    #define DELAY_2000 ((uint16_t) (2000L * 16) )     
+    #define DELAY_1600 ((uint16_t) (1600L * 16) )     
     #define DELAY_400 ((uint16_t) (400 * 16) )     
     #define DELAY_100 ((uint16_t) (100 * 16) )     
   #elif F_CPU == 8000000L    // 8MHz clock                                                   

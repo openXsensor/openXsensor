@@ -1,7 +1,9 @@
 // file for FRSKY telemetry (SPORT and HUB)
 
 #include "oXs_out_frsky.h"
-#ifndef MULTIPLEX
+#define FRSKY  ( defined(MULTIPLEX) || defined ( HOTT) )
+#if (FRSKY == false)
+
 
 #ifdef DEBUG
 // ************************* Several parameters to help debugging

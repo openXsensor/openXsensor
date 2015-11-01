@@ -25,7 +25,7 @@
 //#define FRSKY_TYPE_HUB   // when uncommented, it forces oXs to apply only HUB protocol, otherwise, oXs detects automatically if protocol has to be SPORT or HUB
 #define SPORT_SENSOR_ID    28 // value must be between 1 and 28 
 // ***** 1.3 - Hott protocol is used (otherwise oXs assumes it is Frsky protocol) *****
-//#define HOTT
+#define HOTT
 
 // --------- 2 - Serial data pin choice ---------
 #define PIN_SERIALTX      4    // The pin which transmits the serial data to the FrSky telemetry receiver, Usually pin 4
@@ -148,6 +148,12 @@
                         7 , CELL_TOT , 1 , 1 , 0 , -16384 , 16383 , \
                         5 , ALTIMETER_MAX , 1 , 1 , 0 , -16384 , 16383 , \
                         4 , VOLT4 , 1 , 1 , 0 , -16384 , 16383
+
+// ***** 9.3 - Hott data *****
+#define USE_VOLT_X_AS_BATTERY1    1   // VOLT Number used for battery1 (e.g. 1 means that VOLT1 measures battery1, 2 means that VOLT2 measures battery1, ...)
+#define USE_VOLT_X_AS_BATTERY2    3   // VOLT Number used for battery2 (e.g. 1 means that VOLT1 measures battery2, 2 means that VOLT2 measures battery2, ...) 
+#define USE_VOLT_X_AS_MAIN_BATTERY   4   // VOLT Number used for main battery (e.g. 1 means that VOLT1 measures main battery, 2 means that VOLT2 measures main battery, ...) 
+
 // --------- 10 - Sequencer ---------
 //#define SEQUENCE_OUTPUTS 0b100000  
 #define SEQUENCE_UNIT 100

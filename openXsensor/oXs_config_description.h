@@ -554,7 +554,8 @@ started by Rainer Schloßhan
 
 
 **** 9 - Data to transmit **********************************************************************************************
-*      In this section, you will define which OXS measurements are sent to Tx and in which telemetry field they appear on the Tx telemetry panels.
+*      For Hott protocol, look directly at section 9.3 because the logic is quite different 
+*      In this section (for Frsky and Multiplex protocol), you will define which OXS measurements are sent to Tx and in which telemetry field they appear on the Tx telemetry panels.
 *      You have also to specify if some scaling have to be applied by OXS.
 *      Furthermore for Multiplex protocol you can also specify a range value in order to set alarms on/off.
 *
@@ -756,6 +757,20 @@ started by Rainer Schloßhan
 *         There is no need filling a third row with CELLS_5_6 because there is no cell 5 or 6
 * **********************************************************************************************************************
 *  IMPORTANT : keep always the line "#define SETUP_DATA_TO_SEND    \"  ; do not insert any comment lines after or between the rows used for the set up.
+****** 9.3 - Hott data *************************************************************************************************
+*  When Hott protocol is used, oXs send the measurements in predefined fields foreseen by Hott protocol for the General Air Module (GAM)
+*  Fields that can be transmitted are:
+*  - Voltage of each lipo cell + voltage of lowest cell (if first voltage parameters are defined and NUMBEROFCELLS is > 0) 
+*  - Current and consumption (if PIN_CURRENTSENSOR is defined)
+*  - Altitude and vertical speed (if parameters about a vario sensor are defined)  
+*  - Airspeed (if parameters about airspeed sensor are defined)
+*  - Voltage on battery1 and/or battery2 and/or main battery: it requires that some voltage parameters are defined + that you specify the number of VOLTx to be transmitted
+*       You can specify the VOLTx to be transmitted using parameters USE_VOLT_X_AS_BATTERY1 , USE_VOLT_X_AS_BATTERY2 and USE_VOLT_X_AS_MAIN_BATTERY
+*       Put the line(s) as comment when no measurement has to be transmitted in battery field(s)
+************* Here an example of setup for Hott protocol
+#define USE_VOLT_X_AS_BATTERY1    1   // VOLT Number used for battery1 (e.g. 1 means that VOLT1 measures battery1, 2 means that VOLT2 measures battery1, ...)
+#define USE_VOLT_X_AS_BATTERY2    3   // VOLT Number used for battery2 (e.g. 1 means that VOLT1 measures battery2, 2 means that VOLT2 measures battery2, ...) 
+#define USE_VOLT_X_AS_MAIN_BATTERY   4   // VOLT Number used for main battery (e.g. 1 means that VOLT1 measures main battery, 2 means that VOLT2 measures main battery, ...) 
 
 **** 10 - Sequencer (ON/OFF) for several digital outputs **************************************************************************************
 * oXs allows you to control (HIGH/LOW) up to 6 digitals Arduino outputs in different sequences.

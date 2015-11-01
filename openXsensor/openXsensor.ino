@@ -6,7 +6,7 @@
 #include "oXs_curr.h"
 #include "oXs_out_frsky.h"
 #include "oXs_out_multiplex.h"
-//#include "oXs_out_hott.h"
+#include "oXs_out_hott.h"
 #include "oXs_general.h"
 #include "oXs_gps.h"
 
@@ -304,12 +304,13 @@ void setup(){
 
 uint32_t baudRateHardwareUart = 115200L ; // default value when GPS is not used
 #ifdef GPS_INSTALLED
-  baudRateHardwareUart = 38400 ; // when GPS is used, baudrate is reduced.
-  Serial.begin( baudRateHardwareUart );
+  Serial.begin(38400); // when GPS is used, baudrate is reduced because main loop must have the time to read the received char.
 #endif
 
 #ifdef DEBUG 
-  Serial.begin( baudRateHardwareUart );
+#ifndef GPS_INSTALLED
+  Serial.begin(115200L); // when GPS is not used, baudrate can be 115200
+#endif
   Serial.println(F("openXsensor starting.."));
   Serial.print(F(" milli="));  
   Serial.println(millis());

@@ -55,8 +55,10 @@ struct t_mbAllData {
 // in text mode, second byte identifies one of 4 sensor types
 #define HOTT_GPS_SENSOR_TEXT_ID 0xA0 // GPS Module ID          
 
+#define TXHOTTDATA_BUFFERSIZE 45
+
 // structure of GENERAL AIR MODULE 
-struct HOTT_GAM_MSG {
+typedef struct {
   byte start_byte;          //#01 start byte constant value 0x7c
   byte gam_sensor_id;       //#02 EAM sensort id. constat value 0x8d=GENRAL AIR MODULE
   byte warning_beeps;       //#03 1=A 2=B ... 0x1a=Z  0 = no alarm
@@ -111,47 +113,48 @@ struct HOTT_GAM_MSG {
                   // 5    unknown
                 // 6    unknown
                 // 7    "ON" sign/text msg active
-  byte cell[6];       //#7 Volt Cell 1 (in 2 mV increments, 210 == 4.20 V)
-                //#8 Volt Cell 2 (in 2 mV increments, 210 == 4.20 V)
-                //#9 Volt Cell 3 (in 2 mV increments, 210 == 4.20 V)
-                //#10 Volt Cell 4 (in 2 mV increments, 210 == 4.20 V)
-          //#11 Volt Cell 5 (in 2 mV increments, 210 == 4.20 V)
-          //#12 Volt Cell 6 (in 2 mV increments, 210 == 4.20 V)
+  byte cell[6];                         //#7 Volt Cell 1 (in 2 mV increments, 210 == 4.20 V)
+                                        //#8 Volt Cell 2 (in 2 mV increments, 210 == 4.20 V)
+                                        //#9 Volt Cell 3 (in 2 mV increments, 210 == 4.20 V)
+                                        //#10 Volt Cell 4 (in 2 mV increments, 210 == 4.20 V)
+                                        //#11 Volt Cell 5 (in 2 mV increments, 210 == 4.20 V)
+                                        //#12 Volt Cell 6 (in 2 mV increments, 210 == 4.20 V)
   uint16_t  Battery1;                   //#13 LSB battery 1 voltage LSB value. 0.1V steps. 50 = 5.5V only pos. voltages
-                //#14 MSB 
+                                        //#14 MSB 
   uint16_t  Battery2;                   //#15 LSB battery 2 voltage LSB value. 0.1V steps. 50 = 5.5V only pos. voltages
-          //#16 MSB
+                                        //#16 MSB
   byte temperature1;                    //#17 Temperature 1. Offset of 20. a value of 20 = 0°C
   byte temperature2;                    //#18 Temperature 2. Offset of 20. a value of 20 = 0°C
   byte fuel_procent;                    //#19 Fuel capacity in %. Values 0--100
-            //graphical display ranges: 0-100% with new firmwares of the radios MX12/MX20/...
+                                        //graphical display ranges: 0-100% with new firmwares of the radios MX12/MX20/...
   uint16_t fuel_ml;                     //#20 LSB Fuel in ml scale. Full = 65535!
-          //#21 MSB
+                                        //#21 MSB
   uint16_t rpm;                         //#22 RPM in 10 RPM steps. 300 = 3000rpm
-                //#23 MSB
-    uint16_t altitude;                  //#24 altitude in meters. offset of 500, 500 = 0m
-                //#25 MSB
+                                        //#23 MSB
+  uint16_t altitude;                    //#24 altitude in meters. offset of 500, 500 = 0m
+                                        //#25 MSB
   uint16_t climbrate_L;                 //#26 climb rate in 0.01m/s. Value of 30000 = 0.00 m/s
-                //#27 MSB
+                                        //#27 MSB
   byte climbrate3s;                     //#28 climb rate in m/3sec. Value of 120 = 0m/3sec
   uint16_t current;                     //#29 current in 0.1A steps 100 == 10,0A
-                //#30 MSB current display only goes up to 99.9 A (continuous)
-  uint16_t main_voltage;              //#31 LSB Main power voltage using 0.1V steps 100 == 10,0V
-          //#32 MSB (Appears in GAM display right as alternate display.)
+                                        //#30 MSB current display only goes up to 99.9 A (continuous)
+  uint16_t main_voltage;                //#31 LSB Main power voltage using 0.1V steps 100 == 10,0V
+                                        //#32 MSB (Appears in GAM display right as alternate display.)
   uint16_t batt_cap;                    //#33 LSB used battery capacity in 10mAh steps
-          //#34 MSB 
+                                        //#34 MSB 
   uint16_t speed;                       //#35 LSB (air?) speed in km/h(?) we are using ground speed here per default
-          //#36 MSB speed
+                                        //#36 MSB speed
   byte min_cell_volt;                   //#37 minimum cell voltage in 2mV steps. 124 = 2,48V
   byte min_cell_volt_num;               //#38 number of the cell with the lowest voltage
   uint16_t rpm2;                        //#39 LSB 2nd RPM in 10 RPM steps. 100 == 1000rpm
-          //#40 MSB
+                                        //#40 MSB
   byte general_error_number;            //#41 General Error Number (Voice Error == 12) TODO: more documentation
   byte pressure;                        //#42 High pressure up to 16bar. 0,1bar scale. 20 == 2.0bar
   byte version;                         //#43 version number (Bytes 35 .43 new but not yet in the record in the display!)
   byte stop_byte;                       //#44 stop byte 0x7D
   byte parity;                          //#45 CHECKSUM CRC/Parity (calculated dynamicaly)
-};
+} HOTT_GAM_MSG ;
+
 
 
 class OXS_OUT {
@@ -210,7 +213,7 @@ extern volatile uint8_t debug04 ;
 
  
 void setHottNewData( struct t_sportData * volatile pdata, uint16_t id, uint32_t value ) ;
-void initHottUart( struct t_mbAllData * volatile pdata ) ;
+void initHottUart( ) ;
 
 
 extern volatile bool RpmSet ;
@@ -269,14 +272,16 @@ extern volatile uint16_t RpmValue ;
     #define DELAY_3500  ((uint16_t)3500.0 * 20.0 /16.0 )    
     #define DELAY_2000  ((uint16_t)2000.0 * 20.0 /16.0 )
     #define DELAY_1600  ((uint16_t)1600.0 * 20.0 /16.0 )    
+    #define DELAY_1000  ((uint16_t)1000.0 * 20.0 /16.0 )    
     #define DELAY_400  ((uint16_t)400.0 * 20.0 /16.0 )
     #define DELAY_100  ((uint16_t)100.0 * 20.0 /16.0 )
     
   #elif F_CPU == 16000000L   // 16MHz clock                                                  
-    #define DELAY_4000 ((uint16_t) (1000L * 16) )     
-    #define DELAY_3500 ((uint16_t) (1000L * 16) )         
-    #define DELAY_2000 ((uint16_t) (1000L * 16) )     
-    #define DELAY_1600 ((uint16_t) (1000L * 16) )     
+    #define DELAY_4000 ((uint16_t) (4000L * 16) )     
+    #define DELAY_3500 ((uint16_t) (3500L * 16) )         
+    #define DELAY_2000 ((uint16_t) (2000L * 16) )     
+    #define DELAY_1600 ((uint16_t) (1600L * 16) )     
+    #define DELAY_1000 ((uint16_t) (1000L * 16) )     
     #define DELAY_400 ((uint16_t) (400 * 16) )     
     #define DELAY_100 ((uint16_t) (100 * 16) )     
   #elif F_CPU == 8000000L    // 8MHz clock                                                   
@@ -284,6 +289,7 @@ extern volatile uint16_t RpmValue ;
     #define  DELAY_3500 ((uint16_t)3500L * 8 )    
     #define  DELAY_2000 ((uint16_t)2000 * 8 )
     #define  DELAY_1600 ((uint16_t)1600 * 8 )    
+    #define  DELAY_1000 ((uint16_t)1000 * 8 )    
     #define  DELAY_400 ((uint16_t)400 * 8 )
     #define  DELAY_100 ((uint16_t)100 * 8 )    
   #else
