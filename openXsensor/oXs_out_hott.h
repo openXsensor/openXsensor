@@ -322,8 +322,15 @@ extern volatile uint16_t RpmValue ;
 #endif // End of HOTT
 #endif // OXS_OUT_HOTT_h
 
-
-
-
-
+/*
+In Hott protocol, the Rx send a polling to each of the possible sensors (there are 5 types of sensors).
+Each sensor is in fact polled twice: one asking to reply in a text format and another in a binary format.
+This version of oXs replies only to the request for a binary format sent to a GAM (general air module)
+Later on, it would be possible to simulate other types of module (like a GPS, a vario,... )
+It seems that for binary format, the polling is every 200 msec. Still this strange because the reply of only one sensor takes already about 140 msec (45 bytes * 3msec/byte).
+When the sensor identifies that it must reply to a polling, it has to wait 5 msec before sending the first byte and afterward it can send all the bytes (45 in total in binary GAM format) keeping 3 msec between each byte.
+It seems that the delay of 3 msec can be reduced to less than 1 msec.
+The format of the message is given here above. 
+It is possible to send some info to reverse some fields on the display and to activate some alarms (but this version does not support it)
+*/
 

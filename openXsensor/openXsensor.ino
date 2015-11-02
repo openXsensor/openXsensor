@@ -908,9 +908,11 @@ void calculateAverages( ){
             if (  ( oXs_MS5611.varioData.climbRate <  VSPEED_MIN_TOLERANCE ) || ( oXs_MS5611.varioData.climbRate >  VSPEED_MAX_TOLERANCE ) \
                 || ( altitudeDifference > -10 ) || ( aSpeedWithinTolerance == false ) ) {    // reset all when out of tolerance
                 altitudeAtT0 = oXs_MS5611.varioData.absoluteAlt ;
+#ifdef AIRSPEED                
                 aSpeedAtT0 = oXs_4525.airSpeedData.smoothAirSpeed ;
-                secFromT0 = 0 ;
                 distanceSinceT0 = 0 ;
+#endif                
+                secFromT0 = 0 ;
                 millisAtT0 = currentGliderMillis ;
                 averageVspeedSinceT0 = 0 ;
                 gliderRatio = 0 ;
