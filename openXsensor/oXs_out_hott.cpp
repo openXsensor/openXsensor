@@ -98,6 +98,8 @@ void OXS_OUT::sendData() {
 #if defined(USE_VOLT_X_AS_BATTERY2) && (USE_VOLT_X_AS_BATTERY2 <7) && (USE_VOLT_X_AS_BATTERY2 > 0) && defined(PIN_VOLTAGE)
           TxHottData.gamMsg.Battery2 = voltageData->mVolt[USE_VOLT_X_AS_BATTERY2] / 100;    //battery 1 voltage  0.1V steps. 55 = 5.5V only pos. voltages
 #endif
+          TxHottData.gamMsg.rpm++ ;
+          if ( TxHottData.gamMsg.rpm > 1000) TxHottData.gamMsg.rpm = 1 ; 
 #ifdef MEASURE_RPM 
           TxHottData.gamMsg.rpm  = RpmValue /10 ;                      //#22 RPM in 10 RPM steps. 300 = 3000rpm
 #endif
