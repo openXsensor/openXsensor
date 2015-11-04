@@ -764,6 +764,7 @@ started by Rainer Schloßhan
 *  - Current and consumption (if PIN_CURRENTSENSOR is defined)
 *  - Altitude and vertical speed (if parameters about a vario sensor are defined)  
 *  - Airspeed (if parameters about airspeed sensor are defined)
+*  - RPM
 *  - Voltage on battery1 and/or battery2 and/or main battery: it requires that some voltage parameters are defined + that you specify the number of VOLTx to be transmitted
 *       You can specify the VOLTx to be transmitted using parameters USE_VOLT_X_AS_BATTERY1 , USE_VOLT_X_AS_BATTERY2 and USE_VOLT_X_AS_MAIN_BATTERY
 *       Put the line(s) as comment when no measurement has to be transmitted in battery field(s)
