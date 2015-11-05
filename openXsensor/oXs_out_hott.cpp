@@ -4,8 +4,8 @@
 
 #ifdef DEBUG
 // ************************* Several parameters to help debugging
-//#define DEBUGSETNEWDATA
-//#define DEBUGFORMATONEVALUE
+  #define DEBUGHOTT
+
 #endif
 
 
@@ -15,12 +15,28 @@ extern void delay(unsigned long ms) ;
 
 //volatile uint8_t sendStatus ;   
 volatile uint8_t flagUpdateHottBuffer ; // When a polling for oXs is received, it says that main loop must update the buffer (within the 4mes)  
+volatile uint8_t debugStatus ; 
 
 // Transmit buffer
 volatile static union {              // union is a easy way to access the data in several ways (name of field + index of byte)
     volatile HOTT_GAM_MSG gamMsg ;   // structured general air module
     volatile uint8_t txBuffer[TXHOTTDATA_BUFFERSIZE] ;
 }  TxHottData;
+
+
+
+volatile uint8_t state ;                  //!< Holds the state of the UART.
+static volatile unsigned char SwUartTXData ;     //!< Data to be transmitted.
+static volatile unsigned char SwUartTXBitCount ; //!< TX bit counter.
+static volatile uint8_t SwUartRXData ;           //!< Storage for received bits.
+static volatile uint8_t SwUartRXBitCount ;       //!< RX bit counter.
+static volatile uint8_t TxCount ;
+static volatile uint8_t LastRx ;                 // last byte received (allows to check on the second byte received for polling)
+volatile uint8_t debugUartRx ;
+static uint8_t delayTxPendingCount ;             // Used to register the number of extra delay(each 1msec) to wait in TxPending (so before replying)
+volatile uint8_t ppmInterrupted ; // This flag is activated at the end of handling interrupt on Timer 1 Compare A if during this interrupt handling an interrupt on pin change (INT0 or INT1) occurs
+                         // in this case, ppm will be wrong and has to be discarded       
+
 
 
 #ifdef DEBUG  
@@ -64,7 +80,7 @@ void OXS_OUT::setup() {
     PCIFR = (1<<PCIF2) ;               	// clear pending interrupt
     initHottUart( ) ;                   // initialise UART 
 	
-#ifdef DEBUG
+#ifdef DEBUGHOTT
       printer->print(F("Hott Output Module: TX Pin="));
       printer->println(_pinTx);
 #endif
@@ -72,6 +88,12 @@ void OXS_OUT::setup() {
 
 
 void OXS_OUT::sendData() {
+#ifdef DEBUGHOTT
+      printer->print(F("F= ")); printer->print(flagUpdateHottBuffer);
+      printer->print(F(" S=")); printer->print(state);
+      printer->print(F(" LR=")); printer->print(LastRx);
+      printer->print(F(" Tc=")); printer->println(TxCount);
+#endif
     if ( flagUpdateHottBuffer ) {        // this flag is set to true when UART get a polling of the device. Then measurement must be filled in the buffer
 // in general air module data to fill are:
 #if defined(NUMBEROFCELLS) && (NUMBEROFCELLS >= 1) 
@@ -136,7 +158,14 @@ void OXS_OUT::sendData() {
             TxHottData.txBuffer[TXHOTTDATA_BUFFERSIZE-1] = 0 ;
             for(uint8_t i = 0; i < TXHOTTDATA_BUFFERSIZE-1; i++){  // one byte less because the last byte is the checksum
               TxHottData.txBuffer[TXHOTTDATA_BUFFERSIZE-1] += TxHottData.txBuffer[i];
+#ifdef DEBUGHOTT
+      printer->print(TxHottData.txBuffer[i], HEX); printer->print(F(" "));
+#endif
             }  // end for
+#ifdef DEBUGHOTT
+      printer->println(F(" "));
+#endif
+
     flagUpdateHottBuffer = false ;       // reset the flag to say that all data have been updated and that UART can transmit the buffer
     }   // end ( flagUpdateHottBuffer )
 }
@@ -152,17 +181,6 @@ void OXS_OUT::sendData() {
 
 #define FORCE_INDIRECT(ptr) __asm__ __volatile__ ("" : "=e" (ptr) : "0" (ptr))
 
-volatile uint8_t state ;                  //!< Holds the state of the UART.
-static volatile unsigned char SwUartTXData ;     //!< Data to be transmitted.
-static volatile unsigned char SwUartTXBitCount ; //!< TX bit counter.
-static volatile uint8_t SwUartRXData ;           //!< Storage for received bits.
-static volatile uint8_t SwUartRXBitCount ;       //!< RX bit counter.
-static volatile uint8_t TxCount ;
-static volatile uint8_t LastRx ;                 // last byte received (allows to check on the second byte received for polling)
-volatile uint8_t debugUartRx ;
-static uint8_t delayTxPendingCount ;             // Used to register the number of extra delay(each 1msec) to wait in TxPending (so before replying)
-volatile uint8_t ppmInterrupted ; // This flag is activated at the end of handling interrupt on Timer 1 Compare A if during this interrupt handling an interrupt on pin change (INT0 or INT1) occurs
-                         // in this case, ppm will be wrong and has to be discarded       
 
 ISR(TIMER1_COMPA_vect)
 {

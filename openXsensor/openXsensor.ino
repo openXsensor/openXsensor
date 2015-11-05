@@ -9,6 +9,7 @@
 #include "oXs_out_hott.h"
 #include "oXs_general.h"
 #include "oXs_gps.h"
+#include "oXs_imu.h"
 
 #ifdef SAVE_TO_EEPROM
   #include <EEPROM.h>
@@ -468,7 +469,10 @@ uint32_t baudRateHardwareUart = 115200L ; // default value when GPS is not used
 //    pinMode(DEBUG_SETUP_PIN, OUTPUT); 
 #endif  
 
-
+#ifdef USE_6050
+    setup_imu() ;
+//    initialize_mpu() ;
+#endif
 
 #ifdef DEBUG
   Serial.println(F("End of general set up"));
@@ -707,6 +711,10 @@ void readSensors() {
 #if defined  (VARIO) && defined (GLIDER_RATIO_CALCULATED_AFTER_X_SEC) && GLIDER_RATIO_CALCULATED_AFTER_X_SEC > 5
         calculateAverages();
 #endif        
+
+#ifdef USE_6050
+        read6050 () ;
+#endif
     
   //Serial.println(F("Go out of read sensor"));
 }                  // ************** end of readSensors ********************************************

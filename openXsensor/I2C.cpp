@@ -321,11 +321,11 @@ uint8_t I2C::write(uint8_t address, uint8_t registerAddress, char *data)
 {
   uint8_t bufferLength = strlen(data);
   returnStatus = 0;
-  returnStatus = write(address, registerAddress, (uint8_t*)data, bufferLength);
+  returnStatus = write(address, registerAddress,  bufferLength ,(uint8_t*)data );
   return(returnStatus);
 }
 
-uint8_t I2C::write(uint8_t address, uint8_t registerAddress, uint8_t *data, uint8_t numberBytes)
+uint8_t I2C::write(uint8_t address, uint8_t registerAddress,  uint8_t numberBytes , uint8_t * data )
 {
   returnStatus = 0;
   returnStatus = start();

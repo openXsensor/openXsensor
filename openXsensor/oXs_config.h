@@ -76,7 +76,7 @@
 #define VSPEED_MAX_TOLERANCE  -10        // out of tolerance when Vspeed is upper than this value  (cm/sec)
 
 // --------- 5 - Airspeed settings ---------
-#define AIRSPEED    MS4525
+//#define AIRSPEED    MS4525
 #define AIRSPEED_IN_KMH  // uncomment this line if airspeed has to be in km/h instead of knot/h (openTx 2.0 expect knot/h while openTx 2.1 expect km/h) 
 
 #define AIRSPEED_RESET_AT_PPM   100
@@ -176,10 +176,12 @@
 //#define GPS_SPEED_3D      // uncomment this line if GPS speed has to be the 3d speed instead of the 2d speed (note: 3d is probably less accurate - to test) 
 
 // --------- xx - Reserved for developer. DEBUG must be activated here when we want to debug one or several functions in some other files. ---------
-//#define DEBUG
+#define DEBUG
 #define BASED_ON_AIRSPEED 0
 #define BASED_ON_GPS_SPEED 1
-#define AVERAGING_DELAY_MILLISEC  AVERAGING_TOLERANCE * 100   
+#define AVERAGING_DELAY_MILLISEC  AVERAGING_TOLERANCE * 100  
+
+//#define USE_6050 //says that a IMU 6050 is connected
 
 #ifdef DEBUG
 #include "HardwareSerial.h"
