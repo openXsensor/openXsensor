@@ -191,16 +191,17 @@ ISR(TIMER1_COMPA_vect)
           PORTC |= 1 ;
 #endif
           if( SwUartTXBitCount < 8 ) {            // If not 8 bits have been sent
-            if( SwUartTXData & 0x01 ) {           // If the LSB of the TX buffer is 1:
-              SET_TX_PIN_MB() ;
-            } else {                                // Otherwise:
-              CLEAR_TX_PIN_MB() ;                     // Send a logic 0 on the TX_PIN
-            }
-            SwUartTXData = SwUartTXData >> 1 ;    // Bitshift the TX buffer and
-            SwUartTXBitCount += 1 ;               // increment TX bit counter.
+                if( SwUartTXData & 0x01 ) {           // If the LSB of the TX buffer is 1:
+                  SET_TX_PIN_MB() ;
+                } else {                                // Otherwise:
+                  CLEAR_TX_PIN_MB() ;                     // Send a logic 0 on the TX_PIN
+                }
+                SwUartTXData = SwUartTXData >> 1 ;    // Bitshift the TX buffer and
+                SwUartTXBitCount += 1 ;               // increment TX bit counter.
           } else {    //Send stop bit.
-            SET_TX_PIN_MB() ;                             // Output a logic 1. (in high impedance)
-            state = TRANSMIT_STOP_BIT;
+                SET_TX_PIN_MB() ;                             // Output a logic 1. (in high impedance) = put stop bit
+                state = TRANSMIT_STOP_BIT;
+                OCR1A += DELAY_2000;                  // Add 2 msec to the stop bit (required by Hott protocol)
           }
           OCR1A += TICKS2WAITONEHOTT ;  // Count one period into the future.
 #if DEBUGASERIAL
@@ -212,8 +213,7 @@ ISR(TIMER1_COMPA_vect)
         if (  ++TxCount < TXHOTTDATA_BUFFERSIZE  ) {   
               SwUartTXData = TxHottData.txBuffer[TxCount] ;
               CLEAR_TX_PIN_MB();                     // Send a logic 0 on the TX_PIN as start bit  
-//              OCR1A = TCNT1 + TICKS2WAITONEHOTT ;   // Count one period into the future.
-              OCR1A += DELAY_2000 ;                   // wait 2msec before sending the next byte (this is requested by Hott protocol)
+              OCR1A = TCNT1 + TICKS2WAITONEHOTT ;   // Count one period into the future.
               SwUartTXBitCount = 0 ;
               state = TRANSMIT ;
         } else {                                        // all bytes have already been sent
@@ -261,7 +261,7 @@ ISR(TIMER1_COMPA_vect)
                 delayTxPendingCount--;
                 OCR1A += DELAY_1000 ; 
             } else {
-                if ( flagUpdateHottBuffer ) {                     // it is expected that the main loop will update the buffer and reset this flag within the delay
+                if ( ! flagUpdateHottBuffer ) {                     // it is expected that the main loop will update the buffer and reset this flag within the delay
                     OCR1A += DELAY_1000 ;                          // if it is not yet done, go back to wait
                     state = WAITING ;
                 } else {
