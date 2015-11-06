@@ -488,7 +488,6 @@ void loop(){
   Serial.print(F("in loop="));  
   Serial.println(millis());
 #endif 
-
  
 #ifdef PIN_PUSHBUTTON
   // Check if a button has been pressed
@@ -501,8 +500,9 @@ void loop(){
     checkButton();
 #endif    
 #endif 
-    
+
     readSensors(); // read all sensors)
+
 #ifdef DEBUG_BLINK
   static bool prevBlinkAvailable ;
   if (  prevBlinkAvailable == false && oXs_MS5611.varioData.climbRateAvailable ) {
@@ -675,8 +675,7 @@ void readSensors() {
   } 
 #endif // end  defined (AIRSPEED) 
 #endif // end  defined (VARIO) && ( defined (VARIO2) || defined (AIRSPEED) ) && defined (VARIO_SECONDARY ) && defined( VARIO_PRIMARY ) && defined (VARIO_SECONDARY) && defined (PIN_PPM)
-
-
+  
 #ifdef PIN_VOLTAGE
     if (checkFreeTime()) oXs_Voltage.readSensor();    // read voltage only if there enough time to avoid delaying vario reading
 #endif   // end voltage
@@ -715,8 +714,10 @@ void readSensors() {
 #ifdef USE_6050
         read6050 () ;
 #endif
-    
-  //Serial.println(F("Go out of read sensor"));
+
+//#ifdef DEBUG    
+//  Serial.println(F("Go out of read sensor"));
+//#endif  
 }                  // ************** end of readSensors ********************************************
 
 
@@ -1427,7 +1428,11 @@ void OutputToSerial(){
   Serial.print(F(" ;mAh="));  
   Serial.print( oXs_Current.currentData.consumedMilliAmps);
 #endif // PIN_CURRENTSENSOR
+#ifdef HOTT
+  Serial.println("H.");
+#endif  
   Serial.println();
+  
 }
 
 /***********************************************/

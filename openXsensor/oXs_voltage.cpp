@@ -83,11 +83,12 @@ void OXS_VOLTAGE::setupVoltage( void ) {
   printer->print("Reference voltage:");
   printer->println(tempRef);
 #endif
-
+  voltageData.atLeastOneVolt = false ;
   for (int cntInit = 0 ; cntInit < 6 ; cntInit++) {
     if ( tempPin[ cntInit ] < 8 ) {
       voltageData.mVoltPin[cntInit] =  tempPin[ cntInit ] ;
       pinMode(voltageData.mVoltPin[cntInit],INPUT);
+      voltageData.atLeastOneVolt = true ;
     } else {
       voltageData.mVoltPin[cntInit] = 8 ;
     }
@@ -117,16 +118,16 @@ void OXS_VOLTAGE::setupVoltage( void ) {
   static byte voltageNr = 0;
 
 void OXS_VOLTAGE::readSensor() {
-// here we should test if Current sensor is used too; otherwise, it is not necessary to use the 2 next instructions
 
+    if (voltageData.atLeastOneVolt) { // no calculation if there is no voltage to calculate.
 #ifdef DEBUGDELAY
         long milliVoltBegin = millis() ;
 #endif
 
-    while ( voltageData.mVoltPin[voltageNr] > 7) { // Skip nr if voltageNr have not a pin defined between 0 and 7
-        voltageNrIncrease();
-    }  
-    voltageData.sumVoltage[voltageNr] += readVoltage(voltageNr) ;
+        while ( voltageData.mVoltPin[voltageNr] > 7) { // Skip nr if voltageNr have not a pin defined between 0 and 7
+            voltageNrIncrease();
+        }  
+        voltageData.sumVoltage[voltageNr] += readVoltage(voltageNr) ;
 #ifdef DEBUGDELAY
         printer->print("readVoltage voltageNr =  ");
         printer->print(voltageNr);
@@ -136,8 +137,8 @@ void OXS_VOLTAGE::readSensor() {
         printer->println(millis());
 #endif
 
-    voltageNrIncrease();
-
+        voltageNrIncrease();
+    }
 }      
 
 

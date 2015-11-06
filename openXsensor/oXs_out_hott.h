@@ -45,15 +45,32 @@ struct t_mbAllData {
 #define HOTT_TEXT_MODE_REQUEST_ID       0x7f
 
 // in binary mode, second byte identifies one of 4 sensor types
-#define HOTT_TELEMETRY_GEA_SENSOR_ID    0x8E // Electric Air Module ID
-#define HOTT_TELEMETRY_GAM_SENSOR_ID    0x8d  
-#define HOTT_TELEMETRY_GPS_SENSOR_ID    0x8a //Graupner #33600 Gps module
 #define HOTT_TELEMETRY_VARIO_SENSOR_ID  0x89 //Graupner #33601 Vario Module
+#define HOTT_TELEMETRY_GPS_SENSOR_ID    0x8a //Graupner #33600 Gps module
+#define HOTTV4_ESC_SENSOR_ID                 0x8C
+#define HOTT_TELEMETRY_GAM_SENSOR_ID    0x8d // General Air Module ID 
+#define HOTT_TELEMETRY_GEA_SENSOR_ID    0x8E // Electric Air Module ID
 // note : when sensor relies, it sent first 2 bytes with the value = ??????????????? and then it starts a set of bytes depending on the type of sensor.
 
 
 // in text mode, second byte identifies one of 4 sensor types
 #define HOTT_GPS_SENSOR_TEXT_ID 0xA0 // GPS Module ID          
+
+#define HOTTV4_VARIO_SENSOR_TEXT_ID          0x90   // Vario Module Text ID
+#define HOTTV4_GPS_SENSOR_TEXT_ID            0xA0   // GPS Module Text ID
+#define HOTTV4_ESC_SENSOR_TEXT_ID            0xC0
+#define HOTTV4_GENERAL_AIR_SENSOR_TEXT_ID    0xD0
+#define HOTTV4_ELECTRICAL_AIR_SENSOR_TEXT_ID 0xE0   // Electric Air Module Text ID
+
+
+#define HOTTV4_BUTTON_PREV                   0x07
+#define HOTTV4_BUTTON_SET                    0x09
+#define HOTTV4_BUTTON_DEC                    0x0B
+#define HOTTV4_BUTTON_INC                    0x0D
+#define HOTTV4_BUTTON_NEXT                   0x0E
+#define HOTTV4_BUTTON_NIL                    0x0F
+
+
 
 #define TXHOTTDATA_BUFFERSIZE 45
 
@@ -92,7 +109,7 @@ typedef struct {
                   0x19  25  Y  Maximum RPM Y
                   0x1A  26  Z  Max. Altitude Z
                         */
-  byte sensor_id;                       //#04 constant value 0xd0
+  byte sensor_id;                       //#04 constant value 0xd0 for GAM, other values for other modules
   byte alarm_invers1;                   //#05 alarm bitmask. Value is displayed inverted
               //Bit#  Alarm field
             // 0    all cell voltage

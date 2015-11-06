@@ -94,7 +94,7 @@
 #define REFERENCE_VOLTAGE 4970    // set value in milliVolt; if commented, oXs will use or 1100 (if internal ref is used) or 5000 (if internal ref is not used) 
 
 // ***** 6.2 - Voltage parameters *****
-#define PIN_VOLTAGE         0  , 8     , 8   , 8    , 8   , 8               // set this line as comment if no one voltage have to be measured, set a value to 8 for the voltage(s) not to be measured.
+#define PIN_VOLTAGE         8  , 8     , 8   , 8    , 8   , 8               // set this line as comment if no one voltage have to be measured, set a value to 8 for the voltage(s) not to be measured.
 #define RESISTOR_TO_GROUND  12 , 20    , 30  , 19.8 , 50  , 60               // set value to 0 when no divider is used for a voltage, can contains decimals 
 #define RESISTOR_TO_VOLTAGE 50 , 100.1 , 200 , 39   , 500 , 600              // set value to 0 when no divider is used for a voltage, can contains decimals 
 #define OFFSET_VOLTAGE      0 , 0     , 0   , 0    , 0   , 0                // optionnal, can be negative, must be integer
@@ -150,9 +150,9 @@
                         4 , VOLT4 , 1 , 1 , 0 , -16384 , 16383
 
 // ***** 9.3 - Hott data *****
-#define USE_VOLT_X_AS_BATTERY1    1   // VOLT Number used for battery1 (e.g. 1 means that VOLT1 measures battery1, 2 means that VOLT2 measures battery1, ...)
-#define USE_VOLT_X_AS_BATTERY2    3   // VOLT Number used for battery2 (e.g. 1 means that VOLT1 measures battery2, 2 means that VOLT2 measures battery2, ...) 
-#define USE_VOLT_X_AS_MAIN_BATTERY   4   // VOLT Number used for main battery (e.g. 1 means that VOLT1 measures main battery, 2 means that VOLT2 measures main battery, ...) 
+//#define USE_VOLT_X_AS_BATTERY1    1   // VOLT Number used for battery1 (e.g. 1 means that VOLT1 measures battery1, 2 means that VOLT2 measures battery1, ...)
+//#define USE_VOLT_X_AS_BATTERY2    3   // VOLT Number used for battery2 (e.g. 1 means that VOLT1 measures battery2, 2 means that VOLT2 measures battery2, ...) 
+//#define USE_VOLT_X_AS_MAIN_BATTERY   4   // VOLT Number used for main battery (e.g. 1 means that VOLT1 measures main battery, 2 means that VOLT2 measures main battery, ...) 
 
 // --------- 10 - Sequencer ---------
 //#define SEQUENCE_OUTPUTS 0b100000  

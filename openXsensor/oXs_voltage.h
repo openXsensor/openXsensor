@@ -14,7 +14,8 @@ struct VOLTAGEDATA {
   byte mVoltPin[6] ;            // Arduino pin number to use to read each voltage (See hardware setting in oXs_config.h)  
   int offset[6] ;            // offset to apply while converting ADC to millivolt (See setting in oXs_config.h)  
   float mVoltPerStep[6] ;            // rate to apply while converting ADC to millivolt (See setting in oXs_config.h)  
-//  bool atLeastOneVoltage ;      // true if there is at least one voltage to measure
+
+  bool atLeastOneVolt ;         // true if there is at least one voltage to measure (added because otherwise a while in cpp never end)
   
   int32_t sumVoltage[6] ;       // use to calculate average voltage     
 
