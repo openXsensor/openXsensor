@@ -28,20 +28,9 @@
 #define INV_XYZ_ACCEL   (0x08)
 #define INV_XYZ_COMPASS (0x01)
 
-struct int_param_s {
-#if defined EMPL_TARGET_MSP430 || defined MOTION_DRIVER_TARGET_MSP430
+struct int_param_s {          //used for  EMPL_TARGET_ATMEGA328 
     void (*cb)(void);
     unsigned short pin;
-    unsigned char lp_exit;
-    unsigned char active_low;
-#elif defined EMPL_TARGET_UC3L0
-    unsigned long pin;
-    void (*cb)(volatile void*);
-    void *arg;
-#elif defined EMPL_TARGET_ATMEGA328 || defined EMPL_TARGET_STM32_LIBMAPLE
-    void (*cb)(void);
-    unsigned short pin;
-#endif
 };
 
 #define MPU_INT_STATUS_DATA_READY       (0x0001)

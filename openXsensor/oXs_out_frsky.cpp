@@ -2,7 +2,7 @@
 
 #include "oXs_out_frsky.h"
 #define FRSKY  ( defined(MULTIPLEX) || defined ( HOTT) )
-#if (FRSKY == false)
+#if (FRSKY == false)  //if Frsky protocol is used
 
 
 #ifdef DEBUG

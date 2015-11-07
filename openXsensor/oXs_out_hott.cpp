@@ -89,10 +89,10 @@ void OXS_OUT::setup() {
 
 void OXS_OUT::sendData() {
 #ifdef DEBUGHOTT
-      printer->print(F("F= ")); printer->print(flagUpdateHottBuffer);
-      printer->print(F(" S=")); printer->print(state);
-      printer->print(F(" LR=")); printer->print(LastRx);
-      printer->print(F(" Tc=")); printer->println(TxCount);
+//      printer->print(F("F= ")); printer->print(flagUpdateHottBuffer);
+//      printer->print(F(" S=")); printer->print(state);
+//      printer->print(F(" LR=")); printer->print(LastRx);
+//      printer->print(F(" Tc=")); printer->println(TxCount);
 #endif
     if ( flagUpdateHottBuffer ) {        // this flag is set to true when UART get a polling of the device. Then measurement must be filled in the buffer
 // in general air module data to fill are:
@@ -115,10 +115,10 @@ void OXS_OUT::sendData() {
           TxHottData.gamMsg.cell[5] =  voltageData->mVoltCell[5] /20 ; // Volt Cell 6 (in 2 mV increments, 210 == 4.20 V)
 #endif
 #if defined(USE_VOLT_X_AS_BATTERY1) && (USE_VOLT_X_AS_BATTERY1 <7) && (USE_VOLT_X_AS_BATTERY1 > 0) && defined(PIN_VOLTAGE)
-          TxHottData.gamMsg.Battery1 = voltageData->mVolt[USE_VOLT_X_AS_BATTERY1] / 100;    //battery 1 voltage  0.1V steps. 55 = 5.5V only pos. voltages
+          TxHottData.gamMsg.Battery1 = voltageData->mVolt[USE_VOLT_X_AS_BATTERY1 - 1] / 100;    //battery 1 voltage  0.1V steps. 55 = 5.5V only pos. voltages
 #endif
 #if defined(USE_VOLT_X_AS_BATTERY2) && (USE_VOLT_X_AS_BATTERY2 <7) && (USE_VOLT_X_AS_BATTERY2 > 0) && defined(PIN_VOLTAGE)
-          TxHottData.gamMsg.Battery2 = voltageData->mVolt[USE_VOLT_X_AS_BATTERY2] / 100;    //battery 1 voltage  0.1V steps. 55 = 5.5V only pos. voltages
+          TxHottData.gamMsg.Battery2 = voltageData->mVolt[USE_VOLT_X_AS_BATTERY2 - 1] / 100;    //battery 1 voltage  0.1V steps. 55 = 5.5V only pos. voltages
 #endif
           TxHottData.gamMsg.rpm++ ;
           if ( TxHottData.gamMsg.rpm > 1000) TxHottData.gamMsg.rpm = 1 ; 
@@ -133,7 +133,7 @@ void OXS_OUT::sendData() {
         TxHottData.gamMsg.current =  currentData->milliAmps /100;               //current in 0.1A steps 100 == 10,0A
 #endif
 #if defined(USE_VOLT_X_AS_MAIN_BATTERY) && (USE_VOLT_X_AS_MAIN_BATTERY <7) && (USE_VOLT_X_AS_MAIN_BATTERY > 0) && defined(PIN_VOLTAGE)
-          TxHottData.gamMsg.main_voltage = voltageData->mVolt[USE_VOLT_X_AS_MAIN_BATTERY] / 100;          //Main power voltage using 0.1V steps 100 == 10,0V] / 100
+          TxHottData.gamMsg.main_voltage = voltageData->mVolt[USE_VOLT_X_AS_MAIN_BATTERY - 1] / 100;          //Main power voltage using 0.1V steps 100 == 10,0V] / 100
 #endif
 #if defined(PIN_CURRENTSENSOR)
         TxHottData.gamMsg.batt_cap =  currentData->consumedMilliAmps / 10 ;   // used battery capacity in 10mAh steps

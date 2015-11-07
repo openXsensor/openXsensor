@@ -439,7 +439,7 @@ static const unsigned short sStartAddress = 0x0400;
 #define DMP_SAMPLE_RATE     (200)
 #define GYRO_SF             (46850825LL * 200 / DMP_SAMPLE_RATE)
 
-#define FIFO_CORRUPTION_CHECK
+//#define FIFO_CORRUPTION_CHECK  // uncomment if a check on the quaternion has to be performed - this allows to detect some I2c errors (it requires about 200 bytes)
 #ifdef FIFO_CORRUPTION_CHECK
 #define QUAT_ERROR_THRESH       (1L<<24)
 #define QUAT_MAG_SQ_NORMALIZED  (1L<<28)
@@ -862,11 +862,11 @@ int dmp_set_shake_reject_timeout(unsigned short time)
 }
 
 /**
- *  @brief      Get current step count.
+ *  @brief      Get current step count.                        // this function is not used by oXs
  *  @param[out] count   Number of steps detected.
  *  @return     0 if successful.
  */
-int dmp_get_pedometer_step_count(unsigned long *count)
+int dmp_get_pedometer_step_count(unsigned long *count)   
 {
     unsigned char tmp[4];
     if (!count)
@@ -881,7 +881,7 @@ int dmp_get_pedometer_step_count(unsigned long *count)
 }
 
 /**
- *  @brief      Overwrite current step count.
+ *  @brief      Overwrite current step count.                   // this function is not used by oXs
  *  WARNING: This function writes to DMP memory and could potentially encounter
  *  a race condition if called while the pedometer is enabled.
  *  @param[in]  count   New step count.
@@ -899,11 +899,11 @@ int dmp_set_pedometer_step_count(unsigned long count)
 }
 
 /**
- *  @brief      Get duration of walking time.
+ *  @brief      Get duration of walking time.                            // this function is not used by oXs
  *  @param[in]  time    Walk time in milliseconds.
  *  @return     0 if successful.
  */
-int dmp_get_pedometer_walk_time(unsigned long *time)
+int dmp_get_pedometer_walk_time(unsigned long *time)   
 {
     unsigned char tmp[4];
     if (!time)
@@ -923,7 +923,7 @@ int dmp_get_pedometer_walk_time(unsigned long *time)
  *  a race condition if called while the pedometer is enabled.
  *  @param[in]  time    New walk time in milliseconds.
  */
-int dmp_set_pedometer_walk_time(unsigned long time)
+int dmp_set_pedometer_walk_time(unsigned long time)                           // this function is not used by oXs
 {
     unsigned char tmp[4];
 
@@ -1005,7 +1005,7 @@ int dmp_enable_feature(unsigned short mask)
         dmp_enable_gyro_cal(0);
 
     if (mask & DMP_FEATURE_SEND_ANY_GYRO) {
-        if (mask & DMP_FEATURE_SEND_CAL_GYRO) {
+        if (mask & DMP_FEATURE_SEND_CAL_GYRO) {   // those code are already in the code being preloaded
             tmp[0] = 0xB2;
             tmp[1] = 0x8B;
             tmp[2] = 0xB6;
@@ -1016,11 +1016,11 @@ int dmp_enable_feature(unsigned short mask)
             tmp[2] = DINAC2;
             tmp[3] = DINA90;
         }
-        mpu_write_mem(CFG_GYRO_RAW_DATA, 4, tmp);
+        mpu_write_mem(CFG_GYRO_RAW_DATA, 4, tmp); // 2722 = bank 10, line 10 , byte 2
     }
-
-    if (mask & DMP_FEATURE_TAP) {
-        /* Enable tap. */
+/*
+    if (mask & DMP_FEATURE_TAP) {  
+        // Enable tap. //
         tmp[0] = 0xF8;
         mpu_write_mem(CFG_20, 1, tmp);
         dmp_set_tap_thresh(TAP_XYZ, 250);
@@ -1036,13 +1036,20 @@ int dmp_enable_feature(unsigned short mask)
         tmp[0] = 0xD8;
         mpu_write_mem(CFG_20, 1, tmp);
     }
+*/
+          tmp[0] = 0xD8;                   // code to disable DMP_FEATURE_TAP
+          mpu_write_mem(CFG_20, 1, tmp);
 
+/*  // code to enable/disable DMP_FEATURE_ANDROID_ORIENT (replaced by always disable)          
     if (mask & DMP_FEATURE_ANDROID_ORIENT) {
         tmp[0] = 0xD9;
     } else
         tmp[0] = 0xD8;
     mpu_write_mem(CFG_ANDROID_ORIENT_INT, 1, tmp);
-
+*/
+    tmp[0] = 0xD8;                                // disable DMP_FEATURE_ANDROID_ORIENT
+    mpu_write_mem(CFG_ANDROID_ORIENT_INT, 1, tmp);
+    
     if (mask & DMP_FEATURE_LP_QUAT)
         dmp_enable_lp_quat(1);
     else
@@ -1071,7 +1078,7 @@ int dmp_enable_feature(unsigned short mask)
 }
 
 /**
- *  @brief      Get list of currently enabled DMP features.
+ *  @brief      Get list of currently enabled DMP features.       // this function is not used by oXs                        
  *  @param[out] Mask of enabled features.
  *  @return     0 if successful.
  */
@@ -1082,7 +1089,7 @@ int dmp_get_enabled_features(unsigned short *mask)
 }
 
 /**
- *  @brief      Calibrate the gyro data in the DMP.
+ *  @brief      Calibrate the gyro data in the DMP.                               // saving : this function could be reduced using only one of the 2 options
  *  After eight seconds of no motion, the DMP will compute gyro biases and
  *  subtract them from the quaternion output. If @e dmp_enable_feature is
  *  called with @e DMP_FEATURE_SEND_CAL_GYRO, the biases will also be
@@ -1090,7 +1097,7 @@ int dmp_get_enabled_features(unsigned short *mask)
  *  @param[in]  enable  1 to enable gyro calibration.
  *  @return     0 if successful.
  */
-int dmp_enable_gyro_cal(unsigned char enable)
+int dmp_enable_gyro_cal(unsigned char enable)            
 {
     if (enable) {
         unsigned char regs[9] = {0xb8, 0xaa, 0xb3, 0x8d, 0xb4, 0x98, 0x0d, 0x35, 0x5d};
@@ -1126,7 +1133,7 @@ int dmp_enable_lp_quat(unsigned char enable)
 }
 
 /**
- *  @brief       Generate 6-axis quaternions from the DMP.
+ *  @brief       Generate 6-axis quaternions from the DMP.                          //saving : code are mutually exclusive, so keeping only what is used would save flash
  *  In this driver, the 3-axis and 6-axis DMP quaternion features are mutually
  *  exclusive.
  *  @param[in]   enable  1 to enable 6-axis quaternion.
@@ -1149,7 +1156,7 @@ int dmp_enable_6x_lp_quat(unsigned char enable)
 }
 
 /**
- *  @brief      Decode the four-byte gesture data and execute any callbacks.
+ *  @brief      Decode the four-byte gesture data and execute any callbacks.   // saving: this code is called by dmp_read_fifo; it has been commented because this option is not used.
  *  @param[in]  gesture Gesture data from DMP packet.
  *  @return     0 if successful.
  */
@@ -1177,8 +1184,8 @@ static int decode_gesture(unsigned char *gesture)
 }
 
 /**
- *  @brief      Specify when a DMP interrupt should occur.
- *  A DMP interrupt can be configured to trigger on either of the two
+ *  @brief      Specify when a DMP interrupt should occur.                     // saving : only first option is used; so the code could be saved directly in the initial upload.
+ *  A DMP interrupt can be configured to trigger on either of the two          // but it is already done in this way and this function is never called (so no saving)
  *  conditions below:
  *  \n a. One FIFO period has elapsed (set by @e mpu_set_sample_rate).
  *  \n b. A tap event has been detected.
@@ -1188,17 +1195,15 @@ static int decode_gesture(unsigned char *gesture)
 int dmp_set_interrupt_mode(unsigned char mode)
 {
     const unsigned char regs_continuous[11] =
-        {0xd8, 0xb1, 0xb9, 0xf3, 0x8b, 0xa3, 0x91, 0xb6, 0x09, 0xb4, 0xd9};
+        {0xd8, 0xb1, 0xb9, 0xf3, 0x8b, 0xa3, 0x91, 0xb6, 0x09, 0xb4, 0xd9};    // this option is already define as default in the code; so this function does not have to be called.
     const unsigned char regs_gesture[11] =
         {0xda, 0xb1, 0xb9, 0xf3, 0x8b, 0xa3, 0x91, 0xb6, 0xda, 0xb4, 0xda};
 
     switch (mode) {
     case DMP_INT_CONTINUOUS:
-        return mpu_write_mem(CFG_FIFO_ON_EVENT, 11,
-            (unsigned char*)regs_continuous);
+        return mpu_write_mem(CFG_FIFO_ON_EVENT, 11, (unsigned char*)regs_continuous);  // address= 2690 = 10 8 2 (bank, line, byte)
     case DMP_INT_GESTURE:
-        return mpu_write_mem(CFG_FIFO_ON_EVENT, 11,
-            (unsigned char*)regs_gesture);
+        return mpu_write_mem(CFG_FIFO_ON_EVENT, 11, (unsigned char*)regs_gesture);
     default:
         return -1;
     }
@@ -1298,16 +1303,15 @@ int dmp_read_fifo(short *gyro, short *accel, long *quat,
 
     /* Gesture data is at the end of the DMP packet. Parse it and call
      * the gesture callbacks (if registered).
-     */
-    if (dmp.feature_mask & (DMP_FEATURE_TAP | DMP_FEATURE_ANDROID_ORIENT))
-        decode_gesture(fifo_data + ii);
+     */                                                                        // is not used by oXs
+    //if (dmp.feature_mask & (DMP_FEATURE_TAP | DMP_FEATURE_ANDROID_ORIENT)) decode_gesture(fifo_data + ii);
 
     get_ms(timestamp);
     return 0;
 }
 
 /**
- *  @brief      Register a function to be executed on a tap event.
+ *  @brief      Register a function to be executed on a tap event.             // this function is not used by oXs
  *  The tap direction is represented by one of the following:
  *  \n TAP_X_UP
  *  \n TAP_X_DOWN
@@ -1329,7 +1333,7 @@ int dmp_register_tap_cb(void (*func)(unsigned char, unsigned char))
  *  @param[in]  func    Callback function.
  *  @return     0 if successful.
  */
-int dmp_register_android_orient_cb(void (*func)(unsigned char))
+int dmp_register_android_orient_cb(void (*func)(unsigned char))               // this function is not used by oXs
 {
     dmp.android_orient_cb = func;
     return 0;
