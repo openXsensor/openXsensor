@@ -31,6 +31,8 @@ extern HardwareSerial Serial;
 
 _EXTERN_ATTRIB int shim_i2c_write(unsigned char slave_addr, unsigned char reg_addr,unsigned char length, unsigned char const *data);
 _EXTERN_ATTRIB int shim_i2c_read(unsigned char slave_addr, unsigned char reg_addr,unsigned char length, unsigned char *data);
+_EXTERN_ATTRIB int shim_i2c_writeByte( unsigned char reg_addr, unsigned char data) ;
 _EXTERN_ATTRIB void shim_get_ms(unsigned long *count);
+_EXTERN_ATTRIB int shim_i2c_writeBlock( unsigned char reg_addr,unsigned char length, unsigned char const *data) ;
 
 #endif

@@ -287,10 +287,7 @@ void delayMicroseconds(unsigned int us)
 }
 
 
-//#define delay_us(x) {unsigned char _dcnt; \
-//                      _dcnt = (x)/(24000000UL/FOSC)|1; \
-//                      while(--_dcnt !=0) continue; \
-//                    }
+//#define delay_us(x) {unsigned char _dcnt;  _dcnt = (x)/(24000000UL/FOSC)|1;  while(--_dcnt !=0) continue;//                    }
 
 
 

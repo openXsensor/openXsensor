@@ -12,10 +12,7 @@
  *      @file       inv_mpu.c
  *      @brief      An I2C-based driver for Invensense gyroscopes.
  *      @details    This driver currently works for the following devices:
- *                  MPU6050
- *                  MPU6500
- *                  MPU9150 (or MPU6050 w/ AK8975 on the auxiliary bus)
- *                  MPU9250 (or MPU6500 w/ AK8963 on the auxiliary bus)
+ *                  MPU6050 (support for other devices have been deleted in order to save flash memory)
  */
  
 #define EMPL_TARGET_ATMEGA328
@@ -27,7 +24,7 @@
 //#include <string.h>
 //#include <math.h>
 #include "inv_mpu.h"
-
+//#include "I2C.h"
 /* The following functions must be defined for this platform:
  * i2c_write(unsigned char slave_addr, unsigned char reg_addr,
  *      unsigned char length, unsigned char const *data)
@@ -42,8 +39,12 @@
  */
 #if defined EMPL_TARGET_ATMEGA328
 #include "arduino_shim.h"
-#define i2c_write(a,b,c,d) shim_i2c_write(a,b,c,d)
+//#define i2c_write(a,b,c,d) shim_i2c_write(a,b,c,d)
+//#define i2c_write(a,b,c,d)  I2c.write( (uint8_t) a , (uint8_t) b ,  (uint8_t) c  , (uint8_t *) d ) ; // return 0 on success  
+#define i2c_writeByte(b,d) shim_i2c_writeByte(b,d)
 #define i2c_read(a,b,c,d) shim_i2c_read(a,b,c,d)
+#define i2c_writeBlock(b,c,d) shim_i2c_writeBlock(b,c,d)
+
 static inline int reg_int_cb(struct int_param_s *int_param)
 {
 	attachInterrupt(int_param->pin, int_param->cb, RISING);
@@ -153,12 +154,6 @@ struct chip_cfg_s {
     unsigned char dmp_loaded;
     /* Sampling rate used when DMP is enabled. */
     unsigned short dmp_sample_rate;
-#ifdef AK89xx_SECONDARY
-    /* Compass sample rate. */
-    unsigned short compass_sample_rate;
-    unsigned char compass_addr;
-    short mag_sens_adj[3];
-#endif
 };
 
 
@@ -270,42 +265,6 @@ enum lp_accel_rate_e {
 #define BIT_STBY_XYZA       (BIT_STBY_XA | BIT_STBY_YA | BIT_STBY_ZA)
 #define BIT_STBY_XYZG       (BIT_STBY_XG | BIT_STBY_YG | BIT_STBY_ZG)
 
-#if defined AK8975_SECONDARY
-#define SUPPORTS_AK89xx_HIGH_SENS   (0x00)
-#define AK89xx_FSR                  (9830)
-#elif defined AK8963_SECONDARY
-#define SUPPORTS_AK89xx_HIGH_SENS   (0x10)
-#define AK89xx_FSR                  (4915)
-#endif
-
-#ifdef AK89xx_SECONDARY
-#define AKM_REG_WHOAMI      (0x00)
-
-#define AKM_REG_ST1         (0x02)
-#define AKM_REG_HXL         (0x03)
-#define AKM_REG_ST2         (0x09)
-
-#define AKM_REG_CNTL        (0x0A)
-#define AKM_REG_ASTC        (0x0C)
-#define AKM_REG_ASAX        (0x10)
-#define AKM_REG_ASAY        (0x11)
-#define AKM_REG_ASAZ        (0x12)
-
-#define AKM_DATA_READY      (0x01)
-#define AKM_DATA_OVERRUN    (0x02)
-#define AKM_OVERFLOW        (0x80)
-#define AKM_DATA_ERROR      (0x40)
-
-#define AKM_BIT_SELF_TEST   (0x40)
-
-#define AKM_POWER_DOWN          (0x00 | SUPPORTS_AK89xx_HIGH_SENS)
-#define AKM_SINGLE_MEASUREMENT  (0x01 | SUPPORTS_AK89xx_HIGH_SENS)
-#define AKM_FUSE_ROM_ACCESS     (0x0F | SUPPORTS_AK89xx_HIGH_SENS)
-#define AKM_MODE_SELF_TEST      (0x08 | SUPPORTS_AK89xx_HIGH_SENS)
-
-#define AKM_WHOAMI      (0x48)
-#endif
-
 
 /* Hardware registers needed by driver. */
 #define GYRO_REG_who_am_i         0x75
@@ -344,7 +303,7 @@ enum lp_accel_rate_e {
 #define INV6050_temp_offset       -521
 #define INV6050_bank_size         256
 
-
+// Information for self test I think //
 #define TEST_gyro_sens        32768/250
 #define TEST_accel_sens       32768/16
 #define TEST_reg_rate_div     0    /* 1kHz. */
@@ -383,7 +342,8 @@ static int set_int_enable(unsigned char enable)
             tmp = BIT_DMP_INT_EN;
         else
             tmp = 0x00;
-        if (i2c_write( INV6050_addr, GYRO_REG_int_enable, 1, &tmp))
+//        if (i2c_write( INV6050_addr, GYRO_REG_int_enable, 1, &tmp))
+          if (i2c_writeByte( GYRO_REG_int_enable,  tmp))
             return -1;
         st.chip_cfg.int_enable = tmp;
     } else {
@@ -395,7 +355,8 @@ static int set_int_enable(unsigned char enable)
             tmp = BIT_DATA_RDY_EN;
         else
             tmp = 0x00;
-        if (i2c_write( INV6050_addr, GYRO_REG_int_enable, 1, &tmp))
+//        if (i2c_write( INV6050_addr, GYRO_REG_int_enable, 1, &tmp))
+          if (i2c_writeByte(  GYRO_REG_int_enable,  tmp))
             return -1;
         st.chip_cfg.int_enable = tmp;
     }
@@ -425,7 +386,7 @@ int mpu_reg_dump(void)
 
 /**
  *  @brief      Read from a single register.                                    // saving : this code could be reduced if we remove the checks
- *  NOTE: The memory and FIFO read/write registers cannot be accessed.
+ *  NOTE: The memory and FIFO read/write registers cannot be accessed.          // this code is not used by oXs
  *  @param[in]  reg     Register address.
  *  @param[out] data    Register data.
  *  @return     0 if successful.
@@ -447,13 +408,15 @@ void mpu_force_reset()                                         // this code is c
 	int i;
     for ( i = 0; i < 100; i++ )
 	{
-		if (i2c_write( INV6050_addr, GYRO_REG_pwr_mgmt_1, 1, data) == 0) 
+//		if (i2c_write( INV6050_addr, GYRO_REG_pwr_mgmt_1, 1, data) == 0) 
+    if (i2c_writeByte( GYRO_REG_pwr_mgmt_1,  data[0] ) == 0) 
 		{
 			delay_ms(100);
 
 			                      // Wake up chip. 
 			data[0] = 0x00;
-			if (i2c_write( INV6050_addr, GYRO_REG_pwr_mgmt_1, 1, data)==0)
+//			if (i2c_write( INV6050_addr, GYRO_REG_pwr_mgmt_1, 1, data)==0)
+      if (i2c_writeBlock( GYRO_REG_pwr_mgmt_1, 1, data)==0)
 			{
 				break;
 			}
@@ -487,14 +450,16 @@ int mpu_init(struct int_param_s *int_param)
     unsigned char data[6], rev;
 
     /* Reset device. */
-    data[0] = BIT_RESET;
-    if (i2c_write( INV6050_addr, GYRO_REG_pwr_mgmt_1, 1, data))
+//    data[0] = BIT_RESET;
+//    if (i2c_write( INV6050_addr, GYRO_REG_pwr_mgmt_1, 1, data))
+    if (i2c_writeByte(GYRO_REG_pwr_mgmt_1, (uint8_t) BIT_RESET ))
         return -1;
     delay_ms(100);
 
     /* Wake up chip. */
-    data[0] = 0x00;
-    if (i2c_write( INV6050_addr, GYRO_REG_pwr_mgmt_1, 1, data))
+//    data[0] = 0x00;
+//    if (i2c_write( INV6050_addr, GYRO_REG_pwr_mgmt_1, 1, data))
+    if (i2c_writeByte( GYRO_REG_pwr_mgmt_1, (uint8_t) 0x00 ))
         return -1;
 
 #if defined MPU6050                                                      // saving : this code could omitted if accel_half is not used. To check 
@@ -532,10 +497,10 @@ int mpu_init(struct int_param_s *int_param)
 
     /* Set to invalid values to ensure no I2C writes are skipped. */
     st.chip_cfg.sensors = 0xFF;
-    st.chip_cfg.gyro_fsr = 0xFF;
-    st.chip_cfg.accel_fsr = 0xFF;
-    st.chip_cfg.lpf = 0xFF;
-    st.chip_cfg.sample_rate = 0xFFFF;
+//    st.chip_cfg.gyro_fsr = 0xFF;            // can be omitted because filled by mpu_set_gyro_fsr()
+//    st.chip_cfg.accel_fsr = 0xFF;           // can be omitted because filled by mpu_set_accel_fsr()
+//    st.chip_cfg.lpf = 0xFF;                  // can be omitted because filled by mpu_set_lpf()
+//    st.chip_cfg.sample_rate = 0xFFFF;        // can be omitted because filled by mpu_set_sample_rate()
     st.chip_cfg.fifo_enable = 0xFF;
     st.chip_cfg.bypass_mode = 0xFF;
     /* mpu_set_sensors always preserves this setting. */
@@ -604,7 +569,8 @@ int mpu_lp_accel_mode(unsigned char rate)
         mpu_set_int_latched(0);
         tmp[0] = 0;
         tmp[1] = BIT_STBY_XYZG;
-        if (i2c_write( INV6050_addr, GYRO_REG_pwr_mgmt_1, 2, tmp))
+//        if (i2c_write( INV6050_addr, GYRO_REG_pwr_mgmt_1, 2, tmp))
+        if (i2c_writeBlock(  GYRO_REG_pwr_mgmt_1, 2, tmp))
             return -1;
         st.chip_cfg.lp_accel_mode = 0;
         return 0;
@@ -632,7 +598,8 @@ int mpu_lp_accel_mode(unsigned char rate)
         mpu_set_lpf(20);
     }
     tmp[1] = (tmp[1] << 6) | BIT_STBY_XYZG;
-    if (i2c_write( INV6050_addr, GYRO_REG_pwr_mgmt_1, 2, tmp))
+//    if (i2c_write( INV6050_addr, GYRO_REG_pwr_mgmt_1, 2, tmp))
+    if (i2c_writeBlock(  GYRO_REG_pwr_mgmt_1, 2, tmp))
         return -1;
     st.chip_cfg.sensors = INV_XYZ_ACCEL;
     st.chip_cfg.clk_src = 0;
@@ -643,7 +610,7 @@ int mpu_lp_accel_mode(unsigned char rate)
 }
 
 /**
- *  @brief      Read raw gyro data directly from the registers.
+ *  @brief      Read raw gyro data directly from the registers.                           // not used by oXs
  *  @param[out] data        Raw data in hardware units.
  *  @param[out] timestamp   Timestamp in milliseconds. Null if not needed.
  *  @return     0 if successful.
@@ -666,7 +633,7 @@ int mpu_get_gyro_reg(short *data, unsigned long *timestamp)
 }
 
 /**
- *  @brief      Read raw accel data directly from the registers.
+ *  @brief      Read raw accel data directly from the registers.                         // not used by oXs
  *  @param[out] data        Raw data in hardware units.
  *  @param[out] timestamp   Timestamp in milliseconds. Null if not needed.
  *  @return     0 if successful.
@@ -688,7 +655,7 @@ int mpu_get_accel_reg(short *data, unsigned long *timestamp)
     return 0;
 }
 
-/**                                                                         // Not used by oXs
+/**                                                                                      // Not used by oXs
  *  @brief      Read temperature data directly from the registers.
  *  @param[out] data        Data in q16 format.
  *  @param[out] timestamp   Timestamp in milliseconds. Null if not needed.
@@ -713,13 +680,13 @@ int mpu_get_temperature(long *data, unsigned long *timestamp)
 }
 
 /**
- *  @brief      Push biases to the accel bias registers.
+ *  @brief      Push biases to the accel bias registers.                                          // not used by oXs
  *  This function expects biases relative to the current sensor output, and
  *  these biases will be added to the factory-supplied values.
  *  @param[in]  accel_bias  New biases.
  *  @return     0 if successful.
  */
-int mpu_set_accel_bias(const long *accel_bias)
+int mpu_set_accel_bias(const long *accel_bias)                                                       
 {
     unsigned char data[6];
     short accel_hw[3];
@@ -759,7 +726,8 @@ int mpu_set_accel_bias(const long *accel_bias)
     data[4] = (accel_hw[2] >> 8) & 0xff;
     data[5] = (accel_hw[2]) & 0xff;
 
-    if (i2c_write( INV6050_addr, 0x06, 6, data))
+//    if (i2c_write( INV6050_addr, 0x06, 6, data))
+    if (i2c_writeBlock(  0x06, 6, data))
         return -1;
     return 0;
 }
@@ -772,54 +740,66 @@ int mpu_reset_fifo(void)
 {
     unsigned char data;
 
-    if (!(st.chip_cfg.sensors))
-        return -1;
+//    if (!(st.chip_cfg.sensors))         return -1;                // can be ommitted if whe assume that sensors is always filled
 
-    data = 0;
-    if (i2c_write( INV6050_addr, GYRO_REG_int_enable, 1, &data))
+//    data = 0;
+//    if (i2c_write( INV6050_addr, GYRO_REG_int_enable, 1, &data))
+    if (i2c_writeByte(  GYRO_REG_int_enable, 0))
         return -1;
-    if (i2c_write( INV6050_addr, GYRO_REG_fifo_en, 1, &data))
+//    if (i2c_write( INV6050_addr, GYRO_REG_fifo_en, 1, &data))
+    if (i2c_writeByte( GYRO_REG_fifo_en, 0))
         return -1;
-    if (i2c_write( INV6050_addr, GYRO_REG_user_ctrl, 1, &data))
+//    if (i2c_write( INV6050_addr, GYRO_REG_user_ctrl, 1, &data))
+    if (i2c_writeByte( GYRO_REG_user_ctrl, 0))
         return -1;
 
     if (st.chip_cfg.dmp_on) {
-        data = BIT_FIFO_RST | BIT_DMP_RST;
-        if (i2c_write( INV6050_addr, GYRO_REG_user_ctrl, 1, &data))
+//        data = BIT_FIFO_RST | BIT_DMP_RST;
+//      if (i2c_write( INV6050_addr, GYRO_REG_user_ctrl, 1, &data))
+        if (i2c_writeByte(  GYRO_REG_user_ctrl, BIT_FIFO_RST | BIT_DMP_RST ))
             return -1;
         delay_ms(50);
-        data = BIT_DMP_EN | BIT_FIFO_EN;
-        if (st.chip_cfg.sensors & INV_XYZ_COMPASS)
-            data |= BIT_AUX_IF_EN;
-        if (i2c_write( INV6050_addr, GYRO_REG_user_ctrl, 1, &data))
+//        data = BIT_DMP_EN | BIT_FIFO_EN;
+//        if (st.chip_cfg.sensors & INV_XYZ_COMPASS)
+//            data |= BIT_AUX_IF_EN;
+//        if (i2c_write( INV6050_addr, GYRO_REG_user_ctrl, 1, &data))
+        if (i2c_writeByte(  GYRO_REG_user_ctrl, BIT_DMP_EN | BIT_FIFO_EN))
             return -1;
         if (st.chip_cfg.int_enable)
             data = BIT_DMP_INT_EN;
         else
             data = 0;
-        if (i2c_write( INV6050_addr, GYRO_REG_int_enable, 1, &data))
+//        if (i2c_write( INV6050_addr, GYRO_REG_int_enable, 1, &data))
+        if (i2c_writeByte( GYRO_REG_int_enable, data))
             return -1;
         data = 0;
-        if (i2c_write( INV6050_addr, GYRO_REG_fifo_en, 1, &data))
+//        if (i2c_write( INV6050_addr, GYRO_REG_fifo_en, 1, &data)) // strange but this requires less flash
+        if (i2c_writeBlock( GYRO_REG_fifo_en, 1, &data)) // strange but this requires less flash
+//        if (i2c_writeByte(  GYRO_REG_fifo_en, 0))
             return -1;
     } else {
-        data = BIT_FIFO_RST;
-        if (i2c_write( INV6050_addr, GYRO_REG_user_ctrl, 1, &data))
+//        data = BIT_FIFO_RST;
+//        if (i2c_write( INV6050_addr, GYRO_REG_user_ctrl, 1, &data))
+        if (i2c_writeByte(  GYRO_REG_user_ctrl, BIT_FIFO_RST))
             return -1;
-        if (st.chip_cfg.bypass_mode || !(st.chip_cfg.sensors & INV_XYZ_COMPASS))
-            data = BIT_FIFO_EN;
-        else
-            data = BIT_FIFO_EN | BIT_AUX_IF_EN;
-        if (i2c_write( INV6050_addr, GYRO_REG_user_ctrl, 1, &data))
+//        if (st.chip_cfg.bypass_mode || !(st.chip_cfg.sensors & INV_XYZ_COMPASS))
+//            data = BIT_FIFO_EN;
+//        else
+//            data = BIT_FIFO_EN | BIT_AUX_IF_EN;
+//        if (i2c_write( INV6050_addr, GYRO_REG_user_ctrl, 1, &data))
+        if (i2c_writeByte(GYRO_REG_user_ctrl, BIT_FIFO_EN | BIT_AUX_IF_EN))
             return -1;
         delay_ms(50);
         if (st.chip_cfg.int_enable)
             data = BIT_DATA_RDY_EN;
         else
             data = 0;
-        if (i2c_write( INV6050_addr, GYRO_REG_int_enable, 1, &data))
+//        if (i2c_write( INV6050_addr, GYRO_REG_int_enable, 1, &data))
+        if (i2c_writeByte( GYRO_REG_int_enable, data))
             return -1;
-        if (i2c_write( INV6050_addr, GYRO_REG_fifo_en, 1, &st.chip_cfg.fifo_enable))
+//        if (i2c_write( INV6050_addr, GYRO_REG_fifo_en, 1, &st.chip_cfg.fifo_enable))    // strange but this line take less flash memory 
+        if (i2c_writeBlock(  GYRO_REG_fifo_en, 1, &st.chip_cfg.fifo_enable))    // strange but this line take less flash memory 
+//        if (i2c_writeByte( GYRO_REG_fifo_en, st.chip_cfg.fifo_enable))
             return -1;
     }
     return 0;
@@ -883,7 +863,8 @@ int mpu_set_gyro_fsr(unsigned short fsr)
 
     if (st.chip_cfg.gyro_fsr == (data >> 3))
         return 0;
-    if (i2c_write( INV6050_addr, GYRO_REG_gyro_cfg, 1, &data))
+//    if (i2c_write( INV6050_addr, GYRO_REG_gyro_cfg, 1, &data))
+    if (i2c_writeByte(  GYRO_REG_gyro_cfg, data))
         return -1;
     st.chip_cfg.gyro_fsr = data >> 3;
     return 0;
@@ -926,8 +907,7 @@ int mpu_set_accel_fsr(unsigned char fsr)
 {
     unsigned char data;
 
-    if (!(st.chip_cfg.sensors))
-        return -1;
+//    if (!(st.chip_cfg.sensors)) return -1;   // can be ommitted is we assume that sensor is always filled
 
     switch (fsr) {
     case 2:
@@ -948,7 +928,8 @@ int mpu_set_accel_fsr(unsigned char fsr)
 
     if (st.chip_cfg.accel_fsr == (data >> 3))
         return 0;
-    if (i2c_write( INV6050_addr, GYRO_REG_accel_cfg, 1, &data))
+//    if (i2c_write( INV6050_addr, GYRO_REG_accel_cfg, 1, &data))
+    if (i2c_writeByte( GYRO_REG_accel_cfg, data))
         return -1;
     st.chip_cfg.accel_fsr = data >> 3;
     return 0;
@@ -999,8 +980,7 @@ int mpu_set_lpf(unsigned short lpf)
 {
     unsigned char data;
 
-    if (!(st.chip_cfg.sensors))
-        return -1;
+//    if (!(st.chip_cfg.sensors)) return -1;      // can be ommitted if we assume that sensors is always filled
 
     if (lpf >= 188)
         data = INV_FILTER_188HZ;
@@ -1017,7 +997,8 @@ int mpu_set_lpf(unsigned short lpf)
 
     if (st.chip_cfg.lpf == data)
         return 0;
-    if (i2c_write( INV6050_addr, GYRO_REG_lpf, 1, &data))
+//    if (i2c_write( INV6050_addr, GYRO_REG_lpf, 1, &data))
+    if (i2c_writeByte( GYRO_REG_lpf, data))
         return -1;
     st.chip_cfg.lpf = data;
     return 0;
@@ -1047,8 +1028,7 @@ int mpu_set_sample_rate(unsigned short rate)
 {
     unsigned char data;
 
-    if (!(st.chip_cfg.sensors))
-        return -1;
+//    if (!(st.chip_cfg.sensors))  return -1;    // can be omitted if we assume that sensor is always filled
 
     if (st.chip_cfg.dmp_on)
         return -1;
@@ -1070,7 +1050,8 @@ int mpu_set_sample_rate(unsigned short rate)
             rate = 1000;
 
         data = 1000 / rate - 1;
-        if (i2c_write( INV6050_addr, GYRO_REG_rate_div, 1, &data))
+//        if (i2c_write( INV6050_addr, GYRO_REG_rate_div, 1, &data))
+        if (i2c_writeByte( GYRO_REG_rate_div, data))
             return -1;
 
         st.chip_cfg.sample_rate = 1000 / (1 + data);
@@ -1224,9 +1205,6 @@ int mpu_get_power_state(unsigned char *power_on)
 int mpu_set_sensors(unsigned char sensors)
 {
     unsigned char data;
-#ifdef AK89xx_SECONDARY
-    unsigned char user_ctrl;
-#endif
 
     if (sensors & INV_XYZ_GYRO)
         data = INV_CLK_PLL;
@@ -1234,7 +1212,8 @@ int mpu_set_sensors(unsigned char sensors)
         data = 0;
     else
         data = BIT_SLEEP;
-    if (i2c_write( INV6050_addr, GYRO_REG_pwr_mgmt_1, 1, &data)) {
+//    if (i2c_write( INV6050_addr, GYRO_REG_pwr_mgmt_1, 1, &data)) {
+    if (i2c_writeByte( GYRO_REG_pwr_mgmt_1, data)) {
         st.chip_cfg.sensors = 0;
         return -1;
     }
@@ -1249,7 +1228,8 @@ int mpu_set_sensors(unsigned char sensors)
         data |= BIT_STBY_ZG;
     if (!(sensors & INV_XYZ_ACCEL))
         data |= BIT_STBY_XYZA;
-    if (i2c_write( INV6050_addr, GYRO_REG_pwr_mgmt_2, 1, &data)) {
+//    if (i2c_write( INV6050_addr, GYRO_REG_pwr_mgmt_2, 1, &data)) {
+    if (i2c_writeByte( GYRO_REG_pwr_mgmt_2, data)) {
         st.chip_cfg.sensors = 0;
         return -1;
     }
@@ -1257,35 +1237,6 @@ int mpu_set_sensors(unsigned char sensors)
     if (sensors && (sensors != INV_XYZ_ACCEL))
         /* Latched interrupts only used in LP accel mode. */
         mpu_set_int_latched(0);
-
-#ifdef AK89xx_SECONDARY
-#ifdef AK89xx_BYPASS
-    if (sensors & INV_XYZ_COMPASS)
-        mpu_set_bypass(1);
-    else
-        mpu_set_bypass(0);
-#else
-    if (i2c_read( INV6050_addr, GYRO_REG_user_ctrl, 1, &user_ctrl))
-        return -1;
-    /* Handle AKM power management. */
-    if (sensors & INV_XYZ_COMPASS) {
-        data = AKM_SINGLE_MEASUREMENT;
-        user_ctrl |= BIT_AUX_IF_EN;
-    } else {
-        data = AKM_POWER_DOWN;
-        user_ctrl &= ~BIT_AUX_IF_EN;
-    }
-    if (st.chip_cfg.dmp_on)
-        user_ctrl |= BIT_DMP_EN;
-    else
-        user_ctrl &= ~BIT_DMP_EN;
-    if (i2c_write( INV6050_addr, GYRO_REG_s1_do, 1, &data))
-        return -1;
-    /* Enable/disable I2C master mode. */
-    if (i2c_write( INV6050_addr, GYRO_REG_user_ctrl, 1, &user_ctrl))
-        return -1;
-#endif
-#endif
 
     st.chip_cfg.sensors = sensors;
     st.chip_cfg.lp_accel_mode = 0;
@@ -1458,7 +1409,8 @@ int mpu_set_bypass(unsigned char bypass_on)
         if (i2c_read( INV6050_addr, GYRO_REG_user_ctrl, 1, &tmp))
             return -1;
         tmp &= ~BIT_AUX_IF_EN;
-        if (i2c_write( INV6050_addr, GYRO_REG_user_ctrl, 1, &tmp))
+//        if (i2c_write( INV6050_addr, GYRO_REG_user_ctrl, 1, &tmp))
+        if (i2c_writeByte( GYRO_REG_user_ctrl, tmp))
             return -1;
         delay_ms(3);
         tmp = BIT_BYPASS_EN;
@@ -1466,7 +1418,9 @@ int mpu_set_bypass(unsigned char bypass_on)
             tmp |= BIT_ACTL;
         if (st.chip_cfg.latched_int)
             tmp |= BIT_LATCH_EN | BIT_ANY_RD_CLR;
-        if (i2c_write( INV6050_addr, GYRO_REG_int_pin_cfg, 1, &tmp))
+//        if (i2c_write( INV6050_addr, GYRO_REG_int_pin_cfg, 1, &tmp))        // strange but this line requires less flash memory
+        if (i2c_writeBlock( GYRO_REG_int_pin_cfg, 1, &tmp))        // strange but this line requires less flash memory
+//        if (i2c_writeByte( GYRO_REG_int_pin_cfg, tmp))
             return -1;
     } else {
         /* Enable I2C master mode if compass is being used. */
@@ -1476,7 +1430,8 @@ int mpu_set_bypass(unsigned char bypass_on)
             tmp |= BIT_AUX_IF_EN;
         else
             tmp &= ~BIT_AUX_IF_EN;
-        if (i2c_write( INV6050_addr, GYRO_REG_user_ctrl, 1, &tmp))
+//        if (i2c_write( INV6050_addr, GYRO_REG_user_ctrl, 1, &tmp))
+        if (i2c_writeByte(  GYRO_REG_user_ctrl, tmp))
             return -1;
         delay_ms(3);
         if (st.chip_cfg.active_low_int)
@@ -1485,7 +1440,9 @@ int mpu_set_bypass(unsigned char bypass_on)
             tmp = 0;
         if (st.chip_cfg.latched_int)
             tmp |= BIT_LATCH_EN | BIT_ANY_RD_CLR;
-        if (i2c_write( INV6050_addr, GYRO_REG_int_pin_cfg, 1, &tmp))
+//        if (i2c_write( INV6050_addr, GYRO_REG_int_pin_cfg, 1, &tmp))         // strange but this line requires less flash memory
+        if (i2c_writeBlock(  GYRO_REG_int_pin_cfg, 1, &tmp))         // strange but this line requires less flash memory
+//        if (i2c_writeByte( GYRO_REG_int_pin_cfg, tmp))
             return -1;
     }
     st.chip_cfg.bypass_mode = bypass_on;
@@ -1523,14 +1480,15 @@ int mpu_set_int_latched(unsigned char enable)
         tmp |= BIT_BYPASS_EN;
     if (st.chip_cfg.active_low_int)
         tmp |= BIT_ACTL;
-    if (i2c_write( INV6050_addr, GYRO_REG_int_pin_cfg, 1, &tmp))
+//    if (i2c_write( INV6050_addr, GYRO_REG_int_pin_cfg, 1, &tmp))
+    if (i2c_writeByte( GYRO_REG_int_pin_cfg,tmp))
         return -1;
     st.chip_cfg.latched_int = enable;
     return 0;
 }
 
 #ifdef MPU6050
-static int get_accel_prod_shift(float *st_shift)
+static int get_accel_prod_shift(float *st_shift)                          // this function is not used by oXs; 
 {
     unsigned char tmp[4], shift_code[3], ii;
 
@@ -1604,62 +1562,9 @@ static int gyro_self_test(long *bias_regular, long *bias_st)
     return result;
 }
 
-#ifdef AK89xx_SECONDARY
-static int compass_self_test(void)
-{
-    unsigned char tmp[6];
-    unsigned char tries = 10;
-    int result = 0x07;
-    short data;
-
-    mpu_set_bypass(1);
-
-    tmp[0] = AKM_POWER_DOWN;
-    if (i2c_write(st.chip_cfg.compass_addr, AKM_REG_CNTL, 1, tmp))
-        return 0x07;
-    tmp[0] = AKM_BIT_SELF_TEST;
-    if (i2c_write(st.chip_cfg.compass_addr, AKM_REG_ASTC, 1, tmp))
-        goto AKM_restore;
-    tmp[0] = AKM_MODE_SELF_TEST;
-    if (i2c_write(st.chip_cfg.compass_addr, AKM_REG_CNTL, 1, tmp))
-        goto AKM_restore;
-
-    do {
-        delay_ms(10);
-        if (i2c_read(st.chip_cfg.compass_addr, AKM_REG_ST1, 1, tmp))
-            goto AKM_restore;
-        if (tmp[0] & AKM_DATA_READY)
-            break;
-    } while (tries--);
-    if (!(tmp[0] & AKM_DATA_READY))
-        goto AKM_restore;
-
-    if (i2c_read(st.chip_cfg.compass_addr, AKM_REG_HXL, 6, tmp))
-        goto AKM_restore;
-
-    result = 0;
-    data = (short)(tmp[1] << 8) | tmp[0];
-    if ((data > 100) || (data < -100))
-        result |= 0x01;
-    data = (short)(tmp[3] << 8) | tmp[2];
-    if ((data > 100) || (data < -100))
-        result |= 0x02;
-    data = (short)(tmp[5] << 8) | tmp[4];
-    if ((data > -300) || (data < -1000))
-        result |= 0x04;
-
-AKM_restore:
-    tmp[0] = 0 | SUPPORTS_AK89xx_HIGH_SENS;
-    i2c_write(st.chip_cfg.compass_addr, AKM_REG_ASTC, 1, tmp);
-    tmp[0] = SUPPORTS_AK89xx_HIGH_SENS;
-    i2c_write(st.chip_cfg.compass_addr, AKM_REG_CNTL, 1, tmp);
-    mpu_set_bypass(0);
-    return result;
-}
-#endif
 #endif
 
-static int get_st_biases(long *gyro, long *accel, unsigned char hw_test)
+static int get_st_biases(long *gyro, long *accel, unsigned char hw_test)               // this function is not used by oXs    
 {
     unsigned char data[MAX_PACKET_LENGTH];
     unsigned char packet_count, ii;
@@ -1667,57 +1572,71 @@ static int get_st_biases(long *gyro, long *accel, unsigned char hw_test)
 
     data[0] = 0x01;
     data[1] = 0;
-    if (i2c_write( INV6050_addr, GYRO_REG_pwr_mgmt_1, 2, data))
+//    if (i2c_write( INV6050_addr, GYRO_REG_pwr_mgmt_1, 2, data))
+    if (i2c_writeBlock( GYRO_REG_pwr_mgmt_1, 2, data))    
         return -1;
     delay_ms(200);
     data[0] = 0;
-    if (i2c_write( INV6050_addr, GYRO_REG_int_enable, 1, data))
+//    if (i2c_write( INV6050_addr, GYRO_REG_int_enable, 1, data))
+    if (i2c_writeBlock( GYRO_REG_int_enable, 1, data))
         return -1;
-    if (i2c_write( INV6050_addr, GYRO_REG_fifo_en, 1, data))
+//    if (i2c_write( INV6050_addr, GYRO_REG_fifo_en, 1, data))
+    if (i2c_writeBlock( GYRO_REG_fifo_en, 1, data))
         return -1;
-    if (i2c_write( INV6050_addr, GYRO_REG_pwr_mgmt_1, 1, data))
+//    if (i2c_write( INV6050_addr, GYRO_REG_pwr_mgmt_1, 1, data))
+    if (i2c_writeBlock( GYRO_REG_pwr_mgmt_1, 1, data))
         return -1;
-    if (i2c_write( INV6050_addr, GYRO_REG_i2c_mst, 1, data))
+//    if (i2c_write( INV6050_addr, GYRO_REG_i2c_mst, 1, data))
+    if (i2c_writeBlock( GYRO_REG_i2c_mst, 1, data))
         return -1;
-    if (i2c_write( INV6050_addr, GYRO_REG_user_ctrl, 1, data))
+//    if (i2c_write( INV6050_addr, GYRO_REG_user_ctrl, 1, data))
+    if (i2c_writeBlock( GYRO_REG_user_ctrl, 1, data))
         return -1;
     data[0] = BIT_FIFO_RST | BIT_DMP_RST;
-    if (i2c_write( INV6050_addr, GYRO_REG_user_ctrl, 1, data))
+//    if (i2c_write( INV6050_addr, GYRO_REG_user_ctrl, 1, data))
+    if (i2c_writeBlock(GYRO_REG_user_ctrl, 1, data))
         return -1;
     delay_ms(15);
     data[0] = TEST_reg_lpf;
-    if (i2c_write( INV6050_addr, GYRO_REG_lpf, 1, data))
+//    if (i2c_write( INV6050_addr, GYRO_REG_lpf, 1, data))
+    if (i2c_writeBlock( GYRO_REG_lpf, 1, data))
         return -1;
     data[0] = TEST_reg_rate_div;
-    if (i2c_write( INV6050_addr, GYRO_REG_rate_div, 1, data))
+//    if (i2c_write( INV6050_addr, GYRO_REG_rate_div, 1, data))
+    if (i2c_writeBlock(  GYRO_REG_rate_div, 1, data))
         return -1;
     if (hw_test)
         data[0] = TEST_reg_gyro_fsr | 0xE0;
     else
         data[0] = TEST_reg_gyro_fsr;
-    if (i2c_write( INV6050_addr, GYRO_REG_gyro_cfg, 1, data))
+//    if (i2c_write( INV6050_addr, GYRO_REG_gyro_cfg, 1, data))
+    if (i2c_writeBlock(  GYRO_REG_gyro_cfg, 1, data))
         return -1;
 
     if (hw_test)
         data[0] = TEST_reg_accel_fsr | 0xE0;
     else
         data[0] = TEST_reg_accel_fsr;
-    if (i2c_write( INV6050_addr, GYRO_REG_accel_cfg, 1, data))
+//    if (i2c_write( INV6050_addr, GYRO_REG_accel_cfg, 1, data))
+    if (i2c_writeBlock(  GYRO_REG_accel_cfg, 1, data))
         return -1;
     if (hw_test)
         delay_ms(200);
 
     /* Fill FIFO for TEST_wait_ms milliseconds. */
     data[0] = BIT_FIFO_EN;
-    if (i2c_write( INV6050_addr, GYRO_REG_user_ctrl, 1, data))
+//    if (i2c_write( INV6050_addr, GYRO_REG_user_ctrl, 1, data))
+    if (i2c_writeBlock( GYRO_REG_user_ctrl, 1, data))
         return -1;
 
     data[0] = INV_XYZ_GYRO | INV_XYZ_ACCEL;
-    if (i2c_write( INV6050_addr, GYRO_REG_fifo_en, 1, data))
+//    if (i2c_write( INV6050_addr, GYRO_REG_fifo_en, 1, data))
+    if (i2c_writeBlock( GYRO_REG_fifo_en, 1, data))
         return -1;
     delay_ms(TEST_wait_ms);
     data[0] = 0;
-    if (i2c_write( INV6050_addr, GYRO_REG_fifo_en, 1, data))
+//    if (i2c_write( INV6050_addr, GYRO_REG_fifo_en, 1, data))
+    if (i2c_writeBlock( GYRO_REG_fifo_en, 1, data))
         return -1;
 
     if (i2c_read( INV6050_addr, GYRO_REG_fifo_count_h, 2, data))
@@ -1898,9 +1817,11 @@ int mpu_write_mem(unsigned short mem_addr, unsigned short length, unsigned char 
     if (tmp[1] + length > INV6050_bank_size)                                             // saving : could be avoided to save flash 
         return -1;
 
-    if (i2c_write( INV6050_addr, GYRO_REG_bank_sel, 2, tmp))
+//    if (i2c_write( INV6050_addr, GYRO_REG_bank_sel, 2, tmp))
+    if (i2c_writeBlock( GYRO_REG_bank_sel, 2, tmp))
         return -1;
-    if (i2c_write( INV6050_addr, GYRO_REG_mem_r_w, length, data))
+//    if (i2c_write( INV6050_addr, GYRO_REG_mem_r_w, length, data))
+    if (i2c_writeBlock( GYRO_REG_mem_r_w, length, data))
         return -1;
     return 0;
 }
@@ -1930,7 +1851,8 @@ int mpu_read_mem(unsigned short mem_addr, unsigned short length, unsigned char *
     if (tmp[1] + length > INV6050_bank_size)                                            // saving : could be avoided
         return -1;
 
-    if (i2c_write( INV6050_addr, GYRO_REG_bank_sel, 2, tmp))
+//    if (i2c_write( INV6050_addr, GYRO_REG_bank_sel, 2, tmp))
+    if (i2c_writeBlock( GYRO_REG_bank_sel, 2, tmp))
         return -1;
     if (i2c_read( INV6050_addr, GYRO_REG_mem_r_w, length, data))
         return -1;
@@ -1966,7 +1888,7 @@ int mpu_load_firmware(unsigned short length, const unsigned char *firmware, unsi
     for (ii = 0; ii < length; ii += this_write) {
         this_write = min(LOAD_CHUNK, length - ii);                        //upload will be handle by max 16 bytes
 		
-    		int x;
+    		unsigned short x;
     		unsigned char *pFirmware = (unsigned char *)&firmware[ii];
     		for ( x = 0; x < this_write; x++ ) {
     			firmware_chunk[x] = pgm_read_byte_near(pFirmware+x);           // fill a buffer of max 16 byte with the data from flash
@@ -1983,7 +1905,8 @@ int mpu_load_firmware(unsigned short length, const unsigned char *firmware, unsi
     /* Set program start address. */
     tmp[0] = start_addr >> 8;
     tmp[1] = start_addr & 0xFF;
-    if (i2c_write( INV6050_addr, GYRO_REG_prgm_start_h, 2, tmp))
+//    if (i2c_write( INV6050_addr, GYRO_REG_prgm_start_h, 2, tmp))
+    if (i2c_writeBlock( GYRO_REG_prgm_start_h, 2, tmp))
         return -5;
 
     st.chip_cfg.dmp_loaded = 1;
@@ -2012,8 +1935,9 @@ int mpu_set_dmp_state(unsigned char enable)
         /* Keep constant sample rate, FIFO rate controlled by DMP. */
         mpu_set_sample_rate(st.chip_cfg.dmp_sample_rate);
         /* Remove FIFO elements. */
-        tmp = 0;
-        i2c_write( INV6050_addr, 0x23, 1, &tmp);
+//        tmp = 0;
+//        i2c_write( INV6050_addr, 0x23, 1, &tmp);
+        i2c_writeByte(  0x23, 0);
         st.chip_cfg.dmp_on = 1;
         /* Enable DMP interrupt. */
         set_int_enable(1);
@@ -2023,7 +1947,8 @@ int mpu_set_dmp_state(unsigned char enable)
         set_int_enable(0);
         /* Restore FIFO settings. */
         tmp = st.chip_cfg.fifo_enable;
-        i2c_write( INV6050_addr, 0x23, 1, &tmp);
+//        i2c_write( INV6050_addr, 0x23, 1, &tmp);
+        i2c_writeByte(  0x23, tmp);
         st.chip_cfg.dmp_on = 0;
         mpu_reset_fifo();
     }
@@ -2152,7 +2077,8 @@ int mpu_lp_motion_interrupt(unsigned short thresh, unsigned char time,
          * reading.
          */
         data[0] = INV_FILTER_256HZ_NOLPF2;
-        if (i2c_write( INV6050_addr, GYRO_REG_lpf, 1, data))
+//        if (i2c_write( INV6050_addr, GYRO_REG_lpf, 1, data))
+        if (i2c_writeBlock( GYRO_REG_lpf, 1, data))
             return -1;
 
         /* NOTE: Digital high pass filter should be configured here. Since this
@@ -2163,19 +2089,22 @@ int mpu_lp_motion_interrupt(unsigned short thresh, unsigned char time,
         /* Configure the device to send motion interrupts. */
         /* Enable motion interrupt. */
         data[0] = BIT_MOT_INT_EN;
-        if (i2c_write( INV6050_addr, GYRO_REG_int_enable, 1, data))
+//        if (i2c_write( INV6050_addr, GYRO_REG_int_enable, 1, data))
+        if (i2c_writeBlock( GYRO_REG_int_enable, 1, data))
             goto lp_int_restore;
 
         /* Set motion interrupt parameters. */
         data[0] = thresh_hw;
         data[1] = time;
-        if (i2c_write( INV6050_addr, GYRO_REG_motion_thr, 2, data))
+//        if (i2c_write( INV6050_addr, GYRO_REG_motion_thr, 2, data))
+        if (i2c_writeBlock( GYRO_REG_motion_thr, 2, data))
             goto lp_int_restore;
 
         /* Force hardware to "lock" current accel sample. */
         delay_ms(5);
         data[0] = (st.chip_cfg.accel_fsr << 3) | BITS_HPF;
-        if (i2c_write( INV6050_addr, GYRO_REG_accel_cfg, 1, data))
+//        if (i2c_write( INV6050_addr, GYRO_REG_accel_cfg, 1, data))
+        if (i2c_writeBlock( GYRO_REG_accel_cfg, 1, data))
             goto lp_int_restore;
 
         /* Set up LP accel mode. */
@@ -2189,7 +2118,8 @@ int mpu_lp_motion_interrupt(unsigned short thresh, unsigned char time,
         else
             data[1] = INV_LPA_40HZ;
         data[1] = (data[1] << 6) | BIT_STBY_XYZG;
-        if (i2c_write( INV6050_addr, GYRO_REG_pwr_mgmt_1, 2, data))
+//        if (i2c_write( INV6050_addr, GYRO_REG_pwr_mgmt_1, 2, data))
+        if (i2c_writeBlock( GYRO_REG_pwr_mgmt_1, 2, data))
             goto lp_int_restore;
 
         st.chip_cfg.int_motion_only = 1;
@@ -2202,12 +2132,14 @@ int mpu_lp_motion_interrupt(unsigned short thresh, unsigned char time,
         data[0] = 0;
         data[1] = 0;
         data[2] = BIT_STBY_XYZG;
-        if (i2c_write( INV6050_addr, GYRO_REG_user_ctrl, 3, data))
+//        if (i2c_write( INV6050_addr, GYRO_REG_user_ctrl, 3, data))
+        if (i2c_writeBlock( GYRO_REG_user_ctrl, 3, data))
             goto lp_int_restore;
 
         /* Set motion threshold. */
         data[0] = thresh_hw;
-        if (i2c_write( INV6050_addr, GYRO_REG_motion_thr, 1, data))
+//        if (i2c_write( INV6050_addr, GYRO_REG_motion_thr, 1, data))
+        if (i2c_writeBlock( GYRO_REG_motion_thr, 1, data))
             goto lp_int_restore;
 
         /* Set wake frequency. */
@@ -2231,22 +2163,26 @@ int mpu_lp_motion_interrupt(unsigned short thresh, unsigned char time,
             data[0] = INV_LPA_320HZ;
         else
             data[0] = INV_LPA_640HZ;
-        if (i2c_write( INV6050_addr, GYRO_REG_lp_accel_odr, 1, data))
+//        if (i2c_write( INV6050_addr, GYRO_REG_lp_accel_odr, 1, data))
+        if (i2c_writeBlock( GYRO_REG_lp_accel_odr, 1, data))
             goto lp_int_restore;
 
         /* Enable motion interrupt (MPU6500 version). */
         data[0] = BITS_WOM_EN;
-        if (i2c_write( INV6050_addr, GYRO_REG_accel_intel, 1, data))
+//        if (i2c_write( INV6050_addr, GYRO_REG_accel_intel, 1, data))
+        if (i2c_writeBlock( GYRO_REG_accel_intel, 1, data))
             goto lp_int_restore;
 
         /* Enable cycle mode. */
         data[0] = BIT_LPA_CYCLE;
-        if (i2c_write( INV6050_addr, GYRO_REG_pwr_mgmt_1, 1, data))
+//        if (i2c_write( INV6050_addr, GYRO_REG_pwr_mgmt_1, 1, data))
+        if (i2c_writeBlock( GYRO_REG_pwr_mgmt_1, 1, data))
             goto lp_int_restore;
 
         /* Enable interrupt. */
         data[0] = BIT_MOT_INT_EN;
-        if (i2c_write( INV6050_addr, GYRO_REG_int_enable, 1, data))
+//        if (i2c_write( INV6050_addr, GYRO_REG_int_enable, 1, data))
+        if (i2c_writeBlock( GYRO_REG_int_enable, 1, data))
             goto lp_int_restore;
 
         st.chip_cfg.int_motion_only = 1;
@@ -2254,7 +2190,7 @@ int mpu_lp_motion_interrupt(unsigned short thresh, unsigned char time,
 #endif
     } else {
         /* Don't "restore" the previous state if no state has been saved. */
-        int ii;
+        unsigned int ii;
         char *cache_ptr = (char*)&st.chip_cfg.cache;
         for (ii = 0; ii < sizeof(st.chip_cfg.cache); ii++) {
             if (cache_ptr[ii] != 0)

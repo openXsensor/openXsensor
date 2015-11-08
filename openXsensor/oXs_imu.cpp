@@ -43,6 +43,7 @@ extern "C" {
   #include "inv_mpu.h"
   #include "inv_mpu_dmp_motion_driver.h"
 }
+
 #include "oXs_imu.h"
 
 void setup_imu() {
@@ -291,7 +292,7 @@ void read6050 () {
 
 //boolean update_type = MSGID_YPR_UPDATE;
 //char protocol_buffer[64];
-
+/*
 void loop_xxxxxxxx() {
   
   // If the MPU Interrupt occurred, read the fifo and process the data
@@ -302,18 +303,18 @@ void loop_xxxxxxxx() {
     unsigned char more = 0;
     long quat[4];
     //float euler[3];
-    /* This function gets new data from the FIFO when the DMP is in
-     * use. The FIFO can contain any combination of gyro, accel,
-     * quaternion, and gesture data. The sensors parameter tells the
-     * caller which data fields were actually populated with new data.
-     * For example, if sensors == (INV_XYZ_GYRO | INV_WXYZ_QUAT), then
-     * the FIFO isn't being filled with accel data.
-     * The driver parses the gesture data to determine if a gesture
-     * event has occurred; on an event, the application will be notified
-     * via a callback (assuming that a callback function was properly
-     * registered). The more parameter is non-zero if there are
-     * leftover packets in the FIFO.
-     */
+    // This function gets new data from the FIFO when the DMP is in
+    // use. The FIFO can contain any combination of gyro, accel,
+    // quaternion, and gesture data. The sensors parameter tells the
+    // caller which data fields were actually populated with new data.
+    // For example, if sensors == (INV_XYZ_GYRO | INV_WXYZ_QUAT), then
+    // the FIFO isn't being filled with accel data.
+    // The driver parses the gesture data to determine if a gesture
+    // event has occurred; on an event, the application will be notified
+    // via a callback (assuming that a callback function was properly
+    // * registered). The more parameter is non-zero if there are
+    // leftover packets in the FIFO.
+     
     int success = dmp_read_fifo(gyro, accel, quat, &sensor_timestamp, &sensors,
         &more);
     if (!more)
@@ -340,8 +341,7 @@ void loop_xxxxxxxx() {
           calibration_state = NAV6_CALIBRATION_STATE_ACCUMULATE;
         }
         
-      }
-/*      
+      }      
       if ( calibration_state == NAV6_CALIBRATION_STATE_ACCUMULATE ) {
         
         accumulate = true;
@@ -566,11 +566,9 @@ void loop_xxxxxxxx() {
       {
         i++;
       }
-  */
     }
   
   }
- /* 
   if ( send_stream_response ) {
         int num_bytes = IMUProtocol::encodeStreamResponse(  protocol_buffer, update_type,
                                                               gyro_fsr, accel_fsr, dmp_update_rate, calibrated_yaw_offset, 
@@ -581,8 +579,8 @@ void loop_xxxxxxxx() {
                                                               calibration_state );
       Serial.write((unsigned char *)protocol_buffer, num_bytes);
   }
-*/  
 }
+*/ // end of loopxxxxxx
 
 /* Every time new gyro data is available, this function is called in an
  * ISR context. In this example, it sets a flag protecting the FIFO read
@@ -725,7 +723,7 @@ void enable_mpu() {
     hal.dmp_on = 1;
 }  
 
-boolean run_mpu_self_test(boolean& gyro_ok, boolean& accel_ok) {
+boolean run_mpu_self_test(boolean& gyro_ok, boolean& accel_ok) {                               // saving : is currently not used by oXs   
   
     int result;
     long gyro[3], accel[3];
@@ -761,21 +759,18 @@ boolean run_mpu_self_test(boolean& gyro_ok, boolean& accel_ok) {
 }
 
 void getEuler(float *data, Quaternion *q) {
-
     data[0] = atan2(2*q -> x*q -> y - 2*q -> w*q -> z, 2*q -> w*q -> w + 2*q -> x*q -> x - 1);   // psi
-    data[1] = -asin(2*q -> x*q -> z + 2*q -> w*q -> y);                              // theta
-    data[2] = atan2(2*q -> y*q -> z - 2*q -> w*q -> x, 2*q -> w*q -> w + 2*q -> z*q -> z - 1);   // phi
+    data[1] = -asin(2*q -> x*q -> z + 2*q -> w*q -> y);                                          // theta
+    data[2] = atan2(2*q -> y*q -> z - 2*q -> w*q -> x, 2*q -> w*q -> w + 2*q -> z*q -> z - 1);   // phi????
 }
 
 void getGravity(struct FloatVectorStruct *v, Quaternion *q) {
-
     v -> x = 2 * (q -> x*q -> z - q -> w*q -> y);
     v -> y = 2 * (q -> w*q -> x + q -> y*q -> z);
     v -> z = q -> w*q -> w - q -> x*q -> x - q -> y*q -> y + q -> z*q -> z;
 }
 
 void dmpGetYawPitchRoll(float *data, Quaternion *q, struct FloatVectorStruct *gravity) {
-  
     // yaw: (about Z axis)
     data[0] = atan2(2*q -> x*q -> y - 2*q -> w*q -> z, 2*q -> w*q -> w + 2*q -> x*q -> x - 1);
     // pitch: (nose up/down, about Y axis)
@@ -784,41 +779,38 @@ void dmpGetYawPitchRoll(float *data, Quaternion *q, struct FloatVectorStruct *gr
     data[2] = atan(gravity -> y / sqrt(gravity -> x*gravity -> x + gravity -> z*gravity -> z));
 }
 
+/*
 // The following code calculates the amount of free memory.
-
 extern unsigned int __heap_start;
 extern void *__brkval;
- 
-/*
-  * The free list structure as maintained by the 
- * avr-libc memory allocation routines.
-  */
+
+ // The free list structure as maintained by the 
+ // avr-libc memory allocation routines.
 struct __freelist {
    size_t sz;
    struct __freelist *nx;
 };
  
-/* The head of the free list structure */
+// The head of the free list structure //
 extern struct __freelist *__flp;
  
-/* Calculates the size of the free list */
+// Calculates the size of the free list //
 int freeListSize() {
   
    struct __freelist* current;
    int total = 0;
  
   for (current = __flp; current; current = current->nx) {
-     total += 2; /* Add two bytes for the memory block's header  */
+     total += 2; // Add two bytes for the memory block's header  //
      total += (int) current->sz;
    }
  
   return total;
 }
  
-int freeMemory()  {
+int freeMemory()  {                                                    // is currently not used by oXs (there is already such a function in debug mode)
    int free_memory;
- 
-  if ((int)__brkval == 0) {
+   if ((int)__brkval == 0) {
      free_memory = ((int)&free_memory) - ((int)&__heap_start);
    } else {
      free_memory = ((int)&free_memory) - ((int)__brkval);
@@ -826,4 +818,4 @@ int freeMemory()  {
    }
    return free_memory;
 }
-
+*/

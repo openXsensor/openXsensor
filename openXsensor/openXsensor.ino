@@ -209,7 +209,7 @@ uint8_t selectedVario ; // identify the vario to be used when switch vario with 
         void calculateAverages();
 */
 // second method
-#if defined  (VARIO) && defined (GLIDER_RATIO_CALCULATED_AFTER_X_SEC) && GLIDER_RATIO_CALCULATED_AFTER_X_SEC > 5
+#if defined  (VARIO) && defined (GLIDER_RATIO_CALCULATED_AFTER_X_SEC) && GLIDER_RATIO_CALCULATED_AFTER_X_SEC >= 1
         void calculateAverages();
 
 #endif
@@ -303,7 +303,6 @@ void setup(){
   pinMode(PIN_LED, OUTPUT); // The signal LED (used for the function debug loop)
 #endif
 
-uint32_t baudRateHardwareUart = 115200L ; // default value when GPS is not used
 #ifdef GPS_INSTALLED
   Serial.begin(38400); // when GPS is used, baudrate is reduced because main loop must have the time to read the received char.
 #endif
@@ -707,7 +706,7 @@ void readSensors() {
 #endif        
 */
 // second method
-#if defined  (VARIO) && defined (GLIDER_RATIO_CALCULATED_AFTER_X_SEC) && GLIDER_RATIO_CALCULATED_AFTER_X_SEC > 5
+#if defined  (VARIO) && defined (GLIDER_RATIO_CALCULATED_AFTER_X_SEC) && GLIDER_RATIO_CALCULATED_AFTER_X_SEC >= 1
         calculateAverages();
 #endif        
 
@@ -884,9 +883,9 @@ void calculateAverages( ){
 
 
 //  second method of averaging
-#if defined  (VARIO) && defined (GLIDER_RATIO_CALCULATED_AFTER_X_SEC) && GLIDER_RATIO_CALCULATED_AFTER_X_SEC >= 5 
-#if defined (GLIDER_RATIO_CALCULATED_AFTER_X_SEC) && GLIDER_RATIO_CALCULATED_AFTER_X_SEC < 5
-#error  when defined, GLIDER_RATIO_CALCULATED_AFTER_X_SEC must be greater or equal to 5 (sec)
+#if defined  (VARIO) && defined (GLIDER_RATIO_CALCULATED_AFTER_X_SEC) && GLIDER_RATIO_CALCULATED_AFTER_X_SEC >= 1 
+#if defined (GLIDER_RATIO_CALCULATED_AFTER_X_SEC) && GLIDER_RATIO_CALCULATED_AFTER_X_SEC < 1
+#error  when defined, GLIDER_RATIO_CALCULATED_AFTER_X_SEC must be greater or equal to 1 (sec)
 #endif
 void calculateAverages( ){
         static int32_t altitudeAtT0 ; // in cm
