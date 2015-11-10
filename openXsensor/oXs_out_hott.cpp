@@ -95,6 +95,10 @@ void OXS_OUT::sendData() {
 //      printer->print(F(" Tc=")); printer->println(TxCount);
 #endif
     if ( flagUpdateHottBuffer ) {        // this flag is set to true when UART get a polling of the device. Then measurement must be filled in the buffer
+#ifdef DEBUG_BLINK
+      blinkLed(5) ; // blink every 500 ms at least
+#endif 
+
 // in general air module data to fill are:
 #if defined(NUMBEROFCELLS) && (NUMBEROFCELLS >= 1) 
           TxHottData.gamMsg.cell[0] =  voltageData->mVoltCell[0] /20 ; // Volt Cell 1 (in 2 mV increments, 210 == 4.20 V)
@@ -158,15 +162,14 @@ void OXS_OUT::sendData() {
             TxHottData.txBuffer[TXHOTTDATA_BUFFERSIZE-1] = 0 ;
             for(uint8_t i = 0; i < TXHOTTDATA_BUFFERSIZE-1; i++){  // one byte less because the last byte is the checksum
               TxHottData.txBuffer[TXHOTTDATA_BUFFERSIZE-1] += TxHottData.txBuffer[i];
-#ifdef DEBUGHOTT
-      printer->print(TxHottData.txBuffer[i], HEX); printer->print(F(" "));
-#endif
             }  // end for
+            flagUpdateHottBuffer = false ;       // reset the flag to say that all data have been updated and that UART can transmit the buffer            
 #ifdef DEBUGHOTT
-      printer->println(F(" "));
+            for(uint8_t i = 0; i < TXHOTTDATA_BUFFERSIZE; i++){  // include the last byte (checksum)
+                 printer->print(TxHottData.txBuffer[i], HEX); printer->print(F(" "));
+            } // end for    
+            printer->println(F(" "));
 #endif
-
-    flagUpdateHottBuffer = false ;       // reset the flag to say that all data have been updated and that UART can transmit the buffer
     }   // end ( flagUpdateHottBuffer )
 }
 
@@ -201,7 +204,7 @@ ISR(TIMER1_COMPA_vect)
           } else {    //Send stop bit.
                 SET_TX_PIN_MB() ;                             // Output a logic 1. (in high impedance) = put stop bit
                 state = TRANSMIT_STOP_BIT;
-                OCR1A += DELAY_2000;                  // Add 2 msec to the stop bit (required by Hott protocol)
+                OCR1A += DELAY_1000;                  // Normally Add 2 msec to the stop bit (required by Hott protocol) but it seems that 1 msec is also 0k
           }
           OCR1A += TICKS2WAITONEHOTT ;  // Count one period into the future.
 #if DEBUGASERIAL
@@ -261,9 +264,9 @@ ISR(TIMER1_COMPA_vect)
                 delayTxPendingCount--;
                 OCR1A += DELAY_1000 ; 
             } else {
-                if ( ! flagUpdateHottBuffer ) {                     // it is expected that the main loop will update the buffer and reset this flag within the delay
-                    OCR1A += DELAY_1000 ;                          // if it is not yet done, go back to wait
-                    state = WAITING ;
+                if ( flagUpdateHottBuffer ) {                     // it is expected that the main loop will update the buffer and set this flag to true within the delay
+                    OCR1A += DELAY_1000 ;                          // if it is not yet done, stay TxPENDING for 1 msec more
+//                    state = WAITING ;
                 } else {
                     CLEAR_TX_PIN_MB() ;                                // Send a start bit (logic 0 on the TX_PIN).
                     OCR1A = TCNT1 + TICKS2WAITONEHOTT ;                // Count one period into the future.

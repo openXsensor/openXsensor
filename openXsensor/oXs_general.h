@@ -8,6 +8,7 @@
 
 uint32_t micros( void ) ;
 uint32_t millis( void ) ;
+void   blinkLed(uint8_t blinkType) ;
 
 
 //Some IO, timer and interrupt specific defines.

@@ -50,7 +50,7 @@ extern unsigned long micros( void ) ;
 extern unsigned long millis( void ) ;
 static unsigned long extended2Micros ;
 
-//#define DEBUG_BLINK  // this does not require that DEBUG is active.
+#define DEBUG_BLINK  // this does not require that DEBUG is active.
 
 #ifdef DEBUG
 //#define DEBUGCOMPENSATEDCLIMBRATE
@@ -502,13 +502,18 @@ void loop(){
 
     readSensors(); // read all sensors)
 
-#ifdef DEBUG_BLINK
+#ifdef DEBUG_BLINK_ClimbRate
   static bool prevBlinkAvailable ;
   if (  prevBlinkAvailable == false && oXs_MS5611.varioData.climbRateAvailable ) {
     blinkLed(1) ;
   }
   prevBlinkAvailable = oXs_MS5611.varioData.climbRateAvailable ;  
 #endif
+
+#ifdef DEBUG_BLINK_MAINLOOP
+    blinkLed(1) ;
+#endif
+ 
     
     oXs_Out.sendData(); // choice which data can be send base on availability and some priority logic 
     
@@ -570,20 +575,6 @@ void loop(){
 #endif
 }          // ****************   end of main loop *************************************
 
-#ifdef DEBUG_BLINK
-void   blinkLed(uint8_t blinkType) {
-  static int16_t blinkDelay = 300 ;
-  static unsigned long nextMillisBlink ;
-  if (millis() > nextMillisBlink ) {
-    if ( digitalRead( PIN_LED ) ) {
-      digitalWrite( PIN_LED , LOW ) ;
-    } else {
-      digitalWrite( PIN_LED , HIGH ) ;      
-    } 
-    nextMillisBlink += blinkDelay ; 
-  }  
-}  
-#endif
 
 
 

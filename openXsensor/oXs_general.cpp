@@ -290,4 +290,21 @@ void delayMicroseconds(unsigned int us)
 //#define delay_us(x) {unsigned char _dcnt;  _dcnt = (x)/(24000000UL/FOSC)|1;  while(--_dcnt !=0) continue;//                    }
 
 
+//******************* toggle led every 300 msec ; used in order to debug without using DEBUG option (which uses uart)
+#ifdef DEBUG_BLINK
+#define PIN_LED            13  // The Signal LED (default=13=onboard LED)
+void   blinkLed(uint8_t blinkDelay) {
+//  static int16_t blinkDelay = 300 ;
+  static unsigned long nextMillisBlink ;
+  if (millis() > nextMillisBlink ) {
+    if ( digitalRead( PIN_LED ) ) {
+      digitalWrite( PIN_LED , LOW ) ;
+    } else {
+      digitalWrite( PIN_LED , HIGH ) ;      
+    } 
+    nextMillisBlink += (unsigned long) blinkDelay * 100 ; 
+  }  
+}  
+#endif
+
 
