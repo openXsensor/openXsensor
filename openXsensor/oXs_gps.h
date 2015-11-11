@@ -4,6 +4,8 @@
 #include <Arduino.h>
 #include "oXs_config.h"
 
+
+
 // from the UBlox6 document, the largest payout we receive i the NAV-SVINFO and the payload size
 // is calculated as 8 + 12*numCh.  numCh in the case of a Glonass receiver is 28.
 #define UBLOX_PAYLOAD_SIZE 344 // 344 is the absolute max size 

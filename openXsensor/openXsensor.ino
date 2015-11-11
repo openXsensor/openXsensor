@@ -50,7 +50,10 @@ extern unsigned long micros( void ) ;
 extern unsigned long millis( void ) ;
 static unsigned long extended2Micros ;
 
-#define DEBUG_BLINK  // this does not require that DEBUG is active.
+#ifdef DEBUG_BLINK  // this does not require that DEBUG is active.; Use only one of the blink 
+   //DEBUG_BLINK_MAINLOOP
+   //DEBUG_BLINK_CLIMBRATE
+#endif
 
 #ifdef DEBUG
 //#define DEBUGCOMPENSATEDCLIMBRATE
@@ -502,10 +505,10 @@ void loop(){
 
     readSensors(); // read all sensors)
 
-#ifdef DEBUG_BLINK_ClimbRate
+#ifdef DEBUG_BLINK_CLIMBRATE
   static bool prevBlinkAvailable ;
   if (  prevBlinkAvailable == false && oXs_MS5611.varioData.climbRateAvailable ) {
-    blinkLed(1) ;
+    blinkLed(3) ;
   }
   prevBlinkAvailable = oXs_MS5611.varioData.climbRateAvailable ;  
 #endif

@@ -2,6 +2,10 @@
 #include "oXs_out_hott.h"
 #ifdef HOTT
 
+#ifdef DEBUG_BLINK
+    #define DEBUG_BLINK_UPLOAD_HOTT_DATA
+#endif
+
 #ifdef DEBUG
 // ************************* Several parameters to help debugging
   #define DEBUGHOTT
@@ -20,6 +24,7 @@ volatile uint8_t debugStatus ;
 // Transmit buffer
 volatile static union {              // union is a easy way to access the data in several ways (name of field + index of byte)
     volatile HOTT_GAM_MSG gamMsg ;   // structured general air module
+    volatile HOTT_GPS_MSG gpsMsg ;
     volatile uint8_t txBuffer[TXHOTTDATA_BUFFERSIZE] ;
 }  TxHottData;
 
@@ -54,16 +59,16 @@ OXS_OUT::OXS_OUT(uint8_t pinTx)
 
 // **************** Setup the OutputLib *********************
 void OXS_OUT::setup() {
-    flagUpdateHottBuffer = false ; // does not allow to fill directly the buffer with data to transmit; in fact, filling occurs only after a polling
+//    flagUpdateHottBuffer = 0 ; // does not allow to fill directly the buffer with data to transmit; in fact, filling occurs only after a polling
     // fill the buffer with 0 
-    for ( uint8_t i = 0 ; i <= TXHOTTDATA_BUFFERSIZE ; i++ ) {       // first fill the buffer with 0 
-       TxHottData.txBuffer[i] = 0 ;
-    }
+//    for ( uint8_t i = 0 ; i <= TXHOTTDATA_BUFFERSIZE ; i++ ) {       // first fill the buffer with 0 
+//       TxHottData.txBuffer[i] = 0 ;
+//    }
     // fill fixed values in the buffer
-    TxHottData.gamMsg.start_byte    = 0x7c ;
-    TxHottData.gamMsg.gam_sensor_id = 0x8d ; //GENRAL AIR MODULE = HOTT_TELEMETRY_GAM_SENSOR_ID
-    TxHottData.gamMsg.sensor_id     = 0xd0 ;
-    TxHottData.gamMsg.stop_byte     = 0x7D ;
+//    TxHottData.gamMsg.start_byte    = 0x7c ;
+//    TxHottData.gamMsg.gam_sensor_id = 0x8d ; //GENRAL AIR MODULE = HOTT_TELEMETRY_GAM_SENSOR_ID
+//    TxHottData.gamMsg.sensor_id     = 0xd0 ;
+//    TxHottData.gamMsg.stop_byte     = 0x7D ;
 
     //initilalise PORT
     TRXDDR &= ~( 1 << PIN_SERIALTX ) ;       // PIN is input, tri-stated.
@@ -95,58 +100,67 @@ void OXS_OUT::sendData() {
 //      printer->print(F(" Tc=")); printer->println(TxCount);
 #endif
     if ( flagUpdateHottBuffer ) {        // this flag is set to true when UART get a polling of the device. Then measurement must be filled in the buffer
-#ifdef DEBUG_BLINK
+#ifdef DEBUG_BLINK_UPLOAD_HOTT_DATA
       blinkLed(5) ; // blink every 500 ms at least
 #endif 
+        // fill the buffer with 0 
+        for ( uint8_t i = 0 ; i <= TXHOTTDATA_BUFFERSIZE ; i++ ) {       // first fill the buffer with 0 
+           TxHottData.txBuffer[i] = 0 ;
+        }
+        if ( flagUpdateHottBuffer == HOTT_TELEMETRY_GAM_SENSOR_ID  ) {        // this flag is set to true when UART get a polling of the device. Then measurement must be filled in the buffer
+              TxHottData.gamMsg.start_byte    = 0x7c ;
+              TxHottData.gamMsg.gam_sensor_id = 0x8d ; //GENRAL AIR MODULE = HOTT_TELEMETRY_GAM_SENSOR_ID
+              TxHottData.gamMsg.sensor_id     = 0xd0 ;
+              TxHottData.gamMsg.stop_byte     = 0x7D ;
 
 // in general air module data to fill are:
 #if defined(NUMBEROFCELLS) && (NUMBEROFCELLS >= 1) 
-          TxHottData.gamMsg.cell[0] =  voltageData->mVoltCell[0] /20 ; // Volt Cell 1 (in 2 mV increments, 210 == 4.20 V)
+              TxHottData.gamMsg.cell[0] =  voltageData->mVoltCell[0] /20 ; // Volt Cell 1 (in 2 mV increments, 210 == 4.20 V)
 #endif
 #if  defined(NUMBEROFCELLS) && (NUMBEROFCELLS >= 2) 
-          TxHottData.gamMsg.cell[1] =  voltageData->mVoltCell[1] /20 ; // Volt Cell 2 (in 2 mV increments, 210 == 4.20 V)
+              TxHottData.gamMsg.cell[1] =  voltageData->mVoltCell[1] /20 ; // Volt Cell 2 (in 2 mV increments, 210 == 4.20 V)
 #endif
 #if  defined(NUMBEROFCELLS) && (NUMBEROFCELLS >= 3) 
-          TxHottData.gamMsg.cell[2] =  voltageData->mVoltCell[2] /20 ; // Volt Cell 3 (in 2 mV increments, 210 == 4.20 V)
+              TxHottData.gamMsg.cell[2] =  voltageData->mVoltCell[2] /20 ; // Volt Cell 3 (in 2 mV increments, 210 == 4.20 V)
 #endif
 #if  defined(NUMBEROFCELLS) && (NUMBEROFCELLS >= 4) 
-          TxHottData.gamMsg.cell[3] =  voltageData->mVoltCell[3] /20 ; // Volt Cell 4 (in 2 mV increments, 210 == 4.20 V)
+             TxHottData.gamMsg.cell[3] =  voltageData->mVoltCell[3] /20 ; // Volt Cell 4 (in 2 mV increments, 210 == 4.20 V)
 #endif
 #if  defined(NUMBEROFCELLS) && (NUMBEROFCELLS >= 5) 
-          TxHottData.gamMsg.cell[4] =  voltageData->mVoltCell[4] /20 ; // Volt Cell 5 (in 2 mV increments, 210 == 4.20 V)
+              TxHottData.gamMsg.cell[4] =  voltageData->mVoltCell[4] /20 ; // Volt Cell 5 (in 2 mV increments, 210 == 4.20 V)
 #endif
 #if  defined(NUMBEROFCELLS) && (NUMBEROFCELLS >= 6) 
-          TxHottData.gamMsg.cell[5] =  voltageData->mVoltCell[5] /20 ; // Volt Cell 6 (in 2 mV increments, 210 == 4.20 V)
+              TxHottData.gamMsg.cell[5] =  voltageData->mVoltCell[5] /20 ; // Volt Cell 6 (in 2 mV increments, 210 == 4.20 V)
 #endif
 #if defined(USE_VOLT_X_AS_BATTERY1) && (USE_VOLT_X_AS_BATTERY1 <7) && (USE_VOLT_X_AS_BATTERY1 > 0) && defined(PIN_VOLTAGE)
-          TxHottData.gamMsg.Battery1 = voltageData->mVolt[USE_VOLT_X_AS_BATTERY1 - 1] / 100;    //battery 1 voltage  0.1V steps. 55 = 5.5V only pos. voltages
+              TxHottData.gamMsg.Battery1 = voltageData->mVolt[USE_VOLT_X_AS_BATTERY1 - 1] / 100;    //battery 1 voltage  0.1V steps. 55 = 5.5V only pos. voltages
 #endif
 #if defined(USE_VOLT_X_AS_BATTERY2) && (USE_VOLT_X_AS_BATTERY2 <7) && (USE_VOLT_X_AS_BATTERY2 > 0) && defined(PIN_VOLTAGE)
-          TxHottData.gamMsg.Battery2 = voltageData->mVolt[USE_VOLT_X_AS_BATTERY2 - 1] / 100;    //battery 1 voltage  0.1V steps. 55 = 5.5V only pos. voltages
+              TxHottData.gamMsg.Battery2 = voltageData->mVolt[USE_VOLT_X_AS_BATTERY2 - 1] / 100;    //battery 1 voltage  0.1V steps. 55 = 5.5V only pos. voltages
 #endif
-          TxHottData.gamMsg.rpm++ ;
-          if ( TxHottData.gamMsg.rpm > 1000) TxHottData.gamMsg.rpm = 1 ; 
+              TxHottData.gamMsg.rpm++ ;
+              if ( TxHottData.gamMsg.rpm > 1000) TxHottData.gamMsg.rpm = 1 ; 
 #ifdef MEASURE_RPM 
-          TxHottData.gamMsg.rpm  = RpmValue /10 ;                      //#22 RPM in 10 RPM steps. 300 = 3000rpm
+              TxHottData.gamMsg.rpm  = RpmValue /10 ;                      //#22 RPM in 10 RPM steps. 300 = 3000rpm
 #endif
 #ifdef VARIO       
-        TxHottData.gamMsg.altitude =  ((varioData->relativeAlt ) / 100 ) + 500 ;  //altitude in meters. offset of 500, 500 = 0m
-        TxHottData.gamMsg.climbrate_L = varioData->climbRate + 30000 ;          //climb rate in 0.01m/s. Value of 30000 = 0.00 m/s
+              TxHottData.gamMsg.altitude =  ((varioData->relativeAlt ) / 100 ) + 500 ;  //altitude in meters. offset of 500, 500 = 0m
+              TxHottData.gamMsg.climbrate_L = varioData->climbRate + 30000 ;          //climb rate in 0.01m/s. Value of 30000 = 0.00 m/s
 #endif
 #if defined(PIN_CURRENTSENSOR)
-        TxHottData.gamMsg.current =  currentData->milliAmps /100;               //current in 0.1A steps 100 == 10,0A
+              TxHottData.gamMsg.current =  currentData->milliAmps /100;               //current in 0.1A steps 100 == 10,0A
 #endif
 #if defined(USE_VOLT_X_AS_MAIN_BATTERY) && (USE_VOLT_X_AS_MAIN_BATTERY <7) && (USE_VOLT_X_AS_MAIN_BATTERY > 0) && defined(PIN_VOLTAGE)
-          TxHottData.gamMsg.main_voltage = voltageData->mVolt[USE_VOLT_X_AS_MAIN_BATTERY - 1] / 100;          //Main power voltage using 0.1V steps 100 == 10,0V] / 100
+              TxHottData.gamMsg.main_voltage = voltageData->mVolt[USE_VOLT_X_AS_MAIN_BATTERY - 1] / 100;          //Main power voltage using 0.1V steps 100 == 10,0V] / 100
 #endif
 #if defined(PIN_CURRENTSENSOR)
-        TxHottData.gamMsg.batt_cap =  currentData->consumedMilliAmps / 10 ;   // used battery capacity in 10mAh steps
+              TxHottData.gamMsg.batt_cap =  currentData->consumedMilliAmps / 10 ;   // used battery capacity in 10mAh steps
 #endif
 #ifdef AIRSPEED       
-       TxHottData.gamMsg.speed =  airSpeedData->airSpeed  ;                  //  Km/h 
+               TxHottData.gamMsg.speed =  airSpeedData->airSpeed  ;                  //  Km/h 
 #endif
 #if defined(NUMBEROFCELLS) && (NUMBEROFCELLS >= 0) 
-          TxHottData.gamMsg.min_cell_volt =  voltageData->mVoltCellMin /20 ; // minimum cell voltage in 2mV steps. 124 = 2,48V
+              TxHottData.gamMsg.min_cell_volt =  voltageData->mVoltCellMin /20 ; // minimum cell voltage in 2mV steps. 124 = 2,48V
 #endif
 
 
@@ -157,21 +171,331 @@ void OXS_OUT::sendData() {
 //  byte general_error_number;            //#41 General Error Number (Voice Error == 12) TODO: more documentation
 //  byte pressure;                        //#42 High pressure up to 16bar. 0,1bar scale. 20 == 2.0bar
 
+            } 
+#ifdef GPS_INSTALLED            
+              else {
+            // add here the code for GPS
+              TxHottData.gpsMsg.startByte    = 0x7c ;
+              TxHottData.gpsMsg.sensorID     = HOTT_TELEMETRY_GPS_SENSOR_ID ; //0x8A
+              TxHottData.gpsMsg.sensorTextID     = HOTTV4_GPS_SENSOR_TEXT_ID ; // 0xA0
+              TxHottData.gpsMsg.endByte     = 0x7D ;
+              if( GPS_latAvailable ) {             // test if data are available (GPS fix) ; if available, fill the buffer
+                  GPS_latAvailable = false ;       // reset the flag
+                  TxHottData.gpsMsg.flightDirection = GPS_ground_course / 200000 ; // convert from degre * 100000 to 1/2 degree; Flightdir./dir. 1 = 2°; 0° (North), 90° (East), 180° (South), 270° (West)
+                  static uint16_t speedHott ;
+#ifdef GPS_SPEED_3D
+                  speedHott = ((uint32_t) GPS_speed_3d) * 36 /1000 ;       // convert from cm/sec to km/h
+#else
+                  speedHott = ((uint32_t) GPS_speed_2d) * 36 /1000 ;       // convert from cm/sec to km/h
+#endif
+                  TxHottData.gpsMsg.GPSSpeedLow = speedHott ;                     
+                  TxHottData.gpsMsg.GPSSpeedHigh = speedHott >> 8 ;               
+                  uint16_t degMin ;
+                  uint16_t decimalMin ;
+                  TxHottData.gpsMsg.LatitudeNS = (GPS_lat < 0) ;                        // Byte 10: 000 = N = 48°39’0988 
+                  convertLonLat_Hott(GPS_lat, & degMin , & decimalMin ) ;              // convert to 2 fields (one beging deg*100+min, the other being the decimal part of min with 4 decimals
+                  TxHottData.gpsMsg.LatitudeMinLow = degMin ;                           // Byte 11: 231 = 0xE7 <= 0x12E7 = 4839 
+                  TxHottData.gpsMsg.LatitudeMinHigh = degMin >> 8 ;                     // Byte 12: 018 = 0x12 <= 0x12E7 = 4839
+                  TxHottData.gpsMsg.LatitudeSecLow = decimalMin ;                           // Byte 13: 220 = 0xDC <= 0x03DC = 0988
+                  TxHottData.gpsMsg.LatitudeSecHigh = decimalMin >> 8 ;                     // Byte 14: 003 = 0x03 <= 0x03DC = 0988
+                  
+                  TxHottData.gpsMsg.longitudeEW = (GPS_lon < 0) ;                        // Byte 15: 000  = E= 9° 25’9360
+                  convertLonLat_Hott(GPS_lon, &degMin , &decimalMin ) ;              // convert to 2 fields (one beging deg*100+min, the other being the decimal part of min with 4 decimals
+                  TxHottData.gpsMsg.longitudeMinLow = degMin ;                           // Byte 16: 157 = 0x9D <= 0x039D = 0925
+                  TxHottData.gpsMsg.longitudeMinHigh = degMin >> 8 ;                     // Byte 17: 003 = 0x03 <= 0x039D = 0925
+                  TxHottData.gpsMsg.longitudeSecLow = decimalMin ;                           // Byte 18: 144 = 0x90 <= 0x2490 = 9360
+                  TxHottData.gpsMsg.longitudeSecHigh = decimalMin >> 8 ;                     // Byte 19: 036 = 0x24 <= 0x2490 = 9360
+                  static uint16_t altitudeHott ; 
+                  altitudeHott = (GPS_altitude / 100) + 500 ;                      // convert from cm to m and add an ofsset of 500 m
+                  TxHottData.gpsMsg.altitudeLow = altitudeHott ; 
+                  TxHottData.gpsMsg.altitudeHigh = altitudeHott >> 8 ; 
+              }
+ /* not yet implemented
+  uint8_t distanceLow;             // Byte 20: 027 123 = /distance low byte 6 = 6 m 
+  uint8_t distanceHigh;            // Byte 21: 036 35 = /distance high byte 
+  uint8_t resolutionLow;           // Byte 24: 48 = Low Byte m/s resolution 0.01m 48 = 30000 = 0.00m/s (1=0.01m/s) 
+  uint8_t resolutionHigh;          // Byte 25: 117 = High Byte m/s resolution 0.01m 
+  uint8_t unknow1;                 // Byte 26: 120 = 0m/3s 
+  uint8_t GPSNumSat;               // Byte 27: GPS.Satelites (number of satelites) (1 byte) 
+  uint8_t GPSFixChar;              // Byte 28: GPS.FixChar. (GPS fix character. display, if DGPS, 2D oder 3D) (1 byte) 
+  uint8_t HomeDirection;           // Byte 29: HomeDirection (direction from starting point to Model position) (1 byte) 
+  uint8_t angleXdirection;         // Byte 30: angle x-direction (1 byte) 
+  uint8_t angleYdirection;         // Byte 31: angle y-direction (1 byte) 
+  uint8_t angleZdirection;         // Byte 32: angle z-direction (1 byte) 
+  uint8_t gyroXLow;                // Byte 33: gyro x low byte (2 bytes) 
+  uint8_t gyroXHigh;               // Byte 34: gyro x high byte 
+  uint8_t gyroYLow;                // Byte 35: gyro y low byte (2 bytes) 
+  uint8_t gyroYHigh;               // Byte 36: gyro y high byte 
+  uint8_t gyroZLow;                // Byte 37: gyro z low byte (2 bytes) 
+  uint8_t gyroZHigh;               // Byte 38: gyro z high byte 
+  uint8_t vibration;               // Byte 39: vibration (1 bytes) 
+  uint8_t Ascii4;                  // Byte 40: 00 ASCII Free Character [4] 
+  uint8_t Ascii5;                  // Byte 41: 00 ASCII Free Character [5] 
+  uint8_t GPS_fix;                 // Byte 42: 00 ASCII Free Character [6], we use it for GPS FIX 
+  uint8_t version;                 // Byte 43: 00 version number 
+  uint8_t endByte;                 // Byte 44: 0x7D Ende byte 
+  uint8_t chksum;                  // Byte 45: Parity Byte 
+*/
 
+
+            
+            }  // end flagUpdateHottBuffer == GPS
+#endif         // end of GPS_Installed            
             // calculate the check sum on first bytes
             TxHottData.txBuffer[TXHOTTDATA_BUFFERSIZE-1] = 0 ;
             for(uint8_t i = 0; i < TXHOTTDATA_BUFFERSIZE-1; i++){  // one byte less because the last byte is the checksum
               TxHottData.txBuffer[TXHOTTDATA_BUFFERSIZE-1] += TxHottData.txBuffer[i];
             }  // end for
-            flagUpdateHottBuffer = false ;       // reset the flag to say that all data have been updated and that UART can transmit the buffer            
+            flagUpdateHottBuffer = 0 ;       // reset the flag to say that all data have been updated and that UART can transmit the buffer            
 #ifdef DEBUGHOTT
             for(uint8_t i = 0; i < TXHOTTDATA_BUFFERSIZE; i++){  // include the last byte (checksum)
                  printer->print(TxHottData.txBuffer[i], HEX); printer->print(F(" "));
             } // end for    
             printer->println(F(" "));
 #endif
+        
     }   // end ( flagUpdateHottBuffer )
 }
+
+#ifdef GPS_INSTALLED
+void convertLonLat_Hott( int32_t GPS_LatLon, uint16_t * degMin , uint16_t * decimalMin ) {
+  static uint32_t GPS_LatLonAbs ;
+  static uint8_t degre0decimals ;
+  static uint16_t minute4decimals ;
+  static uint8_t minute0decimals ;
+  GPS_LatLonAbs = ( GPS_LatLon < 0 ? - GPS_LatLon : GPS_LatLon) / 100  ; // remove 2 decimals from original value which contains degre with 7 decimals (so next calculation are smaller)
+  degre0decimals = GPS_LatLonAbs / 100000 ;                              // extract the degre without  decimal
+  minute4decimals = ( GPS_LatLonAbs - ( ((uint32_t) degre0decimals) * 100000 ) ) * 6 ; // keep the decimal of degree and convert them in minutes (*60) and remove 1 decimal (/10) in order to keep 4 decimals 
+  minute0decimals = minute4decimals / 10000 ;                                        // extract the minutes (without decimals)
+  *degMin = degre0decimals * 100 + minute0decimals ;                                  // put degree and minutes toegether in a special format
+  *decimalMin = minute4decimals - ( minute0decimals - 10000 ) ;                       // Extract the decimal part of the minutes (4 decimals) 
+}
+#endif
+//***************************** here code to modify for GPS
+/*
+#ifdef GPS_INSTALLED
+ //!! shared with Aserial
+extern uint8_t volatile gpsSendStatus ; 
+extern uint8_t volatile gpsSportDataLock ;
+extern uint8_t volatile gpsSportData[7] ;
+#define GPS_DATA_COUNT 5
+
+void OXS_OUT::FrSkySportSensorGpsSend(void)
+{
+  // gpsSendStatus can be TO_LOAD, LOADED, SENDING, SEND ; it is managed here and in Aserial
+  // new data is uploaded only when gpsSendStatus == SEND or TO_LOAD
+  // each GPS data is loaded in sequence but only if available (otherwise this data is skipped)
+  static uint8_t gpsDataIdx ;
+  static uint16_t gpsSportId ;
+  static uint32_t gpsSportValue ;
+  static uint32_t gpsLastLoadedMillis ;
+#ifdef DEBUGSIMULATEGPS
+  static uint8_t gpsSimulateCount ;
+#endif  
+//   Serial.println(F("S gdps"));
+
+  if  ((gpsSendStatus == SEND || gpsSendStatus == TO_LOAD) && (millis() - gpsLastLoadedMillis > 200 ) ){  // send only one data per 200 msec (to test if it help locking found on the Tx log)
+            gpsDataIdx++;  // handle next GPS data; if not available, this field will be skipped.
+            if(gpsDataIdx >= GPS_DATA_COUNT) {
+              gpsDataIdx = 0;
+            }
+            switch(gpsDataIdx)
+            {
+              case 0: //longitude
+                if (!GPS_lonAvailable) return ;
+                GPS_lonAvailable = false ;
+                gpsSportId = GPS_LONG_LATI_FIRST_ID ;
+#ifdef DEBUGSIMULATEGPS
+                gpsSportValue = ((( (((uint32_t)( GPS_lon < 0 ? -GPS_lon : GPS_lon)) * 6 ) / 100 ) + gpsSimulateCount++ )& 0x3FFFFFFF) | 0x80000000;
+#else                
+                gpsSportValue = (( (((uint32_t)( GPS_lon < 0 ? -GPS_lon : GPS_lon)) * 6 )/ 100 ) & 0x3FFFFFFF)  | 0x80000000;
+#endif                
+                if(GPS_lon < 0) gpsSportValue |= 0x40000000;
+                break;
+              case 1: //latitude
+                if (!GPS_latAvailable) return ;
+                GPS_latAvailable = false ;
+                gpsSportId = GPS_LONG_LATI_FIRST_ID ;
+                gpsSportValue = ((  (((uint32_t)( GPS_lat < 0 ? -GPS_lat : GPS_lat)) * 6 )/ 100 ) & 0x3FFFFFFF ) ;
+                if(GPS_lat < 0) gpsSportValue |= 0x40000000;
+                break;
+              case 2: // GPS_altitude
+                if (!GPS_altitudeAvailable) return ;
+                GPS_altitudeAvailable = false ;
+                gpsSportId = GPS_ALT_FIRST_ID ;
+#ifdef DEBUGSIMULATEGPS
+                gpsSportValue = (GPS_altitude / 10) + gpsSimulateCount++; // convert mm in cm 
+#else                
+                gpsSportValue = GPS_altitude / 10; // convert mm in cm 
+#endif                
+                break;
+              case 3: // GPS_speed_3d  // could be 2D
+#ifdef GPS_SPEED_3D
+                if (!GPS_speed_3dAvailable) return ; 
+                GPS_speed_3dAvailable = false ;
+                gpsSportId = GPS_SPEED_FIRST_ID ;
+#ifdef GPS_SPEED_IN_KMH
+                gpsSportValue = ( ((uint32_t) GPS_speed_3d) * 36 )  ; // convert cm/s in 1/100 of km/h (factor = 3.6)
+#else                                
+                gpsSportValue = ( ((uint32_t) GPS_speed_3d) * 700 ) / 36  ; // convert cm/s in 1/100 of knots (factor = 19.44)
+#endif // end of GPS_SPEED_IN_KMH
+                break;
+#else                   // use gps_Speed_2d
+                if (!GPS_speed_2dAvailable) return ; 
+                GPS_speed_2dAvailable = false ;
+                gpsSportId = GPS_SPEED_FIRST_ID ;
+#ifdef GPS_SPEED_IN_KMH
+                gpsSportValue = ( ((uint32_t) GPS_speed_2d) * 36 )  ; // convert cm/s in 1/100 of km/h (factor = 3.6)
+#else                                
+                gpsSportValue = ( ((uint32_t) GPS_speed_2d) * 700 ) / 36 ; // convert cm/s in 1/1000 of knots (factor = 19.44)
+                Serial.print(F("2d Knot:"));Serial.println(gpsSportValue); 
+#endif // end of GPS_SPEED_IN_KMH
+                break;
+#endif //  enf of GPS_SPEED_3D             
+              case 4: //GPS_ground_courseAvailable
+                if (!GPS_ground_courseAvailable) return ;
+                GPS_ground_courseAvailable = false ;
+                gpsSportId = GPS_COURS_FIRST_ID ;
+                gpsSportValue = GPS_ground_course / 1000; // convert from degree * 100000 to degree * 100 
+                break;
+              default:
+                return ;
+            } // end case    
+            gpsSportDataLock = 1 ;
+            gpsSportData[0] = 0x10 ;
+            gpsSportData[1] = gpsSportId ; // low byte
+            gpsSportData[2] = gpsSportId >> 8 ; // hight byte
+            gpsSportData[3] = gpsSportValue ;
+            gpsSportData[4] = gpsSportValue >> 8 ;
+            gpsSportData[5] = gpsSportValue >> 16 ;
+            gpsSportData[6] = gpsSportValue >> 24 ;
+            gpsSportDataLock = 0 ;
+#ifdef DEBUGSENDGPS
+  Serial.print(F("ID: "));
+  Serial.println(gpsSportId , HEX);
+#endif
+
+            gpsSendStatus = LOADED ; // from here data can be sent by the interrupt in Aserial
+  } // end test on gpsSendStatus == SEND or TOLOAD          
+} // end function
+
+#endif // of of GPS_INSTALLED
+*/
+
+
+
+
+/*
+void convert_to_degrees_minutes_seconds(float val, int *deg_sec, int *degMin){
+  int16_t deg = (int)val;
+  double sec = (val - deg);
+  int8_t min = (int) (sec * 60);
+  
+  *deg_sec = abs((int) (((sec * 60) - min) * 10000.0f));
+  *degMin = abs((int)(deg * 100 + min));
+}
+*/
+/*tinygps FORMAT dd.ddddd
+void convert_to_degrees_minutes_seconds(float val, int *deg_sec, int *degMin){
+  int16_t deg = (int)val;    //extract degrees
+  float sec = (val - deg);    
+  int8_t min = (int) (sec * 60);//extract decimal deg
+  
+  *deg_sec = abs((int) (((sec * 60) - min) * 100000.0f));
+  *degMin = abs((int)(deg * 100 + min));
+}*/
+/*
+  static void hottV4GPSUpdate() {
+    //number of Satelites
+    HoTTV4GPSModule.GPSNumSat=MultiHoTTModule.GPS_numSat;
+    if (MultiHoTTModule.GPS_fix > 0) {
+      // GPS fix 
+      HoTTV4GPSModule.GPS_fix = 0x33; // Dgps: '0x44' 2D = '0x32' 3D = '0x33' nofix = '0x2d'
+      
+      int16_t deg_sec;
+      int16_t degMin;
+    
+      //latitude
+      convert_to_degrees_minutes_seconds(MultiHoTTModule.GPS_latitude, &deg_sec, &degMin);
+      HoTTV4GPSModule.LatitudeNS=(MultiHoTTModule.GPS_latitude<0);  
+      HoTTV4GPSModule.LatitudeMinLow = degMin;
+      HoTTV4GPSModule.LatitudeMinHigh = degMin >> 8;
+      HoTTV4GPSModule.LatitudeSecLow = deg_sec;
+      HoTTV4GPSModule.LatitudeSecHigh = deg_sec >> 8;
+    
+    
+      //longitude
+      convert_to_degrees_minutes_seconds(MultiHoTTModule.GPS_longitude, &deg_sec, &degMin);
+      HoTTV4GPSModule.longitudeEW=(MultiHoTTModule.GPS_longitude<0);
+      HoTTV4GPSModule.longitudeMinLow = degMin;
+      HoTTV4GPSModule.longitudeMinHigh = degMin >> 8;
+      HoTTV4GPSModule.longitudeSecLow = deg_sec;
+      HoTTV4GPSModule.longitudeSecHigh = deg_sec >> 8;
+    
+    
+      // GPS Speed in km/h 
+      uint16_t speed = MultiHoTTModule.GPS_speed;  // in km/h
+      HoTTV4GPSModule.GPSSpeedLow = speed & 0x00FF;
+      HoTTV4GPSModule.GPSSpeedHigh = speed >> 8;
+      // Distance to home       
+      HoTTV4GPSModule.distanceLow = MultiHoTTModule.GPS_distanceToHome & 0x00FF;
+      HoTTV4GPSModule.distanceHigh = MultiHoTTModule.GPS_distanceToHome >> 8;
+      // Altitude 
+      HoTTV4GPSModule.altitudeLow = MultiHoTTModule.GPS_altitude & 0x00FF;
+      HoTTV4GPSModule.altitudeHigh = MultiHoTTModule.GPS_altitude >> 8;
+      // Home Direction
+      HoTTV4GPSModule.HomeDirection = MultiHoTTModule.GPS_directionToHome;
+      // Flightdirection
+      HoTTV4GPSModule.flightDirection = MultiHoTTModule.GPS_flightDirection;
+      
+      //VARIO  not implemented yet, should be a BMP085
+      //m/s
+      HoTTV4GPSModule.resolutionLow = MultiHoTTModule.GPS_distanceToHome & 0x00FF;
+      HoTTV4GPSModule.resolutionHigh = MultiHoTTModule.GPS_distanceToHome >> 8;
+      //m/3s
+      HoTTV4GPSModule.unknow1 = MultiHoTTModule.GPS_flightDirection;
+      
+      HoTTV4GPSModule.alarmTone = MultiHoTTModule.GPS_alarmTone;
+      
+    } else {
+      HoTTV4GPSModule.GPS_fix = 0x2d; // Displays a ' ' to show nothing or clear the old value
+    }
+  }
+*/
+
+/*
+ // Sends HoTTv4 capable GPS telemetry frame.
+  static void hottV4SendGPS() {
+    // Minimum data set for EAM     
+    HoTTV4GPSModule.startByte = 0x7C;
+    HoTTV4GPSModule.sensorID = HOTTV4_GPS_SENSOR_ID;
+    HoTTV4GPSModule.sensorTextID = HOTTV4_GPS_SENSOR_TEXT_ID;
+    HoTTV4GPSModule.endByte = 0x7D;
+   
+    
+    hottV4GPSUpdate();
+
+    if (is_set_home == 0)
+    {
+      HoTTV4GPSModule.alarmTone = 0x08; //alarm tone if no fix
+    toggle_LED();           //Let the led blink
+    }else
+    {
+      HoTTV4GPSModule.alarmTone = 0x0;
+    }
+
+    // Clear output buffer
+    memset(&outBuffer, 0, sizeof(outBuffer));
+
+    // Copy GPS data to output buffer
+    memcpy(&outBuffer, &HoTTV4GPSModule, kHoTTv4BinaryPacketSize);
+
+    // Send data from output buffer
+    hottV4SendData(outBuffer, kHoTTv4BinaryPacketSize);
+  }
+
+*/
+// **************************** End of code for GPS (still to modify
 
 
 
@@ -239,15 +563,19 @@ ISR(TIMER1_COMPA_vect)
                   SwUartRXData = data ;
                } else {                                       //Done receiving =  8 bits are in SwUartRXData
                   if ( LastRx == HOTT_BINARY_MODE_REQUEST_ID ) {     // if the previous byte identifies a polling for a reply in binary format
-                           if ( SwUartRXData != HOTT_TELEMETRY_GAM_SENSOR_ID ) {
-                                state = WAITING ;
-                                OCR1A += ( DELAY_4000 - TICKS2WAITONEHOTT) ;                // 4mS gap before listening (take care that 4096 is the max we can wait because timer 1 is 16 bits and prescaler = 1)
-                           } else  {                                 // the sensor has to reply (if it has data; here we assume it has always data and the data will be in the Hott buffer)
-                               flagUpdateHottBuffer = true ;         // flag to say to send function that the buffer must be filled. It is expected that send function is called fast enough (so main loop may not be blocked) 
+                           if ( SwUartRXData == HOTT_TELEMETRY_GAM_SENSOR_ID 
+#ifdef GPS_INSTALLED                           
+                              || SwUartRXData == HOTT_TELEMETRY_GPS_SENSOR_ID
+#endif                           
+                                                                               ) {// the sensor has to reply (if it has data; here we assume it has always data and the data will be in the Hott buffer)
+                               flagUpdateHottBuffer = SwUartRXData ;         // flag to say to send function that the buffer must be filled. It is expected that send function is called fast enough (so main loop may not be blocked) 
                                state = TxPENDING ;
                                OCR1A += ( DELAY_4000 - TICKS2WAITONEHOTT) ;                   // 4ms gap before sending; normally Hott protocols says to wait 5 msec but this is too much for timer1
                                delayTxPendingCount  = 1 ;            //  ask for 1 more delay of 1ms in order to reach the total of 5msec                 
-                            }      // end last byte was a polling code
+                           } else  {
+                                state = WAITING ;
+                                OCR1A += ( DELAY_4000 - TICKS2WAITONEHOTT) ;                // 4mS gap before listening (take care that 4096 is the max we can wait because timer 1 is 16 bits and prescaler = 1)
+                           }      // end last byte was a polling code
 
                   } else {                                // Previous code is not equal to HOTT_BINARY_MODE_REQUEST_ID , enter to iddle mode (so we will accept to read another byte)                                 
                       DISABLE_TIMER_INTERRUPT() ;         // Stop the timer interrupts.

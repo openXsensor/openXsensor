@@ -46,5 +46,12 @@ void loop() // run over and over
   mySerial.write(0x8D);     // byte to say it is a GAM (general air module)
   mySerial.end() ;          // set pin in high impedance (I hope)
   delay(200) ;              // wait 200 msec to let the sensor answer.
+  
+  mySerial.begin(19200);    // set the data rate for the SoftwareSerial port used is read mode
+  mySerial.write(0x80);     // byte to says it is a binary format
+  mySerial.write(0x8A);     // byte to say it is a GPS 
+  mySerial.end() ;          // set pin in high impedance (I hope)
+  delay(200) ;              // wait 200 msec to let the sensor answer.
+  
 }
 
