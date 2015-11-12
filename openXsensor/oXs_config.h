@@ -176,7 +176,7 @@
 //#define GPS_SPEED_3D      // uncomment this line if GPS speed has to be the 3d speed instead of the 2d speed (note: 3d is probably less accurate - to test) 
 
 // --------- xx - Reserved for developer. DEBUG must be activated here when we want to debug one or several functions in some other files. ---------
-//#define DEBUG
+#define DEBUG
 //#define DEBUG_BLINK   // use by developper in order to blink the led without using uart for debugging
 #define BASED_ON_AIRSPEED 0
 #define BASED_ON_GPS_SPEED 1

@@ -104,10 +104,10 @@ void OXS_OUT::sendData() {
       blinkLed(5) ; // blink every 500 ms at least
 #endif 
         // fill the buffer with 0 
-        for ( uint8_t i = 0 ; i <= TXHOTTDATA_BUFFERSIZE ; i++ ) {       // first fill the buffer with 0 
+        for ( uint8_t i = 0 ; i < TXHOTTDATA_BUFFERSIZE ; i++ ) {       // first fill the buffer with 0 
            TxHottData.txBuffer[i] = 0 ;
         }
-        if ( flagUpdateHottBuffer == HOTT_TELEMETRY_GAM_SENSOR_ID  ) {        // this flag is set to true when UART get a polling of the device. Then measurement must be filled in the buffer
+        if ( flagUpdateHottBuffer == 0x8d  ) {        // this flag is set to true when UART get a polling of the device. Then measurement must be filled in the buffer
               TxHottData.gamMsg.start_byte    = 0x7c ;
               TxHottData.gamMsg.gam_sensor_id = 0x8d ; //GENRAL AIR MODULE = HOTT_TELEMETRY_GAM_SENSOR_ID
               TxHottData.gamMsg.sensor_id     = 0xd0 ;
@@ -175,41 +175,41 @@ void OXS_OUT::sendData() {
 #ifdef GPS_INSTALLED            
               else {
             // add here the code for GPS
-              TxHottData.gpsMsg.startByte    = 0x7c ;
-              TxHottData.gpsMsg.sensorID     = HOTT_TELEMETRY_GPS_SENSOR_ID ; //0x8A
-              TxHottData.gpsMsg.sensorTextID     = HOTTV4_GPS_SENSOR_TEXT_ID ; // 0xA0
-              TxHottData.gpsMsg.endByte     = 0x7D ;
-              if( GPS_latAvailable ) {             // test if data are available (GPS fix) ; if available, fill the buffer
-                  GPS_latAvailable = false ;       // reset the flag
-                  TxHottData.gpsMsg.flightDirection = GPS_ground_course / 200000 ; // convert from degre * 100000 to 1/2 degree; Flightdir./dir. 1 = 2°; 0° (North), 90° (East), 180° (South), 270° (West)
-                  static uint16_t speedHott ;
+                    TxHottData.gpsMsg.startByte    = 0x7c ;
+                    TxHottData.gpsMsg.sensorID     = HOTT_TELEMETRY_GPS_SENSOR_ID ; //0x8A
+                    TxHottData.gpsMsg.sensorTextID     = HOTTV4_GPS_SENSOR_TEXT_ID ; // 0xA0
+                    TxHottData.gpsMsg.endByte     = 0x7D ;
+                    if( GPS_latAvailable ) {             // test if data are available (GPS fix) ; if available, fill the buffer
+                        GPS_latAvailable = false ;       // reset the flag
+                        TxHottData.gpsMsg.flightDirection = GPS_ground_course / 200000 ; // convert from degre * 100000 to 1/2 degree; Flightdir./dir. 1 = 2°; 0° (North), 90° (East), 180° (South), 270° (West)
+                        static uint16_t speedHott ;
 #ifdef GPS_SPEED_3D
-                  speedHott = ((uint32_t) GPS_speed_3d) * 36 /1000 ;       // convert from cm/sec to km/h
+                        speedHott = ((uint32_t) GPS_speed_3d) * 36 /1000 ;       // convert from cm/sec to km/h
 #else
-                  speedHott = ((uint32_t) GPS_speed_2d) * 36 /1000 ;       // convert from cm/sec to km/h
+                        speedHott = ((uint32_t) GPS_speed_2d) * 36 /1000 ;       // convert from cm/sec to km/h
 #endif
-                  TxHottData.gpsMsg.GPSSpeedLow = speedHott ;                     
-                  TxHottData.gpsMsg.GPSSpeedHigh = speedHott >> 8 ;               
-                  uint16_t degMin ;
-                  uint16_t decimalMin ;
-                  TxHottData.gpsMsg.LatitudeNS = (GPS_lat < 0) ;                        // Byte 10: 000 = N = 48°39’0988 
-                  convertLonLat_Hott(GPS_lat, & degMin , & decimalMin ) ;              // convert to 2 fields (one beging deg*100+min, the other being the decimal part of min with 4 decimals
-                  TxHottData.gpsMsg.LatitudeMinLow = degMin ;                           // Byte 11: 231 = 0xE7 <= 0x12E7 = 4839 
-                  TxHottData.gpsMsg.LatitudeMinHigh = degMin >> 8 ;                     // Byte 12: 018 = 0x12 <= 0x12E7 = 4839
-                  TxHottData.gpsMsg.LatitudeSecLow = decimalMin ;                           // Byte 13: 220 = 0xDC <= 0x03DC = 0988
-                  TxHottData.gpsMsg.LatitudeSecHigh = decimalMin >> 8 ;                     // Byte 14: 003 = 0x03 <= 0x03DC = 0988
-                  
-                  TxHottData.gpsMsg.longitudeEW = (GPS_lon < 0) ;                        // Byte 15: 000  = E= 9° 25’9360
-                  convertLonLat_Hott(GPS_lon, &degMin , &decimalMin ) ;              // convert to 2 fields (one beging deg*100+min, the other being the decimal part of min with 4 decimals
-                  TxHottData.gpsMsg.longitudeMinLow = degMin ;                           // Byte 16: 157 = 0x9D <= 0x039D = 0925
-                  TxHottData.gpsMsg.longitudeMinHigh = degMin >> 8 ;                     // Byte 17: 003 = 0x03 <= 0x039D = 0925
-                  TxHottData.gpsMsg.longitudeSecLow = decimalMin ;                           // Byte 18: 144 = 0x90 <= 0x2490 = 9360
-                  TxHottData.gpsMsg.longitudeSecHigh = decimalMin >> 8 ;                     // Byte 19: 036 = 0x24 <= 0x2490 = 9360
-                  static uint16_t altitudeHott ; 
-                  altitudeHott = (GPS_altitude / 100) + 500 ;                      // convert from cm to m and add an ofsset of 500 m
-                  TxHottData.gpsMsg.altitudeLow = altitudeHott ; 
-                  TxHottData.gpsMsg.altitudeHigh = altitudeHott >> 8 ; 
-              }
+                        TxHottData.gpsMsg.GPSSpeedLow = speedHott ;                     
+                        TxHottData.gpsMsg.GPSSpeedHigh = speedHott >> 8 ;               
+                        uint16_t degMin ;
+                        uint16_t decimalMin ;
+                        TxHottData.gpsMsg.LatitudeNS = (GPS_lat < 0) ;                        // Byte 10: 000 = N = 48°39’0988 
+                        convertLonLat_Hott(GPS_lat, & degMin , & decimalMin ) ;              // convert to 2 fields (one beging deg*100+min, the other being the decimal part of min with 4 decimals
+                        TxHottData.gpsMsg.LatitudeMinLow = degMin ;                           // Byte 11: 231 = 0xE7 <= 0x12E7 = 4839 
+                        TxHottData.gpsMsg.LatitudeMinHigh = degMin >> 8 ;                     // Byte 12: 018 = 0x12 <= 0x12E7 = 4839
+                        TxHottData.gpsMsg.LatitudeSecLow = decimalMin ;                           // Byte 13: 220 = 0xDC <= 0x03DC = 0988
+                        TxHottData.gpsMsg.LatitudeSecHigh = decimalMin >> 8 ;                     // Byte 14: 003 = 0x03 <= 0x03DC = 0988
+                        
+                        TxHottData.gpsMsg.longitudeEW = (GPS_lon < 0) ;                        // Byte 15: 000  = E= 9° 25’9360
+                        convertLonLat_Hott(GPS_lon, &degMin , &decimalMin ) ;              // convert to 2 fields (one beging deg*100+min, the other being the decimal part of min with 4 decimals
+                        TxHottData.gpsMsg.longitudeMinLow = degMin ;                           // Byte 16: 157 = 0x9D <= 0x039D = 0925
+                        TxHottData.gpsMsg.longitudeMinHigh = degMin >> 8 ;                     // Byte 17: 003 = 0x03 <= 0x039D = 0925
+                        TxHottData.gpsMsg.longitudeSecLow = decimalMin ;                           // Byte 18: 144 = 0x90 <= 0x2490 = 9360
+                        TxHottData.gpsMsg.longitudeSecHigh = decimalMin >> 8 ;                     // Byte 19: 036 = 0x24 <= 0x2490 = 9360
+                        static uint16_t altitudeHott ; 
+                        altitudeHott = (GPS_altitude / 100) + 500 ;                      // convert from cm to m and add an ofsset of 500 m
+                        TxHottData.gpsMsg.altitudeLow = altitudeHott ; 
+                        TxHottData.gpsMsg.altitudeHigh = altitudeHott >> 8 ; 
+                   }
  /* not yet implemented
   uint8_t distanceLow;             // Byte 20: 027 123 = /distance low byte 6 = 6 m 
   uint8_t distanceHigh;            // Byte 21: 036 35 = /distance high byte 
@@ -235,11 +235,8 @@ void OXS_OUT::sendData() {
   uint8_t version;                 // Byte 43: 00 version number 
   uint8_t endByte;                 // Byte 44: 0x7D Ende byte 
   uint8_t chksum;                  // Byte 45: Parity Byte 
-*/
-
-
-            
-            }  // end flagUpdateHottBuffer == GPS
+*/            
+            }  // end else => flagUpdateHottBuffer == GPS
 #endif         // end of GPS_Installed            
             // calculate the check sum on first bytes
             TxHottData.txBuffer[TXHOTTDATA_BUFFERSIZE-1] = 0 ;
@@ -248,10 +245,11 @@ void OXS_OUT::sendData() {
             }  // end for
             flagUpdateHottBuffer = 0 ;       // reset the flag to say that all data have been updated and that UART can transmit the buffer            
 #ifdef DEBUGHOTT
-            for(uint8_t i = 0; i < TXHOTTDATA_BUFFERSIZE; i++){  // include the last byte (checksum)
-                 printer->print(TxHottData.txBuffer[i], HEX); printer->print(F(" "));
-            } // end for    
-            printer->println(F(" "));
+//            for(uint8_t i = 0; i < TXHOTTDATA_BUFFERSIZE; i++){  // include the last byte (checksum)
+//                 printer->print(TxHottData.txBuffer[i], HEX); printer->print(F(" "));
+//            } // end for    
+//            printer->print(tempFlag , HEX) ;
+//            printer->println(F(" "));
 #endif
         
     }   // end ( flagUpdateHottBuffer )
