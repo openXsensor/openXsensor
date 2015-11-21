@@ -9,8 +9,10 @@
 #include "oXs_out_hott.h"
 #include "oXs_general.h"
 #include "oXs_gps.h"
-#include "oXs_imu.h"
-
+#ifdef USE_6050
+  #include "oXs_imu.h"
+  #include "KalmanFilter.h"
+#endif
 #ifdef SAVE_TO_EEPROM
   #include <EEPROM.h>
   #include "EEPROMAnything.h"
@@ -177,7 +179,6 @@ bool lowVoltage = false ;
 bool prevLowVoltage = false ;
 
 
-
 volatile bool RpmSet  ;
 volatile uint16_t RpmValue ;
 unsigned long lastRpmMillis ;
@@ -285,13 +286,25 @@ OXS_OUT oXs_Out(PIN_SERIALTX,Serial);
 OXS_OUT oXs_Out(PIN_SERIALTX);
 #endif
 
+#ifdef USE_6050
+KalmanFilter kalman ;
+float zTrack ;
+float vTrack ;
+extern float world_linear_acceleration_z ;
+extern bool newMpuAvailable;
+float altitudeToKalman ;
+int countAltitudeToKalman = 100 ;
+int32_t altitudeOffsetToKalman ;
+#endif
+
+
                             // Mike I do not understand this instruction; could you explain
 #define FORCE_INDIRECT(ptr) __asm__ __volatile__ ("" : "=e" (ptr) : "0" (ptr))
 
-//************************************************************************************************** Setup()
+
+//******************************************* Setup () *******************************************************
 
 void setup(){
-
 #ifdef DEBUG_SETUP_PIN 
     pinMode(DEBUG_SETUP_PIN, OUTPUT); // Set the start signal to high to say that set up start
     digitalWrite(DEBUG_SETUP_PIN, HIGH);
@@ -472,6 +485,8 @@ void setup(){
 #endif  
 
 #ifdef USE_6050
+//    kalman.Configure(Z_VARIANCE, ZACCEL_VARIANCE, ZACCELBIAS_VARIANCE, 0.0f ,0.0f,0.0f);
+//    kalman.Configure( 0.0f );  // configure kalman filter with current Altitude // todo = fill with altitude; if not possible, then remove this parameter
     setup_imu() ;
 //    initialize_mpu() ;
 #endif
@@ -705,7 +720,26 @@ void readSensors() {
 #endif        
 
 #ifdef USE_6050
-        read6050 () ;
+        read6050() ;
+#endif
+
+#if defined (VARIO) && defined (USE_6050)
+        if (newMpuAvailable) { // newMpuAvailable says that a new world_linear_acceleration is available // still to  and relativeAlt
+            newMpuAvailable = false ;
+            
+            if ( countAltitudeToKalman != 0) {
+                if( oXs_MS5611.varioData.rawAltitude != 0) {
+                  countAltitudeToKalman-- ;
+                  altitudeOffsetToKalman = oXs_MS5611.varioData.rawAltitude ;
+                }        
+            }
+            altitudeToKalman = (oXs_MS5611.varioData.rawAltitude - altitudeOffsetToKalman ) / 100 ; // convert from * 100cm to cm
+            kalman.Update((float) altitudeToKalman  , world_linear_acceleration_z ,  &zTrack, &vTrack);
+        }
+
+#ifdef DEBUG
+  Serial.print( (int) world_linear_acceleration_z ) ; Serial.print(F(", "));Serial.print( (int) altitudeToKalman) ; Serial.print(F(", ")); Serial.print(oXs_MS5611.varioData.climbRate) ; Serial.print(F(", "));Serial.println(( int )vTrack) ;
+#endif  
 #endif
 
 //#ifdef DEBUG    

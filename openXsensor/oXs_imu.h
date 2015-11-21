@@ -7,6 +7,7 @@
 #include "I2C.h"
 #include "helper_3dmath.h"
 
+
 boolean initialize_mpu() ;
 void getEuler(float *data, Quaternion *q) ;
 void getGravity(struct FloatVectorStruct *v, Quaternion *q) ;

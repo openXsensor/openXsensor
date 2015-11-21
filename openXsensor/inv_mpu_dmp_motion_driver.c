@@ -439,7 +439,7 @@ static const unsigned short sStartAddress = 0x0400;
 #define DMP_SAMPLE_RATE     (200)
 #define GYRO_SF             (46850825LL * 200 / DMP_SAMPLE_RATE)
 
-//#define FIFO_CORRUPTION_CHECK  // uncomment if a check on the quaternion has to be performed - this allows to detect some I2c errors (it requires about 200 bytes)
+#define FIFO_CORRUPTION_CHECK  // uncomment if a check on the quaternion has to be performed - this allows to detect some I2c errors (it requires about 200 bytes)
 #ifdef FIFO_CORRUPTION_CHECK
 #define QUAT_ERROR_THRESH       (1L<<24)
 #define QUAT_MAG_SQ_NORMALIZED  (1L<<28)
@@ -969,8 +969,7 @@ int dmp_set_interrupt_mode(unsigned char mode)
   *  @return     0 if successful.  Negative if error:  -1:  DMP Not On; -2:  I2C read error; -3:  Fifo Overflow -4: No Sensors -5: No more data available
  -6:  Quaternion out of range (I2C corruption?)
  */
-int dmp_read_fifo(short *gyro, short *accel, long *quat,
-    unsigned long *timestamp, short *sensors, unsigned char *more)
+int dmp_read_fifo(short *gyro, short *accel, long *quat,  short *sensors, unsigned char *more)
 {
     unsigned char fifo_data[MAX_PACKET_LENGTH];
     unsigned char ii = 0;
@@ -1045,7 +1044,7 @@ int dmp_read_fifo(short *gyro, short *accel, long *quat,
      */                                                                        // is not used by oXs
     //if (dmp.feature_mask & (DMP_FEATURE_TAP | DMP_FEATURE_ANDROID_ORIENT)) decode_gesture(fifo_data + ii);
 
-    get_ms(timestamp);
+//    get_ms(timestamp); // set as comment to save flash memory
     return 0;
 }
 

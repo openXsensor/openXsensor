@@ -4,6 +4,7 @@
 //#define DEBUGI2CMS5611
 //#define DEBUGDATA
 //#define DEBUGVARIOI2C
+#define DEBUGVARIO
 #endif
 
 //extern unsigned long micros( void ) ;
@@ -28,7 +29,7 @@ OXS_MS5611::OXS_MS5611(uint8_t addr)
   // constructor
   _addr=addr;
   varioData.SensorState = 0 ;
-#ifdef DEBUG  
+#ifdef DEBUGVARIO  
   printer = &print; //operate on the address of print
 //  printer->begin(115200);
 //  printer->print("Vario Sensor:MS5611 I2C Addr=");
@@ -74,7 +75,7 @@ void OXS_MS5611::setup() {
 #endif
 
   
-#ifdef DEBUG
+#ifdef DEBUGVARIO
   printer->print(F("Vario Sensor:MS5611 I2C Addr="));
   printer->println(_addr,HEX);
   printer->print(F(" milli="));  
@@ -92,7 +93,7 @@ void OXS_MS5611::setup() {
   errorI2C = I2c.write( _addr,0x1e) ;
     errorCalibration = false ;
   if (errorI2C > 0 ) {
-#ifdef DEBUG
+#ifdef DEBUGVARIO
     printer->print(F("error code in setup I2CWrite: "));
     printer->println( errorI2C );
 #endif
@@ -102,7 +103,7 @@ void OXS_MS5611::setup() {
     for (byte i = 1; i <=6; i++) {
        errorI2C =  I2c.read( _addr, 0xa0 + i*2, 2 ) ; //read 2 bytes from the device after sending the command A0 + xx depending on the register to be read
        if ( errorI2C > 0 ) {
-#ifdef DEBUG
+#ifdef DEBUGVARIO
             printer->print(F("error code in setup I2CRead: "));
             printer->println( errorI2C );
 #endif
@@ -112,7 +113,7 @@ void OXS_MS5611::setup() {
             low = I2c.receive() ;
             _calibrationData[i] = high<<8 | low;
         }  
-#ifdef DEBUG
+#ifdef DEBUGVARIO
         printer->print(F("calibration data #"));
         printer->print(i);
         printer->print(F(" = "));
@@ -123,7 +124,7 @@ void OXS_MS5611::setup() {
     } // End for 
   } // End if else  
 
-#ifdef DEBUG  
+#ifdef DEBUGVARIO  
   printer->println(F("setup vario done."));
 #endif
   

@@ -2,20 +2,10 @@
  $License:
     Copyright (C) 2011-2012 InvenSense Corporation, All Rights Reserved.
     See included License.txt for License information.
- $
- *
- *
- *  @addtogroup  DRIVERS Sensor Driver Layer
- *  @brief       Hardware drivers to communicate with sensors via I2C.
- *
- *  @{
  *      @file       inv_mpu.h
  *      @brief      An I2C-based driver for Invensense gyroscopes.
  *      @details    This driver currently works for the following devices:
- *                  MPU6050
- *                  MPU6500
- *                  MPU9150 (or MPU6050 w/ AK8975 on the auxiliary bus)
- *                  MPU9250 (or MPU6500 w/ AK8963 on the auxiliary bus)
+ *                  MPU6050 (code for other has been removed)  
  */
 
 #ifndef _INV_MPU_H_
@@ -47,6 +37,9 @@ struct int_param_s {          //used for  EMPL_TARGET_ATMEGA328
 #define MPU_INT_STATUS_DMP_3            (0x0800)
 #define MPU_INT_STATUS_DMP_4            (0x1000)
 #define MPU_INT_STATUS_DMP_5            (0x2000)
+
+static int set_int_enable(unsigned char enable);
+void mpu_start_mpu() ;
 
 /* Set up APIs */
 int mpu_init(struct int_param_s *int_param);
@@ -92,16 +85,14 @@ int mpu_set_sensors(unsigned char sensors);
 int mpu_set_accel_bias(const long *accel_bias);
 
 /* Data getter/setter APIs */
-int mpu_get_gyro_reg(short *data, unsigned long *timestamp);
-int mpu_get_accel_reg(short *data, unsigned long *timestamp);
-int mpu_get_compass_reg(short *data, unsigned long *timestamp);
-int mpu_get_temperature(long *data, unsigned long *timestamp);
+int mpu_get_gyro_reg(short *data);
+int mpu_get_accel_reg(short *data);
+int mpu_get_compass_reg(short *data);
+int mpu_get_temperature(long *data);
 
 int mpu_get_int_status(short *status);
-int mpu_read_fifo(short *gyro, short *accel, unsigned long *timestamp,
-    unsigned char *sensors, unsigned char *more);
-int mpu_read_fifo_stream(unsigned short length, unsigned char *data,
-    unsigned char *more);
+int mpu_read_fifo(short *gyro, short *accel, unsigned char *sensors, unsigned char *more);
+int mpu_read_fifo_stream(unsigned short length, unsigned char *data, unsigned char *more);
 int mpu_reset_fifo(void);
 
 int mpu_write_mem(unsigned short mem_addr, unsigned short length,
@@ -115,6 +106,8 @@ int mpu_reg_dump(void);
 int mpu_read_reg(unsigned char reg, unsigned char *data);
 int mpu_run_self_test(long *gyro, long *accel);
 int mpu_register_tap_cb(void (*func)(unsigned char, unsigned char));
+
+int get_st_biases(long *gyro, long *accel, unsigned char hw_test)  ; // added by MS
 
 #endif  /* #ifndef _INV_MPU_H_ */
 

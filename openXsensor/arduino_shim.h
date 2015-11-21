@@ -3,8 +3,6 @@
 
 #include "Arduino.h"
 
-#define get_ms 		shim_get_ms
-#define delay_ms    delay
 
 //#define SERIAL_OUTPUT_DEVICE Serial // comment out if no debugging required
 

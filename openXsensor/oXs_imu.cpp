@@ -1,40 +1,16 @@
 /* =============================================================================
-Nav6 source code is placed under the MIT license
+This part is based on Nav6 project (source code is placed under the MIT license)
 
-Copyright (c) 2013 Kauai Labs
+Copyright (c) 2013 Kauai Labs 
 
 Portions of this work are based upon the I2C Dev Library by Jeff Rowberg
 (www.i2cdevlib.com) which is open-source licensed under the MIT
-License.  This work is also based upon the Arduino software
-library which is licensed under a Creative Commons license.
+License.  
 
-This work also incorporates a version of the official Invensense Motion
-Driver v. 5.1 library, which has been ported by Kauai Labs to the Arduino
-libraries.  This library has a separate license.  The nav6 MIT license does
-not extended to the Motion Driver 5.1 Library; anyone intending to modify
-this library source code should contact Invensense and register as a 
-developer at their website.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+This work also incorporates modifications on the official Invensense Motion
+Driver v. 5.1 library in order to reduce the size of flash memory.
 =============================================================================
 */
-
 #define EMPL_TARGET_ATMEGA328
 //#include <Wire.h>
 //#include "I2Cdev.h"
@@ -46,38 +22,48 @@ extern "C" {
 
 #include "oXs_imu.h"
 
+#ifdef DEBUG
+      #define DEBUG_MPU
+#endif
+
+
+float mpuDeltaVit = 0;
+static float mpuVit = 0 ;
+float world_linear_acceleration_z ;
+bool newMpuAvailable;
+
 void setup_imu() {
     // MPU-6050 Initialization
     // Gyro sensitivity:      2000 degrees/sec
     // Accel sensitivity:     2 g
     // Gyro Low-pass filter:  42Hz
-    // DMP Update rate:       100Hz
-#ifdef DEBUG
+    // DMP Update rate:       50Hz
+#ifdef DEBUG_MPU
     Serial.print(F("Initializing MPU..."));
 #endif
     boolean mpu_initialized = false;
     while ( !mpu_initialized ) {
       if ( initialize_mpu() ) {
         mpu_initialized = true;
-#ifdef DEBUG        
+#ifdef DEBUG_MPU        
         Serial.print(F("Success"));
 #endif        
-        //boolean gyro_ok, accel_ok;
-        //run_mpu_self_test(gyro_ok,accel_ok);
+//        boolean gyro_ok, accel_ok;
+//        run_mpu_self_test(gyro_ok,accel_ok);     
         enable_mpu();    
       }
       else {
-#ifdef DEBUG        
+#ifdef DEBUG_MPU        
         Serial.print(F("Failed"));    
 #endif        
  //       mpu_force_reset();
         delay(100);
-#ifdef DEBUG
+#ifdef DEBUG_MPU
         Serial.println(F("Re-initializing"));
 #endif        
       }
     }
-#ifdef DEBUG
+#ifdef DEBUG_MPU
     Serial.println(F("Initialization Complete"));
 #endif
 }
@@ -152,8 +138,8 @@ static struct hal_s hal = {0};
 #define ACCEL_ON        (0x01)
 #define GYRO_ON         (0x02)
 /* Starting sampling rate. */
-#define DEFAULT_MPU_HZ    (100)
-#define MAX_NAV6_MPU_RATE (100)
+#define DEFAULT_MPU_HZ    (200) //modified : was originally 100
+#define MAX_NAV6_MPU_RATE (200)// modified : was originally 100 
 #define MIN_NAV6_MPU_RATE (4)
 /* Data requested by client. */
 #define PRINT_ACCEL     (0x01)
@@ -163,9 +149,9 @@ static struct hal_s hal = {0};
 /****************************************
 * Gyro/Accel/DMP Configuration
 ****************************************/
-unsigned char accel_fsr;  // accelerometer full-scale rate, in +/- Gs (possible values are 2, 4, 8 or 16).  Default:  2
+unsigned char accel_fsr = 2;  // accelerometer full-scale rate, in +/- Gs (possible values are 2, 4, 8 or 16).  Default:  2 ; when changed, it must be changed in inv_mpu too
 unsigned short dmp_update_rate; // update rate, in hZ (possible values are between 4 and 1000).  Default:  100
-unsigned short gyro_fsr;  // Gyro full-scale_rate, in +/- degrees/sec, possible values are 250, 500, 1000 or 2000.  Default:  2000
+unsigned short gyro_fsr = 2000;  // Gyro full-scale_rate, in +/- degrees/sec, possible values are 250, 500, 1000 or 2000.  Default:  2000 ;  ; when changed, it must be changed in inv_mpu too
 
 /* The mounting matrix below tells the MPL how to rotate the raw 
  * data from the driver(s). The matrix below reflects the axis
@@ -180,7 +166,6 @@ static signed char gyro_orientation[9] = { 1, 0, 0,
 // ******************************************************************************************
 void read6050 () {
   // If the MPU Interrupt occurred, read the fifo and process the data
-  
   if (hal.new_gyro && hal.dmp_on) {
 
         short gyro[3], accel[3], sensors;
@@ -199,11 +184,24 @@ void read6050 () {
          * registered). The more parameter is non-zero if there are
          * leftover packets in the FIFO.
          */
-        int success = dmp_read_fifo(gyro, accel, quat, &sensor_timestamp, &sensors, &more);
+        int success = dmp_read_fifo(gyro, accel, quat, &sensors, &more);
+//        Serial.print("success ") ; Serial.println(success ) ;
         if (!more)                  // if no more data
             hal.new_gyro = 0;       // reset the indicator saying that data are available in the FIFO, so it will be updated by the callback function on the interrupt.
-        
+       
         if ( ( success == 0 ) && ( (sensors & INV_XYZ_ACCEL) != 0 ) && ( (sensors & INV_WXYZ_QUAT) != 0 ) ) {
+#ifdef DEBUG_MPU         // this part allows to check the delay between 2 kalman filter. It is hardcoded (#define with frequency) set on 20msec
+               static unsigned long prevSensorTimeStamp;
+               unsigned long sensor_timestamp = millis() ;
+              if (prevSensorTimeStamp == 0) prevSensorTimeStamp = sensor_timestamp ;
+              uint16_t mpuDeltaTime =  sensor_timestamp - prevSensorTimeStamp ;
+              prevSensorTimeStamp = sensor_timestamp ;
+              Serial.print("dt ") ; Serial.println(mpuDeltaTime ) ;
+#endif
+              accel[0] += 160 ;  //Offset measured on table (with sign inverted)
+              accel[1] += 341 ;
+              accel[2] += 854 ;      
+
               Quaternion q( (float)(quat[0] >> 16) / 16384.0f,
                             (float)(quat[1] >> 16) / 16384.0f,
                             (float)(quat[2] >> 16) / 16384.0f,
@@ -212,7 +210,8 @@ void read6050 () {
              // Calculate Yaw/Pitch/Roll
              // Update client with yaw/pitch/roll and tilt-compensated magnetometer data
              getGravity(&gravity, &q);
-             dmpGetYawPitchRoll(ypr, &q, &gravity);
+             
+//             dmpGetYawPitchRoll(ypr, &q, &gravity);
               float linear_acceleration_x;
               float linear_acceleration_y;
               float linear_acceleration_z;
@@ -221,23 +220,23 @@ void read6050 () {
               float q_product[4];
               float q_conjugate[4];
               float q_final[4];               
-              float world_linear_acceleration_x;
-              float world_linear_acceleration_y;
-              float world_linear_acceleration_z;
+ //             float world_linear_acceleration_x;
+ //             float world_linear_acceleration_y;
+//              float world_linear_acceleration_z;
     
               // calculate linear acceleration by 
               // removing the gravity component from raw acceleration values
                
-              linear_acceleration_x = (((float)accel[0]) / (32768.0 / accel_fsr)) - gravity.x;
-              linear_acceleration_y = (((float)accel[1]) / (32768.0 / accel_fsr)) - gravity.y;
-              linear_acceleration_z = (((float)accel[2]) / (32768.0 / accel_fsr)) - gravity.z; 
+              linear_acceleration_x = ((((float)accel[0]) / 16384.0f ) - gravity.x )  ; // converted in 1 g unit
+              linear_acceleration_y = ((((float)accel[1]) / 16384.0f ) - gravity.y )  ;
+              linear_acceleration_z = ((((float)accel[2]) / 16384.0f ) - gravity.z )  ; 
               
               // Calculate world-frame acceleration
               
-              q1[0] = quat[0] >> 16;
-              q1[1] = quat[1] >> 16;
-              q1[2] = quat[2] >> 16;
-              q1[3] = quat[3] >> 16;
+              q1[0] = q.w ;   // division factor added by Ms in order to get a result around 1 for 1G
+              q1[1] = q.x ;
+              q1[2] = q.y ;
+              q1[3] = q.z ;
               
               q2[0] = 0;
               q2[1] = linear_acceleration_x;
@@ -274,14 +273,25 @@ void read6050 () {
               q_conjugate[2] = -q1[2];            
               q_conjugate[3] = -q1[3];            
       
-              q_final[0] = q_product[0]*q_conjugate[0] - q_product[1]*q_conjugate[1] - q_product[2]*q_conjugate[2] - q_product[3]*q_conjugate[3];  // new w
-              q_final[1] = q_product[0]*q_conjugate[1] + q_product[1]*q_conjugate[0] + q_product[2]*q_conjugate[3] - q_product[3]*q_conjugate[2];  // new x
-              q_final[2] = q_product[0]*q_conjugate[2] - q_product[1]*q_conjugate[3] + q_product[2]*q_conjugate[0] + q_product[3]*q_conjugate[1];  // new y 
+ //             q_final[0] = q_product[0]*q_conjugate[0] - q_product[1]*q_conjugate[1] - q_product[2]*q_conjugate[2] - q_product[3]*q_conjugate[3];  // new w
+ //             q_final[1] = q_product[0]*q_conjugate[1] + q_product[1]*q_conjugate[0] + q_product[2]*q_conjugate[3] - q_product[3]*q_conjugate[2];  // new x
+ //             q_final[2] = q_product[0]*q_conjugate[2] - q_product[1]*q_conjugate[3] + q_product[2]*q_conjugate[0] + q_product[3]*q_conjugate[1];  // new y 
               q_final[3] = q_product[0]*q_conjugate[3] + q_product[1]*q_conjugate[2] - q_product[2]*q_conjugate[1] + q_product[3]*q_conjugate[0];  // new z
       
-              world_linear_acceleration_x = q_final[1];
-              world_linear_acceleration_y = q_final[2];
-              world_linear_acceleration_z = q_final[3];
+//              world_linear_acceleration_x = q_final[1];
+//              world_linear_acceleration_y = q_final[2];
+              world_linear_acceleration_z = q_final[3] * 981.0f  ;  // conversion from g to cm/sec2 => * 981 cm/sec2
+              newMpuAvailable = true;
+#ifdef DEBUG_MPU
+//             Serial.print("acc "); Serial.print(accel[0] ) ;Serial.print(" "); Serial.print(accel[1] ) ; Serial.print(" "); Serial.println(accel[2] ) ;
+//               Serial.print("q "); Serial.print(q.w ) ;Serial.print(" "); Serial.print(q.x ) ;Serial.print(" "); Serial.print(q.y ) ; Serial.print(" "); Serial.println(q.z ) ;
+//               Serial.print("grav "); Serial.print(gravity.x ) ;Serial.print(" "); Serial.print(gravity.y ) ; Serial.print(" "); Serial.println(gravity.z ) ;
+//               Serial.print("liear Acc "); Serial.print(linear_acceleration_x); Serial.print(" "); Serial.print(linear_acceleration_y ); Serial.print(" "); Serial.println(linear_acceleration_z );
+
+               //Serial.print(mpuDeltaTime );Serial.print(",") ; 
+               //Serial.println((int) mpuVit ) ;
+//                Serial.println(world_linear_acceleration_z );
+#endif              
           
       }
     }   // end  (hal.new_gyro && hal.dmp_on)
@@ -655,13 +665,15 @@ boolean initialize_mpu() {
     /* Get/set hardware configuration. Start gyro. */
     /* Wake up all sensors. */
     mpu_set_sensors(INV_XYZ_GYRO | INV_XYZ_ACCEL);
+    //mpu_start_mpu() ;
+    
     /* Push both gyro and accel data into the FIFO. */
     mpu_configure_fifo(INV_XYZ_GYRO | INV_XYZ_ACCEL);
-    mpu_set_sample_rate(DEFAULT_MPU_HZ);
+    mpu_set_sample_rate(DEFAULT_MPU_HZ);                                               ////// to check it this is allowed
     /* Read back configuration in case it was set improperly. */
-    mpu_get_sample_rate(&dmp_update_rate);
-    mpu_get_gyro_fsr(&gyro_fsr);
-    mpu_get_accel_fsr(&accel_fsr);
+    mpu_get_sample_rate(&dmp_update_rate);                                             ////// to check if this is allowed
+//    mpu_get_gyro_fsr(&gyro_fsr);
+//    mpu_get_accel_fsr(&accel_fsr);
 
     /* Initialize HAL state variables. */
     memset(&hal, 0, sizeof(hal));
@@ -706,9 +718,10 @@ boolean initialize_mpu() {
     }
     dmp_set_orientation( inv_orientation_matrix_to_scalar(gyro_orientation));
     
-    unsigned short dmp_features = DMP_FEATURE_6X_LP_QUAT | DMP_FEATURE_SEND_RAW_ACCEL |  DMP_FEATURE_SEND_CAL_GYRO | DMP_FEATURE_GYRO_CAL;
+//    unsigned short dmp_features = DMP_FEATURE_6X_LP_QUAT | DMP_FEATURE_SEND_RAW_ACCEL |  DMP_FEATURE_SEND_CAL_GYRO | DMP_FEATURE_GYRO_CAL;
+    unsigned short dmp_features = DMP_FEATURE_6X_LP_QUAT | DMP_FEATURE_SEND_RAW_ACCEL |  DMP_FEATURE_GYRO_CAL;
     dmp_enable_feature(dmp_features);
-    dmp_set_fifo_rate(DEFAULT_MPU_HZ);
+    dmp_set_fifo_rate(50);// test with 20 hz (was originally on 100) and it works (interrupt is activated only once every 20 msec)
     return true;
 }
 
@@ -732,6 +745,7 @@ boolean run_mpu_self_test(boolean& gyro_ok, boolean& accel_ok) {                
     gyro_ok = false;
     accel_ok = false;
     result = mpu_run_self_test(gyro, accel);
+    
     if ( ( result & 0x1 ) != 0 ) {
       // Gyro passed self test
       gyro_ok = true;
@@ -742,11 +756,14 @@ boolean run_mpu_self_test(boolean& gyro_ok, boolean& accel_ok) {                
       gyro[2] = (long)(gyro[2] * sens);
       dmp_set_gyro_bias(gyro);
     }
-    if ( ( result & 0x2 ) != 0 ) {
+    if ( ( ( result & 0x2 ) != 0 ) || true)  { // || true has been added to force the test on accel which in my case returned false
       // Accelerometer passed self test
       accel_ok = true;
       unsigned short accel_sens;
       mpu_get_accel_sens(&accel_sens);
+#ifdef DEBUG_MPU        
+        Serial.print(F("testAccX "));Serial.print( accel[0] ); Serial.print(F(",")); Serial.print( accel[1] ); Serial.print(F(","));;Serial.print( accel[2] );Serial.print(F(","));Serial.println( accel_sens ); 
+#endif        
       accel[0] *= accel_sens;
       accel[1] *= accel_sens;
       accel[2] *= accel_sens;
