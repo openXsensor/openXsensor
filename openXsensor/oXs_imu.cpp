@@ -27,30 +27,49 @@ extern "C" {
 #endif
 
 
-float mpuDeltaVit = 0;
-static float mpuVit = 0 ;
+//float mpuDeltaVit = 0;
+//static float mpuVit = 0 ;
 float world_linear_acceleration_z ;
 bool newMpuAvailable;
+
+/*
+// ***************************************
+// Invensense Hardware Abstracation Layer
+// ***************************************
+struct hal_s {
+//    unsigned char sensors;
+//    unsigned char dmp_on;
+//    unsigned char wait_for_tap;
+    volatile unsigned char new_gyro;
+//    unsigned short report;
+//    unsigned short dmp_features;
+//    unsigned char motion_int_mode;
+};
+//static struct hal_s hal ; //= {0};
+*/
+
+volatile unsigned char new_mpu_data ;
 
 void setup_imu() {
     // MPU-6050 Initialization
     // Gyro sensitivity:      2000 degrees/sec
     // Accel sensitivity:     2 g
-    // Gyro Low-pass filter:  42Hz
+    // Gyro Low-pass filter:  98Hz
     // DMP Update rate:       50Hz
 #ifdef DEBUG_MPU
     Serial.print(F("Initializing MPU..."));
 #endif
     boolean mpu_initialized = false;
     while ( !mpu_initialized ) {
-      if ( initialize_mpu() ) {
+      if ( initialize_mpu() ) {                       // enable imu
         mpu_initialized = true;
 #ifdef DEBUG_MPU        
         Serial.print(F("Success"));
 #endif        
 //        boolean gyro_ok, accel_ok;
 //        run_mpu_self_test(gyro_ok,accel_ok);     
-        enable_mpu();    
+//        enable_mpu();  // replaced by next instruction = mpu_set_dmp_state(1);
+        mpu_set_dmp_state_on();                     //enable dmp 
       }
       else {
 #ifdef DEBUG_MPU        
@@ -95,21 +114,23 @@ float quaternion_accumulator[4] = { 0.0, 0.0, 0.0, 0.0 };
 float calibrated_yaw_offset = 0.0;
 float calibrated_quaternion_offset[4] = { 0.0, 0.0, 0.0, 0.0 }; 
 
-/******************************************
-* Magnetometer State
-******************************************/
+/*
+// ******************************************
+// Magnetometer State
+// ******************************************
 int16_t mag_x = 0;
 int16_t mag_y = 0;
 int16_t mag_z = 0;
 float compass_heading_radians = 0.0;
 float compass_heading_degrees = 0.0;
+*/
 
 /****************************************
 * Gyro/Accel/DMP State
 ****************************************/
-float temp_centigrade = 0.0;  // Gyro/Accel die temperature
+//float temp_centigrade = 0.0;  // Gyro/Accel die temperature
 float ypr[3] = { 0, 0, 0 };
-long curr_mpu_temp;
+//long curr_mpu_temp;
 unsigned long sensor_timestamp;
 
 struct FloatVectorStruct {
@@ -120,20 +141,6 @@ struct FloatVectorStruct {
 
 struct FloatVectorStruct gravity;
 
-/***************************************
-* Invensense Hardware Abstracation Layer
-***************************************/
-struct hal_s {
-    unsigned char sensors;
-    unsigned char dmp_on;
-    unsigned char wait_for_tap;
-    volatile unsigned char new_gyro;
-    unsigned short report;
-    unsigned short dmp_features;
-    unsigned char motion_int_mode;
-};
-
-static struct hal_s hal = {0};
 
 #define ACCEL_ON        (0x01)
 #define GYRO_ON         (0x02)
@@ -150,7 +157,7 @@ static struct hal_s hal = {0};
 * Gyro/Accel/DMP Configuration
 ****************************************/
 unsigned char accel_fsr = 2;  // accelerometer full-scale rate, in +/- Gs (possible values are 2, 4, 8 or 16).  Default:  2 ; when changed, it must be changed in inv_mpu too
-unsigned short dmp_update_rate; // update rate, in hZ (possible values are between 4 and 1000).  Default:  100
+unsigned short dmp_update_rate; // update rate, in hZ (possible values are between 4 and 1000).  Default:  200
 unsigned short gyro_fsr = 2000;  // Gyro full-scale_rate, in +/- degrees/sec, possible values are 250, 500, 1000 or 2000.  Default:  2000 ;  ; when changed, it must be changed in inv_mpu too
 
 /* The mounting matrix below tells the MPL how to rotate the raw 
@@ -166,7 +173,8 @@ static signed char gyro_orientation[9] = { 1, 0, 0,
 // ******************************************************************************************
 void read6050 () {
   // If the MPU Interrupt occurred, read the fifo and process the data
-  if (hal.new_gyro && hal.dmp_on) {
+//  if (hal.new_gyro && hal.dmp_on) {
+  if (new_mpu_data) {
 
         short gyro[3], accel[3], sensors;
         unsigned char more = 0;
@@ -184,12 +192,13 @@ void read6050 () {
          * registered). The more parameter is non-zero if there are
          * leftover packets in the FIFO.
          */
-        int success = dmp_read_fifo(gyro, accel, quat, &sensors, &more);
+        int success = dmp_read_fifo(gyro, accel, quat, &sensors, &more);  // 0 = OK
 //        Serial.print("success ") ; Serial.println(success ) ;
         if (!more)                  // if no more data
-            hal.new_gyro = 0;       // reset the indicator saying that data are available in the FIFO, so it will be updated by the callback function on the interrupt.
+            new_mpu_data = 0;       // reset the indicator saying that data are available in the FIFO, so it will be updated by the callback function on the interrupt.
        
-        if ( ( success == 0 ) && ( (sensors & INV_XYZ_ACCEL) != 0 ) && ( (sensors & INV_WXYZ_QUAT) != 0 ) ) {
+//        if ( ( success == 0 ) && ( (sensors & INV_XYZ_ACCEL) != 0 ) && ( (sensors & INV_WXYZ_QUAT) != 0 ) ) {
+        if (  success == 0 ) {
 #ifdef DEBUG_MPU         // this part allows to check the delay between 2 kalman filter. It is hardcoded (#define with frequency) set on 20msec
                static unsigned long prevSensorTimeStamp;
                unsigned long sensor_timestamp = millis() ;
@@ -294,7 +303,7 @@ void read6050 () {
 #endif              
           
       }
-    }   // end  (hal.new_gyro && hal.dmp_on)
+    }   // end  new_mpu_data
 }
 /***************************************
 * nav6 Protocol Configuration/State
@@ -593,12 +602,10 @@ void loop_xxxxxxxx() {
 */ // end of loopxxxxxx
 
 /* Every time new gyro data is available, this function is called in an
- * ISR context. In this example, it sets a flag protecting the FIFO read
- * function.
+ * ISR context. In this example, it sets a flag saying the FIFO can be read
  */
 void gyro_data_ready_cb(void) {
-  
-    hal.new_gyro = 1;
+    new_mpu_data = 1;
 }
 
 /* These next two functions converts the orientation matrix (see
@@ -647,38 +654,39 @@ unsigned short inv_orientation_matrix_to_scalar( const signed char *mtx) {
 boolean initialize_mpu() {
   
     int result;
-    struct int_param_s int_param;
+    struct int_param_s int_param;   // contains the call back function used by interrupt on dmp and the pin number of interrupt
 
     /* Set up gyro.
      * Every function preceded by mpu_ is a driver function and can be found
      * in inv_mpu.h.
      */
-    int_param.cb = gyro_data_ready_cb;
-    int_param.pin = 0;
-    result = mpu_init(&int_param);
-
+    int_param.cb = gyro_data_ready_cb;           // name of the function being used when DMP interrupt occurs
+    int_param.pin = 0;                           // use interrupt 0 to detect when mpu call an interrupt
+    result = mpu_init(&int_param);               // initialize MPU with default values
     if ( result != 0 ) {
+#ifdef DEBUG_MPU     
       Serial.print("mpu_init failed!");
+#endif      
       return false;
     }
 
     /* Get/set hardware configuration. Start gyro. */
     /* Wake up all sensors. */
-    mpu_set_sensors(INV_XYZ_GYRO | INV_XYZ_ACCEL);
-    //mpu_start_mpu() ;
+//    mpu_set_sensors(INV_XYZ_GYRO | INV_XYZ_ACCEL);                                      // to check if it can be removed because dmp is based on dmp feature
+    mpu_enable_pwm_mgnt() ;
     
     /* Push both gyro and accel data into the FIFO. */
-    mpu_configure_fifo(INV_XYZ_GYRO | INV_XYZ_ACCEL);
-    mpu_set_sample_rate(DEFAULT_MPU_HZ);                                               ////// to check it this is allowed
+//    mpu_configure_fifo(INV_XYZ_GYRO | INV_XYZ_ACCEL);                                  ////// to check if this can be removed (could be that fifo is filled automatically based on dmp feature settings)
+//    mpu_set_sample_rate(DEFAULT_MPU_HZ);                                               ////// This is probably needed but when done here, no need to do it again in dmp init
+//    mpu_set_sample_rate200hz();                     // this function is made by Ms and is hardcoded to work for 200 hz. Still it is also called when dmp is enable (so no need to use it twice
     /* Read back configuration in case it was set improperly. */
-    mpu_get_sample_rate(&dmp_update_rate);                                             ////// to check if this is allowed
+//    mpu_get_sample_rate(&dmp_update_rate);                                             ////// to check if this can be removed
 //    mpu_get_gyro_fsr(&gyro_fsr);
 //    mpu_get_accel_fsr(&accel_fsr);
 
-    /* Initialize HAL state variables. */
-    memset(&hal, 0, sizeof(hal));
-    hal.sensors = ACCEL_ON | GYRO_ON;
-    hal.report = PRINT_QUAT;
+    /* Initialize HAL state variables. */                                              // this is already done by compiler
+//    memset(&hal, 0, sizeof(hal));
+//    hal.sensors = ACCEL_ON | GYRO_ON;
 
     /* To initialize the DMP:
      * 1. Call dmp_load_motion_driver_firmware(). This pushes the DMP image in
@@ -710,32 +718,38 @@ boolean initialize_mpu() {
      * DMP_FEATURE_SEND_CAL_GYRO: Add calibrated gyro data to the FIFO. Cannot
      * be used in combination with DMP_FEATURE_SEND_RAW_GYRO.
      */
-    result = dmp_load_motion_driver_firmware();
+    result = dmp_load_motion_driver_firmware();                           // load the firmware
     if ( result != 0 ) {
+#ifdef DEBUG_MPU      
       Serial.print("Firmware Load ERROR ");
       Serial.println(result);
+#endif      
       return false;
     }
     dmp_set_orientation( inv_orientation_matrix_to_scalar(gyro_orientation));
     
 //    unsigned short dmp_features = DMP_FEATURE_6X_LP_QUAT | DMP_FEATURE_SEND_RAW_ACCEL |  DMP_FEATURE_SEND_CAL_GYRO | DMP_FEATURE_GYRO_CAL;
-    unsigned short dmp_features = DMP_FEATURE_6X_LP_QUAT | DMP_FEATURE_SEND_RAW_ACCEL |  DMP_FEATURE_GYRO_CAL;
-    dmp_enable_feature(dmp_features);
-    dmp_set_fifo_rate(50);// test with 20 hz (was originally on 100) and it works (interrupt is activated only once every 20 msec)
+//    unsigned short dmp_features = DMP_FEATURE_6X_LP_QUAT | DMP_FEATURE_SEND_RAW_ACCEL |  DMP_FEATURE_GYRO_CAL;
+    dmp_enable_feature( (unsigned short )DMP_FEATURE_6X_LP_QUAT | DMP_FEATURE_SEND_RAW_ACCEL |  DMP_FEATURE_GYRO_CAL );
+//    dmp_set_fifo_rate(50);// test with 20 hz (was originally on 100) and it works (interrupt is activated only once every 20 msec)
+//                          // this is not used because it is already changed in the firmware.
     return true;
 }
 
-void disable_mpu() {
+/*
+void disable_mpu() {                                // is not used by oXs
     mpu_set_dmp_state(0);
     hal.dmp_on = 0;
 }
-
+*/
+/*
 void enable_mpu() {
 
-    mpu_set_dmp_state(1);  // This enables the DMP; at this point, interrupts should commence
-    hal.dmp_on = 1;
+    mpu_set_dmp_state_on();  // This enables the DMP; at this point, interrupts should commence
+//    hal.dmp_on = 1;
 }  
-
+*/
+/*
 boolean run_mpu_self_test(boolean& gyro_ok, boolean& accel_ok) {                               // saving : is currently not used by oXs   
   
     int result;
@@ -769,17 +783,18 @@ boolean run_mpu_self_test(boolean& gyro_ok, boolean& accel_ok) {                
       accel[2] *= accel_sens;
       dmp_set_accel_bias(accel);
     }
-
     success = gyro_ok && accel_ok;
-  
     return success;
 }
+*/
 
+/*
 void getEuler(float *data, Quaternion *q) {
     data[0] = atan2(2*q -> x*q -> y - 2*q -> w*q -> z, 2*q -> w*q -> w + 2*q -> x*q -> x - 1);   // psi
     data[1] = -asin(2*q -> x*q -> z + 2*q -> w*q -> y);                                          // theta
     data[2] = atan2(2*q -> y*q -> z - 2*q -> w*q -> x, 2*q -> w*q -> w + 2*q -> z*q -> z - 1);   // phi????
 }
+*/
 
 void getGravity(struct FloatVectorStruct *v, Quaternion *q) {
     v -> x = 2 * (q -> x*q -> z - q -> w*q -> y);

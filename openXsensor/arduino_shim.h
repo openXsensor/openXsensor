@@ -9,7 +9,7 @@
 #ifdef SERIAL_OUTPUT_DEVICE
 
 extern HardwareSerial Serial;
-#define log_i       SERIAL_OUTPUT_DEVICE.println
+#define log_i   SERIAL_OUTPUT_DEVICE.println
 #define log_e		SERIAL_OUTPUT_DEVICE.println
 
 #else // No Debug Output

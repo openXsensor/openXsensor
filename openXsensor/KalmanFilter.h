@@ -6,9 +6,10 @@ class KalmanFilter {
 
 public :
 
-KalmanFilter();
+KalmanFilter() ;
 //void Configure( float zInitial ); // is not used anymore because all data are initilalise in KalmanFilter.h or with #define
 void Update(float z, float a,  float* pZ, float* pV);
+//float getPaa_() ;
 
 private :
 
@@ -18,15 +19,15 @@ private :
 	float aBias_;  // acceleration
 
 // 3x3 State Covariance matrix
-	float Pzz_ = 1.0f;
+	float Pzz_ ;
 	float Pzv_;
 	float Pza_;
 	float Pvz_;
-	float Pvv_ = 1.0f;
+	float Pvv_ ;
 	float Pva_;
 	float Paz_;
 	float Pav_;
-	float Paa_ = 100000.0f;
+ 	float Paa_ ;
 
 // those float have been replaced by #define to save flash memory
 //  float zAccelBiasVariance_; // assumed fixed.

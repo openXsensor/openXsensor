@@ -25,7 +25,7 @@
 //#define FRSKY_TYPE_HUB   // when uncommented, it forces oXs to apply only HUB protocol, otherwise, oXs detects automatically if protocol has to be SPORT or HUB
 #define SPORT_SENSOR_ID    28 // value must be between 1 and 28 
 // ***** 1.3 - Hott protocol is used (otherwise oXs assumes it is Frsky protocol) *****
-#define HOTT
+//#define HOTT
 
 // --------- 2 - Serial data pin choice ---------
 #define PIN_SERIALTX      4    // The pin which transmits the serial data to the FrSky telemetry receiver, Usually pin 4

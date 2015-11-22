@@ -38,8 +38,9 @@ struct int_param_s {          //used for  EMPL_TARGET_ATMEGA328
 #define MPU_INT_STATUS_DMP_4            (0x1000)
 #define MPU_INT_STATUS_DMP_5            (0x2000)
 
-static int set_int_enable(unsigned char enable);
-void mpu_start_mpu() ;
+
+void mpu_enable_pwm_mgnt() ;
+//int getDataFromMpu() ;
 
 /* Set up APIs */
 int mpu_init(struct int_param_s *int_param);
@@ -55,6 +56,7 @@ int mpu_set_int_level(unsigned char active_low);
 int mpu_set_int_latched(unsigned char enable);
 
 int mpu_set_dmp_state(unsigned char enable);
+int mpu_set_dmp_state_on();
 int mpu_get_dmp_state(unsigned char *enabled);
 
 int mpu_get_lpf(unsigned short *lpf);
@@ -73,6 +75,7 @@ int mpu_get_accel_sens(unsigned short *sens);
 
 int mpu_get_sample_rate(unsigned short *rate);
 int mpu_set_sample_rate(unsigned short rate);
+int mpu_set_sample_rate200hz();
 int mpu_get_compass_sample_rate(unsigned short *rate);
 int mpu_set_compass_sample_rate(unsigned short rate);
 
@@ -99,8 +102,7 @@ int mpu_write_mem(unsigned short mem_addr, unsigned short length,
     unsigned char *data);
 int mpu_read_mem(unsigned short mem_addr, unsigned short length,
     unsigned char *data);
-int mpu_load_firmware(unsigned short length, const unsigned char *firmware,
-    unsigned short start_addr, unsigned short sample_rate);
+int mpu_load_firmware(unsigned short length, const unsigned char *firmware, unsigned short start_addr );
 
 int mpu_reg_dump(void);
 int mpu_read_reg(unsigned char reg, unsigned char *data);

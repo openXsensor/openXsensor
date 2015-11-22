@@ -11,9 +11,16 @@
 // as an initialization parameter.
 
 
-KalmanFilter::KalmanFilter() {
+KalmanFilter::KalmanFilter() { // constructor initialize 3 parameters
+  Pzz_ = Pvv_ = 1.0f ;
+  Paa_ = 100000.0f;
 }
 
+/* // model of a function to extract data from Kalman filter
+float KalmanFilter::getPaa_() {
+  return Paa_ ;
+}
+*/
 /*
 //void KalmanFilter::Configure(float zVariance, float zAccelVariance, float zAccelBiasVariance, float zInitial, float vInitial, float aBiasInitial) {
 void KalmanFilter::Configure( float zInitial) { // is not used anymore because all data are initilalise in KalmanFilter.h or with #define

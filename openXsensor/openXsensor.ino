@@ -720,11 +720,23 @@ void readSensors() {
 #endif        
 
 #ifdef USE_6050
+#ifdef DEBUG
+            unsigned long begin6050 = millis();
+#endif  
         read6050() ;
+#ifdef DEBUG
+        if (newMpuAvailable) {
+            Serial.print(F("delay mpu ")) ; Serial.print( millis() - begin6050 ) ;Serial.print(F(", "));
+        }
+#endif
 #endif
 
 #if defined (VARIO) && defined (USE_6050)
-        if (newMpuAvailable) { // newMpuAvailable says that a new world_linear_acceleration is available // still to  and relativeAlt
+        if (newMpuAvailable) { // newMpuAvailable says that a new world_linear_acceleration is available (flag has been set inside read6050()
+#ifdef DEBUG
+            unsigned long beginKalman = millis();
+#endif  
+
             newMpuAvailable = false ;
             
             if ( countAltitudeToKalman != 0) {
@@ -735,11 +747,13 @@ void readSensors() {
             }
             altitudeToKalman = (oXs_MS5611.varioData.rawAltitude - altitudeOffsetToKalman ) / 100 ; // convert from * 100cm to cm
             kalman.Update((float) altitudeToKalman  , world_linear_acceleration_z ,  &zTrack, &vTrack);
+#ifdef DEBUG
+            Serial.print(F("delay Kal ")) ; Serial.print( millis() - beginKalman ) ;Serial.print(F(", "));
+            Serial.print( (int) world_linear_acceleration_z ) ; Serial.print(F(", "));Serial.print( (int) altitudeToKalman) ; Serial.print(F(", ")); Serial.print(oXs_MS5611.varioData.climbRate) ; Serial.print(F(", "));Serial.println(( int )vTrack) ;
+#endif  
+
         }
 
-#ifdef DEBUG
-  Serial.print( (int) world_linear_acceleration_z ) ; Serial.print(F(", "));Serial.print( (int) altitudeToKalman) ; Serial.print(F(", ")); Serial.print(oXs_MS5611.varioData.climbRate) ; Serial.print(F(", "));Serial.println(( int )vTrack) ;
-#endif  
 #endif
 
 //#ifdef DEBUG    
