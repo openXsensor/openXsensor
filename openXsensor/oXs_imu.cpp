@@ -633,9 +633,9 @@ unsigned short inv_row_2_scale(const signed char *row) {
 
 
 unsigned short inv_orientation_matrix_to_scalar( const signed char *mtx) {
-    unsigned short scalar; // scalar becomes one of the following values when only positive values are used in gyro orientation; values can be different when -1 is used instead of 1
+    unsigned short scalar;
     /*
-       XYZ  010_001_000 Identity Matrix => 0x88 if only positive values
+       XYZ  010_001_000 Identity Matrix
        XZY  001_010_000
        YXZ  010_000_001
        YZX  000_010_001
@@ -727,10 +727,6 @@ boolean initialize_mpu() {
       return false;
     }
     dmp_set_orientation( inv_orientation_matrix_to_scalar(gyro_orientation));
-#ifdef DEBUG_MPU      
-//      Serial.print("scalar  ");
-//      Serial.println(inv_orientation_matrix_to_scalar(gyro_orientation),HEX);
-#endif      
     
 //    unsigned short dmp_features = DMP_FEATURE_6X_LP_QUAT | DMP_FEATURE_SEND_RAW_ACCEL |  DMP_FEATURE_SEND_CAL_GYRO | DMP_FEATURE_GYRO_CAL;
 //    unsigned short dmp_features = DMP_FEATURE_6X_LP_QUAT | DMP_FEATURE_SEND_RAW_ACCEL |  DMP_FEATURE_GYRO_CAL;

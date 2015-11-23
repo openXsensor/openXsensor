@@ -289,9 +289,9 @@ const prog_uchar dmp_memory[DMP_CODE_SIZE] PROGMEM = {
     /* bank # 4 */
     0xd8, 0xdc, 0xb4, 0xb8, 0xb0, 0xd8, 0xb9, 0xab, 0xf3, 0xf8, 0xfa, 0xb3, 0xb7, 0xbb, 0x8e, 0x9e, // 0
     0xae, 0xf1, 0x32, 0xf5, 0x1b, 0xf1, 0xb4, 0xb8, 0xb0, 0x80, 0x97, 0xf1, 0xa9, 0xdf, 0xdf, 0xdf, // 1
-    0xaa, 0xdf, 0xdf, 0xdf, 0xf2, 0xaa, 0xc5, 0xcd, 0xc7, 0xa9, 0x0c, 0xc9, 0x2c, 0x97, 0xf1, 0xa9, // 2  // in reg 1062 = bank 4, row 2, byte 6 , I replace (0xc5, 0xcd, 0xc7,) with ( 4C CD 6C)  for orientation
-    0x89, 0x26, 0x46, 0x66, 0xb2, 0x89, 0x99, 0xa9, 0x2d, 0x55, 0x7d, 0xb0, 0xb0, 0x8a, 0xa8, 0x96, // 3  // in reg 1073 = bank 4, row 3, byte 1 , , the orientation sign accel is already ok (for positive sign)
-    0x36, 0x56, 0x76, 0xf1, 0xba, 0xa3, 0xb4, 0xb2, 0x80, 0xc0, 0xb8, 0xa8, 0x97, 0x11, 0xb2, 0x83, // 4  // in reg 1088 = bank 4, row 4, byte 0 , , the orientation sign gyro is already ok (for positive sign)
+    0xaa, 0xdf, 0xdf, 0xdf, 0xf2, 0xaa, 0xc5, 0xcd, 0xc7, 0xa9, 0x0c, 0xc9, 0x2c, 0x97, 0xf1, 0xa9, // 2
+    0x89, 0x26, 0x46, 0x66, 0xb2, 0x89, 0x99, 0xa9, 0x2d, 0x55, 0x7d, 0xb0, 0xb0, 0x8a, 0xa8, 0x96, // 3
+    0x36, 0x56, 0x76, 0xf1, 0xba, 0xa3, 0xb4, 0xb2, 0x80, 0xc0, 0xb8, 0xa8, 0x97, 0x11, 0xb2, 0x83, // 4 
     0x98, 0xba, 0xa3, 0xf0, 0x24, 0x08, 0x44, 0x10, 0x64, 0x18, 0xb2, 0xb9, 0xb4, 0x98, 0x83, 0xf1, // 5
     0xa3, 0x29, 0x55, 0x7d, 0xba, 0xb5, 0xb1, 0xa3, 0x83, 0x93, 0xf0, 0x00, 0x28, 0x50, 0xf5, 0xb2, // 6
     0xb6, 0xaa, 0x83, 0x93, 0x28, 0x54, 0x7c, 0xf1, 0xb9, 0xa3, 0x82, 0x93, 0x61, 0xba, 0xa2, 0xda, // 7
@@ -398,11 +398,9 @@ const prog_uchar dmp_memory[DMP_CODE_SIZE] PROGMEM = {
     0xb1, 0x83, 0x9a, 0xb5, 0xaa, 0xc0, 0xfd, 0x30, 0x83, 0xb7, 0x9f, 0x10, 0xb5, 0x8b, 0x93, 0xf2,  // 6
     0x02, 0x02, 0xd1, 0xab, 0xda, 0xde, 0xd8, 0xf1, 0xb0, 0x80, 0xba, 0xab, 0xc0, 0xc3, 0xb2, 0x84,  // 7
     0xc1, 0xc3, 0xd8, 0xb1, 0xb9, 0xf3, 0x8b, 0xa3, 0x91, 0xb6, 0x09, 0xb4, 0xd9, 0xab, 0xde, 0xb0,  // 8
-    0x87, 0x9c, 0xb9, 0xa3, 0xdd, 0xf1, 0xb3, 0x8b, 0x8b, 0x8b, 0x8b, 0x8b, 0xb0, 0x87, 0x20, 0x28,  // 9  // reg 2712  = bank 10, line 9 , byte 8 ; contains 8B = LP_QUAT not active (we use 6QUAT)
-                                                                                                           //  reg 2718 = bank 10 , row 9 , byte 14 : we must replace 4*A3 by 20 28 30 30 in order to activate lp_6_Quat
-                                                                                                          // reg 2722 = bank 10, line 10 , byte 2 ; not modified
-    0x30, 0x30, 0xB2, 0x8B, 0xB6, 0x9B, 0xf2, 0xa3, 0xC0, 0xC8, 0xC2, 0xa3, 0xa3, 0xa3, 0xa3, 0xa3,  //10 //  reg 2717 : bank 10 , row 10, byte 7 (10 bytes) used to defined if accel and gyro have to be put in fifo; MS put C0 C8 C2 instead of 3*A3
-    0xa3, 0xf1, 0xb0, 0x87, 0xb5, 0x9a, 0xD8, 0xf3, 0x9b, 0xa3, 0xa3, 0xdc, 0xba, 0xac, 0xdf, 0xb9,  //11 // reg 2742 : bank 10 , row 11 , byte 6 (1 byte) D8 put instead of A3
+    0x87, 0x9c, 0xb9, 0xa3, 0xdd, 0xf1, 0xb3, 0x8b, 0x8b, 0x8b, 0x8b, 0x8b, 0xb0, 0x87, 0xa3, 0xa3,  // 9
+    0xa3, 0xa3, 0xb2, 0x8b, 0xb6, 0x9b, 0xf2, 0xa3, 0xC0, 0xC8, 0xC2, 0xa3, 0xa3, 0xa3, 0xa3, 0xa3,  //10 //  reg 2717 : bank 10 , row 10, byte 7 (10 bytes) used to defined if accel and gyro have to be put in fifo; MS put C0 C8 C2 instead of 3*A3
+    0xa3, 0xf1, 0xb0, 0x87, 0xb5, 0x9a, 0xa3, 0xf3, 0x9b, 0xa3, 0xa3, 0xdc, 0xba, 0xac, 0xdf, 0xb9,  //11
     0xa3, 0xFE, 0xF2, 0xAB, 0xC4, 0xAA, 0xF1, 0xDF, 0xDF, 0xBB, 0xAF, 0xDF, 0xDF, 0xa3, 0xa3, 0xa3,  //12 // line was initially 0xa3, 0xa3, 0xa3, 0xa3, 0xa3, 0xa3, 0xa3, 0xa3, 0xa3, 0xa3, 0xa3, 0xa3, 0xa3, 0xa3, 0xa3, 0xa3, ; it is filled by dmp_set_fifo_rate
     0xd8, 0xd8, 0xd8, 0xbb, 0xb3, 0xb7, 0xf1, 0xaa, 0xf9, 0xda, 0xff, 0xd9, 0x80, 0x9a, 0xaa, 0x28,  //13
     0xb4, 0x80, 0x98, 0xa7, 0x20, 0xb7, 0x97, 0x87, 0xa8, 0x66, 0x88, 0xf0, 0x79, 0x51, 0xf1, 0x90,  //14
@@ -441,7 +439,7 @@ static const unsigned short sStartAddress = 0x0400;
 #define DMP_SAMPLE_RATE     (200)
 #define GYRO_SF             (46850825LL * 200 / DMP_SAMPLE_RATE)                // for 200hz = 0x02CAE309
 
-//#define FIFO_CORRUPTION_CHECK  // uncomment if a check on the quaternion has to be performed - this allows to detect some I2c errors (it requires about 200 bytes)
+#define FIFO_CORRUPTION_CHECK  // uncomment if a check on the quaternion has to be performed - this allows to detect some I2c errors (it requires about 200 bytes)
 #ifdef FIFO_CORRUPTION_CHECK
 #define QUAT_ERROR_THRESH       (1L<<24)
 #define QUAT_MAG_SQ_NORMALIZED  (1L<<28)
@@ -450,20 +448,20 @@ static const unsigned short sStartAddress = 0x0400;
 #endif
 
 struct dmp_s {
-//    void (*tap_cb)(unsigned char count, unsigned char direction); // function to call for tap
-//    void (*android_orient_cb)(unsigned char orientation);         // function to call for android_orientation
-//    unsigned short orient;                                        // ????
-//    unsigned short feature_mask;                                  // bit mask to hold the list of features being activated
-//    unsigned short fifo_rate;                                     // define how often fifo data is filled by 6050 (should be 50 hz)
+    void (*tap_cb)(unsigned char count, unsigned char direction); // function to call for tap
+    void (*android_orient_cb)(unsigned char orientation);         // function to call for android_orientation
+    unsigned short orient;                                        // ????
+    unsigned short feature_mask;                                  // bit mask to hold the list of features being activated
+    unsigned short fifo_rate;                                     // define how often fifo data is filled by 6050 (should be 50 hz)
     unsigned char packet_length;                                  // length of a packet in FIFO
 };
 
 static struct dmp_s dmp = {
-//    .tap_cb = NULL,
-//    .android_orient_cb = NULL,
-//    .orient = 0,
-//    .feature_mask = 0,
-//    .fifo_rate = 0,
+    .tap_cb = NULL,
+    .android_orient_cb = NULL,
+    .orient = 0,
+    .feature_mask = 0,
+    .fifo_rate = 0,
     .packet_length = 0
 };
 
@@ -483,29 +481,28 @@ int dmp_load_motion_driver_firmware(void)
  *  @param[in]  orient  Gyro and accel orientation in body frame.
  *  @return     0 if successful.
  */
- 
-int dmp_set_orientation(unsigned short orient)                          // when called by oXs, orient contains 0X48 = 0b0100 1000 
+int dmp_set_orientation(unsigned short orient)
 {
     unsigned char gyro_regs[3], accel_regs[3];
-    const unsigned char gyro_axes[3]  = {DINA4C, DINACD, DINA6C};  // 4C CD 6C
-    const unsigned char accel_axes[3] = {DINA0C, DINAC9, DINA2C};  // 0C C9 2C
-    const unsigned char gyro_sign[3]  = {DINA36, DINA56, DINA76};  // 36 56 76
-    const unsigned char accel_sign[3] = {DINA26, DINA46, DINA66};  // 26 46 66
+    const unsigned char gyro_axes[3]  = {DINA4C, DINACD, DINA6C};
+    const unsigned char accel_axes[3] = {DINA0C, DINAC9, DINA2C};
+    const unsigned char gyro_sign[3]  = {DINA36, DINA56, DINA76};
+    const unsigned char accel_sign[3] = {DINA26, DINA46, DINA66};
 
-    gyro_regs[0] = gyro_axes[orient & 3];                          // with orient = 0x88 -> 4C
-    gyro_regs[1] = gyro_axes[(orient >> 3) & 3];                   // with orient = 0x88 -> CD
-    gyro_regs[2] = gyro_axes[(orient >> 6) & 3];                   // with orient = 0x88 -> 6C
-    accel_regs[0] = accel_axes[orient & 3];                        // with orient = 0x88 -> 0C
-    accel_regs[1] = accel_axes[(orient >> 3) & 3];                 // with orient = 0x88 -> C9
-    accel_regs[2] = accel_axes[(orient >> 6) & 3];                 // with orient = 0x88 -> 2C
+    gyro_regs[0] = gyro_axes[orient & 3];
+    gyro_regs[1] = gyro_axes[(orient >> 3) & 3];
+    gyro_regs[2] = gyro_axes[(orient >> 6) & 3];
+    accel_regs[0] = accel_axes[orient & 3];
+    accel_regs[1] = accel_axes[(orient >> 3) & 3];
+    accel_regs[2] = accel_axes[(orient >> 6) & 3];
 
-    // Chip-to-body, axes only. 
-    if (mpu_write_mem(FCFG_1, 3, gyro_regs))                         // reg 1062 => bank 4, row 2, byte 6 
+    /* Chip-to-body, axes only. */
+    if (mpu_write_mem(FCFG_1, 3, gyro_regs))
         return -1;
-    if (mpu_write_mem(FCFG_2, 3, accel_regs))                        // firmware is already loaded with 0C C9 2C = values for accel_reg for orient = 0x88
+    if (mpu_write_mem(FCFG_2, 3, accel_regs))
         return -1;
 
-    memcpy(gyro_regs, gyro_sign, 3);                                 // preload with normal values and add 1 if sign is inverted
+    memcpy(gyro_regs, gyro_sign, 3);
     memcpy(accel_regs, accel_sign, 3);
     if (orient & 4) {
         gyro_regs[0] |= 1;
@@ -520,15 +517,14 @@ int dmp_set_orientation(unsigned short orient)                          // when 
         accel_regs[2] |= 1;
     }
 
-    // Chip-to-body, sign only. 
+    /* Chip-to-body, sign only. */
     if (mpu_write_mem(FCFG_3, 3, gyro_regs))
         return -1;
     if (mpu_write_mem(FCFG_7, 3, accel_regs))
         return -1;
-//    dmp.orient = orient;
+    dmp.orient = orient;
     return 0;
 }
-
 
 /**
  *  @brief      Push gyro biases to the DMP.
@@ -702,7 +698,7 @@ int dmp_get_fifo_rate(unsigned short *rate)
  */
 int dmp_enable_feature(unsigned short mask)
 {
-//    unsigned char tmp[10];
+    unsigned char tmp[10];
 
     /* TODO: All of these settings can probably be integrated into the default
      * DMP image.
@@ -743,28 +739,28 @@ int dmp_enable_feature(unsigned short mask)
  //   if (mask & (DMP_FEATURE_TAP | DMP_FEATURE_ANDROID_ORIENT))
  //       tmp[0] = DINA20;
  //   else
- //       tmp[0] = 0xD8;
- //   mpu_write_mem(CFG_27,1,tmp);                                // reg 2742 = bank 10, row 11 , byte 6 ; can be removed because value D8 has been put in the firmware
+        tmp[0] = 0xD8;
+    mpu_write_mem(CFG_27,1,tmp);
 
-//    if (mask & DMP_FEATURE_GYRO_CAL)              // saving : firmware contains already the code that enable this option, so this could be avoided
-//        dmp_enable_gyro_cal(1);
-//    else
-//        dmp_enable_gyro_cal(0);
+    if (mask & DMP_FEATURE_GYRO_CAL)              // saving : firmware contains already the code that enable this option, so this could be avoided
+        dmp_enable_gyro_cal(1);
+    else
+        dmp_enable_gyro_cal(0);
 
-//    if (mask & DMP_FEATURE_SEND_ANY_GYRO) {                        // in oXs we do not ask for gyro data, so this can be skipped
-//        if (mask & DMP_FEATURE_SEND_CAL_GYRO) {                    // those code are already in the code being preloaded
-//            tmp[0] = 0xB2;
-//            tmp[1] = 0x8B;
-//            tmp[2] = 0xB6;
-//            tmp[3] = 0x9B;
-//        } else {
-//            tmp[0] = DINAC0;
-//            tmp[1] = DINA80;
-//            tmp[2] = DINAC2;
-//            tmp[3] = DINA90;
-//        }
-//        mpu_write_mem(CFG_GYRO_RAW_DATA, 4, tmp); // 2722 = bank 10, line 10 , byte 2
-//    }
+    if (mask & DMP_FEATURE_SEND_ANY_GYRO) {
+        if (mask & DMP_FEATURE_SEND_CAL_GYRO) {   // those code are already in the code being preloaded
+            tmp[0] = 0xB2;
+            tmp[1] = 0x8B;
+            tmp[2] = 0xB6;
+            tmp[3] = 0x9B;
+        } else {
+            tmp[0] = DINAC0;
+            tmp[1] = DINA80;
+            tmp[2] = DINAC2;
+            tmp[3] = DINA90;
+        }
+        mpu_write_mem(CFG_GYRO_RAW_DATA, 4, tmp); // 2722 = bank 10, line 10 , byte 2
+    }
 /*
     if (mask & DMP_FEATURE_TAP) {  
         // Enable tap. //
@@ -797,28 +793,27 @@ int dmp_enable_feature(unsigned short mask)
 //    tmp[0] = 0xD8;                                // disable DMP_FEATURE_ANDROID_ORIENT, Code can be avoided because already present in firmware
 //    mpu_write_mem(CFG_ANDROID_ORIENT_INT, 1, tmp);
     
-//    if (mask & DMP_FEATURE_LP_QUAT)                               // saving : this option is not used and is already disabled in firmware
-//        dmp_enable_lp_quat(1);
-//    else
-//        dmp_enable_lp_quat(0);
+    if (mask & DMP_FEATURE_LP_QUAT)                               // saving : we could avoid the test if we activate only the used option
+        dmp_enable_lp_quat(1);
+    else
+        dmp_enable_lp_quat(0);
 
-//    if (mask & DMP_FEATURE_6X_LP_QUAT)             // firmware has been modified in order to activate this option (in reg 2718 bank 10, row 9 , byte 14 we put 20 28 30 30
-//        dmp_enable_6x_lp_quat(1);
-//    else
-//        dmp_enable_6x_lp_quat(0);
+    if (mask & DMP_FEATURE_6X_LP_QUAT)
+        dmp_enable_6x_lp_quat(1);
+    else
+        dmp_enable_6x_lp_quat(0);
 
-    /* Pedometer is always enabled. */                 //saving : activated feature are hardcoded in oXs ( send RawAccel, send 6LT_QUAT, automatic CalGyro) 
-//    dmp.feature_mask = mask | DMP_FEATURE_PEDOMETER;
+    /* Pedometer is always enabled. */
+    dmp.feature_mask = mask | DMP_FEATURE_PEDOMETER;
     mpu_reset_fifo();
 
-    dmp.packet_length = 22 ;                                         // fix the value because we use only  DMP_FEATURE_SEND_RAW_ACCEL +  DMP_FEATURE_6X_LP_QUAT
-//    dmp.packet_length = 0;                                           // saving : if oXs use always the same config, we could save some flash memory here and fix it directly to 28.
-//    if (mask & DMP_FEATURE_SEND_RAW_ACCEL)
-//        dmp.packet_length += 6;
-//    if (mask & DMP_FEATURE_SEND_ANY_GYRO)
-//        dmp.packet_length += 6;
-//    if (mask & (DMP_FEATURE_LP_QUAT | DMP_FEATURE_6X_LP_QUAT))
-//        dmp.packet_length += 16;
+    dmp.packet_length = 0;                                           // saving : if oXs use always the same config, we could save some flash memory here and fix it directly to 28.
+    if (mask & DMP_FEATURE_SEND_RAW_ACCEL)
+        dmp.packet_length += 6;
+    if (mask & DMP_FEATURE_SEND_ANY_GYRO)
+        dmp.packet_length += 6;
+    if (mask & (DMP_FEATURE_LP_QUAT | DMP_FEATURE_6X_LP_QUAT))
+        dmp.packet_length += 16;
 //    if (mask & (DMP_FEATURE_TAP | DMP_FEATURE_ANDROID_ORIENT))      // this option is nver used by oXs
 //        dmp.packet_length += 4;
 
@@ -830,13 +825,11 @@ int dmp_enable_feature(unsigned short mask)
  *  @param[out] Mask of enabled features.
  *  @return     0 if successful.
  */
- /*
 int dmp_get_enabled_features(unsigned short *mask)
 {
     mask[0] = dmp.feature_mask;
     return 0;
 }
-*/
 
 /**
  *  @brief      Calibrate the gyro data in the DMP.                               // saving : this function could be reduced using only one of the 2 options
@@ -847,7 +840,6 @@ int dmp_get_enabled_features(unsigned short *mask)
  *  @param[in]  enable  1 to enable gyro calibration.
  *  @return     0 if successful.
  */
-/* 
 int dmp_enable_gyro_cal(unsigned char enable)                                     // saving : could be avoided if firmware contains already the selected option
 {
     if (enable) {
@@ -858,7 +850,6 @@ int dmp_enable_gyro_cal(unsigned char enable)                                   
         return mpu_write_mem(CFG_MOTION_BIAS, 9, regs);
     }
 }
-*/
 
 /**
  *  @brief      Generate 3-axis quaternions from the DMP.
@@ -867,7 +858,6 @@ int dmp_enable_gyro_cal(unsigned char enable)                                   
  *  @param[in]  enable  1 to enable 3-axis quaternion.
  *  @return     0 if successful.
  */
- /*
 int dmp_enable_lp_quat(unsigned char enable)
 {
     unsigned char regs[4];
@@ -880,11 +870,10 @@ int dmp_enable_lp_quat(unsigned char enable)
     else
         memset(regs, 0x8B, 4);                                                     // saving : strange that firmware is currently filled with A3
 
-    mpu_write_mem(CFG_LP_QUAT, 4, regs);                 // reg 2712 = bank 10 , row 9 , byte 8 // in oXs we do not use this lpquat, so we need 4*8B; it is so in firmware so this is disabled
+    mpu_write_mem(CFG_LP_QUAT, 4, regs);
 
     return mpu_reset_fifo();
 }
-*/
 
 /**
  *  @brief       Generate 6-axis quaternions from the DMP.                          //saving : code are mutually exclusive, so keeping only what is used would save flash
@@ -893,7 +882,6 @@ int dmp_enable_lp_quat(unsigned char enable)
  *  @param[in]   enable  1 to enable 6-axis quaternion.
  *  @return      0 if successful.
  */
- /*
 int dmp_enable_6x_lp_quat(unsigned char enable)                                    // saving : used code could be put directly in firmware.
 {
     unsigned char regs[4];
@@ -905,11 +893,10 @@ int dmp_enable_6x_lp_quat(unsigned char enable)                                 
     } else
         memset(regs, 0xA3, 4);                                                      // those are the code currently in firmware
 
-    mpu_write_mem(CFG_8, 4, regs);                                                  // reg 2718 = bank 10 , row 9 , byte 14 
+    mpu_write_mem(CFG_8, 4, regs);
 
     return mpu_reset_fifo();
 }
-*/
 
 /**
  *  @brief      Decode the four-byte gesture data and execute any callbacks.   // saving: this code is called by dmp_read_fifo; it has been commented because this option is not used.
@@ -950,7 +937,6 @@ static int decode_gesture(unsigned char *gesture)
  *  @param[in]  mode    DMP_INT_GESTURE or DMP_INT_CONTINUOUS.
  *  @return     0 if successful.
  */
-/*
 int dmp_set_interrupt_mode(unsigned char mode)
 {
     const unsigned char regs_continuous[11] =
@@ -967,7 +953,6 @@ int dmp_set_interrupt_mode(unsigned char mode)
         return -1;
     }
 }
-*/
 
 /**
  *  @brief      Get one packet from the FIFO.
@@ -987,7 +972,8 @@ int dmp_set_interrupt_mode(unsigned char mode)
  *  @param[out] timestamp   Timestamp in milliseconds.
  *  @param[out] sensors     Mask of sensors read from FIFO.
  *  @param[out] more        Number of remaining packets.
-  *  @return     0 if successful.  Negative if error:  -1:  DMP Not On; -2:  I2C read error; -3:  Fifo Overflow -4: No Sensors -5: No more data available  -6:  Quaternion out of range (I2C corruption?)
+  *  @return     0 if successful.  Negative if error:  -1:  DMP Not On; -2:  I2C read error; -3:  Fifo Overflow -4: No Sensors -5: No more data available
+ -6:  Quaternion out of range (I2C corruption?)
  */
 int dmp_read_fifo(short *gyro, short *accel, long *quat,  short *sensors, unsigned char *more)
 {
@@ -1001,10 +987,13 @@ int dmp_read_fifo(short *gyro, short *accel, long *quat,  short *sensors, unsign
 
     /* Get a packet. */
     int success = mpu_read_fifo_stream(dmp.packet_length, fifo_data, more);
-	  if ( success != 0 ) return success;
+	if ( success != 0 ) return success;
 
     /* Parse DMP packet. */
-//    if (dmp.feature_mask & (DMP_FEATURE_LP_QUAT | DMP_FEATURE_6X_LP_QUAT)) {     // saving : DMP_FEATURE_6X_LP_QUAT is always active 
+    if (dmp.feature_mask & (DMP_FEATURE_LP_QUAT | DMP_FEATURE_6X_LP_QUAT)) {
+#ifdef FIFO_CORRUPTION_CHECK
+        long quat_q14[4], quat_mag_sq;
+#endif
         quat[0] = ((long)fifo_data[0] << 24) | ((long)fifo_data[1] << 16) |
             ((long)fifo_data[2] << 8) | fifo_data[3];
         quat[1] = ((long)fifo_data[4] << 24) | ((long)fifo_data[5] << 16) |
@@ -1023,7 +1012,6 @@ int dmp_read_fifo(short *gyro, short *accel, long *quat,  short *sensors, unsign
          * Let's start by scaling down the quaternion data to avoid long long
          * math.
          */
-        long quat_q14[4], quat_mag_sq; 
         quat_q14[0] = quat[0] >> 16;
         quat_q14[1] = quat[1] >> 16;
         quat_q14[2] = quat[2] >> 16;
@@ -1037,19 +1025,18 @@ int dmp_read_fifo(short *gyro, short *accel, long *quat,  short *sensors, unsign
             sensors[0] = 0;
             return -4;
         }
-        
-#endif
         sensors[0] |= INV_WXYZ_QUAT;
-//    }
+#endif
+    }
 
-//    if (dmp.feature_mask & DMP_FEATURE_SEND_RAW_ACCEL) {                                     // saving : some checks can be ommitted if feature is always enabled and sensor could fe filled only once
+    if (dmp.feature_mask & DMP_FEATURE_SEND_RAW_ACCEL) {                                     // saving : some checks can be ommitted if feature is always enabled and sensor could fe filled only once
         accel[0] = ((short)fifo_data[ii+0] << 8) | fifo_data[ii+1];
         accel[1] = ((short)fifo_data[ii+2] << 8) | fifo_data[ii+3];
         accel[2] = ((short)fifo_data[ii+4] << 8) | fifo_data[ii+5];
         ii += 6;
         sensors[0] |= INV_XYZ_ACCEL;
-//    }
-/*
+    }
+
     if (dmp.feature_mask & DMP_FEATURE_SEND_ANY_GYRO) {                                     // saving : some checks can be ommitted if feature is always enabled
         gyro[0] = ((short)fifo_data[ii+0] << 8) | fifo_data[ii+1];
         gyro[1] = ((short)fifo_data[ii+2] << 8) | fifo_data[ii+3];
@@ -1057,7 +1044,7 @@ int dmp_read_fifo(short *gyro, short *accel, long *quat,  short *sensors, unsign
         ii += 6;
         sensors[0] |= INV_XYZ_GYRO;
     }
-*/
+
     /* Gesture data is at the end of the DMP packet. Parse it and call
      * the gesture callbacks (if registered).
      */                                                                        // is not used by oXs
@@ -1079,25 +1066,23 @@ int dmp_read_fifo(short *gyro, short *accel, long *quat,  short *sensors, unsign
  *  @param[in]  func    Callback function.
  *  @return     0 if successful.
  */
-/* 
 int dmp_register_tap_cb(void (*func)(unsigned char, unsigned char))
 {
     dmp.tap_cb = func;
     return 0;
 }
-*/
+
 /**
  *  @brief      Register a function to be executed on a android orientation event.
  *  @param[in]  func    Callback function.
  *  @return     0 if successful.
  */
-/* 
 int dmp_register_android_orient_cb(void (*func)(unsigned char))               // this function is not used by oXs
 {
     dmp.android_orient_cb = func;
     return 0;
 }
-*/
+
 /**
  *  @}
  */
