@@ -733,6 +733,19 @@ boolean initialize_mpu() {
     dmp_enable_feature( (unsigned short )DMP_FEATURE_6X_LP_QUAT | DMP_FEATURE_SEND_RAW_ACCEL |  DMP_FEATURE_GYRO_CAL );
 //    dmp_set_fifo_rate(50);// test with 20 hz (was originally on 100) and it works (interrupt is activated only once every 20 msec)
 //                          // this is not used because it is already changed in the firmware.
+
+#ifdef DEBUG_MPU      
+      unsigned char dataToCheck[16] ;
+      uint16_t addToCheck = 0x0A98 ;
+      mpu_read_mem(addToCheck , 16 , dataToCheck) ;
+      Serial.print("Firmw.adr ");Serial.print(addToCheck);
+      for (uint8_t iCheck = 0 ; iCheck <16 ; iCheck++) {
+         Serial.print(" "); Serial.print(dataToCheck[iCheck], HEX );
+      }
+      Serial.println(" ");
+#endif      
+
+
     return true;
 }
 
