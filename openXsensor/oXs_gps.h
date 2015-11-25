@@ -22,12 +22,12 @@
 
 typedef struct {
     uint32_t time;              // GPS msToW
-    int32_t longitude;
-    int32_t latitude;
-    int32_t altitude_ellipsoid;
-    int32_t altitude_msl;
+    int32_t longitude;                 // in degree with 7 decimals
+    int32_t latitude;                  // in degree with 7 decimals 
+    int32_t altitude_ellipsoid;        // in mm
+    int32_t altitude_msl;              // in mm
     uint32_t horizontal_accuracy;
-    uint32_t vertical_accuracy;
+    uint32_t vertical_accuracy;        // in mm
 } ubx_nav_posllh;
 
 typedef struct {

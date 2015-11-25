@@ -25,7 +25,7 @@ bool    GPS_latAvailable;
 
 int32_t GPS_altitude;              // altitude in mm
 bool    GPS_altitudeAvailable;
-uint16_t GPS_speed_3d;              // speed in cm/s
+uint16_t GPS_speed_3d;                 // speed in cm/s
 bool    GPS_speed_3dAvailable;
 uint16_t GPS_speed_2d;                 // speed in cm/s
 bool    GPS_speed_2dAvailable ;

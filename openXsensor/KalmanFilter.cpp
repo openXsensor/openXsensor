@@ -54,7 +54,7 @@ void KalmanFilter::Configure( float zInitial) { // is not used anymore because a
 void KalmanFilter::Update(float z, float a,  float* pZ, float* pV) {
 
 #define Z_VARIANCE        50.0f // initially 500
-#define ZACCEL_VARIANCE     0.1f
+#define ZACCEL_VARIANCE     0.1f  // initially 1
 #define ZACCELBIAS_VARIANCE 1.0f
 
 #define DT 0.02f

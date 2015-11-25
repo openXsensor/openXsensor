@@ -206,7 +206,7 @@ void OXS_OUT::sendData() {
                         TxHottData.gpsMsg.longitudeSecLow = decimalMin ;                           // Byte 18: 144 = 0x90 <= 0x2490 = 9360
                         TxHottData.gpsMsg.longitudeSecHigh = decimalMin >> 8 ;                     // Byte 19: 036 = 0x24 <= 0x2490 = 9360
                         static uint16_t altitudeHott ; 
-                        altitudeHott = (GPS_altitude / 100) + 500 ;                      // convert from cm to m and add an ofsset of 500 m
+                        altitudeHott = (GPS_altitude / 1000) + 500 ;                      // convert from mm to m and add an ofsset of 500 m
                         TxHottData.gpsMsg.altitudeLow = altitudeHott ; 
                         TxHottData.gpsMsg.altitudeHigh = altitudeHott >> 8 ; 
                    }
@@ -255,6 +255,9 @@ void OXS_OUT::sendData() {
     }   // end ( flagUpdateHottBuffer )
 }
 
+
+  
+
 #ifdef GPS_INSTALLED
 void convertLonLat_Hott( int32_t GPS_LatLon, uint16_t * degMin , uint16_t * decimalMin ) {
   static uint32_t GPS_LatLonAbs ;
@@ -266,7 +269,7 @@ void convertLonLat_Hott( int32_t GPS_LatLon, uint16_t * degMin , uint16_t * deci
   minute4decimals = ( GPS_LatLonAbs - ( ((uint32_t) degre0decimals) * 100000 ) ) * 6 ; // keep the decimal of degree and convert them in minutes (*60) and remove 1 decimal (/10) in order to keep 4 decimals 
   minute0decimals = minute4decimals / 10000 ;                                        // extract the minutes (without decimals)
   *degMin = degre0decimals * 100 + minute0decimals ;                                  // put degree and minutes toegether in a special format
-  *decimalMin = minute4decimals - ( minute0decimals - 10000 ) ;                       // Extract the decimal part of the minutes (4 decimals) 
+  *decimalMin = minute4decimals - ( minute0decimals * 10000 ) ;                       // Extract the decimal part of the minutes (4 decimals) 
 }
 #endif
 //***************************** here code to modify for GPS
