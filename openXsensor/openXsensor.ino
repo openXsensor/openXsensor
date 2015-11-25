@@ -218,83 +218,85 @@ uint8_t selectedVario ; // identify the vario to be used when switch vario with 
 
 #endif
 
-// Create instances of the used classes
-
+//******************* Create instances of the used classes ******************************************
 #ifdef VARIO
-#ifdef SENSOR_IS_BMP180
-#ifdef DEBUG  
-OXS_BMP180 oXs_MS5611 = OXS_BMP180(Serial);
-#else
-//OXS_BMP180 oXs_MS5611() ;
-OXS_BMP180 oXs_MS5611 = OXS_BMP180();
-#endif  //DEBUG
-
-#else // not a BMP180
-#ifdef DEBUG  
-OXS_MS5611 oXs_MS5611(I2C_MS5611_Add,Serial);
-#else
-OXS_MS5611 oXs_MS5611(I2C_MS5611_Add);
-#endif  //DEBUG
-#endif // BMP180 or MS5611 sensor
+  #ifdef SENSOR_IS_BMP180
+      #ifdef DEBUG  
+        OXS_BMP180 oXs_MS5611 = OXS_BMP180(Serial);
+      #else
+      //OXS_BMP180 oXs_MS5611() ;
+        OXS_BMP180 oXs_MS5611 = OXS_BMP180();
+      #endif  //DEBUG
+  
+  #else // not a BMP180
+      #ifdef DEBUG  
+        OXS_MS5611 oXs_MS5611(I2C_MS5611_Add,Serial);
+      #else
+        OXS_MS5611 oXs_MS5611(I2C_MS5611_Add);
+      #endif  //DEBUG
+  #endif // BMP180 or MS5611 sensor
 #endif // VARIO
 
 
 #ifdef VARIO2
-#ifdef DEBUG  
-OXS_MS5611 oXs_MS5611_2(I2C_MS5611_Add - 1,Serial);
-#else
-OXS_MS5611 oXs_MS5611_2(I2C_MS5611_Add - 1);
-#endif  //DEBUG
+  #ifdef DEBUG  
+    OXS_MS5611 oXs_MS5611_2(I2C_MS5611_Add - 1,Serial);
+  #else
+    OXS_MS5611 oXs_MS5611_2(I2C_MS5611_Add - 1);
+  #endif  //DEBUG
 #endif
 
 #ifdef AIRSPEED // differential pressure
-#ifdef DEBUG  
-OXS_4525 oXs_4525(I2C_4525_Add ,Serial);
-#else
-OXS_4525 oXs_4525(I2C_4525_Add);
-#endif  //DEBUG
+  #ifdef DEBUG  
+    OXS_4525 oXs_4525(I2C_4525_Add ,Serial);
+  #else
+    OXS_4525 oXs_4525(I2C_4525_Add);
+  #endif  //DEBUG
 #endif
 
 #ifdef PIN_VOLTAGE
-#ifdef DEBUG  
-OXS_VOLTAGE oXs_Voltage(Serial);
-#else
-OXS_VOLTAGE oXs_Voltage(0);
-#endif  //DEBUG
+  #ifdef DEBUG  
+    OXS_VOLTAGE oXs_Voltage(Serial);
+  #else
+    OXS_VOLTAGE oXs_Voltage(0);
+  #endif  //DEBUG
 #endif
 
 #ifdef PIN_CURRENTSENSOR
-#ifdef DEBUG  
-OXS_CURRENT oXs_Current(PIN_CURRENTSENSOR,Serial);
-#else
-OXS_CURRENT oXs_Current(PIN_CURRENTSENSOR);
-#endif //DEBUG
+  #ifdef DEBUG  
+    OXS_CURRENT oXs_Current(PIN_CURRENTSENSOR,Serial);
+  #else
+    OXS_CURRENT oXs_Current(PIN_CURRENTSENSOR);
+  #endif //DEBUG
 #endif
 
 #ifdef GPS_INSTALLED
-#ifdef DEBUG
-OXS_GPS oXs_Gps(Serial);
-#else
-OXS_GPS oXs_Gps(0);
-#endif //DEBUG
+  #ifdef DEBUG
+    OXS_GPS oXs_Gps(Serial);
+  #else
+    OXS_GPS oXs_Gps(0);
+  #endif //DEBUG
 #endif
 
-
+//Create a class used for telemetry
 #ifdef DEBUG  
-OXS_OUT oXs_Out(PIN_SERIALTX,Serial);
+  OXS_OUT oXs_Out(PIN_SERIALTX,Serial);
 #else
-OXS_OUT oXs_Out(PIN_SERIALTX);
+  OXS_OUT oXs_Out(PIN_SERIALTX);
 #endif
-
+// *********************************** End of create objects *************************************************
 #ifdef USE_6050
-KalmanFilter kalman ;
-float zTrack ;
-float vTrack ;
-extern float world_linear_acceleration_z ;
-extern bool newMpuAvailable;
-float altitudeToKalman ;
-int countAltitudeToKalman = 100 ;
-int32_t altitudeOffsetToKalman ;
+  KalmanFilter kalman ;
+  float zTrack ;
+  float vTrack ;
+  bool vTrackAvailable ;
+  extern float linear_acceleration_x ;
+  extern float linear_acceleration_y ;
+  extern float world_linear_acceleration_z ;
+  extern bool newMpuAvailable;
+  float altitudeToKalman ;
+  int countAltitudeToKalman = 100 ;
+  int32_t altitudeOffsetToKalman ;
 #endif
 
 
@@ -305,6 +307,22 @@ int32_t altitudeOffsetToKalman ;
 //******************************************* Setup () *******************************************************
 
 void setup(){
+// set up the UART speed (38400 if GPS installed else 115200)
+#ifdef GPS_INSTALLED
+  Serial.begin(38400); // when GPS is used, baudrate is reduced because main loop must have the time to read the received char.
+#endif
+#ifdef DEBUG 
+#ifndef GPS_INSTALLED
+  Serial.begin(115200L); // when GPS is not used, baudrate can be 115200
+#endif
+  Serial.println(F("openXsensor starting.."));
+  Serial.print(F(" milli="));  
+  Serial.println(millis());
+  Serial.print(F("freeRam="));  
+  Serial.println(freeRam());
+#endif 
+
+// set up pins
 #ifdef DEBUG_SETUP_PIN 
     pinMode(DEBUG_SETUP_PIN, OUTPUT); // Set the start signal to high to say that set up start
     digitalWrite(DEBUG_SETUP_PIN, HIGH);
@@ -319,20 +337,12 @@ void setup(){
   pinMode(PIN_LED, OUTPUT); // The signal LED (used for the function debug loop)
 #endif
 
-#ifdef GPS_INSTALLED
-  Serial.begin(38400); // when GPS is used, baudrate is reduced because main loop must have the time to read the received char.
-#endif
 
-#ifdef DEBUG 
-#ifndef GPS_INSTALLED
-  Serial.begin(115200L); // when GPS is not used, baudrate can be 115200
+#ifdef PIN_PUSHBUTTON  
+  pinMode(PIN_PUSHBUTTON, INPUT_PULLUP);
 #endif
-  Serial.println(F("openXsensor starting.."));
-  Serial.print(F(" milli="));  
-  Serial.println(millis());
-  Serial.print(F("freeRam="));  
-  Serial.println(freeRam());
-#endif 
+  pinMode(PIN_LED, OUTPUT); // The signal LED (used for the function push button)
+
 
 
 
@@ -341,38 +351,31 @@ void setup(){
 //  test1Value = 0 ;
 //  test2Value = 0 ;
 //  test3Value = 0 ;
-  test1ValueAvailable = false ;
-  test2ValueAvailable = false ;
-  test3ValueAvailable = false ;
+//  test1ValueAvailable = false ;
+//  test2ValueAvailable = false ;
+//  test3ValueAvailable = false ;
   actualPressure = 101325 ; // default pressure in pascal; to actualise if vario exist; is used in airspeed calcualtion.
 
-#ifdef PIN_PUSHBUTTON  
-  pinMode(PIN_PUSHBUTTON, INPUT_PULLUP);
-#endif
-  pinMode(PIN_LED, OUTPUT); // The signal LED (used for the function push button)
 
   // Invoke all setup methods and set reference
-
 #ifdef PIN_VOLTAGE
   oXs_Voltage.setupVoltage(); 
   oXs_Out.voltageData=&oXs_Voltage.voltageData; 
 #endif
 
-
 #ifdef VARIO
   oXs_MS5611.setup();
   oXs_Out.varioData=&oXs_MS5611.varioData; 
-#ifdef PIN_ANALOG_VSPEED
-  lastMillisPWR = 3500 ; // So we will wait for 3.5 sec before generating a Vertical speed on PWM
-  analogWrite(PIN_ANALOG_VSPEED,255/5*1.6); // initialize the output pin 
-#endif
+  #ifdef PIN_ANALOG_VSPEED
+    lastMillisPWR = 3500 ; // So we will wait for 3.5 sec before generating a Vertical speed on PWM
+    analogWrite(PIN_ANALOG_VSPEED,255/5*1.6); // initialize the output pin 
+  #endif
 #endif // vario
 
 #ifdef VARIO2
   oXs_MS5611_2.setup();
   oXs_Out.varioData_2=&oXs_MS5611_2.varioData; 
 #endif // vario
-
 
 #ifdef AIRSPEED
   oXs_4525.setup();
@@ -394,6 +397,10 @@ void setup(){
 #endif
 
   oXs_Out.setup();
+
+#ifdef USE_6050
+    setupImu() ;
+#endif
 
 #ifdef SAVE_TO_EEPROM
   LoadFromEEProm();
@@ -417,16 +424,7 @@ void setup(){
 //  RpmValue = 0 ;
   RpmAvailable = false ;
 
-/* was used in first method
-#if defined  (VARIO) && defined (AVERAGING_EVERY_X_SEC) && AVERAGING_EVERY_X_SEC > 5
-        for ( uint8_t i = 0 ; i < 10 ; i++) {
-          last10Altitude[i] = last10Speed[i] = 0 ;
-          prevAverageAltMillis = millis() + 5000 ; // wait 5 sec before calculating those data
-        }
-#endif
-*/
-
-
+//************************* set up of sequence outputs
 #ifdef SEQUENCE_OUTPUTS
     sequenceMaxNumber[0] = sizeof(sequence_m100) ; // sizeof(sequence_m100[0]) ;
     sequenceMaxNumber[1] = sizeof(sequence_m75) ;// sizeof(sequence_m75[0]) ;
@@ -447,9 +445,7 @@ void setup(){
     sequencePointer[6] = &sequence_50[0] ;
     sequencePointer[7] = &sequence_75[0] ;
     sequencePointer[8] = &sequence_100[0] ;
-    sequencePointer[9] = &sequence_low[0] ;
-
-     
+    sequencePointer[9] = &sequence_low[0] ;     
 #ifdef DEBUG
     seqRef = sequencePointer[0] ;  // seqTab contains pointers to the sequence array
     seqMax = sequenceMaxNumber[0] ;
@@ -462,8 +458,6 @@ void setup(){
     }
     Serial.println(F(" "));
 #endif    
- 
- 
     seqState = 2 ; // declare that sequence is stopped
     PORTB &= ~sequenceOutputs ; // set all output to LOW
     DDRB |= sequenceOutputs ; // set pin to output mode
@@ -472,8 +466,7 @@ void setup(){
     ppm = -100 ; // fix the sequence to be used by default (e.g. when no PPM signal is present);  
     setNewSequence( ) ; 
 //#endif
-
-#endif // end of SEQUENCE_OUTPUTS
+#endif //****************************** end of SEQUENCE_OUTPUTS
 
 #ifdef DEBUG_SPORT_PIN 
     digitalWrite(DEBUG_SPORT_PIN, LOW);
@@ -483,13 +476,6 @@ void setup(){
     digitalWrite(DEBUG_SETUP_PIN, LOW); // Set the setup signal to low to say that set up is done
 //    pinMode(DEBUG_SETUP_PIN, OUTPUT); 
 #endif  
-
-#ifdef USE_6050
-//    kalman.Configure(Z_VARIANCE, ZACCEL_VARIANCE, ZACCELBIAS_VARIANCE, 0.0f ,0.0f,0.0f);
-//    kalman.Configure( 0.0f );  // configure kalman filter with current Altitude // todo = fill with altitude; if not possible, then remove this parameter
-    setup_imu() ;
-//    initialize_mpu() ;
-#endif
 
 #ifdef DEBUG
   Serial.println(F("End of general set up"));
@@ -510,9 +496,6 @@ void loop(){
   // Check if a button has been pressed
 #if defined (VARIO) || defined (VARIO2)
     if (checkFreeTime()) checkButton(); // Do not perform calculation if there is less than 2000 usec before MS5611 ADC is available =  (9000 - 2000)/2
-//    extended2Micros = micros() >> 1 ;
-//    if (extended2Micros < oXs_MS5611.varioData.lastCommand2Micros) extended2Micros = extended2Micros | 0x80000000 ;
-//    if ( extended2Micros < (oXs_MS5611.varioData.lastCommand2Micros + 3500)  ) checkButton(); // Do not perform calculation if there is less than 2000 usec before MS5611 ADC is available =  (9000 - 2000)/2
 #else
     checkButton();
 #endif    
@@ -532,9 +515,10 @@ void loop(){
     blinkLed(1) ;
 #endif
  
-    
+    // prepare the telemetry data to be sent (nb: data are prepared but not sent
     oXs_Out.sendData(); // choice which data can be send base on availability and some priority logic 
-    
+
+// in debug mode, allows to send some predefined data to uart
 #if defined ( DEBUG ) && defined (DEBUGOUTDATATOSERIAL)
     OutputToSerial() ; 
 #endif
@@ -544,8 +528,8 @@ void loop(){
     if (checkFreeTime()) ProcessPPMSignal(); 
 #endif //PIN_PPM
 
-#ifdef VARIO
-#ifdef PIN_ANALOG_VSPEED
+// if analog vario, generate the PWR value
+#if defined (VARIO) && defined(PIN_ANALOG_VSPEED)
     if (millis() > lastMillisPWR + 100) {
         if (checkFreeTime()) { // Do not change PWM if there is less than 2000 usec before MS5611 ADC is available =  (9000 - 2000)/2
             PWRValue=map( (long) oXs_MS5611.varioData.climbRate,ANALOG_VSPEED_MIN*100,ANALOG_VSPEED_MAX * 100,0,255/5*3.2);
@@ -554,8 +538,7 @@ void loop(){
             lastMillisPWR = millis() ; 
         }
     }  
-#endif
-#endif //VARIO 
+#endif // analog vario 
 
 #ifdef SEQUENCE_OUTPUTS
 #if (defined( SEQUENCE_MIN_VOLT_6) || defined ( SEQUENCE_MIN_CELL ) 
@@ -584,9 +567,10 @@ void loop(){
   checkSequence() ; // check if outputs have to be modified because time expired
 #endif
 
+// Save Persistant Data To EEProm every 10 seconds
 #ifdef SAVE_TO_EEPROM
   static unsigned long LastEEPromMs=millis();
-  if (millis()>LastEEPromMs+10000){ // Save Persistant Data To EEProm every 10 seconds
+  if (millis()>LastEEPromMs+10000){ 
     LastEEPromMs=millis();
     SaveToEEProm();
   }
@@ -610,7 +594,7 @@ void readSensors() {
 //  Serial.println(F("in readSensors"));  
 //#endif 
 #ifdef AIRSPEED
-  oXs_4525.readSensor(); // Read a the differential pressure on 4525DO, calculate airspeed
+  oXs_4525.readSensor(); // Read a first time the differential pressure on 4525DO, calculate airspeed; note airspeed is read a second time in the loop in order to reduce response time
 #endif
 
 
@@ -653,26 +637,26 @@ void readSensors() {
   }  
 #endif  
 
-#if defined (VARIO) && ( defined (VARIO2) || defined (AIRSPEED) ) && defined (VARIO_SECONDARY ) && defined( VARIO_PRIMARY )  && defined (PIN_PPM)
-  if (( selectedVario == 0) && ( oXs_MS5611.varioData.switchClimbRateAvailable == true ) )  {
+#if defined (VARIO) && ( defined (VARIO2) || defined (AIRSPEED) || defined (USE_6050) ) && defined (VARIO_SECONDARY ) && defined( VARIO_PRIMARY )  && defined (PIN_PPM)
+  if (( selectedVario == 1) && ( oXs_MS5611.varioData.switchClimbRateAvailable == true ) )  {
       switchVSpeed = oXs_MS5611.varioData.climbRate ;
       switchVSpeedAvailable = true ;
       oXs_MS5611.varioData.switchClimbRateAvailable = false ;
   } 
 #if  defined (VARIO2)
-  else if ( ( selectedVario == 1) && ( oXs_MS5611_2.varioData.switchClimbRateAvailable == true )) {
+  else if ( ( selectedVario == 2) && ( oXs_MS5611_2.varioData.switchClimbRateAvailable == true )) {
       switchVSpeed = oXs_MS5611_2.varioData.climbRate ;
       switchVSpeedAvailable = true ;
       oXs_MS5611_2.varioData.switchClimbRateAvailable = false ;
   }
-  else if ( ( selectedVario == 3) && ( averageVSpeedAvailable == true )) {
+  else if ( ( selectedVario == 4) && ( averageVSpeedAvailable == true )) {
       switchVSpeed = averageVSpeed ;
       switchVSpeedAvailable = true ;
       averageVSpeedAvailable = false ;
   }
 #endif // end of VARIO2
 #if  defined (AIRSPEED)
-  else if ( ( selectedVario == 2) && ( switchCompensatedClimbRateAvailable == true )) {
+  else if ( ( selectedVario == 3) && ( switchCompensatedClimbRateAvailable == true )) {
       switchVSpeed = compensatedClimbRate ;
       switchVSpeedAvailable = true ;  
 #if defined (SWITCH_VARIO_GET_PRIO)
@@ -682,6 +666,13 @@ void readSensors() {
 #endif  // end  defined (SWITCH_VARIO_GET_PRIO)   
   } 
 #endif // end  defined (AIRSPEED) 
+#if  defined (USE_6050)
+  else if ( ( selectedVario == 5) && ( vTrackAvailable == true )) {
+      switchVSpeed = vTrack ;
+      switchVSpeedAvailable = true ;
+      vTrackAvailable = false ;
+  }
+#endif  // end USE_6050
 #endif // end  defined (VARIO) && ( defined (VARIO2) || defined (AIRSPEED) ) && defined (VARIO_SECONDARY ) && defined( VARIO_PRIMARY ) && defined (VARIO_SECONDARY) && defined (PIN_PPM)
   
 #ifdef PIN_VOLTAGE
@@ -709,36 +700,30 @@ void readSensors() {
   }      
 #endif
 
-/* first method for glider ratio
-#if defined  (VARIO) && defined (AVERAGING_EVERY_X_SEC) && AVERAGING_EVERY_X_SEC > 5
-        calculateAverages();
-#endif        
-*/
 // second method
 #if defined  (VARIO) && defined (GLIDER_RATIO_CALCULATED_AFTER_X_SEC) && GLIDER_RATIO_CALCULATED_AFTER_X_SEC >= 1
         calculateAverages();
 #endif        
 
 #ifdef USE_6050
-#ifdef DEBUG
+//#define DEBUG_MPU_FREQ
+#ifdef DEBUG_MPU_FREQ
             unsigned long begin6050 = millis();
 #endif  
         read6050() ;
-#ifdef DEBUG
+#ifdef DEBUG_MPU_FREQ
         if (newMpuAvailable) {
-            Serial.print(F("delay mpu ")) ; Serial.print( millis() - begin6050 ) ;Serial.print(F(", "));
+//            Serial.print(F("delay mpu ")) ; Serial.print( millis() - begin6050 ) ;Serial.print(F(", "));
         }
 #endif
 #endif
 
 #if defined (VARIO) && defined (USE_6050)
         if (newMpuAvailable) { // newMpuAvailable says that a new world_linear_acceleration is available (flag has been set inside read6050()
-#ifdef DEBUG
+#ifdef DEBUG_KALMAN
             unsigned long beginKalman = millis();
 #endif  
-
-            newMpuAvailable = false ;
-            
+            newMpuAvailable = false ;                // reset indicator that new mpu data have to be handled    
             if ( countAltitudeToKalman != 0) {
                 if( oXs_MS5611.varioData.rawAltitude != 0) {
                   countAltitudeToKalman-- ;
@@ -747,9 +732,21 @@ void readSensors() {
             }
             altitudeToKalman = (oXs_MS5611.varioData.rawAltitude - altitudeOffsetToKalman ) / 100 ; // convert from * 100cm to cm
             kalman.Update((float) altitudeToKalman  , world_linear_acceleration_z ,  &zTrack, &vTrack);
-#ifdef DEBUG
-            Serial.print(F("delay Kal ")) ; Serial.print( millis() - beginKalman ) ;Serial.print(F(", "));
-            Serial.print( (int) world_linear_acceleration_z ) ; Serial.print(F(", "));Serial.print( (int) altitudeToKalman) ; Serial.print(F(", ")); Serial.print(oXs_MS5611.varioData.climbRate) ; Serial.print(F(", "));Serial.println(( int )vTrack) ;
+            vTrackAvailable = true ;
+#define TEST_SEND_MPU
+#ifdef TEST_SEND_MPU
+            test1Value = linear_acceleration_x * 981 ; 
+            test1ValueAvailable = true ; 
+            test2Value =  linear_acceleration_y * 981; 
+            test2ValueAvailable = true ; 
+            test3Value = vTrack ; 
+            test3ValueAvailable = true ; 
+#endif
+
+#ifdef DEBUG_KALMAN
+///           Serial.print(F("delay Kal ")) ; Serial.print( millis() - beginKalman ) ;Serial.print(F(", "));
+//            Serial.print( (int) world_linear_acceleration_z ) ; Serial.print(F(", "));Serial.print( (int) altitudeToKalman) ; Serial.print(F(", ")); Serial.print(oXs_MS5611.varioData.climbRate) ; Serial.print(F(", "));Serial.println(( int )vTrack) ;
+///           Serial.print( millis() ) ; Serial.print(F(", ")); Serial.print( (int)  ) ; Serial.print(F(", "));Serial.print( (int) world_linear_acceleration_z ) ; Serial.print(F(", "));Serial.print( (int) altitudeToKalman) ; Serial.print(F(", ")); Serial.print(oXs_MS5611.varioData.climbRate) ; Serial.print(F(", "));Serial.println(( int )vTrack) ;
 #endif  
 
         }

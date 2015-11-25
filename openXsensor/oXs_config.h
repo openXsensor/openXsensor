@@ -59,8 +59,8 @@
 //#define ALT_TEMP_COMPENSATION 800
 
 // ***** 4.5 - Vertical speeds calculations *****
-#define VARIO_PRIMARY       0        // 0 means first ms5611, 1 means second ms5611 , 2 means vario based on vario 1 + compensation from airspeed , 3 means average of first and second ms5611
-//#define VARIO_SECONDARY     2        // 0 means first ms5611, 1 means second ms5611 , 2 means vario based on vario 1 + compensation from airspeed , 3 means average of first and second ms5611
+#define VARIO_PRIMARY       0        // 1 = first baro,  2 = second baro, 3 = vario based on vario 1 + compensation from airspeed, 4 = average of first and second baro sensors , 5 = merge of first baro sensor and imu
+//#define VARIO_SECONDARY     2        // 1 = first baro,  2 = second baro, 3 = vario based on vario 1 + compensation from airspeed, 4 = average of first and second baro sensors , 5 = merge of first baro sensor and imu
 //#define SWITCH_VARIO_MIN_AT_PPM 10
 //#define SWITCH_VARIO_MAX_AT_PPM 90
 
@@ -175,15 +175,16 @@
 #define GPS_SPEED_IN_KMH  // uncomment this line if GPS speed has to be sent in km/h instead of knot/h (only for Frsky protocol)
 //#define GPS_SPEED_3D      // uncomment this line if GPS speed has to be the 3d speed instead of the 2d speed (note: 3d is probably less accurate - to test) 
 
+// --------- 12 - IMU 6050 --- (accelerometer + gyro -----------------------------------------------------------------
+#define USE_6050 // uncomment this line if a IMU 6050 is connected
+
 // --------- xx - Reserved for developer. DEBUG must be activated here when we want to debug one or several functions in some other files. ---------
-#define DEBUG
+//#define DEBUG
 //#define DEBUG_BLINK   // use by developper in order to blink the led without using uart for debugging
 #define BASED_ON_AIRSPEED 0
 #define BASED_ON_GPS_SPEED 1
 #define AVERAGING_DELAY_MILLISEC  AVERAGING_TOLERANCE * 100  
 
-
-#define USE_6050 //says that a IMU 6050 is connected
 
 #ifdef DEBUG
 #include "HardwareSerial.h"

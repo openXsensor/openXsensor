@@ -289,7 +289,7 @@ const prog_uchar dmp_memory[DMP_CODE_SIZE] PROGMEM = {
     /* bank # 4 */
     0xd8, 0xdc, 0xb4, 0xb8, 0xb0, 0xd8, 0xb9, 0xab, 0xf3, 0xf8, 0xfa, 0xb3, 0xb7, 0xbb, 0x8e, 0x9e, // 0
     0xae, 0xf1, 0x32, 0xf5, 0x1b, 0xf1, 0xb4, 0xb8, 0xb0, 0x80, 0x97, 0xf1, 0xa9, 0xdf, 0xdf, 0xdf, // 1
-    0xaa, 0xdf, 0xdf, 0xdf, 0xf2, 0xaa, 0xc5, 0xcd, 0xc7, 0xa9, 0x0c, 0xc9, 0x2c, 0x97, 0xf1, 0xa9, // 2  // in reg 1062 = bank 4, row 2, byte 6 , I replace (0xc5, 0xcd, 0xc7,) with ( 4C CD 6C)  for orientation
+    0xaa, 0xdf, 0xdf, 0xdf, 0xf2, 0xaa, 0x4C, 0xcd, 0x6C, 0xa9, 0x0c, 0xc9, 0x2c, 0x97, 0xf1, 0xa9, // 2  // in reg 1062 = bank 4, row 2, byte 6 , I replace (0xc5, 0xcd, 0xc7,) with ( 4C CD 6C)  for orientation
     0x89, 0x26, 0x46, 0x66, 0xb2, 0x89, 0x99, 0xa9, 0x2d, 0x55, 0x7d, 0xb0, 0xb0, 0x8a, 0xa8, 0x96, // 3  // in reg 1073 = bank 4, row 3, byte 1 , , the orientation sign accel is already ok (for positive sign)
     0x36, 0x56, 0x76, 0xf1, 0xba, 0xa3, 0xb4, 0xb2, 0x80, 0xc0, 0xb8, 0xa8, 0x97, 0x11, 0xb2, 0x83, // 4  // in reg 1088 = bank 4, row 4, byte 0 , , the orientation sign gyro is already ok (for positive sign)
     0x98, 0xba, 0xa3, 0xf0, 0x24, 0x08, 0x44, 0x10, 0x64, 0x18, 0xb2, 0xb9, 0xb4, 0x98, 0x83, 0xf1, // 5
@@ -399,9 +399,9 @@ const prog_uchar dmp_memory[DMP_CODE_SIZE] PROGMEM = {
     0x02, 0x02, 0xd1, 0xab, 0xda, 0xde, 0xd8, 0xf1, 0xb0, 0x80, 0xba, 0xab, 0xc0, 0xc3, 0xb2, 0x84,  // 7
     0xc1, 0xc3, 0xd8, 0xb1, 0xb9, 0xf3, 0x8b, 0xa3, 0x91, 0xb6, 0x09, 0xb4, 0xd9, 0xab, 0xde, 0xb0,  // 8
     0x87, 0x9c, 0xb9, 0xa3, 0xdd, 0xf1, 0xb3, 0x8b, 0x8b, 0x8b, 0x8b, 0x8b, 0xb0, 0x87, 0x20, 0x28,  // 9  // reg 2712  = bank 10, line 9 , byte 8 ; contains 8B = LP_QUAT not active (we use 6QUAT)
-                                                                                                           //  reg 2718 = bank 10 , row 9 , byte 14 : we must replace 4*A3 by 20 28 30 30 in order to activate lp_6_Quat
+                                                                                                           //  reg 2718 = bank 10 , row 9 , byte 14 : we must replace 4*A3 by 20 28 30 38 in order to activate lp_6_Quat
                                                                                                           // reg 2722 = bank 10, line 10 , byte 2 ; not modified
-    0x30, 0x30, 0xB2, 0x8B, 0xB6, 0x9B, 0xf2, 0xa3, 0xC0, 0xC8, 0xC2, 0xa3, 0xa3, 0xa3, 0xa3, 0xa3,  //10 //  reg 2717 : bank 10 , row 10, byte 7 (10 bytes) used to defined if accel and gyro have to be put in fifo; MS put C0 C8 C2 instead of 3*A3
+    0x30, 0x38, 0xB2, 0x8B, 0xB6, 0x9B, 0xf2, 0xa3, 0xC0, 0xC8, 0xC2, 0xA3, 0xA3, 0xA3, 0xa3, 0xa3,  //10 //  reg 2727 : bank 10 , row 10, byte 7 (10 bytes) used to defined if accel and gyro have to be put in fifo; MS put C0 C8 C2 instead of 6*A3
     0xa3, 0xf1, 0xb0, 0x87, 0xb5, 0x9a, 0xD8, 0xf3, 0x9b, 0xa3, 0xa3, 0xdc, 0xba, 0xac, 0xdf, 0xb9,  //11 // reg 2742 : bank 10 , row 11 , byte 6 (1 byte) D8 put instead of A3
     0xa3, 0xFE, 0xF2, 0xAB, 0xC4, 0xAA, 0xF1, 0xDF, 0xDF, 0xBB, 0xAF, 0xDF, 0xDF, 0xa3, 0xa3, 0xa3,  //12 // line was initially 0xa3, 0xa3, 0xa3, 0xa3, 0xa3, 0xa3, 0xa3, 0xa3, 0xa3, 0xa3, 0xa3, 0xa3, 0xa3, 0xa3, 0xa3, 0xa3, ; it is filled by dmp_set_fifo_rate
     0xd8, 0xd8, 0xd8, 0xbb, 0xb3, 0xb7, 0xf1, 0xaa, 0xf9, 0xda, 0xff, 0xd9, 0x80, 0x9a, 0xaa, 0x28,  //13
@@ -476,15 +476,15 @@ int dmp_load_motion_driver_firmware(void)
     return mpu_load_firmware(DMP_CODE_SIZE, dmp_memory, sStartAddress); 
 }
 
-/**
+/**                                                                      // firmware code has been changed in order to contains the code for orientation 1 1 1, so this function can be avoided
  *  @brief      Push gyro and accel orientation to the DMP.
  *  The orientation is represented here as the output of
  *  @e inv_orientation_matrix_to_scalar.
  *  @param[in]  orient  Gyro and accel orientation in body frame.
  *  @return     0 if successful.
  */
- 
-int dmp_set_orientation(unsigned short orient)                          // when called by oXs, orient contains 0X48 = 0b0100 1000 
+/* 
+int dmp_set_orientation(unsigned short orient)                          // when called by oXs, orient contains 0X88 = 0b0 1000 1000 = 010 001 000
 {
     unsigned char gyro_regs[3], accel_regs[3];
     const unsigned char gyro_axes[3]  = {DINA4C, DINACD, DINA6C};  // 4C CD 6C
@@ -528,7 +528,7 @@ int dmp_set_orientation(unsigned short orient)                          // when 
 //    dmp.orient = orient;
     return 0;
 }
-
+*/
 
 /**
  *  @brief      Push gyro biases to the DMP.
@@ -714,7 +714,7 @@ int dmp_enable_feature(unsigned short mask)
 //    tmp[3] = (unsigned char)(GYRO_SF & 0xFF);
 //    mpu_write_mem(D_0_104, 4, tmp);                    //  reg 104 = bank 0 , row 6 , byte 8 
 
-    /* Send sensor data to the FIFO. */                             // adress 2727 has been modified to contain C0 C8 C2, other contain A3; so this code can be ommitted 
+    /* Send sensor data to the FIFO. */                             // adress 2727 has 7een modified to contain A3 + C0 C8 C2 C4 CC C6 (activate send gyro also otherwise reaction is very slow), other contain A3; so this code can be ommitted 
 //    tmp[0] = 0xA3;
 //    if (mask & DMP_FEATURE_SEND_RAW_ACCEL) {
 //        tmp[1] = 0xC0;
@@ -725,7 +725,7 @@ int dmp_enable_feature(unsigned short mask)
 //        tmp[2] = 0xA3;
 //        tmp[3] = 0xA3;
 //    }
-//    if (mask & DMP_FEATURE_SEND_ANY_GYRO) {              // this is normally not used by oXs so it can stay with A3
+//    if (mask & DMP_FEATURE_SEND_ANY_GYRO) {              // this is normally not used by oXs but it has to be activated otherwise it does not work
 //        tmp[4] = 0xC4;
 //        tmp[5] = 0xCC;
 //        tmp[6] = 0xC6;
@@ -802,14 +802,14 @@ int dmp_enable_feature(unsigned short mask)
 //    else
 //        dmp_enable_lp_quat(0);
 
-//    if (mask & DMP_FEATURE_6X_LP_QUAT)             // firmware has been modified in order to activate this option (in reg 2718 bank 10, row 9 , byte 14 we put 20 28 30 30
+//    if (mask & DMP_FEATURE_6X_LP_QUAT)             // firmware has been modified in order to activate this option (in reg 2718 bank 10, row 9 , byte 14 we now put 20 28 30 38
 //        dmp_enable_6x_lp_quat(1);
 //    else
 //        dmp_enable_6x_lp_quat(0);
 
     /* Pedometer is always enabled. */                 //saving : activated feature are hardcoded in oXs ( send RawAccel, send 6LT_QUAT, automatic CalGyro) 
 //    dmp.feature_mask = mask | DMP_FEATURE_PEDOMETER;
-    mpu_reset_fifo();
+//    mpu_reset_fifo(); // better not to do it because the new version set already the bit DMP_EN; and normally FIFO is not yet activated.
 
     dmp.packet_length = 22 ;                                         // fix the value because we use only  DMP_FEATURE_SEND_RAW_ACCEL +  DMP_FEATURE_6X_LP_QUAT
 //    dmp.packet_length = 0;                                           // saving : if oXs use always the same config, we could save some flash memory here and fix it directly to 28.

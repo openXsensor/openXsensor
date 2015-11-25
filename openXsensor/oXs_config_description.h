@@ -36,6 +36,7 @@ started by Rainer Schloßhan
 *  9 - Data to transmit - This part specifies list of codes to be used and how to combine them
 *  10 - Sequencer  (ON/OFF) for some digital outputs (E.g. for a light controller)
 *  11 - GPS (optional)
+*  12 - IMU 6050 (accelerometer/gyro sensor) (optionnal) 
 *  xx - Reserved for developer
 *
 * Note : Active parameters are normally on a line beginning by "#define", followed by the name of the parameter and most of the time a value.
@@ -220,15 +221,19 @@ started by Rainer Schloßhan
 #define VARIOHYSTERESIS 5
 
 * 4.5 - Different vertical speeds calculations (optional) **************************************************************
-*     When you use two baro sensors or one baro sensor + one airspeed sensor (4525D0 - see section 5), OXS can calculate several vertical speeds (or dTE).
+*     When you use two baro sensors or one baro sensor + one airspeed sensor (4525D0 - see section 5) or one baro sensor and one IMU, OXS can calculate several vertical speeds (or dTE).
 *     When the PPM option is implemented, OXS allows to select from TX which value (Vspeed from first or second baro sensor or compensated by airspeed) has to be sent as vertical speed and so will control the vario tone. 
 *     This allows switching between e.g. compensated and uncompensated vario.
-*     Even if OXS can calculate up to 4 vertical speeds (VERTICAL_SPEED, VERTICAL_SPEED_2, PRANDTL_DTE, VERTICAL_SPEED_A), it is only possible currently to switch between 2 predefined vertical speeds.
+*     Even if OXS can calculate up to 5 vertical speeds (VERTICAL_SPEED, VERTICAL_SPEED_2, PRANDTL_DTE, VERTICAL_SPEED_A, vspeed based on IMU), it is only possible currently to switch between 2 predefined vertical speeds.
 *     To enable this feature, additional parameters are required:
 *       1) Specify what are respectively the primary and the secondary vertical speeds using the lines:
 *                  #define VARIO_PRIMARY       2  
 *                  #define VARIO_SECONDARY     1
-*                 where 0 means first baro sensor, 1 means second baro sensor  , 2 means Prandtl Dte (=vario based on vario 1 + compensation from airspeed sensor), 3 means average of first and second baro sensors.
+*                 where 1 means first baro sensor, 
+*                       2 means second baro sensor 
+*                       3 means Prandtl Dte (=vario based on vario 1 + compensation from airspeed sensor)
+*                       4 means average of first and second baro sensors.
+*                       5 means merge of first baro sensor and imu
 *       2) Specify a range of PPM value that OXS has to check in order to send or the primary or the secondary vertical speed using the lines:
 *                 #define SWITCH_VARIO_MIN_AT_PPM 10 
 *                 #define SWITCH_VARIO_MAX_AT_PPM 90 
@@ -240,8 +245,8 @@ started by Rainer Schloßhan
 *         Switching from positive to negative can be achieved on openTx with a mixer using MULTIPLY by -100%.
 *         Sending a PPM value outside this range allows to instruct OXS to apply another order (e.g. reset the airspeed offset) without switching the vertical speed.
 ****************************************************************************************************************************
-#define VARIO_PRIMARY       2  // 0 means first baro sensor, 1 means second baro sensor , 2 means vario based on vario 1 + compensation from airspeed , 3 means average of first and second baro sensors
-#define VARIO_SECONDARY     1  // 0 means first baro sensor, 1 means second baro sensor , 2 means vario based on vario 1 + compensation from airspeed, 3 means average of first and second baro sensors
+#define VARIO_PRIMARY       2  // 1 = first baro,  2 = second baro, 3 = vario based on vario 1 + compensation from airspeed, 4 = average of first and second baro sensors , 5 = merge of first baro sensor and imu
+#define VARIO_SECONDARY     1  // 1 = first baro,  2 = second baro, 3 = vario based on vario 1 + compensation from airspeed, 4 = average of first and second baro sensors , 5 = merge of first baro sensor and imu
 #define SWITCH_VARIO_MIN_AT_PPM 10
 #define SWITCH_VARIO_MAX_AT_PPM 90
 
@@ -889,8 +894,25 @@ started by Rainer Schloßhan
 *     
 ************************************************************************************************************************ 
 
-
-
+**********  12 - IMU based on mpu6050 (accelerometer/gyro sensor) (optionnal) ********************************************************
+*  It is possible to connect an accelerometer/gyro sensor to arduino; this is optionnal.
+*  It allows :
+*      - to reduce the reaction time of the vario by about 0.5 sec (note: a baro sensor has to be connected too because oXs merges the data from both sensors)
+*      - to transmit data about accelerations and/or orientation (pitch/roll); in this case it is important that oXs device is mounted in a fix position and is aligned with the plane axis. 
+*  The mpu6050 sensors is easily available with different modules. The best module to use is probably the GY-86 because it has also a voltage regulator (3.3volt), I2C level converters, a baro sensor (MS5611)     
+*  5 pins from the mpu6050 have to be connected to Arduino:
+*       - MP6050 ground  <--->  Arduino ground
+*       - MP6050 Vcc     <--->  Arduino Vcc
+*       - MP6050 SDA     <--->  Arduino SDA = Arduino A4
+*       - MP6050 SCL     <--->  Arduino SCL = Arduino A5
+*       - MP6050 INT     <--->  Arduino INT0 = Arduino 2 (do not use this pin for another purpose then)
+* In order to activate the imu, uncomment the line #define USE_6050       
+* When imu is activated, this version of oXs calculates the vertical speed in a different way merging the altitude from baro sensor with vertical acceleration (in Earth reference).
+* This other type of vertical speed is for test purpose put in the field "TEST3". E.g in Frsky protocol, it is possible to transmit as Vspeed.  
+* It is also possible to assign it in  "VARIO_PRIMARY" or "VARIO_SECONDARY"  and so to switch between 2 vario sources from the Tx (using a ppm channel) 
+************************************************************************************************************************ 
+ //#define USE_6050
+ 
 **** xx - Reserved for developer. **************************************************************************************
 * DEBUG must be activated here when you want to debug one or several functions in some other files.
 * You can then select the parts that you want to debug by uncommenting the specifics DEBUG parameters you want in each file

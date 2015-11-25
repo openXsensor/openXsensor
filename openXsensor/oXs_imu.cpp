@@ -29,6 +29,9 @@ extern "C" {
 
 //float mpuDeltaVit = 0;
 //static float mpuVit = 0 ;
+float linear_acceleration_x;
+float linear_acceleration_y;
+float linear_acceleration_z;
 float world_linear_acceleration_z ;
 bool newMpuAvailable;
 
@@ -50,7 +53,8 @@ struct hal_s {
 
 volatile unsigned char new_mpu_data ;
 
-void setup_imu() {
+// ****************************  set up the imu 6050 (including the dmp)
+void setupImu() {
     // MPU-6050 Initialization
     // Gyro sensitivity:      2000 degrees/sec
     // Accel sensitivity:     2 g
@@ -66,6 +70,7 @@ void setup_imu() {
 #ifdef DEBUG_MPU        
         Serial.print(F("Success"));
 #endif        
+        dump_all() ;
 //        boolean gyro_ok, accel_ok;
 //        run_mpu_self_test(gyro_ok,accel_ok);     
 //        enable_mpu();  // replaced by next instruction = mpu_set_dmp_state(1);
@@ -84,9 +89,28 @@ void setup_imu() {
     }
 #ifdef DEBUG_MPU
     Serial.println(F("Initialization Complete"));
+    dump_all() ;
 #endif
-}
+}  // ***************** End of setupIMU
 
+// used for debug in order to get all register and all memory
+void dump_all(){
+    static uint8_t dump_count ;
+    for( unsigned char reg = 0 ; reg < 118 ; reg++){
+      unsigned char data ;
+      mpu_read_reg(reg, &data) ; 
+      Serial.print("reg") ;Serial.print(dump_count) ;Serial.print(", ") ; Serial.print(reg,HEX);Serial.print(",");Serial.println(data,HEX);
+      //delay(10);
+    }
+    delay(1000); 
+    unsigned char dataAdr[1] ;
+    for( int iadr = 0 ; iadr < 3062 ; iadr++){
+      mpu_read_mem(iadr,1,dataAdr) ;
+      Serial.print("mem") ;Serial.print(dump_count) ;Serial.print(", ") ; Serial.print(iadr,HEX);Serial.print(",");Serial.println(dataAdr[0],HEX);
+      //delay(10); 
+    } 
+    dump_count++ ;
+}
 
 
 /*****************************************
@@ -114,17 +138,6 @@ float quaternion_accumulator[4] = { 0.0, 0.0, 0.0, 0.0 };
 float calibrated_yaw_offset = 0.0;
 float calibrated_quaternion_offset[4] = { 0.0, 0.0, 0.0, 0.0 }; 
 
-/*
-// ******************************************
-// Magnetometer State
-// ******************************************
-int16_t mag_x = 0;
-int16_t mag_y = 0;
-int16_t mag_z = 0;
-float compass_heading_radians = 0.0;
-float compass_heading_degrees = 0.0;
-*/
-
 /****************************************
 * Gyro/Accel/DMP State
 ****************************************/
@@ -140,7 +153,6 @@ struct FloatVectorStruct {
 };
 
 struct FloatVectorStruct gravity;
-
 
 #define ACCEL_ON        (0x01)
 #define GYRO_ON         (0x02)
@@ -160,13 +172,15 @@ unsigned char accel_fsr = 2;  // accelerometer full-scale rate, in +/- Gs (possi
 unsigned short dmp_update_rate; // update rate, in hZ (possible values are between 4 and 1000).  Default:  200
 unsigned short gyro_fsr = 2000;  // Gyro full-scale_rate, in +/- degrees/sec, possible values are 250, 500, 1000 or 2000.  Default:  2000 ;  ; when changed, it must be changed in inv_mpu too
 
-/* The mounting matrix below tells the MPL how to rotate the raw 
+/* The mounting matrix below tells the MPL how to rotate the raw  // code in order to get this orientation has already been set in the firmware 
  * data from the driver(s). The matrix below reflects the axis
  * orientation of the MPU-6050 on the nav6 circuit board.
  */
+/*
 static signed char gyro_orientation[9] = { 1, 0, 0,
                                            0, 1, 0,
                                            0, 0, 1};
+*/
 
 // ******************************************************************************************
 //                              Read imu 6050 sensor
@@ -174,12 +188,27 @@ static signed char gyro_orientation[9] = { 1, 0, 0,
 void read6050 () {
   // If the MPU Interrupt occurred, read the fifo and process the data
 //  if (hal.new_gyro && hal.dmp_on) {
-  if (new_mpu_data) {
+  if (new_mpu_data) {  // new_mpu_data is set in a call back function in an ISR attached to interrupt INT0 (reading arduino pin 2 which is connected to INT from mpu6050 )
 
-        short gyro[3], accel[3], sensors;
+        short gyro[3], accel[3], sensors;         // To do : gyro and sensors are not used anymore and could be removed from here 
         unsigned char more = 0;
         long quat[4];
-        //float euler[3];
+                                                  // To do : in quaternion, only 16 bits from the 32 are used; it should be possible to save time and memory filling only 16 bits the dmp_read_fifo()
+                                                  //         in this function, remove giro and sensors parameters.
+                                                  // To do : Some temporary variable could be removed
+                                                  // To do : kalman filter takes about 4 msec to execute; it could be splitted in e.g. 4 sections in order to keep loop executing time at about 1 mec
+                                                  // To do : there should be some easy way to calibrate the mpu
+                                                  // To do : there should be some general function to perform all calculations based on raw sensor values (in order to keep the sensor as short as possible)
+                                                  // To do : review the Frsky SPORT protocol in order to response to several sensor_id and reduce the set up.
+                                                  // To do : add some code to detect errors on I2C (there are a few write without checks)
+                                                  // To do : at start up, send a few I2C SCL pulse to clear pending bytes on I2C
+                                                  // To do : activate/ or not the check on quaternion validity read from fifo (to detect wrong fifo read
+                                                  // To do : Initialisation of mpu can probably be simplified again (no need to write in pwm_mgnt_2 probably (it stays on 0)
+                                                  //         accel_cfg is probably already default filled with 0 (2 g) so no need to overwrite
+                                                  //         dmp_enable_feature() do nothing more except setting the size of fifo
+                                                  //         max fifo size could be reduced (save memory)
+                                                  // To do : remove perhaps code for accel_half detection (is not used currently ; previously was used with get and set function)
+                                                  //         in case of error on I2c during set up, check that imu is reset (and not only fifo reset (because reset of fifo is different before or after dmp is enabled)
         /* This function gets new data from the FIFO when the DMP is in
          * use. The FIFO can contain any combination of gyro, accel,
          * quaternion, and gesture data. The sensors parameter tells the
@@ -193,13 +222,12 @@ void read6050 () {
          * leftover packets in the FIFO.
          */
         int success = dmp_read_fifo(gyro, accel, quat, &sensors, &more);  // 0 = OK
+//        Serial.print("fifo "); Serial.println(mpu_getfifo_count_debug()) ;
 //        Serial.print("success ") ; Serial.println(success ) ;
         if (!more)                  // if no more data
             new_mpu_data = 0;       // reset the indicator saying that data are available in the FIFO, so it will be updated by the callback function on the interrupt.
-       
-//        if ( ( success == 0 ) && ( (sensors & INV_XYZ_ACCEL) != 0 ) && ( (sensors & INV_WXYZ_QUAT) != 0 ) ) {
         if (  success == 0 ) {
-#ifdef DEBUG_MPU         // this part allows to check the delay between 2 kalman filter. It is hardcoded (#define with frequency) set on 20msec
+#ifdef DEBUG_MPUxxxx         // this part allows to check the delay between 2 kalman filter. It is hardcoded (#define with frequency) and set on 20msec
                static unsigned long prevSensorTimeStamp;
                unsigned long sensor_timestamp = millis() ;
               if (prevSensorTimeStamp == 0) prevSensorTimeStamp = sensor_timestamp ;
@@ -207,9 +235,9 @@ void read6050 () {
               prevSensorTimeStamp = sensor_timestamp ;
               Serial.print("dt ") ; Serial.println(mpuDeltaTime ) ;
 #endif
-              accel[0] += 160 ;  //Offset measured on table (with sign inverted)
-              accel[1] += 341 ;
-              accel[2] += 854 ;      
+              accel[0] -= -160 ;  //Offset for X ; value is measured on a table when sensor is flat 
+              accel[1] -= -341 ;  //Offset for X ; value is measured on a table when sensor is flat
+              accel[2] -= -854 ;  //Offset for X ; value is measured on a table when sensor is flat    
 
               Quaternion q( (float)(quat[0] >> 16) / 16384.0f,
                             (float)(quat[1] >> 16) / 16384.0f,
@@ -221,17 +249,11 @@ void read6050 () {
              getGravity(&gravity, &q);
              
 //             dmpGetYawPitchRoll(ypr, &q, &gravity);
-              float linear_acceleration_x;
-              float linear_acceleration_y;
-              float linear_acceleration_z;
               float q1[4];
               float q2[4];
               float q_product[4];
               float q_conjugate[4];
               float q_final[4];               
- //             float world_linear_acceleration_x;
- //             float world_linear_acceleration_y;
-//              float world_linear_acceleration_z;
     
               // calculate linear acceleration by 
               // removing the gravity component from raw acceleration values
@@ -300,9 +322,11 @@ void read6050 () {
                //Serial.print(mpuDeltaTime );Serial.print(",") ; 
                //Serial.println((int) mpuVit ) ;
 //                Serial.println(world_linear_acceleration_z );
+                  Serial.print(millis()) ;Serial.print(","); Serial.print((int) (accel[2] / 16384.0 * 981.0) ) ; Serial.print(","); Serial.print((int) (gravity.z * 981.0 )) ;
+                  Serial.print(","); Serial.print((int) linear_acceleration_z * 981 );Serial.print(",");Serial.println((int)world_linear_acceleration_z );
 #endif              
           
-      }
+      }  // end success
     }   // end  new_mpu_data
 }
 /***************************************
@@ -635,7 +659,7 @@ unsigned short inv_row_2_scale(const signed char *row) {
 unsigned short inv_orientation_matrix_to_scalar( const signed char *mtx) {
     unsigned short scalar; // scalar becomes one of the following values when only positive values are used in gyro orientation; values can be different when -1 is used instead of 1
     /*
-       XYZ  010_001_000 Identity Matrix => 0x88 if only positive values
+       XYZ  010_001_000 Identity Matrix => when matrix is usual (and positive)  it returns 0x88 = 010_001_000 
        XZY  001_010_000
        YXZ  010_000_001
        YZX  000_010_001
@@ -673,12 +697,12 @@ boolean initialize_mpu() {
     /* Get/set hardware configuration. Start gyro. */
     /* Wake up all sensors. */
 //    mpu_set_sensors(INV_XYZ_GYRO | INV_XYZ_ACCEL);                                      // to check if it can be removed because dmp is based on dmp feature
-    mpu_enable_pwm_mgnt() ;
+    mpu_enable_pwm_mgnt() ;                                                               // this is the same as set sensor : pw_mgnt_1 (6B) = INV_CLK_PLL (= 01) and pw_mgnt_2 (6C) = XYZG = 07
     
     /* Push both gyro and accel data into the FIFO. */
 //    mpu_configure_fifo(INV_XYZ_GYRO | INV_XYZ_ACCEL);                                  ////// to check if this can be removed (could be that fifo is filled automatically based on dmp feature settings)
 //    mpu_set_sample_rate(DEFAULT_MPU_HZ);                                               ////// This is probably needed but when done here, no need to do it again in dmp init
-//    mpu_set_sample_rate200hz();                     // this function is made by Ms and is hardcoded to work for 200 hz. Still it is also called when dmp is enable (so no need to use it twice
+      mpu_set_sample_rate200hz();                     // this function is made by Ms and is hardcoded to work for 200 hz. Still it is also called when dmp is enable (so no need to use it twice
     /* Read back configuration in case it was set improperly. */
 //    mpu_get_sample_rate(&dmp_update_rate);                                             ////// to check if this can be removed
 //    mpu_get_gyro_fsr(&gyro_fsr);
@@ -687,7 +711,7 @@ boolean initialize_mpu() {
     /* Initialize HAL state variables. */                                              // this is already done by compiler
 //    memset(&hal, 0, sizeof(hal));
 //    hal.sensors = ACCEL_ON | GYRO_ON;
-
+    dump_all();
     /* To initialize the DMP:
      * 1. Call dmp_load_motion_driver_firmware(). This pushes the DMP image in
      *    inv_mpu_dmp_motion_driver.h into the MPU memory.
@@ -726,7 +750,7 @@ boolean initialize_mpu() {
 #endif      
       return false;
     }
-    dmp_set_orientation( inv_orientation_matrix_to_scalar(gyro_orientation));
+//    dmp_set_orientation( inv_orientation_matrix_to_scalar(gyro_orientation));
 #ifdef DEBUG_MPU      
 //      Serial.print("scalar  ");
 //      Serial.println(inv_orientation_matrix_to_scalar(gyro_orientation),HEX);
@@ -738,7 +762,7 @@ boolean initialize_mpu() {
 //    dmp_set_fifo_rate(50);// test with 20 hz (was originally on 100) and it works (interrupt is activated only once every 20 msec)
 //                          // this is not used because it is already changed in the firmware.
 
-#ifdef DEBUG_MPU      
+#ifdef DEBUG_MPUxxxxxxx      
       unsigned char dataToCheck[16] ;
       uint16_t addToCheck = 0x0A98 ;
       mpu_read_mem(addToCheck , 16 , dataToCheck) ;

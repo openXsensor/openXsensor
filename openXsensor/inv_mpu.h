@@ -41,6 +41,7 @@ struct int_param_s {          //used for  EMPL_TARGET_ATMEGA328
 
 void mpu_enable_pwm_mgnt() ;
 //int getDataFromMpu() ;
+unsigned short mpu_getfifo_count_debug() ;
 
 /* Set up APIs */
 int mpu_init(struct int_param_s *int_param);

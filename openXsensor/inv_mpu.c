@@ -35,8 +35,9 @@
  * labs(long x)
  * fabsf(float x)
  */
-
 #include "arduino_shim.h"
+
+//#define DEBUG_READ_FIFO    // this function has been added to create a function get_fifo_count_debug to print it in oXs_imu if required
 //#define i2c_write(a,b,c,d) shim_i2c_write(a,b,c,d)
 //#define i2c_write(a,b,c,d)  I2c.write( (uint8_t) a , (uint8_t) b ,  (uint8_t) c  , (uint8_t *) d ) ; // return 0 on success  
 #define i2c_writeByte(b,d) shim_i2c_writeByte(b,d)
@@ -141,7 +142,7 @@ enum clock_sel_e {
     NUM_CLK
 };
 
-/* Low-power accel wakeup rates. */
+/* Low-power accel wakeup rates. */ 
 enum lp_accel_rate_e {
     INV_LPA_1_25HZ,
     INV_LPA_5HZ,
@@ -324,7 +325,6 @@ int mpu_reg_dump(void)
  *  @param[out] data    Register data.
  *  @return     0 if successful.
  */
- /*
 int mpu_read_reg(unsigned char reg, unsigned char *data)
 {
     if (reg == GYRO_REG_fifo_r_w || reg == GYRO_REG_mem_r_w)
@@ -333,7 +333,7 @@ int mpu_read_reg(unsigned char reg, unsigned char *data)
         return -1;
     return i2c_read( INV6050_addr, reg, 1, data);
 }
-*/
+
 /*
 void mpu_force_reset()                                         // this code is currently not used; so it does not take flash memory
 {
@@ -463,7 +463,7 @@ int mpu_init(struct int_param_s *int_param)
 
 //    mpu_set_sensors(0); // set mpu in standby ; could be replaced by next lines if really requested.
       if( i2c_writeByte( GYRO_REG_pwr_mgmt_1, BIT_SLEEP )) return -1 ; // set mpu in sleep mode
-      if( i2c_writeByte( GYRO_REG_pwr_mgmt_2, BIT_STBY_XG | BIT_STBY_YG | BIT_STBY_ZG | BIT_STBY_XYZA ) ) return -1 ;    
+      if( i2c_writeByte( GYRO_REG_pwr_mgmt_2, 0 ) ) return -1 ;    
     return 0;
 }
 
@@ -720,7 +720,7 @@ int mpu_reset_fifo(void)
     } else {
 //        data = BIT_FIFO_RST;
 //        if (i2c_write( INV6050_addr, GYRO_REG_user_ctrl, 1, &data))
-        if (i2c_writeByte(  GYRO_REG_user_ctrl, BIT_FIFO_RST))                  // this force a second reset of fifo (already done above) : from datasheet :This bit resets the FIFO buffer when set to 1 while FIFO_EN equals 0.
+        if (i2c_writeByte(  GYRO_REG_user_ctrl, BIT_FIFO_RST))                  // this force a reset of fifo : from datasheet :This bit resets the FIFO buffer when set to 1 while FIFO_EN equals 0.
             return -1;                                                          // it is strange that there is no delay for this reset
 //        if (chip_cfg.bypass_mode || !(chip_cfg.sensors & INV_XYZ_COMPASS))
 //            data = BIT_FIFO_EN;
@@ -755,6 +755,7 @@ int mpu_reset_fifo(void)
     delay(50);                                                              // wait that the reset is performed
     i2c_writeByte( GYRO_REG_user_ctrl, BIT_DMP_EN | BIT_FIFO_EN);           // enable the fifo ( the 2 types)
     i2c_writeByte( GYRO_REG_int_enable, BIT_DMP_INT_EN ) ;                  // reg 0x38 ; byte = 0X02 ; enable interrupt on DMP ; this bit is not documented
+    i2c_writeByte( GYRO_REG_fifo_en, 0)     ;               // reg 0x23 ; disable all types of data in fifo (avoid that data are loaded in fifo) // not sure it is required but it was so in original code
     return 0;
 }
 
@@ -1244,8 +1245,9 @@ int mpu_set_sensors(unsigned char sensors)
 
 void mpu_enable_pwm_mgnt() {
   i2c_writeByte( GYRO_REG_pwr_mgmt_1, INV_CLK_PLL ) ;  // define the clock to be used
-  i2c_writeByte( GYRO_REG_pwr_mgmt_2, BIT_STBY_XG | BIT_STBY_YG | BIT_STBY_ZG ) ; // 
+  i2c_writeByte( GYRO_REG_pwr_mgmt_2, 0 ) ; // 
   delay(50);
+  i2c_writeByte( GYRO_REG_int_pin_cfg,BIT_ACTL) ;       // set interrupt active low is reg 0x37
 //  chip_cfg.sensors = (INV_XYZ_GYRO | INV_XYZ_ACCEL ) ;
 }
 /**
@@ -1367,6 +1369,14 @@ int mpu_read_fifo(short *gyro, short *accel, unsigned char *sensors, unsigned ch
  *  @param[in]  more    Number of remaining packets.
  *  @return     0 if successful.  Negative if error:  -1:  DMP Not On; -2:  I2C read error; -3:  Fifo Overflow -4: No Sensors -5: No more data available
 */
+
+#ifdef DEBUG_READ_FIFO
+    unsigned short fifo_count_debug ;
+    unsigned short mpu_getfifo_count_debug(){
+      return fifo_count_debug; 
+    }
+#endif    
+
 int mpu_read_fifo_stream(unsigned short length, unsigned char *data,  unsigned char *more)
 {
     unsigned char tmp[2];
@@ -1379,6 +1389,9 @@ int mpu_read_fifo_stream(unsigned short length, unsigned char *data,  unsigned c
     if (i2c_read( INV6050_addr, GYRO_REG_fifo_count_h, 2, tmp))
         return -2;             //  I2C error reading the 6050
     fifo_count = (tmp[0] << 8) | tmp[1];
+#ifdef DEBUG_READ_FIFO
+    fifo_count_debug = fifo_count; 
+#endif    
     if (fifo_count < length) {
         more[0] = 0;
         return -5;             //  fifo does not contains the expected number of char.
@@ -1975,9 +1988,12 @@ int mpu_set_dmp_state(unsigned char enable)
 */
 int mpu_set_dmp_state_on()
 {
-        mpu_set_sample_rate200hz();                 // further to check if really needed
+        i2c_writeByte(  GYRO_REG_int_enable, 0) ;   // reg 0x38 ; disable interrupt // normally not required because it was not enabled     
+        mpu_set_sample_rate200hz();                 // not sure it must be done (because it is already done in firmware
+        i2c_writeByte(  GYRO_REG_fifo_en , 0);      // reg 0x23 ; disable all types of data in fifo (avoid that data are loaded in fifo) // not sure it is required but it was so in original code
 //        chip_cfg.dmp_on = 1;
-        mpu_reset_fifo() ;  // this wil Enable DMP interrupt too
+        i2c_writeByte( GYRO_REG_int_enable, BIT_DMP_INT_EN ) ;                  // reg 0x38 ; byte = 0X02 ; enable interrupt on DMP ; this bit is not documented
+        mpu_reset_fifo() ;  // this wil Enable DMP interrupt too (so not sure previous int enable is requested)
     return 0;
 }
 
