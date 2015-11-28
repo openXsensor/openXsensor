@@ -10,6 +10,16 @@ uint32_t micros( void ) ;
 uint32_t millis( void ) ;
 void   blinkLed(uint8_t blinkType) ;
 
+// ****************************** arduino ressources being used *********************************************
+//  INT0 interrupt used by mpu to say that data are available; it activate a flag read in the main loop
+//  INT0 or INT1 interrupt used for ppm; timer1 is read and difference between rising and failing gives ppm
+//  I2C is used but without interrupt
+//  Timer1 is used for delay() and millis(), for UART with Rx (use COMPA and interrupt on COMPA), for RPM Capture interrupt is used (pin change on ICP1 = pin 8); COMPB is free
+//  Timer 0 and Timer 2 are free
+//  PCINT2 (pin change interrupt) is used for UART with RX too ; it allows to detect the start bit sent by Rx
+//  GPS: oXs sent characters by his own serial software (without interrupt)
+//  GPS: oXs read characters using the hardware UART and the Arduino librairy. This librairy uses interrupt. !! It blocks other interrupts and so there is a risk that software serial becomes out of timing because handling of COMPA could be out of delay 
+// *************************************************************************************************************
 
 //Some IO, timer and interrupt specific defines.
 #define ENABLE_PIN_CHANGE_INTERRUPT( )       ( PCICR |= (1<<PCIE2) )

@@ -211,6 +211,8 @@ void read6050 () {
                                                   //         in case of error on I2c during set up, check that imu is reset (and not only fifo reset (because reset of fifo is different before or after dmp is enabled)
                                                   // To do : use hysteresis for Vspeed with imu
                                                   // To do : add vspeed with imu in the list of available fields and a way to send it in HOTT protocol
+                                                  // To do : detect when acc is not as usual and then tranmit Vspeed based only on baro 
+                                                  // To do : check to replace attach_interrupt by ISR but with ISR_NOBLOCK attribute in order to avoid delay in software UART interrupt 
         /* This function gets new data from the FIFO when the DMP is in
          * use. The FIFO can contain any combination of gyro, accel,
          * quaternion, and gesture data. The sensors parameter tells the

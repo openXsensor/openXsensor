@@ -171,6 +171,7 @@
 #define TEST2              27       // reserved : only for debugging
 #define TEST3              28       // reserved : only for debugging
 #define VERTICAL_SPEED_A   29       // DEFAULTFIELD can be used
+#define VERTICAL_SPEED_I   30       // DEFAULTFIELD can be used ; this is the vertical speed based on baro and imu 
 // to do : add alt min, alt max ,  rpm max? , current max (not sure that it is neaded because it can be calculated on TX side
 // End of list of type of available measurements
 
@@ -251,6 +252,9 @@ extern int32_t switchVSpeed ; // used to transmit the selected Vspeed
 extern bool switchVSpeedAvailable ;
 extern int32_t averageVSpeed ; // used to transmit the average Vspeed
 extern bool averageVSpeedAvailable ;
+extern int32_t vSpeedImu ; // used to transmit the average Vspeed
+extern bool vSpeedImuAvailable ;
+
 extern int32_t test1Value ;// used in order to test the transmission of any value
 extern bool test1ValueAvailable ;
 extern int32_t test2Value ;// used in order to test the transmission of any value

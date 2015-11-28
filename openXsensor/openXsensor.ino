@@ -289,7 +289,10 @@ uint8_t selectedVario ; // identify the vario to be used when switch vario with 
   KalmanFilter kalman ;
   float zTrack ;
   float vTrack ;
+  int32_t vSpeedImu ;
   bool vTrackAvailable ;
+  bool vSpeedImuAvailable ;
+  bool switchVTrackAvailable ;
   extern float linear_acceleration_x ;
   extern float linear_acceleration_y ;
   extern float world_linear_acceleration_z ;
@@ -637,13 +640,67 @@ void readSensors() {
   }  
 #endif  
 
+#ifdef USE_6050
+//#define DEBUG_MPU_FREQ
+  #ifdef DEBUG_MPU_FREQ
+            unsigned long begin6050 = millis();
+  #endif  
+        read6050() ;
+  #ifdef DEBUG_MPU_FREQ
+        if (newMpuAvailable) {
+//            Serial.print(F("delay mpu ")) ; Serial.print( millis() - begin6050 ) ;Serial.print(F(", "));
+        }
+  #endif
+#endif // USE_6050
+
+#if defined (VARIO) && defined (USE_6050)
+        if (newMpuAvailable) { // newMpuAvailable says that a new world_linear_acceleration is available (flag has been set inside read6050()
+  #ifdef DEBUG_KALMAN
+            unsigned long beginKalman = millis();
+  #endif  
+            newMpuAvailable = false ;                // reset indicator that new mpu data have to be handled    
+            if ( countAltitudeToKalman != 0) {
+                if( oXs_MS5611.varioData.rawAltitude != 0) {
+                  countAltitudeToKalman-- ;
+                  altitudeOffsetToKalman = oXs_MS5611.varioData.rawAltitude ;
+                }        
+            }
+            altitudeToKalman = (oXs_MS5611.varioData.rawAltitude - altitudeOffsetToKalman ) / 100 ; // convert from * 100cm to cm
+            kalman.Update((float) altitudeToKalman  , world_linear_acceleration_z ,  &zTrack, &vTrack);
+            vSpeedImu = vTrack ;
+            vSpeedImuAvailable = true ;
+            switchVTrackAvailable = true ;
+            
+  #define TEST_SEND_MPU
+  #ifdef TEST_SEND_MPU
+            test1Value = linear_acceleration_x * 981 ; 
+            test1ValueAvailable = true ; 
+            test2Value =  linear_acceleration_y * 981; 
+            test2ValueAvailable = true ; 
+            test3Value = vSpeedImu ; 
+            test3ValueAvailable = true ; 
+  #endif
+
+  #ifdef DEBUG_KALMAN
+///           Serial.print(F("delay Kal ")) ; Serial.print( millis() - beginKalman ) ;Serial.print(F(", "));
+//            Serial.print( (int) world_linear_acceleration_z ) ; Serial.print(F(", "));Serial.print( (int) altitudeToKalman) ; Serial.print(F(", ")); Serial.print(oXs_MS5611.varioData.climbRate) ; Serial.print(F(", "));Serial.println(( int )vSpeedImu) ;
+///           Serial.print( millis() ) ; Serial.print(F(", ")); Serial.print( (int)  ) ; Serial.print(F(", "));Serial.print( (int) world_linear_acceleration_z ) ; Serial.print(F(", "));Serial.print( (int) altitudeToKalman) ; Serial.print(F(", ")); Serial.print(oXs_MS5611.varioData.climbRate) ; Serial.print(F(", "));Serial.println(( int )vSpeedImu) ;
+  #endif  
+
+        }
+
+#endif
+
+
+
+
 #if defined (VARIO) && ( defined (VARIO2) || defined (AIRSPEED) || defined (USE_6050) ) && defined (VARIO_SECONDARY ) && defined( VARIO_PRIMARY )  && defined (PIN_PPM)
   if (( selectedVario == 1) && ( oXs_MS5611.varioData.switchClimbRateAvailable == true ) )  {
       switchVSpeed = oXs_MS5611.varioData.climbRate ;
       switchVSpeedAvailable = true ;
       oXs_MS5611.varioData.switchClimbRateAvailable = false ;
   } 
-#if  defined (VARIO2)
+  #if  defined (VARIO2)
   else if ( ( selectedVario == 2) && ( oXs_MS5611_2.varioData.switchClimbRateAvailable == true )) {
       switchVSpeed = oXs_MS5611_2.varioData.climbRate ;
       switchVSpeedAvailable = true ;
@@ -654,25 +711,26 @@ void readSensors() {
       switchVSpeedAvailable = true ;
       averageVSpeedAvailable = false ;
   }
-#endif // end of VARIO2
-#if  defined (AIRSPEED)
+  #endif // end of VARIO2
+
+  #if  defined (AIRSPEED)
   else if ( ( selectedVario == 3) && ( switchCompensatedClimbRateAvailable == true )) {
       switchVSpeed = compensatedClimbRate ;
       switchVSpeedAvailable = true ;  
-#if defined (SWITCH_VARIO_GET_PRIO)
+   #if defined (SWITCH_VARIO_GET_PRIO)
       switchCompensatedClimbRateAvailable = true ; // avoid to reset the value on false in order to continue to send the same value as often as possible
-#else
+   #else
       switchCompensatedClimbRateAvailable = false ; // this is the normal process in order to avoid sending twice the same data.
-#endif  // end  defined (SWITCH_VARIO_GET_PRIO)   
+   #endif  // end  defined (SWITCH_VARIO_GET_PRIO)   
   } 
-#endif // end  defined (AIRSPEED) 
-#if  defined (USE_6050)
-  else if ( ( selectedVario == 5) && ( vTrackAvailable == true )) {
+  #endif // end  defined (AIRSPEED) 
+  #if  defined (USE_6050)
+  else if ( ( selectedVario == 5) && ( switchVTrackAvailable == true )) {
       switchVSpeed = vTrack ;
       switchVSpeedAvailable = true ;
-      vTrackAvailable = false ;
+      switchVTrackAvailable = false ;
   }
-#endif  // end USE_6050
+  #endif  // end USE_6050
 #endif // end  defined (VARIO) && ( defined (VARIO2) || defined (AIRSPEED) ) && defined (VARIO_SECONDARY ) && defined( VARIO_PRIMARY ) && defined (VARIO_SECONDARY) && defined (PIN_PPM)
   
 #ifdef PIN_VOLTAGE
@@ -705,53 +763,6 @@ void readSensors() {
         calculateAverages();
 #endif        
 
-#ifdef USE_6050
-//#define DEBUG_MPU_FREQ
-#ifdef DEBUG_MPU_FREQ
-            unsigned long begin6050 = millis();
-#endif  
-        read6050() ;
-#ifdef DEBUG_MPU_FREQ
-        if (newMpuAvailable) {
-//            Serial.print(F("delay mpu ")) ; Serial.print( millis() - begin6050 ) ;Serial.print(F(", "));
-        }
-#endif
-#endif
-
-#if defined (VARIO) && defined (USE_6050)
-        if (newMpuAvailable) { // newMpuAvailable says that a new world_linear_acceleration is available (flag has been set inside read6050()
-#ifdef DEBUG_KALMAN
-            unsigned long beginKalman = millis();
-#endif  
-            newMpuAvailable = false ;                // reset indicator that new mpu data have to be handled    
-            if ( countAltitudeToKalman != 0) {
-                if( oXs_MS5611.varioData.rawAltitude != 0) {
-                  countAltitudeToKalman-- ;
-                  altitudeOffsetToKalman = oXs_MS5611.varioData.rawAltitude ;
-                }        
-            }
-            altitudeToKalman = (oXs_MS5611.varioData.rawAltitude - altitudeOffsetToKalman ) / 100 ; // convert from * 100cm to cm
-            kalman.Update((float) altitudeToKalman  , world_linear_acceleration_z ,  &zTrack, &vTrack);
-            vTrackAvailable = true ;
-#define TEST_SEND_MPU
-#ifdef TEST_SEND_MPU
-            test1Value = linear_acceleration_x * 981 ; 
-            test1ValueAvailable = true ; 
-            test2Value =  linear_acceleration_y * 981; 
-            test2ValueAvailable = true ; 
-            test3Value = vTrack ; 
-            test3ValueAvailable = true ; 
-#endif
-
-#ifdef DEBUG_KALMAN
-///           Serial.print(F("delay Kal ")) ; Serial.print( millis() - beginKalman ) ;Serial.print(F(", "));
-//            Serial.print( (int) world_linear_acceleration_z ) ; Serial.print(F(", "));Serial.print( (int) altitudeToKalman) ; Serial.print(F(", ")); Serial.print(oXs_MS5611.varioData.climbRate) ; Serial.print(F(", "));Serial.println(( int )vTrack) ;
-///           Serial.print( millis() ) ; Serial.print(F(", ")); Serial.print( (int)  ) ; Serial.print(F(", "));Serial.print( (int) world_linear_acceleration_z ) ; Serial.print(F(", "));Serial.print( (int) altitudeToKalman) ; Serial.print(F(", ")); Serial.print(oXs_MS5611.varioData.climbRate) ; Serial.print(F(", "));Serial.println(( int )vTrack) ;
-#endif  
-
-        }
-
-#endif
 
 //#ifdef DEBUG    
 //  Serial.println(F("Go out of read sensor"));

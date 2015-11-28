@@ -7,9 +7,8 @@
 #endif
 
 #ifdef DEBUG
-// ************************* Several parameters to help debugging
+// ************************* here Several parameters to help debugging
   #define DEBUGHOTT
-
 #endif
 
 
@@ -174,7 +173,7 @@ void OXS_OUT::sendData() {
             } 
 #ifdef GPS_INSTALLED            
               else {
-            // add here the code for GPS
+            // here the code for GPS
                     TxHottData.gpsMsg.startByte    = 0x7c ;
                     TxHottData.gpsMsg.sensorID     = HOTT_TELEMETRY_GPS_SENSOR_ID ; //0x8A
                     TxHottData.gpsMsg.sensorTextID     = HOTTV4_GPS_SENSOR_TEXT_ID ; // 0xA0

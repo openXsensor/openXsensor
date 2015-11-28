@@ -21,7 +21,7 @@
 // ***** 1.1 - Multiplex protocol is used (otherwise oXs assumes it is Frsky protocol) *****
 //#define MULTIPLEX
 // ***** 1.2 - FrSky protocol and device ID (required when Sport protocol is used)  *****
-//#define FRSKY_TYPE_SPORT   // when uncommented, it forces oXs to apply only SPORT protocol, otherwise, oXs detects automatically if protocol has to be SPORT or HUB
+#define FRSKY_TYPE_SPORT   // when uncommented, it forces oXs to apply only SPORT protocol, otherwise, oXs detects automatically if protocol has to be SPORT or HUB
 //#define FRSKY_TYPE_HUB   // when uncommented, it forces oXs to apply only HUB protocol, otherwise, oXs detects automatically if protocol has to be SPORT or HUB
 #define SPORT_SENSOR_ID    28 // value must be between 1 and 28 
 // ***** 1.3 - Hott protocol is used (otherwise oXs assumes it is Frsky protocol) *****
@@ -122,7 +122,7 @@
 #define SETUP_FRSKY_DATA_TO_SEND    \
                         DEFAULTFIELD , AIR_SPEED , 1 , 1 ,0 , \
                         DEFAULTFIELD , ALTIMETER , 1 , 1 , 0 , \
-                        DEFAULTFIELD , VERTICAL_SPEED , 1 , 1 , 0 , \
+                        DEFAULTFIELD , VERTICAL_SPEED_I , 1 , 1 , 0 , \
                         AccX , TEST1 , 1 , 1 ,0 , \
                         T1 , TEST2 , 1 , 1 ,0 , \
                         T2 , TEST3 , 1 , 1 ,0 , \

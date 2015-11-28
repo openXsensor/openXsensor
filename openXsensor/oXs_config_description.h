@@ -604,6 +604,7 @@ started by Rainer Schloßhan
 *    VERTICAL_SPEED     cm/s     Vertical speed (1)                                  Optional                 VSpd                0.1m/s
 *    VERTICAL_SPEED_2   cm/s     Vertical speed (2)                                  Optional                 VSpd
 *    VERTICAL_SPEED_A   cm/s     Vertical speed (7)                                  Optional                 VSpd
+*    VERTICAL_SPEED_I   cm/s     Vertical speed (8)                                  Optional                 VSpd
 *    PRANDTL_DTE        cm/s     Compensated vertical speed (based on airspeed)(3)   Optional                 VSpd
 *    PPM_VSPEED         cm/s     Vertical speed selected by PPM (4)       Optional  (X series)                VSpd
 *                                                                         Not implemented (D series)  
@@ -640,7 +641,7 @@ started by Rainer Schloßhan
 *    CELL_TOT           mV(5)    Value based on VOLT1...VOLT6                Not implemented in FRSKY protocol                 0.1V
 
 
-*   (1) Measurement from first baro (MS5611) sensor
+*   (1) Measurement from first baro (MS5611 or BMP180) sensor
 *   (2) Measurement from second baro (MS5611) sensor (can e.g. be connected to a TEK probe to get a pneumatic compensated vario)
 *   (3) PRANDTL_DTE is a compensated vertical speed (= delta total energy).
 *       It is based on the vertical speed from the first baro but this value is corrected based on airspeed changed measured by a airspeed sensor.
@@ -651,7 +652,8 @@ started by Rainer Schloßhan
 *       When used in order to measure Cell(s), calibration must ensure that unit = milliVolt 
 *   (6) For D series Rx, the hub protocol does not allow to transmit the airspeed as airspeed. OXS sent then the airspeed in the Gps speed
 *   (7) Measurement is the average of first and second baro (MS5611) sensor 
-* 
+*   (8) Measurement is based on first baro sensor and on imu (= mpu6050 sensor)
+*    
 * Note: when DEFAULTFIELD is Optional or NOT allowed, you can normally select yourself a telemetry field name (e.g. SENSITIVITY can be sent in T1 or T2 ,...) 
 *
 *

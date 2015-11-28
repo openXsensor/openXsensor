@@ -360,6 +360,12 @@ uint8_t OXS_OUT::readStatusValue( uint8_t fieldToSend) {
           return averageVSpeedAvailable ; 
 #endif
 
+#if defined (VARIO)  &&  defined (USE_6050) 
+      case  VERTICAL_SPEED_I :
+          return vSpeedImuAvailable ; 
+#endif
+
+
 #if defined (VARIO)  && ( defined (VARIO2)  || defined (AIRSPEED) ) && defined (VARIO_PRIMARY ) && defined (VARIO_SECONDARY ) && defined (PIN_PPM)
       case  PPM_VSPEED :
           return switchVSpeedAvailable ; 
@@ -456,6 +462,10 @@ uint8_t OXS_OUT::nextFieldToSend(  uint8_t indexField) {
 
 #if defined (VARIO)  &&  defined (VARIO2)
       if ( (fieldContainsData[indexField][1] == VERTICAL_SPEED_A) && ( averageVSpeedAvailable == KNOWN ))  { return indexField ; }        
+#endif
+
+#if defined (VARIO)  &&  defined (USE_6050)
+      if ( (fieldContainsData[indexField][1] == VERTICAL_SPEED_I) && ( vSpeedImuAvailable == KNOWN ))  { return indexField ; }        
 #endif
 
 #if defined (VARIO) && ( defined (VARIO2) || defined (AIRSPEED) ) && defined (VARIO_PRIMARY ) && defined (VARIO_SECONDARY )  && defined (PIN_PPM)
@@ -662,6 +672,13 @@ void OXS_OUT::loadSportValueToSend( uint8_t currentFieldToSend) {
          break ; 
 #endif
 
+#if defined (VARIO )  &&  defined (USE_6050)
+      case VERTICAL_SPEED_I : 
+        valueTemp = vSpeedImu ;
+        vSpeedImuAvailable = false ; 
+         fieldID = VARIO_FIRST_ID ;         
+         break ; 
+#endif
 
 #if defined (VARIO )  && ( defined (VARIO2) || defined( AIRSPEED) ) && defined (VARIO_PRIMARY ) && defined (VARIO_SECONDARY )  && defined (PIN_PPM)
       case PPM_VSPEED : 
@@ -809,7 +826,7 @@ void OXS_OUT::loadSportValueToSend( uint8_t currentFieldToSend) {
           
       case  CELLS_3_4 :
           valueTemp = voltageData->mVoltCell_3_4 ; 
-          fieldID = CELLS_SECOND_ID ; 
+          fieldID = CELLS_FIRST_ID ; 
           voltageData->mVoltCell_3_4_Available  = false ;     
 #ifdef DEBUGLOADVALUETOSENDCELL_3_4
           static unsigned long StartCell_3_4=micros();
@@ -829,7 +846,7 @@ void OXS_OUT::loadSportValueToSend( uint8_t currentFieldToSend) {
           
       case  CELLS_5_6 :
           valueTemp = voltageData->mVoltCell_5_6 ;
-          fieldID = CELLS_THIRD_ID ;  
+          fieldID = CELLS_FIRST_ID ;  
           voltageData->mVoltCell_5_6_Available  = false ; 
 #ifdef DEBUGLOADVALUETOSENDCELL_5_6
           static unsigned long StartCell_5_6=micros();
