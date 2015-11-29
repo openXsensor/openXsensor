@@ -91,7 +91,7 @@ float rawCompensatedClimbRate ;
 int32_t compensatedClimbRate ;
 #endif
 
-#if defined (VARIO) && ( defined (VARIO2) || defined ( AIRSPEED))
+#if defined (VARIO) && ( defined (VARIO2) || defined ( AIRSPEED) || defined (USE_6050) )
 int32_t switchVSpeed ;
 bool switchVSpeedAvailable ;
 #endif
