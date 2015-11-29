@@ -98,7 +98,7 @@ void OXS_OUT::setup() {
 #else
     #error "This PIN is not supported"
 #endif // test on PIN_SERIALTX
-    delay(1500) ; // this delay has been added because some users reported that SPORT is not recognise with a X6R ; perhaps is it related to the EU firmware (2015)
+    delay(1500) ; // this delay has been added because some users reported that SPORT is not recognised with a X6R ; perhaps is it related to the EU firmware (2015)
 #ifdef DEBUG_SPORT_PIN 
     digitalWrite(DEBUG_SPORT_PIN, HIGH); // Set the pulse used during SPORT detection to HIGH because detecttion is starting
 #endif

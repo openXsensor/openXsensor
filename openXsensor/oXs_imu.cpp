@@ -23,7 +23,7 @@ extern "C" {
 #include "oXs_imu.h"
 
 #ifdef DEBUG
-      #define DEBUG_MPU
+//      #define DEBUG_MPU
 #endif
 
 
@@ -69,8 +69,9 @@ void setupImu() {
         mpu_initialized = true;
 #ifdef DEBUG_MPU        
         Serial.print(F("Success"));
-#endif        
         dump_all() ;
+#endif        
+
 //        boolean gyro_ok, accel_ok;
 //        run_mpu_self_test(gyro_ok,accel_ok);     
 //        enable_mpu();  // replaced by next instruction = mpu_set_dmp_state(1);
@@ -93,6 +94,7 @@ void setupImu() {
 #endif
 }  // ***************** End of setupIMU
 
+#ifdef DEBUG_MPU
 // used for debug in order to get all register and all memory
 void dump_all(){
     static uint8_t dump_count ;
@@ -111,7 +113,7 @@ void dump_all(){
     } 
     dump_count++ ;
 }
-
+#endif
 
 /*****************************************
 * Conversion Factors
@@ -213,6 +215,7 @@ void read6050 () {
                                                   // To do : add vspeed with imu in the list of available fields and a way to send it in HOTT protocol
                                                   // To do : detect when acc is not as usual and then tranmit Vspeed based only on baro 
                                                   // To do : check to replace attach_interrupt by ISR but with ISR_NOBLOCK attribute in order to avoid delay in software UART interrupt 
+                                                  // To do : add VERTICAL_SPEED_I to HUB, MULTIPLEX and HOTT protocols
         /* This function gets new data from the FIFO when the DMP is in
          * use. The FIFO can contain any combination of gyro, accel,
          * quaternion, and gesture data. The sensors parameter tells the
@@ -239,9 +242,26 @@ void read6050 () {
               prevSensorTimeStamp = sensor_timestamp ;
               Serial.print("dt ") ; Serial.println(mpuDeltaTime ) ;
 #endif
-              accel[0] -= -160 ;  //Offset for X ; value is measured on a table when sensor is flat 
-              accel[1] -= -341 ;  //Offset for X ; value is measured on a table when sensor is flat
-              accel[2] -= -854 ;  //Offset for X ; value is measured on a table when sensor is flat    
+#ifdef DEBUG_MPU_OFFSET
+            static int offsetCount;
+            static int32_t accelOffsetSumX ;
+            static int32_t accelOffsetSumY ;
+            static int32_t accelOffsetSumZ;
+            offsetCount++ ;
+            accelOffsetSumX += accel[0] ;
+            accelOffsetSumY += accel[1] ;
+            accelOffsetSumZ+= accel[2] ;
+            if( offsetCount >= 100 ){
+              Serial.print("acc "); Serial.print(accelOffsetSumX / offsetCount ) ;Serial.print(" "); Serial.print(accelOffsetSumY / offsetCount  ) ; Serial.print(" "); Serial.println(accelOffsetSumZ / offsetCount  ) ;
+              offsetCount = 0 ; 
+              accelOffsetSumX  = 0 ;
+              accelOffsetSumY = 0 ;
+              accelOffsetSumZ = 0 ;
+            }
+#endif           
+              accel[0] -= ACC_OFFSET_X ; //-160 ;  //Offset for X ; value is measured on a table when sensor is flat 
+              accel[1] -= ACC_OFFSET_Y ; //-341 ;  //Offset for X ; value is measured on a table when sensor is flat
+              accel[2] -= ACC_OFFSET_Z ; //-854 ;  //Offset for X ; value is measured on a table when sensor is flat    
 
               Quaternion q( (float)(quat[0] >> 16) / 16384.0f,
                             (float)(quat[1] >> 16) / 16384.0f,
@@ -715,7 +735,9 @@ boolean initialize_mpu() {
     /* Initialize HAL state variables. */                                              // this is already done by compiler
 //    memset(&hal, 0, sizeof(hal));
 //    hal.sensors = ACCEL_ON | GYRO_ON;
+#ifdef DEBUG_PMU
     dump_all();
+#endif    
     /* To initialize the DMP:
      * 1. Call dmp_load_motion_driver_firmware(). This pushes the DMP image in
      *    inv_mpu_dmp_motion_driver.h into the MPU memory.

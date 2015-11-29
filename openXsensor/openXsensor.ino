@@ -483,7 +483,8 @@ void setup(){
 #ifdef DEBUG
   Serial.println(F("End of general set up"));
 #endif
-} // ******************** end of Setup
+
+} // ******************** end of Setup *****************************************************
 
 
 //*******************************************************************************************
@@ -881,58 +882,8 @@ void calculateDte () {  // is calculated about every 2O ms each time that an alt
 #endif    // #if defined (VARIO) && defined ( AIRSPEED) 
 // ***************************** end calculate Dte ***********************************************
 
-/*
+
 //****************************** Calculate averages and glider ratio ********************************************
-
-/*             First method
-#if defined  (VARIO) && defined (AVERAGING_EVERY_X_SEC) && AVERAGING_EVERY_X_SEC >= 5
-void calculateAverages( ){
-        int16_t averageSpeed ;
-        int16_t averageSpeedRate = 100 ;
-        int16_t tempSpeed ;
-        static uint8_t flag10ValuesFilled ;
-        if ( (uint16_t) (millis() - prevAverageAltMillis) > ( AVERAGING_EVERY_X_SEC * 100 )){ // calculation of the averaging has to be done
-            altitudeDifference = ( oXs_MS5611.varioData.absoluteAlt - last10Altitude[last10Idx] ) ;
-            averageVspeed = altitudeDifference / AVERAGING_EVERY_X_SEC ;
-            gliderRatio = 0 ;                                          // default value for glider ratio (or when it makes no sense)
-#if defined (GLIDER_RATIO) &&( ( defined(AIRSPEED) && GLIDER_RATIO == BASED_ON_AIRSPEED ) || (defined ( GPS_INSTALLED ) && GLIDER_RATIO == BASED_ON_GPS_SPEED ) )
-#if GLIDER_RATIO == BASED_ON_AIRSPEED && defined(AIRSPEED) 
-            tempSpeed = oXs_4525.airSpeedData.smoothAirSpeed ;                                            // use airspeed (cm/sec)
-#elif GLIDER_RATIO == BASED_ON_GPS_SPEED && defined(GPS_INSTALLED)
-            tempSpeed = 0 ;                                                                               // use GPS speed still to implement with GPS (value to set in cm/s)
-#endif            
-            averageSpeed = (tempSpeed + last10Speed[last10Idx] ) / 2;
-            if (abs(averageSpeed) > 300 ) {                                                               // do not calculate when speed is to low
-              averageSpeedRate = (abs(( tempSpeed - last10Speed[last10Idx])) * 100 ) / averageSpeed ; 
-            } 
-            if ( ( averageSpeedRate < SPEED_TOLERANCE ) && ( altitudeDifference < -10 ) ) {               // do not calculate when altitude difference is to low
-              gliderRatio = ((int32_t) (- averageSpeed)) * AVERAGING_EVERY_X_SEC * 10 / altitudeDifference  ;        // *10 is done in order to add a decimal
-              if ( gliderRatio > 500) gliderRatio = 0 ;                                                   // when gliderRatio is > (50.0 *10) it it not realistic
-            } 
-#endif // end of calculating glider ratio            
-            last10Altitude[last10Idx] = oXs_MS5611.varioData.absoluteAlt ;
-            last10Speed[last10Idx] = tempSpeed = 0 ;
-            last10Idx++ ;
-            if ( last10Idx >= 10 ) {
-              last10Idx = 0 ;
-              flag10ValuesFilled = 1 ;    // to change
-            }
-            prevAverageAltMillis += ( AVERAGING_EVERY_X_SEC * 100 ) ; // calculate only once every x millisec (X in millisec = second /10 * 1000)
-            if (flag10ValuesFilled) {
-                test1Value = altitudeDifference ; 
-                test1ValueAvailable = true ; 
-                test2Value = averageVspeed ; 
-                test2ValueAvailable = true ; 
-                test3Value = gliderRatio ; 
-                test3ValueAvailable = true ; 
-            }
-        }
-}        
-#endif
-*/
-
-
-//  second method of averaging
 #if defined  (VARIO) && defined (GLIDER_RATIO_CALCULATED_AFTER_X_SEC) && GLIDER_RATIO_CALCULATED_AFTER_X_SEC >= 1 
 #if defined (GLIDER_RATIO_CALCULATED_AFTER_X_SEC) && GLIDER_RATIO_CALCULATED_AFTER_X_SEC < 1
 #error  when defined, GLIDER_RATIO_CALCULATED_AFTER_X_SEC must be greater or equal to 1 (sec)

@@ -57,15 +57,15 @@ void KalmanFilter::Update(float z, float a,  float* pZ, float* pV) {
 #define ZACCEL_VARIANCE     0.1f  // initially 1
 #define ZACCELBIAS_VARIANCE 1.0f
 
-#define DT 0.02f
+#define DT 0.02f                          // time interval = 20 msec
 #define DT2DIV2  (DT * DT / 2.0f)
 #define DT3DIV2  (DT2DIV2 * DT)
 #define DT4DIV4  (DT2DIV2 * DT2DIV2)
 
 	// Predict state
     float accel = a - aBias_;
-	v_ += accel * DT;
-	z_ += v_ * DT;
+	  v_ += accel * DT;
+	  z_ += v_ * DT;
 
 //test by ms leaving zAccelVariance_ = 1
 /*

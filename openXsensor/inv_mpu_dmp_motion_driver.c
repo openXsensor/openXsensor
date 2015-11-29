@@ -28,6 +28,8 @@
 #include "dmpKey.h"
 #include "dmpmap.h"
 
+#include "oXs_config.h"
+
 /* The following functions must be defined for this platform:
  * i2c_write(unsigned char slave_addr, unsigned char reg_addr, unsigned char length, unsigned char const *data)
  * i2c_read(unsigned char slave_addr, unsigned char reg_addr,  unsigned char length, unsigned char *data)
@@ -213,6 +215,24 @@
 #define D_TILT3_H               (60)
 #define D_TILT3_L               (62)
 
+#define DMP_ACC_OFF_X ( (long long) ( ACC_OFFSET_X /2 ) )
+#define DMP_ACC_OFF_X0 ((unsigned char)(( ((long long) DMP_ACC_OFF_X) >> 24) & 0xFF) )
+#define DMP_ACC_OFF_X1 ((unsigned char)(( ((long long) DMP_ACC_OFF_X) >> 16) & 0xFF) )
+#define DMP_ACC_OFF_X2 ((unsigned char)(( ((long long) DMP_ACC_OFF_X) >>  8) & 0xFF) )
+#define DMP_ACC_OFF_X3 ((unsigned char)(( ((long long) DMP_ACC_OFF_X)      ) & 0xFF) )
+#define DMP_ACC_OFF_Y ( (long long) ( ACC_OFFSET_Y /2 ) )
+#define DMP_ACC_OFF_Y0 ((unsigned char)(( ((long long) DMP_ACC_OFF_Y) >> 24) & 0xFF) )
+#define DMP_ACC_OFF_Y1 ((unsigned char)(( ((long long) DMP_ACC_OFF_Y) >> 16) & 0xFF) )
+#define DMP_ACC_OFF_Y2 ((unsigned char)(( ((long long) DMP_ACC_OFF_Y) >>  8) & 0xFF) )
+#define DMP_ACC_OFF_Y3 ((unsigned char)(( ((long long) DMP_ACC_OFF_Y)      ) & 0xFF) )
+#define DMP_ACC_OFF_Z ( (long long) ( ACC_OFFSET_Z /2 ) )
+#define DMP_ACC_OFF_Z0 ((unsigned char)(( ((long long) DMP_ACC_OFF_Z) >> 24) & 0xFF) )
+#define DMP_ACC_OFF_Z1 ((unsigned char)(( ((long long) DMP_ACC_OFF_Z) >> 16) & 0xFF) )
+#define DMP_ACC_OFF_Z2 ((unsigned char)(( ((long long) DMP_ACC_OFF_Z) >>  8) & 0xFF) )
+#define DMP_ACC_OFF_Z3 ((unsigned char)(( ((long long) DMP_ACC_OFF_Z)      ) & 0xFF) )
+
+
+
 #define DMP_CODE_SIZE           (3062)
 typedef unsigned char PROGMEM prog_uchar;  // added by Mstrens 
 
@@ -261,7 +281,16 @@ const prog_uchar dmp_memory[DMP_CODE_SIZE] PROGMEM = {
     0x00, 0x64, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 
+#if defined (ACC_OFFSET_X ) && defined(ACC_OFFSET_Y ) && defined (ACC_OFFSET_Z )                                                        // This is the acceleration X, Y ,Z used by DMP to integrate into the quaternion
+    DMP_ACC_OFF_X0 ,  DMP_ACC_OFF_X1 ,  DMP_ACC_OFF_X2 ,  DMP_ACC_OFF_X3 ,
+    DMP_ACC_OFF_Y0 ,  DMP_ACC_OFF_Y1 ,  DMP_ACC_OFF_Y2 ,  DMP_ACC_OFF_Y3 ,
+    DMP_ACC_OFF_Z0 ,  DMP_ACC_OFF_Z1 ,  DMP_ACC_OFF_Z2 ,  DMP_ACC_OFF_Z3 , 
+
+
+#else    
+                            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,// Offsest is O if not defined in config.h
+#endif    
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x1b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0e, 0x00, 0x0e,
