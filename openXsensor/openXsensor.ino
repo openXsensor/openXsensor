@@ -64,6 +64,8 @@ static unsigned long extended2Micros ;
 //#define DEBUGSEQUENCE
 //#define DEBUGPPM
 //#define DEBUGFORCEPPM
+//#define DEBUG_VARIO_TIME
+#define DEBUG_VOLTAGE_TIME
 #endif
 
 int freeRam () ;
@@ -300,6 +302,9 @@ uint8_t selectedVario ; // identify the vario to be used when switch vario with 
   float altitudeToKalman ;
   int countAltitudeToKalman = 100 ;
   int32_t altitudeOffsetToKalman ;
+  #ifdef DEBUG_KALMAN_TIME  
+    int delayKalman[5] ;
+  #endif  
 #endif
 
 
@@ -603,7 +608,18 @@ void readSensors() {
 
 
 #ifdef VARIO
+#ifdef DEBUG_VARIO_TIME
+  unsigned long varioEnter = micros() ;
+#endif  
   oXs_MS5611.readSensor(); // Read pressure & temperature on MS5611, calculate Altitude and vertical speed
+#ifdef DEBUG_VARIO_TIME
+  varioEnter = micros() - varioEnter ;
+  if ( varioEnter > 10 ) {
+    Serial.print("Vario ") ; Serial.println(varioEnter) ;                          // when I2C works at 400 khz, it takes about 520 usec to read the temperature or the pressure and 450 usec to perform the calculation
+    //Serial.print(" ") ; Serial.println(oXs_MS5611.varioData.absoluteAlt) ; 
+  }  
+#endif  
+  
   if ( oXs_MS5611.varioData.absoluteAltAvailable == true and oXs_MS5611.varioData.rawPressure > 100000.0f ) actualPressure = oXs_MS5611.varioData.rawPressure / 10000.0 ; // this value can be used when calculating the Airspeed
 /* // used to debug spring of Altitude
   test1Value = i2cReadCount ; 
@@ -657,7 +673,7 @@ void readSensors() {
 #if defined (VARIO) && defined (USE_6050)
         if (newMpuAvailable) { // newMpuAvailable says that a new world_linear_acceleration is available (flag has been set inside read6050()
   #ifdef DEBUG_KALMAN
-            unsigned long beginKalman = millis();
+            unsigned long beginKalman = micros();
   #endif  
             newMpuAvailable = false ;                // reset indicator that new mpu data have to be handled    
             if ( countAltitudeToKalman != 0) {
@@ -682,11 +698,13 @@ void readSensors() {
             test3ValueAvailable = true ; 
   #endif
 
-  #ifdef DEBUG_KALMAN
+  #ifdef DEBUG_KALMAN_TIME
 ///           Serial.print(F("delay Kal ")) ; Serial.print( millis() - beginKalman ) ;Serial.print(F(", "));
 //            Serial.print( (int) world_linear_acceleration_z ) ; Serial.print(F(", "));Serial.print( (int) altitudeToKalman) ; Serial.print(F(", ")); Serial.print(oXs_MS5611.varioData.climbRate) ; Serial.print(F(", "));Serial.println(( int )vSpeedImu) ;
 ///           Serial.print( millis() ) ; Serial.print(F(", ")); Serial.print( (int)  ) ; Serial.print(F(", "));Serial.print( (int) world_linear_acceleration_z ) ; Serial.print(F(", "));Serial.print( (int) altitudeToKalman) ; Serial.print(F(", ")); Serial.print(oXs_MS5611.varioData.climbRate) ; Serial.print(F(", "));Serial.println(( int )vSpeedImu) ;
-  #endif  
+              Serial.print("delayK ") ; Serial.print( delayKalman[0] ) ; Serial.print(" ") ; Serial.print( delayKalman[1] ) ;
+              Serial.print(" ") ; Serial.print( delayKalman[2] ) ; Serial.print(" ") ; Serial.print( delayKalman[3] ) ;Serial.print(" ") ; Serial.println( delayKalman[4] ) ;
+#endif  
 
         }
 
@@ -735,7 +753,15 @@ void readSensors() {
 #endif // end  defined (VARIO) && ( defined (VARIO2) || defined (AIRSPEED) ) && defined (VARIO_SECONDARY ) && defined( VARIO_PRIMARY ) && defined (VARIO_SECONDARY) && defined (PIN_PPM)
   
 #ifdef PIN_VOLTAGE
-    if (checkFreeTime()) oXs_Voltage.readSensor();    // read voltage only if there enough time to avoid delaying vario reading
+  #ifdef DEBUG_VOLTAGE_TIME
+    unsigned long beginVoltage = micros();
+  #endif  
+    if (checkFreeTime()) oXs_Voltage.readSensor();    // read voltage only if there enough time to avoid delaying vario reading; It takes about 750 usec to go through the read sensor.
+  #ifdef DEBUG_VOLTAGE_TIME
+    beginVoltage = micros() - beginVoltage ;
+    Serial.print("voltage us ") ; Serial.println(beginVoltage) ;
+  #endif  
+    
 #endif   // end voltage
 
 #ifdef PIN_CURRENTSENSOR
@@ -1241,9 +1267,7 @@ void ProcessPPMSignal(){
 #ifdef PPM_INTERRUPT
 uint16_t StartTime ;
 //uint16_t EndTime ;
- 
-
- 
+  
 volatile uint8_t PulseTime ;		// A byte to avoid 
 volatile boolean  PulseTimeAvailable = false ;
 

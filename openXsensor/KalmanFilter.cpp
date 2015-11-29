@@ -10,6 +10,9 @@
 // This can be calculated offline for the specific sensor, and is supplied 
 // as an initialization parameter.
 
+#ifdef DEBUG_KALMAN_TIME
+extern int delayKalman[5] ;
+#endif
 
 KalmanFilter::KalmanFilter() { // constructor initialize 3 parameters
   Pzz_ = Pvv_ = 1.0f ;
@@ -51,7 +54,7 @@ void KalmanFilter::Configure( float zInitial) { // is not used anymore because a
 // and the time in seconds dt since the last measurement. 
 // 19uS on Navspark @81.84MHz	
 //void KalmanFilter::Update(float z, float a, float dt, float* pZ, float* pV) {
-void KalmanFilter::Update(float z, float a,  float* pZ, float* pV) {
+void KalmanFilter::Update(float z, float a,  float* pZ, float* pV) {               // Update takes about 750 usec when running at 16 mHz
 
 #define Z_VARIANCE        50.0f // initially 500
 #define ZACCEL_VARIANCE     0.1f  // initially 1
@@ -61,6 +64,10 @@ void KalmanFilter::Update(float z, float a,  float* pZ, float* pV) {
 #define DT2DIV2  (DT * DT / 2.0f)
 #define DT3DIV2  (DT2DIV2 * DT)
 #define DT4DIV4  (DT2DIV2 * DT2DIV2)
+
+#ifdef DEBUG_KALMAN_TIME
+unsigned long enterKalman = micros() ;
+#endif
 
 	// Predict state
     float accel = a - aBias_;
@@ -78,8 +85,8 @@ void KalmanFilter::Update(float z, float a,  float* pZ, float* pV) {
 //    CLAMP(zAccelVariance_, 1.0f, 50.0f);
 */
     // Predict State Covariance matrix
-	float t00;
-	float t01,t02;
+	  float t00;
+	  float t01,t02;
     float t10,t11,t12;
     float t20,t21,t22;
 	
@@ -98,7 +105,10 @@ void KalmanFilter::Update(float z, float a,  float* pZ, float* pV) {
 	t20 = Paz_;
 	t21 = Pav_;
 	t22 = Paa_;
-	
+
+#ifdef DEBUG_KALMAN_TIME
+  delayKalman[0] =  micros() - enterKalman ;
+#endif  
 	Pzz_ = t00 + DT*t01 - DT2DIV2*t02;
 //  Pzz_ +=  dt*Pvz_ - dt2div2*Paz_ + dt*t01 - dt2div2*t02;
 	Pzv_ = t01 - DT*t02;
@@ -114,6 +124,10 @@ void KalmanFilter::Update(float z, float a,  float* pZ, float* pV) {
 	Pav_ = t21 - DT*t22;
 	Paa_ = t22;
 
+#ifdef DEBUG_KALMAN_TIME
+  delayKalman[1] =  micros() - enterKalman ;
+#endif
+
     Pzz_ += DT4DIV4*ZACCEL_VARIANCE;
     Pzv_ += DT3DIV2*ZACCEL_VARIANCE;
 
@@ -126,11 +140,14 @@ void KalmanFilter::Update(float z, float a,  float* pZ, float* pV) {
 	float innov = z - z_; 
 	float sInv = 1.0f / (Pzz_ + Z_VARIANCE);  
 
+#ifdef DEBUG_KALMAN_TIME
+  delayKalman[2] =  micros() - enterKalman ;
+#endif
     // Kalman gains
 	float kz = Pzz_ * sInv;  
 	float kv = Pvz_ * sInv;
 	float ka = Paz_ * sInv;
-
+  
 	// Update state 
 	z_ += kz * innov;
 	v_ += kv * innov;
@@ -138,7 +155,9 @@ void KalmanFilter::Update(float z, float a,  float* pZ, float* pV) {
 	
 	*pZ = z_;
 	*pV = v_;
-
+#ifdef DEBUG_KALMAN_TIME
+  delayKalman[3] =  micros() - enterKalman ;
+#endif
 	// Update state covariance matrix
 	Pzz_ -= kz * Pzz_;
 	Pzv_ -= kz * Pzv_;
@@ -151,4 +170,7 @@ void KalmanFilter::Update(float z, float a,  float* pZ, float* pV) {
 	Paz_ -= ka * Pzz_;
 	Pav_ -= ka * Pzv_;
 	Paa_ -= ka * Pza_;
+#ifdef DEBUG_KALMAN_TIME
+  delayKalman[4] =  micros() - enterKalman ;  
+#endif
 	}

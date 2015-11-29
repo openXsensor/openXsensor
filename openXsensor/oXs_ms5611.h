@@ -64,6 +64,7 @@ private:
   bool errorCalibration ; // (true = error)
   void SendCommand(byte command);
   long getData(byte command, byte del);
+  void calculateVario() ; 
   unsigned int low, high;
     int32_t D1 ;  
     int32_t D2 ;

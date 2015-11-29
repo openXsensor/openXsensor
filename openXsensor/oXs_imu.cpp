@@ -53,6 +53,13 @@ struct hal_s {
 
 volatile unsigned char new_mpu_data ;
 
+// ******************* ISR for INT0 ******************************************************
+// this ISR handles interrupt 0 on rising edge ; when it occurs, it means that DMP has filled the fifo.
+ISR(INT0_vect, ISR_NOBLOCK) { // allows other interrupts to be served when this one is activated 
+ new_mpu_data = 1;
+}
+
+
 // ****************************  set up the imu 6050 (including the dmp)
 void setupImu() {
     // MPU-6050 Initialization
@@ -652,6 +659,7 @@ void loop_xxxxxxxx() {
 /* Every time new gyro data is available, this function is called in an
  * ISR context. In this example, it sets a flag saying the FIFO can be read
  */
+
 void gyro_data_ready_cb(void) {
     new_mpu_data = 1;
 }
@@ -717,6 +725,16 @@ boolean initialize_mpu() {
 #endif      
       return false;
     }
+
+                                                 // initialize the interrupt INT0 (= on arduino pin 2)
+  #define IMU_INT_EDGE      0x03 // rising edge
+  #define IMU_PIN_HEX     0x02
+  #define IMU_INT_BIT     0x01
+  PORTD |= IMU_PIN_HEX ;  // Pullup resistor
+  DDRD &= ~IMU_PIN_HEX ;  // set pin as Input
+  EICRA |= IMU_INT_EDGE ;   // Interrupt on rising edge
+  EIFR =   IMU_INT_BIT ;      // Clear interrupt flag on INT0 writing a 1
+  EIMSK |= IMU_INT_BIT ;    // Enable interrupt INT0
 
     /* Get/set hardware configuration. Start gyro. */
     /* Wake up all sensors. */

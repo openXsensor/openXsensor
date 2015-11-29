@@ -1,11 +1,11 @@
 // OpenXsensor https://github.com/openXsensor/
 // started by Rainer Schloßhan
 
-//*******************************************************************************************************************************************************//
-//                                                                                                                                                       //
-// ! IMPORTANT NOTE !!!!!!!!!!   Another file in this project (see oXs_config_description.h) provides detailed explanations on how to set up this file.  //
-//                                                                                                                                                       //
-//*******************************************************************************************************************************************************//
+//******************************************************************************************************************************************************* //
+//                                                                                                                                                        //
+// ! IMPORTANT NOTE !!!!!!!!!!   Another file in this project (see oXs_config_description.h) provides detailed explanations on how to set up this file.   //
+//                                                                                                                                                        //
+//******************************************************************************************************************************************************* //
 //  Note: the oXs_config.h file present on the GitHub site is not always meaningful.
 //       It could be that the combination of active/non active parameters is not consistent.
 //       This is just the result of many updates and tests in this document.
@@ -31,7 +31,7 @@
 #define PIN_SERIALTX      4    // The pin which transmits the serial data to the FrSky telemetry receiver, Usually pin 4
 
 // --------- 3 - PPM settings ---------
-//#define PIN_PPM           3       // default is 2 but my own device use 3
+#define PIN_PPM           3       // default is 2 but my own device use 3
 #define PPM_MIN_100       980     // default 1500 - 512 ; // pulse width (usec) when TX sends a channel = -100
 #define PPM_PLUS_100      1990    // default 1500 + 512 ; // pulse width (usec) when TX sends a channel = +100
 
@@ -59,7 +59,7 @@
 //#define ALT_TEMP_COMPENSATION 800
 
 // ***** 4.5 - Vertical speeds calculations *****
-#define VARIO_PRIMARY       0        // 1 = first baro,  2 = second baro, 3 = vario based on vario 1 + compensation from airspeed, 4 = average of first and second baro sensors , 5 = merge of first baro sensor and imu
+#define VARIO_PRIMARY       1        // 1 = first baro,  2 = second baro, 3 = vario based on vario 1 + compensation from airspeed, 4 = average of first and second baro sensors , 5 = merge of first baro sensor and imu
 //#define VARIO_SECONDARY     2        // 1 = first baro,  2 = second baro, 3 = vario based on vario 1 + compensation from airspeed, 4 = average of first and second baro sensors , 5 = merge of first baro sensor and imu
 //#define SWITCH_VARIO_MIN_AT_PPM 10
 //#define SWITCH_VARIO_MAX_AT_PPM 90
@@ -120,26 +120,12 @@
 // --------- 9 - Data to transmit ---------
 // ***** 9.1 - Frsky data *****
 #define SETUP_FRSKY_DATA_TO_SEND    \
-                        DEFAULTFIELD , AIR_SPEED , 1 , 1 ,0 , \
                         DEFAULTFIELD , ALTIMETER , 1 , 1 , 0 , \
-                        DEFAULTFIELD , VERTICAL_SPEED_I , 1 , 1 , 0 , \
-                        AccX , TEST1 , 1 , 1 ,0 , \
-                        T1 , TEST2 , 1 , 1 ,0 , \
-                        T2 , TEST3 , 1 , 1 ,0 , \
-                        Vfas , VOLT1 , 1 , 1 , 0 
-
-//                        T2 , TEST3 , 1 , 1, 0
-/*
                         VSpd , PPM_VSPEED , 1 , 1 ,0 , \
-                        DEFAULTFIELD , AIR_SPEED , 1 , 1 ,0 , \
-                        AccX , VERTICAL_SPEED , 1 , 1 ,0 , \
-                        AccZ , PRANDTL_DTE , 1 , 1 ,0 ,\
-                        T1 , VOLT1 , 1 , 1 ,0 , \
-                        T2 , VOLT2 , 1, 1, 0 , \
-                        DEFAULTFIELD , CURRENTMA , 1, 1, 0 , \
-                        DEFAULTFIELD , MILLIAH, 1, 1, 0 , \
-                        Fuel , SENSITIVITY , 1, 1, 0
-*/
+                        T1 , VERTICAL_SPEED , 1 , 1 ,0 , \
+                        T2 , VERTICAL_SPEED_I , 1 , 1 , 0 , \
+                        AccY , TEST2 , 1 , 1 ,0 
+
 // ***** 9.2 - Multiplex data *****
 #define SETUP_MULTIPLEX_DATA_TO_SEND    \
                         3 , ALTIMETER , 1 , 1 , 0 , -16384 , 16383 , \
@@ -182,7 +168,7 @@
 #define ACC_OFFSET_Z -1100 // fill here the value reported when DEBUG_MPU_OFFSET is activated
 
 // --------- xx - Reserved for developer. DEBUG must be activated here when we want to debug one or several functions in some other files. ---------
-#define DEBUG
+//#define DEBUG
 //#define DEBUG_BLINK   // use by developper in order to blink the led without using uart for debugging
 #define DEBUG_MPU_OFFSET // used (with DEBUG) in order to know the acceleration offset
 #define BASED_ON_AIRSPEED 0

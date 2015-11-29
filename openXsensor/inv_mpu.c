@@ -44,6 +44,7 @@
 #define i2c_read(a,b,c,d) shim_i2c_read(a,b,c,d)
 #define i2c_writeBlock(b,c,d) shim_i2c_writeBlock(b,c,d)
 
+
 static inline int reg_int_cb(struct int_param_s *int_param)
 {
 	attachInterrupt(int_param->pin, int_param->cb, RISING);
@@ -455,7 +456,7 @@ int mpu_init(struct int_param_s *int_param)
 //        return -1;
 
 
-        reg_int_cb(int_param);               // set the call back function and the interrupt number (0) used by 6050
+//        reg_int_cb(int_param);               // set the call back function and the interrupt number (0) used by 6050
 
     /* Already disabled by setup_compass. */
 //    if (mpu_set_bypass(0))               // to be checked if it can be ommited

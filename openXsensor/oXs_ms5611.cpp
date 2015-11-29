@@ -136,6 +136,180 @@ void OXS_MS5611::setup() {
 //***                            read the sensor                                           ***
 //********************************************************************************************
 #define WAIT_I2C_TIME 9000 // normally we have to wait 9000 usec 
+
+void OXS_MS5611::readSensor() {   // read sensor performs a read from sensor if the delay since previous conversion command is enlapsed, else calculates once if data are available. 
+#ifdef  DEBUGVARIOI2C
+    printer->print(F("sensorState= "));
+    printer->println(varioData.SensorState);
+#endif
+    extended2Micros = micros() >> 1 ;
+    if (extended2Micros < varioData.lastCommand2Micros) extended2Micros = extended2Micros | 0x80000000 ;
+    if ( extended2Micros  > (varioData.lastCommand2Micros + ( WAIT_I2C_TIME / 2 ) ) ) { // wait 9 msec at least before asking for reading the pressure
+        long result ;
+        if(  ! I2c.read( _addr, 0, 3 )) { ; //read 3 bytes from the device after sending a command "00";  
+          result = I2c.receive() ;
+          result <<= 8 ;
+          result |= I2c.receive() ;
+          result <<= 8 ;
+          result |= I2c.receive() ;
+        } // result remain 0 if I2C is wrong
+        if (varioData.SensorState==0) { // ========================= We got the temperature
+          D1=result;
+          varioData.SensorState++ ;
+          I2c.write( _addr,0x48) ;                    // ask a conversion of Pressure
+        } else {                      // ========================= We got the Pressure
+          D2=result;
+          pressureMicros = micros();                  // pressureMicros is the timestamp to calculate climbrate between 2 pressuresD2=result;
+          varioData.SensorState = 2 ;
+          I2c.write( _addr,0x58) ;                   // ask a conversion of Temperature
+        }
+        varioData.lastCommand2Micros = (micros() >>1 );    // save time of last command
+    } else {
+      if  ( varioData.SensorState == 2 ) {                   // 2 means that previous call to read sensor got a Pressure
+          varioData.SensorState = 0 ;                         // reset state to 0 to allow reading the temperature
+          if ( (D1 > 0) && (D2 > 0) &&( millis() > 1000) ) {   // we have all data and we can calculate
+              calculateVario() ;
+          }
+      } 
+      
+    }
+}  // end read sensor     
+        
+void OXS_MS5611::calculateVario() {        
+        if (D2Prev == 0) D2Prev = D2 ;
+        D2Apply = (D2 + D2Prev ) >> 1 ;
+        D2Prev = D2 ; 
+        dT = D2Apply - ((long)_calibrationData[5] << 8);
+//      TEMP = (2000 + (((int64_t)dT * (int64_t)_calibrationData[6]) >> 23)) / (float) 1.0 ;
+        varioData.temperature = (2000 + (((int64_t)dT * (int64_t)_calibrationData[6]) >> 23)) ; 
+//      varioData.temperature= TEMP;
+//      OFF  = (((int64_t)_calibrationData[2]) << 16) + ( (_calibrationData[4] * dT) >> 7);
+        OFF  = (((int64_t)_calibrationData[2]) << 16) + ( ( (_calibrationData[4] - alt_temp_compensation ) * dT) >> 7);
+        SENS = (((int64_t)_calibrationData[1]) << 15) + ((_calibrationData[3] * dT) >> 8);
+        varioData.rawPressure= (((((((int64_t) D1) * (int64_t) SENS) >> 21) - OFF) * 10000 ) >> 15) ; // 1013.25 mb gives 1013250000 is a factor to keep higher precision (=1/100 cm).
+      
+      // altitude = 44330 * (1.0 - pow(pressure /sealevelPressure,0.1903));
+      // other alternative (faster) = 1013.25 = 0 m , 954.61 = 500m , etc...
+      //      Pressure  Alt (m) Ratio
+      //      101325  0 0.08526603
+      //      95461 500 0.089525515
+      //      89876 1000  0.094732853
+      //      84598 1500  0.098039216
+      //      79498 2000  0.103906899
+      //      74686 2500  0.109313511
+      //      70112 3000  0.115101289
+      //      65768 3500  0.121270919
+      //      61645 4000  0.127811861
+      //      57733 4500  0.134843581
+      //      54025 5000  
+
+      if ( varioData.rawPressure > 954610000) {
+        varioData.rawAltitude = ( 1013250000 - varioData.rawPressure ) * 0.08526603 ; // = 500 / (101325 - 95461)  // returned value 1234567 means 123,4567 m (temp is fixed to 15 degree celcius)
+      } else if ( varioData.rawPressure > 898760000) {
+        varioData.rawAltitude = 5000000 + ( 954610000 - varioData.rawPressure ) * 0.089525515  ; 
+      } else if ( varioData.rawPressure > 845980000) {
+        varioData.rawAltitude = 10000000 + ( 898760000 - varioData.rawPressure ) * 0.094732853  ; 
+      } else if ( varioData.rawPressure > 794980000) {
+        varioData.rawAltitude = 15000000 + ( 845980000 - varioData.rawPressure ) *  0.098039216 ; 
+      } else if ( varioData.rawPressure > 746860000) {
+        varioData.rawAltitude = 20000000 + ( 794980000 - varioData.rawPressure ) *  0.103906899 ; 
+      } else if ( varioData.rawPressure > 701120000) {
+        varioData.rawAltitude = 25000000 + ( 746860000 - varioData.rawPressure ) *  0.109313511 ; 
+      } else if ( varioData.rawPressure > 657680000) {
+        varioData.rawAltitude = 30000000 + ( 701120000 - varioData.rawPressure ) *  0.115101289 ; 
+      } else if ( varioData.rawPressure > 616450000) {
+        varioData.rawAltitude = 35000000 + ( 657680000 - varioData.rawPressure ) *  0.121270919 ; 
+      } else if ( varioData.rawPressure > 577330000) {
+        varioData.rawAltitude = 40000000 + ( 616450000 - varioData.rawPressure ) *  0.127811861 ;
+      } else {    varioData.rawAltitude = 45000000 + ( 577330000 - varioData.rawPressure ) *  0.134843581 ;
+      }
+     
+// here the classical way to calculate Vspeed with high and low pass filter      
+      if (altitude == 0) {
+        altitudeLowPass = altitudeHighPass = altitude = varioData.rawAltitude ;
+      }
+      altitude += 0.04 * (varioData.rawAltitude - altitude) ;
+      varioData.altitudeAt20MsecAvailable = true ; // inform openxsens.ino that calculation of dTE can be performed
+
+      altitudeLowPass += 0.085 * ( varioData.rawAltitude - altitudeLowPass) ;
+      altitudeHighPass += 0.1  * ( varioData.rawAltitude - altitudeHighPass) ;
+      climbRate2AltFloat = ((altitudeHighPass - altitudeLowPass )  * 5666.685 ) / 20000 ; 
+
+      abs_deltaClimbRate =  abs(climbRate2AltFloat - varioData.climbRateFloat) ;
+      if ( varioData.sensitivityPpm  > 0) sensitivityMin =   varioData.sensitivityPpm ; 
+      if ( (abs_deltaClimbRate <= SENSITIVITY_MIN_AT) || (sensitivityMin >= SENSITIVITY_MAX) ) {
+         varioData.sensitivity = sensitivityMin ;  
+      } else if (abs_deltaClimbRate >= SENSITIVITY_MAX_AT)  {
+         varioData.sensitivity = SENSITIVITY_MAX ; 
+      } else {
+         varioData.sensitivity = sensitivityMin + ( SENSITIVITY_MAX - sensitivityMin ) * (abs_deltaClimbRate - SENSITIVITY_MIN_AT) / (SENSITIVITY_MAX_AT - SENSITIVITY_MIN_AT) ;
+      }
+      varioData.climbRateFloat += varioData.sensitivity * (climbRate2AltFloat - varioData.climbRateFloat)  * 0.001 ; // sensitivity is an integer and must be divided by 1000
+      
+      if ( abs((int32_t)  varioData.climbRateFloat - varioData.climbRate) > VARIOHYSTERESIS ) {
+          varioData.climbRate = (int32_t)  varioData.climbRateFloat  ;
+      }    
+      varioData.climbRateAvailable=true; // allows SPORT protocol to transmit the value
+      varioData.switchClimbRateAvailable = true ; // inform readsensors() that a switchable vspeed is available
+      varioData.averageClimbRateAvailable = true ; // inform readsensors() that a vspeed is available to calculate the average
+      // AltitudeAvailable is set to true only once every 100 msec in order to give priority to climb rate on SPORT
+      altMillis = millis() ;
+      if (altMillis > nextAltMillis){
+        nextAltMillis = altMillis + 100 ;
+        varioData.absoluteAlt = altitude / 100 ; // altitude is in m *10000 and AbsoluteAlt must be in m * 100
+        varioData.absoluteAltAvailable=true ;  // Altitude is considered as available only after several loop in order to reduce number of transmission on Sport.
+        varioData.sensitivityAvailable = true ;
+        if (varioData.altOffset == 0) varioData.altOffset = varioData.absoluteAlt ;
+        varioData.relativeAlt = varioData.absoluteAlt - varioData.altOffset ;
+        varioData.relativeAltAvailable = true ;
+        if ( varioData.relativeAlt > varioData.relativeAltMax ) varioData.relativeAltMax = varioData.relativeAlt ;
+        varioData.relativeAltMaxAvailable = true ;
+
+//        if ( altMillis > nextAverageAltMillis ){ // calculation of the difference of altitude (in m) between the 10 last sec
+//            nextAverageAltMillis = altMillis + 500 ; // calculate only once every 500 msec
+//            varioData.vSpeed10Sec = (varioData.absoluteAlt - varioData.prevAlt[varioData.idxPrevAlt]) /100 ;
+//            varioData.prevAlt[varioData.idxPrevAlt] = varioData.absoluteAlt ;
+//            varioData.idxPrevAlt++ ;
+//            if ( varioData.idxPrevAlt >= 20 ) varioData.idxPrevAlt = 0 ;
+//            if ( altMillis > 15000) {  // make the data avalaible only after 15 sec)
+//                varioData.vSpeed10SecAvailable = true ;
+//            }  
+//        }  
+
+      } // end If (altMillis > nextAltMillis)
+#ifdef DEBUGDATA
+      static bool firstPrintAlt = true ;
+      if (firstPrintAlt == true) {
+          firstPrintAlt = false ;
+//          printer->println(F( "T,Ra,Sm,A,NC,DS,AHP,ALP,CR2, Temp" )) ;
+          printer->println(F( "T,Ra,Alt,vpsd, Alt2, rawVspd, vspd2 , smoothAlt, smoothVspd" )) ;
+      }    
+            printer->print(  pressureMicrosPrev1 ) ; printer->print(",");
+            printer->print(  (float) varioData.rawAltitude  ) ; printer->print(","); // alt is displayed in CM with 2 decimal
+ //           printer->print(  expoSmooth ) ;             printer->print(" ,");
+            printer->print( (float) altitude  ) ;             printer->print(" ,");
+            printer->print( varioData.climbRate ) ;            printer->print(" ,"); 
+ //           printer->print( delaySmooth ) ;            printer->print(" ,"); 
+ //           printer->print( altitudeHighPass ) ;             printer->print(" ,"); 
+ //           printer->print( altitudeLowPass ) ;            printer->print(" ,"); 
+ //           printer->print( climbRate2AltFloat ) ;             printer->print(" ,"); 
+ //           printer->print( varioData.temperature ) ;
+ //           printer->print( smoothAltitude ) ;            printer->print(" ,"); 
+ //           printer->print( rawRateVSpeed ) ;            printer->print(" ,"); 
+ //           printer->print( smoothRateVSpeed ) ;            printer->print(" ,"); 
+ //           printer->print( expoSmooth5611_alt_auto * 1000 ) ;            printer->print(" ,"); 
+ //           printer->print( expoSmooth5611_vSpeed_auto * 1000 ) ;            printer->print(" ,"); 
+            printer->println( ) ;
+            
+#endif        
+
+
+      pressureMicrosPrev2 = pressureMicrosPrev1 ;
+      
+} // End of calculateVario
+
+
+/*
 void OXS_MS5611::readSensor() {
    long result = 0;
 #ifdef  DEBUGVARIOI2C
@@ -147,7 +321,7 @@ void OXS_MS5611::readSensor() {
     if (extended2Micros < varioData.lastCommand2Micros) extended2Micros = extended2Micros | 0x80000000 ;
     if ( extended2Micros  > (varioData.lastCommand2Micros + ( WAIT_I2C_TIME / 2 ) ) ) { // wait 9 msec at least before asking for reading the pressure
 //        long result = 0;
-	if(  ! I2c.read( _addr, 0, 3 )) { ; //read 3 bytes from the device after sending a command "00"; keep previous value in case of error 
+	      if(  ! I2c.read( _addr, 0, 3 )) { ; //read 3 bytes from the device after sending a command "00"; keep previous value in case of error 
         	result = I2c.receive() ;
          	result <<= 8 ;
          	result |= I2c.receive() ;
@@ -279,18 +453,18 @@ void OXS_MS5611::readSensor() {
         varioData.relativeAltAvailable = true ;
         if ( varioData.relativeAlt > varioData.relativeAltMax ) varioData.relativeAltMax = varioData.relativeAlt ;
         varioData.relativeAltMaxAvailable = true ;
-/*
-        if ( altMillis > nextAverageAltMillis ){ // calculation of the difference of altitude (in m) between the 10 last sec
-            nextAverageAltMillis = altMillis + 500 ; // calculate only once every 500 msec
-            varioData.vSpeed10Sec = (varioData.absoluteAlt - varioData.prevAlt[varioData.idxPrevAlt]) /100 ;
-            varioData.prevAlt[varioData.idxPrevAlt] = varioData.absoluteAlt ;
-            varioData.idxPrevAlt++ ;
-            if ( varioData.idxPrevAlt >= 20 ) varioData.idxPrevAlt = 0 ;
-            if ( altMillis > 15000) {  // make the data avalaible only after 15 sec)
-                varioData.vSpeed10SecAvailable = true ;
-            }  
-        }  
-*/
+
+//        if ( altMillis > nextAverageAltMillis ){ // calculation of the difference of altitude (in m) between the 10 last sec
+//            nextAverageAltMillis = altMillis + 500 ; // calculate only once every 500 msec
+//            varioData.vSpeed10Sec = (varioData.absoluteAlt - varioData.prevAlt[varioData.idxPrevAlt]) /100 ;
+//            varioData.prevAlt[varioData.idxPrevAlt] = varioData.absoluteAlt ;
+//            varioData.idxPrevAlt++ ;
+//            if ( varioData.idxPrevAlt >= 20 ) varioData.idxPrevAlt = 0 ;
+//            if ( altMillis > 15000) {  // make the data avalaible only after 15 sec)
+//                varioData.vSpeed10SecAvailable = true ;
+//            }  
+//        }  
+
       } // end If (altMillis > nextAltMillis)
 #ifdef DEBUGDATA
       static bool firstPrintAlt = true ;
@@ -324,7 +498,7 @@ void OXS_MS5611::readSensor() {
   } // End of process if SensorState was 0    
 } // End of readSensor
 
-
+*/
 
 
 
