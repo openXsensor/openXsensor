@@ -2,7 +2,7 @@
  
 #ifdef DEBUG
 //#define DEBUGNEWVALUE
-//#define DEBUGDELAY
+#define DEBUGDELAY
 //#define DEBUGCELLCALCULATION
 //#define DEBUGLOWVOLTAGE
 #endif
@@ -121,23 +121,22 @@ void OXS_VOLTAGE::readSensor() {
 
     if (voltageData.atLeastOneVolt) { // no calculation if there is no voltage to calculate.
 #ifdef DEBUGDELAY
-        long milliVoltBegin = millis() ;
+        long milliVoltBegin = micros() ;
 #endif
 
         while ( voltageData.mVoltPin[voltageNr] > 7) { // Skip nr if voltageNr have not a pin defined between 0 and 7
-            voltageNrIncrease();
+            voltageNrIncrease();                       // Find next voltage to be read; if overlap, calculate average for each voltage
         }  
-        voltageData.sumVoltage[voltageNr] += readVoltage(voltageNr) ;
+        voltageData.sumVoltage[voltageNr] += readVoltage(voltageNr) ;   // read voltage 
 #ifdef DEBUGDELAY
-        printer->print("readVoltage voltageNr =  ");
+        milliVoltBegin = milliVoltBegin - micros() ;
+        printer->print("VoltageNr ");
         printer->print(voltageNr);
-        printer->print(" begin at =  ");
-        printer->print(milliVoltBegin);
-        printer->print(" end at =  ");
-        printer->println(millis());
+        printer->print(" in ");
+        printer->println(milliVoltBegin);
 #endif
 
-        voltageNrIncrease();
+        voltageNrIncrease();                          // Find next voltage to be read; if overlap, calculate average for each voltage
     }
 }      
 
@@ -178,6 +177,7 @@ void OXS_VOLTAGE::voltageNrIncrease() {
         } // End For 
         
 #if defined ( NUMBEROFCELLS ) && (NUMBEROFCELLS > 0)
+        voltageData.maxNumberOfCells = 0 ;
         for (uint8_t cellIndex = 0; cellIndex < NUMBEROFCELLS ; cellIndex++) {
           int32_t mVoltOneCell ;
           uint8_t prevIndex ;
@@ -187,13 +187,17 @@ void OXS_VOLTAGE::voltageNrIncrease() {
             mVoltOneCell = voltageData.mVolt[cellIndex] - voltageData.mVolt[prevIndex] ;
           }
           prevIndex = cellIndex ;        
-          if (mVoltOneCell  < 500) mVoltOneCell = 0 ;
+          if (mVoltOneCell  < 500) {
+            mVoltOneCell = 0 ;
+          } else {
+            voltageData.maxNumberOfCells = cellIndex + 1 ;
+          }
           voltageData.mVoltCell[cellIndex]  = mVoltOneCell ;
           voltageData.mVoltCell_Available[cellIndex] = true ;
         }
         voltageData.mVoltCellMin = 0 ;
         voltageData.mVoltCellTot = 0 ;
-        for (uint8_t cellIndex = 0; cellIndex < NUMBEROFCELLS ; cellIndex++) {
+        for (uint8_t cellIndex = 0; cellIndex < voltageData.maxNumberOfCells ; cellIndex++) {
           if (voltageData.mVoltCell[cellIndex] == 0 ) {
             break ;
           } else {
@@ -208,32 +212,34 @@ void OXS_VOLTAGE::voltageNrIncrease() {
         }
         voltageData.mVoltCellTot_Available = true ;
 #ifndef  MULTIPLEX // not multiplex
-        if (NUMBEROFCELLS == 1) {
-          secondMVolt = 0 ; 
-        }
-        else { 
-          secondMVolt = voltageData.mVolt[1]; 
-        }
-        voltageData.mVoltCell_1_2 = calculateCell(0, voltageData.mVolt[0] , secondMVolt , 0) ;
-        voltageData.mVoltCell_1_2_Available = true ;   
-        if (NUMBEROFCELLS > 2) {
-            if (NUMBEROFCELLS == 3) {
+        if (voltageData.maxNumberOfCells > 0) {
+            if (voltageData.maxNumberOfCells == 1) {
+              secondMVolt = 0 ; 
+            }
+            else { 
+              secondMVolt = voltageData.mVolt[1]; 
+            }
+            voltageData.mVoltCell_1_2 = calculateCell(0, voltageData.mVolt[0] , secondMVolt , 0, voltageData.maxNumberOfCells ) ;
+            voltageData.mVoltCell_1_2_Available = true ;   
+        }    
+        if (voltageData.maxNumberOfCells > 2) {
+            if (voltageData.maxNumberOfCells == 3) {
               secondMVolt = 0 ; 
             }
             else { 
               secondMVolt = voltageData.mVolt[3] ;
             }  
-            voltageData.mVoltCell_3_4 = calculateCell(voltageData.mVolt[1] , voltageData.mVolt[2] , secondMVolt , 2) ;
+            voltageData.mVoltCell_3_4 = calculateCell(voltageData.mVolt[1] , voltageData.mVolt[2] , secondMVolt , 2 , voltageData.maxNumberOfCells) ;
             voltageData.mVoltCell_3_4_Available = true ;
         }
-        if (NUMBEROFCELLS > 4) {
-            if (NUMBEROFCELLS == 5) {
+        if (voltageData.maxNumberOfCells > 4) {
+            if (voltageData.maxNumberOfCells == 5) {
               secondMVolt = 0 ; 
             }
             else { 
               secondMVolt = voltageData.mVolt[5] ;
             }  
-            voltageData.mVoltCell_5_6 = calculateCell(voltageData.mVolt[3] , voltageData.mVolt[4] , secondMVolt , 4) ;
+            voltageData.mVoltCell_5_6 = calculateCell(voltageData.mVolt[3] , voltageData.mVolt[4] , secondMVolt , 4 , voltageData.maxNumberOfCells) ;
             voltageData.mVoltCell_5_6_Available = true ;
         }
 #endif // Enf of multiplex/non multiplex
@@ -276,12 +282,12 @@ int OXS_VOLTAGE::readVoltage( int value ) { // value is the index in an aray giv
 #endif
     delayMicroseconds(200); // Wait for Vref to settle 
   ADCSRA |= _BV(ADSC); // Start conversion
-  while (bit_is_set(ADCSRA,ADSC)); // wait that conversion is done
+  while (bit_is_set(ADCSRA,ADSC)); // wait that conversion is done ; this takes 13 cycles of 125 khz (clock set in oXs_general.ccp so 104 usec
   
-  analogRead( voltageData.mVoltPin[value]); // read the value from the sensor 
+  analogRead( voltageData.mVoltPin[value]); // read the value from the sensor ; it requires about 120 usec 
   // discard the first measurement
   delayMicroseconds(100); // Wait for ADMux to settle 
-  return analogRead(voltageData.mVoltPin[value]); // use the second measurement
+  return analogRead(voltageData.mVoltPin[value]); // use the second measurement ; it requires about 120 usec
 }
 
 
@@ -293,7 +299,7 @@ void OXS_VOLTAGE::resetValues() {
 
 #if defined ( NUMBEROFCELLS ) && (NUMBEROFCELLS > 0 )
 // calculate 2 cell voltages, make some checks and format in Frsky format.
-uint32_t OXS_VOLTAGE::calculateCell(int32_t V0 , int32_t V1 , int32_t V2 , int cellId) {
+uint32_t OXS_VOLTAGE::calculateCell(int32_t V0 , int32_t V1 , int32_t V2 , uint8_t cellId , uint8_t  maxNumberOfCells) {
   int32_t cell_1 ;
   int32_t cell_2 ;
   if (V0 < 500) V0 = 0 ;
@@ -313,9 +319,9 @@ uint32_t OXS_VOLTAGE::calculateCell(int32_t V0 , int32_t V1 , int32_t V2 , int c
             printer->print(" Second Cell = ");
             printer->print(cell_2) ;
             printer->print(" Frsky value = ");
-            printer->println( (cell_2 << 20) | (cell_1 << 8) | ( ( (int32_t) NUMBEROFCELLS)<<4 ) | (int32_t) cellId  , HEX );
+            printer->println( (cell_2 << 20) | (cell_1 << 8) | ( ( (int32_t) voltageData.maxNumberOfCells)<<4 ) | (int32_t) cellId  , HEX );
 #endif
-  return (cell_2 << 20) | (cell_1 << 8) | ( ( (int32_t) NUMBEROFCELLS)<<4 ) | (int32_t) cellId ;
+  return (cell_2 << 20) | (cell_1 << 8) | ( ( (int32_t) voltageData.maxNumberOfCells )<<4 ) | (int32_t) cellId ;
 }
 #endif // end calculateCell
 

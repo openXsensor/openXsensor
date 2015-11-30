@@ -17,8 +17,9 @@ struct VOLTAGEDATA {
 
   bool atLeastOneVolt ;         // true if there is at least one voltage to measure (added because otherwise a while in cpp never end)
   
-  int32_t sumVoltage[6] ;       // use to calculate average voltage     
+  int32_t sumVoltage[6] ;       // used to calculate average voltage     
 
+  uint8_t maxNumberOfCells ;    // used to fill in the max number of cells
   uint32_t mVoltCell[6] ;
   bool mVoltCell_Available [6];
   uint32_t mVoltCellMin ;
@@ -56,7 +57,7 @@ class OXS_VOLTAGE {
 #endif
      int readVoltage( int value) ;  // read the voltage from the sensor specify by value
      void voltageNrIncrease() ; 
-     uint32_t calculateCell(int32_t V0 , int32_t V1 , int32_t V2 , int cellId) ;  
+     uint32_t calculateCell(int32_t V0 , int32_t V1 , int32_t V2 , uint8_t cellId , uint8_t  maxNumberOfCells) ;  
 };
 
 extern bool lowVoltage ;

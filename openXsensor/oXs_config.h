@@ -94,14 +94,14 @@
 #define REFERENCE_VOLTAGE 4970    // set value in milliVolt; if commented, oXs will use or 1100 (if internal ref is used) or 5000 (if internal ref is not used) 
 
 // ***** 6.2 - Voltage parameters *****
-//#define PIN_VOLTAGE         0  , 8     , 8   , 8    , 8   , 8               // set this line as comment if no one voltage have to be measured, set a value to 8 for the voltage(s) not to be measured.
+#define PIN_VOLTAGE         0  , 1     , 2   , 8    , 8   , 8               // set this line as comment if no one voltage have to be measured, set a value to 8 for the voltage(s) not to be measured.
 #define RESISTOR_TO_GROUND  12 , 20    , 30  , 19.8 , 50  , 60               // set value to 0 when no divider is used for a voltage, can contains decimals 
 #define RESISTOR_TO_VOLTAGE 50 , 100.1 , 200 , 39   , 500 , 600              // set value to 0 when no divider is used for a voltage, can contains decimals 
 #define OFFSET_VOLTAGE      0 , 0     , 0   , 0    , 0   , 0                // optionnal, can be negative, must be integer
 #define SCALE_VOLTAGE      1.1 , 1     ,  1  , 1.004, 1   , 1                // optionnal, can be negative, can have decimals
 
 // ***** 6.3 - Max number of Lipo cells to measure (and transmit to Tx) *****
-//#define NUMBEROFCELLS 1  // keep this line but set value to 0 (zero) if you do not want to transmit cell voltage.
+#define NUMBEROFCELLS 3   // keep this line but set value to 0 (zero) if you do not want to transmit cell voltage.
 
 // ***** 6.4 - Current parameters  *****
 //#define PIN_CURRENTSENSOR   3
@@ -163,13 +163,13 @@
 
 // --------- 12 - IMU 6050 --- (accelerometer + gyro -----------------------------------------------------------------
 #define USE_6050 // uncomment this line if a IMU 6050 is connected
-#define ACC_OFFSET_X -160 // fill here the value reported when DISPLAY_ACC_OFFSET is activated
-#define ACC_OFFSET_Y -150 // fill here the value reported when DISPLAY_ACC_OFFSET is activated
-#define ACC_OFFSET_Z -1100 // fill here the value reported when DISPLAY_ACC_OFFSET is activated
+#define ACC_OFFSET_X -160 // fill here the first value reported when DISPLAY_ACC_OFFSET is activated
+#define ACC_OFFSET_Y -150 // fill here the second value reported when DISPLAY_ACC_OFFSET is activated
+#define ACC_OFFSET_Z -1100 // fill here the third value reported when DISPLAY_ACC_OFFSET is activated
 //#define DISPLAY_ACC_OFFSET // used ONLY in order to display the acceleration offset on pc terminal; KEEP AS COMMENT once offsets has been setup 
 
 // --------- xx - Reserved for developer. DEBUG must be activated here when we want to debug one or several functions in some other files. ---------
-//#define DEBUG
+#define DEBUG
 //#define DEBUG_BLINK   // use by developper in order to blink the led without using uart for debugging
 #define BASED_ON_AIRSPEED 0
 #define BASED_ON_GPS_SPEED 1
