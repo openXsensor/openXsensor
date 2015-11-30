@@ -33,10 +33,11 @@
 	#define PPM_INTERRUPT			ON // define to use interrupt code in Aserial.cpp
 	#define PPM_INT_MASK			0x0C
 	#define PPM_INT_EDGE			0x04
-	#define PPM_PIN_HEX			0x04
-	#define PPM_INT_BIT			0x02
+	#define PPM_PIN_HEX		  	0x04
+	#define PPM_INT_BIT		  	0x02
  #endif
 #endif
+
 
 //*************** There is normally no reason changing the 2 next parameters
 #define I2C_MS5611_Add           0x77 // 0x77 The I2C Address of the MS5611 breakout board 

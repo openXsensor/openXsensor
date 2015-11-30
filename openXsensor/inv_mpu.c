@@ -44,12 +44,13 @@
 #define i2c_read(a,b,c,d) shim_i2c_read(a,b,c,d)
 #define i2c_writeBlock(b,c,d) shim_i2c_writeBlock(b,c,d)
 
-
+/*
 static inline int reg_int_cb(struct int_param_s *int_param)
 {
 	attachInterrupt(int_param->pin, int_param->cb, RISING);
 	return 0;
 }
+*/
 
 #define fabs(x)     (((x)>0)?(x):-(x))
 
@@ -381,7 +382,7 @@ void mpu_force_reset()                                         // this code is c
  *  @param[in]  int_param   Platform-specific parameters to interrupt API.
  *  @return     0 if successful.
  */
-int mpu_init(struct int_param_s *int_param)
+int mpu_init()
 {
     unsigned char data[6], rev;
     // Reset device. 

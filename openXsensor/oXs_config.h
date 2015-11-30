@@ -163,17 +163,20 @@
 
 // --------- 12 - IMU 6050 --- (accelerometer + gyro -----------------------------------------------------------------
 #define USE_6050 // uncomment this line if a IMU 6050 is connected
-#define ACC_OFFSET_X -160 // fill here the value reported when DEBUG_MPU_OFFSET is activated
-#define ACC_OFFSET_Y -150 // fill here the value reported when DEBUG_MPU_OFFSET is activated
-#define ACC_OFFSET_Z -1100 // fill here the value reported when DEBUG_MPU_OFFSET is activated
+#define ACC_OFFSET_X -160 // fill here the value reported when DISPLAY_ACC_OFFSET is activated
+#define ACC_OFFSET_Y -150 // fill here the value reported when DISPLAY_ACC_OFFSET is activated
+#define ACC_OFFSET_Z -1100 // fill here the value reported when DISPLAY_ACC_OFFSET is activated
+//#define DISPLAY_ACC_OFFSET // used ONLY in order to display the acceleration offset on pc terminal; KEEP AS COMMENT once offsets has been setup 
 
 // --------- xx - Reserved for developer. DEBUG must be activated here when we want to debug one or several functions in some other files. ---------
 //#define DEBUG
 //#define DEBUG_BLINK   // use by developper in order to blink the led without using uart for debugging
-#define DEBUG_MPU_OFFSET // used (with DEBUG) in order to know the acceleration offset
 #define BASED_ON_AIRSPEED 0
 #define BASED_ON_GPS_SPEED 1
 #define AVERAGING_DELAY_MILLISEC  AVERAGING_TOLERANCE * 100  
+#if defined( DISPLAY_ACC_OFFSET ) && defined( USE_6050 )
+  #define DEBUG
+#endif
 
 
 #ifdef DEBUG

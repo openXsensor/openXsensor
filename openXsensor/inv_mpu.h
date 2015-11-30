@@ -20,10 +20,12 @@
 #define INV_XYZ_ACCEL   (0x08)
 #define INV_XYZ_COMPASS (0x01)
 
+/*
 struct int_param_s {          //used for  EMPL_TARGET_ATMEGA328 
     void (*cb)(void);
     unsigned short pin;
 };
+*/
 
 #define MPU_INT_STATUS_DATA_READY       (0x0001)
 #define MPU_INT_STATUS_DMP              (0x0002)
@@ -46,7 +48,7 @@ void mpu_enable_pwm_mgnt() ;
 unsigned short mpu_getfifo_count_debug() ;
 
 /* Set up APIs */
-int mpu_init(struct int_param_s *int_param);
+int mpu_init();
 int mpu_init_slave(void);
 int mpu_set_bypass(unsigned char bypass_on);
 void mpu_force_reset();

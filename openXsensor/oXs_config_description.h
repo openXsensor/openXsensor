@@ -897,23 +897,42 @@ started by Rainer Schloßhan
 ************************************************************************************************************************ 
 
 **********  12 - IMU based on mpu6050 (accelerometer/gyro sensor) (optionnal) ********************************************************
-*  It is possible to connect an accelerometer/gyro sensor to arduino; this is optionnal.
+*  It is possible to connect an IMU sensor (=accelerometer/gyro) to arduino; this is optionnal.
 *  It allows :
 *      - to reduce the reaction time of the vario by about 0.5 sec (note: a baro sensor has to be connected too because oXs merges the data from both sensors)
 *      - to transmit data about accelerations and/or orientation (pitch/roll); in this case it is important that oXs device is mounted in a fix position and is aligned with the plane axis. 
-*  The mpu6050 sensors is easily available with different modules. The best module to use is probably the GY-86 because it has also a voltage regulator (3.3volt), I2C level converters, a baro sensor (MS5611)     
+*  Only one IMU sensor is supported : the mpu6050. 
+*  This sensor is easily available on ebay, ... under different modules. The best module to use is probably the GY-86 because it has also a voltage regulator (3.3volt), I2C level converters, and a baro sensor (MS5611)     
 *  5 pins from the mpu6050 have to be connected to Arduino:
 *       - MP6050 ground  <--->  Arduino ground
 *       - MP6050 Vcc     <--->  Arduino Vcc
 *       - MP6050 SDA     <--->  Arduino SDA = Arduino A4
 *       - MP6050 SCL     <--->  Arduino SCL = Arduino A5
-*       - MP6050 INT     <--->  Arduino INT0 = Arduino 2 (do not use this pin for another purpose then)
-* In order to activate the imu, uncomment the line #define USE_6050       
-* When imu is activated, this version of oXs calculates the vertical speed in a different way merging the altitude from baro sensor with vertical acceleration (in Earth reference).
-* This other type of vertical speed is for test purpose put in the field "TEST3". E.g in Frsky protocol, it is possible to transmit as Vspeed.  
+*       - MP6050 INT     <--->  Arduino INT0 = Arduino 2 (do not use this pin for another purpose like PPM then)
+* In order to activate the IMU, uncomment the line #define USE_6050       
+* When IMU is activated, this version of oXs calculates a vertical speed in a different way merging the altitude from baro sensor with vertical acceleration (in Earth reference).
+* This other type of vertical speed is available in the field "VERTICAL_SPEED_I". In Frsky protocol, it is possible to transmit it e.g. as Vspd.  
 * It is also possible to assign it in  "VARIO_PRIMARY" or "VARIO_SECONDARY"  and so to switch between 2 vario sources from the Tx (using a ppm channel) 
+* In order to get best results from IMU, it is required to calibrate the accelerometer offsets. To do so, please :
+*    - upload a version of oXs firmware whith the line #define DISPLAY_ACC_OFFSET is uncommented
+*    - let oXs runs while connected to the PC (via USB serial interface = FTDI)
+*    - open Arduino IDE terminal (press CTRL + SHIFT + M simultaniously)
+*    - take care to set the baud rate to 115200 (or 38400 if GPS is activated too)
+*    - after startup, terminal should, every 2 or 3 sec, display Acc followed by 3 numbers being respectively AccX, AccY and AccZ. Please note that those numbers change when mpu6050 moves.
+*    - ensure that the mpu6050 (GY86) is perfectly horizontal and does not move (e.g. put on a table) 
+*    - notice the 2 first numbers ( = AccX and AccY ) ; Don't take care of the 3rd number because when the sensor is in this position, it will reflect the gravity and will be around 16384. 
+*    - rotate mpu6050 in order to get X or Y axis perfectly vertical and do not move. Now, the 3rd number would become much lower (because it does not measure gravity anymore)
+*    - notice the 3rd number ( = Accz )
+*    - update oXs_config.h file filling the 3 numbers in lines #define ACC_OFFSET_X , #define ACC_OFFSET_Y and #define ACC_OFFSET_Z
+*    - set line #define DISPLAY_ACC_OFFSET as comment (adding "//" in front)
+*    - upload again oXs firmware in arduino
 ************************************************************************************************************************ 
  //#define USE_6050
+#define ACC_OFFSET_X -160 // fill here the value reported when DISPLAY_ACC_OFFSET is activated
+#define ACC_OFFSET_Y -150 // fill here the value reported when DISPLAY_ACC_OFFSET is activated
+#define ACC_OFFSET_Z -1100 // fill here the value reported when DISPLAY_ACC_OFFSET is activated
+#define DISPLAY_ACC_OFFSET
+
  
 **** xx - Reserved for developer. **************************************************************************************
 * DEBUG must be activated here when you want to debug one or several functions in some other files.

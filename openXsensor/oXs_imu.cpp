@@ -221,7 +221,6 @@ void read6050 () {
                                                   // To do : use hysteresis for Vspeed with imu
                                                   // To do : add vspeed with imu in the list of available fields and a way to send it in HOTT protocol
                                                   // To do : detect when acc is not as usual and then tranmit Vspeed based only on baro 
-                                                  // To do : check to replace attach_interrupt by ISR but with ISR_NOBLOCK attribute in order to avoid delay in software UART interrupt 
                                                   // To do : add VERTICAL_SPEED_I to HUB, MULTIPLEX and HOTT protocols
         /* This function gets new data from the FIFO when the DMP is in
          * use. The FIFO can contain any combination of gyro, accel,
@@ -249,7 +248,7 @@ void read6050 () {
               prevSensorTimeStamp = sensor_timestamp ;
               Serial.print("dt ") ; Serial.println(mpuDeltaTime ) ;
 #endif
-#ifdef DEBUG_MPU_OFFSET
+#ifdef DISPLAY_ACC_OFFSET
             static int offsetCount;
             static int32_t accelOffsetSumX ;
             static int32_t accelOffsetSumY ;
@@ -709,16 +708,17 @@ unsigned short inv_orientation_matrix_to_scalar( const signed char *mtx) {
 
 boolean initialize_mpu() {
   
-    int result;
-    struct int_param_s int_param;   // contains the call back function used by interrupt on dmp and the pin number of interrupt
+    int8_t result;
+//    struct int_param_s int_param;   // contains the call back function used by interrupt on dmp and the pin number of interrupt
 
     /* Set up gyro.
      * Every function preceded by mpu_ is a driver function and can be found
      * in inv_mpu.h.
      */
-    int_param.cb = gyro_data_ready_cb;           // name of the function being used when DMP interrupt occurs
-    int_param.pin = 0;                           // use interrupt 0 to detect when mpu call an interrupt
-    result = mpu_init(&int_param);               // initialize MPU with default values
+//    int_param.cb = gyro_data_ready_cb;           // name of the function being used when DMP interrupt occurs
+//    int_param.pin = 0;                           // use interrupt 0 to detect when mpu call an interrupt
+//    result = mpu_init(&int_param);               // initialize MPU with default values
+    result = mpu_init();               // initialize MPU with default values
     if ( result != 0 ) {
 #ifdef DEBUG_MPU     
       Serial.print("mpu_init failed!");
