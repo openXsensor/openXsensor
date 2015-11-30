@@ -59,10 +59,10 @@
 //#define ALT_TEMP_COMPENSATION 800
 
 // ***** 4.5 - Vertical speeds calculations *****
-#define VARIO_PRIMARY       1        // 1 = first baro,  2 = second baro, 3 = vario based on vario 1 + compensation from airspeed, 4 = average of first and second baro sensors , 5 = merge of first baro sensor and imu
-#define VARIO_SECONDARY     5        // 1 = first baro,  2 = second baro, 3 = vario based on vario 1 + compensation from airspeed, 4 = average of first and second baro sensors , 5 = merge of first baro sensor and imu
-//#define SWITCH_VARIO_MIN_AT_PPM 10
-//#define SWITCH_VARIO_MAX_AT_PPM 90
+#define VARIO_PRIMARY       5        // 1 = first baro,  2 = second baro, 3 = vario based on vario 1 + compensation from airspeed, 4 = average of first and second baro sensors , 5 = merge of first baro sensor and imu
+#define VARIO_SECONDARY     1        // 1 = first baro,  2 = second baro, 3 = vario based on vario 1 + compensation from airspeed, 4 = average of first and second baro sensors , 5 = merge of first baro sensor and imu
+#define SWITCH_VARIO_MIN_AT_PPM 10
+#define SWITCH_VARIO_MAX_AT_PPM 90
 
 // ***** 4.6 - Analog vertical speed *****
 //#define PIN_ANALOG_VSPEED 3

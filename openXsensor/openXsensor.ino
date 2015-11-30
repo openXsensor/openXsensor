@@ -199,9 +199,9 @@ int32_t test2Value ;// used in order to test the transmission of any value
 bool test2ValueAvailable ;
 int32_t test3Value ;// used in order to test the transmission of any value
 bool test3ValueAvailable ;
-
-uint8_t selectedVario ; // identify the vario to be used when switch vario with PPM is active (0 = first MS5611) 
-
+#ifdef VARIO_PRIMARY
+uint8_t selectedVario = VARIO_PRIMARY ; // identify the vario to be used when switch vario with PPM is active (1 = first MS5611) 
+#endif
 // ********** variables used to calculate glider ratio (and other averages)
 
 /*   // first method
@@ -1224,7 +1224,7 @@ void ProcessPPMSignal(){
 #else // so if Sequence is not used and so PPM is used for Vario sensitivity 
     if (ppm == prevPpm) {  // test if new value is equal to previous in order to avoid unstabel handling 
     
-#if defined ( VARIO_PRIMARY) && defined ( VARIO_SECONDARY)  && defined (VARIO ) && ( defined (VARIO2) || defined (AIRSPEED) )  && defined (PIN_PPM)
+#if defined ( VARIO_PRIMARY) && defined ( VARIO_SECONDARY)  && defined (VARIO ) && ( defined (VARIO2) || defined (AIRSPEED) || defined (USE_6050) )  && defined (PIN_PPM)
         if ( (ppm >= (SWITCH_VARIO_MIN_AT_PPM - 4)) && (ppm <= (SWITCH_VARIO_MAX_AT_PPM + 4)) ) {
           selectedVario = VARIO_PRIMARY ;
         } else if ( ( ppm <= (4 - SWITCH_VARIO_MIN_AT_PPM)) && (ppm >= (- 4 - SWITCH_VARIO_MAX_AT_PPM)) ) {

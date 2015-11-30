@@ -2,7 +2,7 @@
 
 #ifdef DEBUG
 //#define DEBUGI2CMS5611
-#define DEBUGDATA
+//#define DEBUGDATA
 //#define DEBUGVARIOI2C
 #define DEBUGVARIO
 #endif
