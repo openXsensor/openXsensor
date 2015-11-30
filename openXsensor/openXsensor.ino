@@ -298,6 +298,7 @@ uint8_t selectedVario ; // identify the vario to be used when switch vario with 
   bool switchVTrackAvailable ;
   extern float linear_acceleration_x ;
   extern float linear_acceleration_y ;
+  extern float linear_acceleration_z ;
   extern float world_linear_acceleration_z ;
   extern bool newMpuAvailable;
   float altitudeToKalman ;
@@ -695,7 +696,7 @@ void readSensors() {
             test1ValueAvailable = true ; 
             test2Value =  linear_acceleration_y * 981; 
             test2ValueAvailable = true ; 
-            test3Value = vSpeedImu ; 
+            test3Value = linear_acceleration_z * 981 ; 
             test3ValueAvailable = true ; 
   #endif
 

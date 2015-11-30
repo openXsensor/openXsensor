@@ -2,7 +2,7 @@
 
 #ifdef DEBUG
 //#define DEBUGI2CMS5611
-//#define DEBUGDATA
+#define DEBUGDATA
 //#define DEBUGVARIOI2C
 #define DEBUGVARIO
 #endif
@@ -154,11 +154,11 @@ void OXS_MS5611::readSensor() {   // read sensor performs a read from sensor if 
           result |= I2c.receive() ;
         } // result remain 0 if I2C is wrong
         if (varioData.SensorState==0) { // ========================= We got the temperature
-          D1=result;
+          D2=result;
           varioData.SensorState++ ;
           I2c.write( _addr,0x48) ;                    // ask a conversion of Pressure
         } else {                      // ========================= We got the Pressure
-          D2=result;
+          D1=result;
           pressureMicros = micros();                  // pressureMicros is the timestamp to calculate climbrate between 2 pressuresD2=result;
           varioData.SensorState = 2 ;
           I2c.write( _addr,0x58) ;                   // ask a conversion of Temperature
@@ -284,7 +284,7 @@ void OXS_MS5611::calculateVario() {
 //          printer->println(F( "T,Ra,Sm,A,NC,DS,AHP,ALP,CR2, Temp" )) ;
           printer->println(F( "T,Ra,Alt,vpsd, Alt2, rawVspd, vspd2 , smoothAlt, smoothVspd" )) ;
       }    
-            printer->print(  pressureMicrosPrev1 ) ; printer->print(",");
+            printer->print( varioData.temperature ) ; printer->print(",");
             printer->print(  (float) varioData.rawAltitude  ) ; printer->print(","); // alt is displayed in CM with 2 decimal
  //           printer->print(  expoSmooth ) ;             printer->print(" ,");
             printer->print( (float) altitude  ) ;             printer->print(" ,");
