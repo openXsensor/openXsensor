@@ -366,7 +366,7 @@ uint8_t OXS_OUT::readStatusValue( uint8_t fieldToSend) {
 #endif
 
 
-#if defined (VARIO)  && ( defined (VARIO2)  || defined (AIRSPEED) ) && defined (VARIO_PRIMARY ) && defined (VARIO_SECONDARY ) && defined (PIN_PPM)
+#if defined (VARIO)  && ( defined (VARIO2)  || defined (AIRSPEED)  || defined(USE_6050) ) && defined (VARIO_PRIMARY ) && defined (VARIO_SECONDARY ) && defined (PIN_PPM)
       case  PPM_VSPEED :
           return switchVSpeedAvailable ; 
 #endif
@@ -468,7 +468,7 @@ uint8_t OXS_OUT::nextFieldToSend(  uint8_t indexField) {
       if ( (fieldContainsData[indexField][1] == VERTICAL_SPEED_I) && ( vSpeedImuAvailable == KNOWN ))  { return indexField ; }        
 #endif
 
-#if defined (VARIO) && ( defined (VARIO2) || defined (AIRSPEED) ) && defined (VARIO_PRIMARY ) && defined (VARIO_SECONDARY )  && defined (PIN_PPM)
+#if defined (VARIO) && ( defined (VARIO2) || defined (AIRSPEED) || defined(USE_6050) ) && defined (VARIO_PRIMARY ) && defined (VARIO_SECONDARY )  && defined (PIN_PPM)
       if  (( fieldContainsData[indexField][1] == PPM_VSPEED)  && (switchVSpeedAvailable == KNOWN ) )  { return indexField ; }    
 #endif
 
@@ -680,7 +680,7 @@ void OXS_OUT::loadSportValueToSend( uint8_t currentFieldToSend) {
          break ; 
 #endif
 
-#if defined (VARIO )  && ( defined (VARIO2) || defined( AIRSPEED) ) && defined (VARIO_PRIMARY ) && defined (VARIO_SECONDARY )  && defined (PIN_PPM)
+#if defined (VARIO )  && ( defined (VARIO2) || defined( AIRSPEED) || defined(USE_6050) ) && defined (VARIO_PRIMARY ) && defined (VARIO_SECONDARY )  && defined (PIN_PPM)
       case PPM_VSPEED : 
         valueTemp = switchVSpeed ;
         switchVSpeedAvailable = false ; 
@@ -1319,7 +1319,7 @@ void OXS_OUT::loadHubValueToSend( uint8_t currentFieldToSend ) {
           break ;   
 #endif
 
-#if defined (VARIO )  && ( defined (VARIO2) || defined( AIRSPEED) ) && defined (VARIO_PRIMARY ) && defined (VARIO_SECONDARY ) && defined (PIN_PPM)
+#if defined (VARIO )  && ( defined (VARIO2) || defined( AIRSPEED) || defined(USE_6050) ) && defined (VARIO_PRIMARY ) && defined (VARIO_SECONDARY ) && defined (PIN_PPM)
       case PPM_VSPEED :
               if(  fieldOk == true ) {
                  SendValue((int8_t) fieldToSend , ( ( (int16_t) switchVSpeed * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4] );
