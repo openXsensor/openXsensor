@@ -623,7 +623,7 @@ started by Rainer Schloßhan
 *    CELLS_5_6        special    Volt of cells 5 & 6                                 Mandatory             Cell & Cells
 *    CURRENTMA         mA        MilliAmp measured by current sensor                 Optional                 Curr
 *    MILLIAH          mAh        Consumed milli Amp heure                            Optional                 Fuel
-*    RPM              t/min(?)   Rotation per min                                    Mandatory                Rpm
+*    RPM              Hz         Rotation per min                                    Mandatory                Rpm
 *    AIR_SPEED        knot/10    Air speed                                 Optional (X series)                ASpd
 *                                                                          Optional (D series)                Spd (6)      
 *    PRANDTL_COMPENSATION cm/s   Compensation for compensated vario                NOT allowed
