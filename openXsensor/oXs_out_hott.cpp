@@ -41,7 +41,7 @@ static uint8_t delayTxPendingCount ;             // Used to register the number 
 volatile uint8_t ppmInterrupted ; // This flag is activated at the end of handling interrupt on Timer 1 Compare A if during this interrupt handling an interrupt on pin change (INT0 or INT1) occurs
                          // in this case, ppm will be wrong and has to be discarded       
 
-
+static uint8_t convertGpsFix[5] = {0x2d , 0x2d , 0x32 , 0x33 , 0x44 } ; 
 
 #ifdef DEBUG  
 OXS_OUT::OXS_OUT(uint8_t pinTx,HardwareSerial &print)
@@ -178,8 +178,10 @@ void OXS_OUT::sendData() {
                     TxHottData.gpsMsg.sensorID     = HOTT_TELEMETRY_GPS_SENSOR_ID ; //0x8A
                     TxHottData.gpsMsg.sensorTextID     = HOTTV4_GPS_SENSOR_TEXT_ID ; // 0xA0
                     TxHottData.gpsMsg.endByte     = 0x7D ;
-                    if( GPS_latAvailable ) {             // test if data are available (GPS fix) ; if available, fill the buffer
-                        GPS_latAvailable = false ;       // reset the flag
+                    uint16_t altitudeHott = 500 ;                   // Hott uses an offset of 500 (m)
+                    if ( (GPS_fix_type == 3 ) || (GPS_fix_type == 4 ) ) {
+//                    if( GPS_latAvailable ) {             // test if data are available (GPS fix) ; if available, fill the buffer
+//                        GPS_latAvailable = false ;       // reset the flag     
                         TxHottData.gpsMsg.flightDirection = GPS_ground_course / 200000 ; // convert from degre * 100000 to 1/2 degree; Flightdir./dir. 1 = 2°; 0° (North), 90° (East), 180° (South), 270° (West)
                         static uint16_t speedHott ;
 #ifdef GPS_SPEED_3D
@@ -204,11 +206,9 @@ void OXS_OUT::sendData() {
                         TxHottData.gpsMsg.longitudeMinHigh = degMin >> 8 ;                     // Byte 17: 003 = 0x03 <= 0x039D = 0925
                         TxHottData.gpsMsg.longitudeSecLow = decimalMin ;                           // Byte 18: 144 = 0x90 <= 0x2490 = 9360
                         TxHottData.gpsMsg.longitudeSecHigh = decimalMin >> 8 ;                     // Byte 19: 036 = 0x24 <= 0x2490 = 9360
-                        static uint16_t altitudeHott ; 
-                        altitudeHott = (GPS_altitude / 1000) + 500 ;                      // convert from mm to m and add an ofsset of 500 m
-                        TxHottData.gpsMsg.altitudeLow = altitudeHott ; 
-                        TxHottData.gpsMsg.altitudeHigh = altitudeHott >> 8 ; 
-                   }
+                        altitudeHott += (GPS_altitude / 1000)  ;                                 // convert from mm to m and keep the ofsset of 500 m
+                   } 
+                  
  /* not yet implemented
   uint8_t distanceLow;             // Byte 20: 027 123 = /distance low byte 6 = 6 m 
   uint8_t distanceHigh;            // Byte 21: 036 35 = /distance high byte 
@@ -235,6 +235,12 @@ void OXS_OUT::sendData() {
   uint8_t endByte;                 // Byte 44: 0x7D Ende byte 
   uint8_t chksum;                  // Byte 45: Parity Byte 
 */            
+                if (GPS_fix_type > 4 ) GPS_fix_type = 0 ;
+                TxHottData.gpsMsg.GPS_fix = TxHottData.gpsMsg.GPSFixChar =  convertGpsFix[GPS_fix_type] ;
+                TxHottData.gpsMsg.GPSNumSat = GPS_numSat;
+                TxHottData.gpsMsg.altitudeLow = altitudeHott ; 
+                TxHottData.gpsMsg.altitudeHigh = altitudeHott >> 8 ; 
+              
             }  // end else => flagUpdateHottBuffer == GPS
 #endif         // end of GPS_Installed            
             // calculate the check sum on first bytes
@@ -528,7 +534,7 @@ ISR(TIMER1_COMPA_vect)
           } else {    //Send stop bit.
                 SET_TX_PIN_MB() ;                             // Output a logic 1. (in high impedance) = put stop bit
                 state = TRANSMIT_STOP_BIT;
-                OCR1A += DELAY_1000;                  // Normally Add 2 msec to the stop bit (required by Hott protocol) but it seems that 1 msec is also 0k
+                OCR1A += DELAY_2000;                  // Normally Add 2 msec to the stop bit (required by Hott protocol) 
           }
           OCR1A += TICKS2WAITONEHOTT ;  // Count one period into the future.
 #if DEBUGASERIAL

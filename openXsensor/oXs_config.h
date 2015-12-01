@@ -21,17 +21,17 @@
 // ***** 1.1 - Multiplex protocol is used (otherwise oXs assumes it is Frsky protocol) *****
 //#define MULTIPLEX
 // ***** 1.2 - FrSky protocol and device ID (required when Sport protocol is used)  *****
-#define FRSKY_TYPE_SPORT   // when uncommented, it forces oXs to apply only SPORT protocol, otherwise, oXs detects automatically if protocol has to be SPORT or HUB
+//#define FRSKY_TYPE_SPORT   // when uncommented, it forces oXs to apply only SPORT protocol, otherwise, oXs detects automatically if protocol has to be SPORT or HUB
 //#define FRSKY_TYPE_HUB   // when uncommented, it forces oXs to apply only HUB protocol, otherwise, oXs detects automatically if protocol has to be SPORT or HUB
 #define SPORT_SENSOR_ID    28 // value must be between 1 and 28 
 // ***** 1.3 - Hott protocol is used (otherwise oXs assumes it is Frsky protocol) *****
-//#define HOTT
+#define HOTT
 
 // --------- 2 - Serial data pin choice ---------
 #define PIN_SERIALTX      4    // The pin which transmits the serial data to the FrSky telemetry receiver, Usually pin 4
 
 // --------- 3 - PPM settings ---------
-#define PIN_PPM           3       // default is 2 but my own device use 3
+//#define PIN_PPM           3       // default is 2 but my own device use 3
 #define PPM_MIN_100       980     // default 1500 - 512 ; // pulse width (usec) when TX sends a channel = -100
 #define PPM_PLUS_100      1990    // default 1500 + 512 ; // pulse width (usec) when TX sends a channel = +100
 
@@ -157,19 +157,19 @@
 #define SEQUENCE_MIN_CELL   3000 // sequence_100 will be activated if lowest cell is lower that the value.
 
 // --------- 11 - GPS ------------------------------------------------------------------------------------------------
-//#define GPS_INSTALLED     // uncomment this line if a GPS is connected
+#define GPS_INSTALLED     // uncomment this line if a GPS is connected
 #define GPS_SPEED_IN_KMH  // uncomment this line if GPS speed has to be sent in km/h instead of knot/h (only for Frsky protocol)
 //#define GPS_SPEED_3D      // uncomment this line if GPS speed has to be the 3d speed instead of the 2d speed (note: 3d is probably less accurate - to test) 
 
 // --------- 12 - IMU 6050 --- (accelerometer + gyro -----------------------------------------------------------------
-#define USE_6050 // uncomment this line if a IMU 6050 is connected
+//#define USE_6050 // uncomment this line if a IMU 6050 is connected
 #define ACC_OFFSET_X -160 // fill here the first value reported when DISPLAY_ACC_OFFSET is activated
 #define ACC_OFFSET_Y -150 // fill here the second value reported when DISPLAY_ACC_OFFSET is activated
 #define ACC_OFFSET_Z -1100 // fill here the third value reported when DISPLAY_ACC_OFFSET is activated
 //#define DISPLAY_ACC_OFFSET // used ONLY in order to display the acceleration offset on pc terminal; KEEP AS COMMENT once offsets has been setup 
 
 // --------- xx - Reserved for developer. DEBUG must be activated here when we want to debug one or several functions in some other files. ---------
-#define DEBUG
+//#define DEBUG
 //#define DEBUG_BLINK   // use by developper in order to blink the led without using uart for debugging
 #define BASED_ON_AIRSPEED 0
 #define BASED_ON_GPS_SPEED 1

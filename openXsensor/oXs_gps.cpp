@@ -32,7 +32,8 @@ bool    GPS_speed_2dAvailable ;
 uint32_t GPS_ground_course ;     // degrees with 5 decimals
 bool    GPS_ground_courseAvailable;
 
-//uint8_t GPS_numSat;
+uint8_t GPS_numSat;
+uint8_t GPS_fix_type;
 //uint16_t GPS_hdop = 9999;           // Compute GPS quality signal
 uint16_t GPS_packetCount = 0;
 //uint32_t GPS_svInfoReceivedCount = 0; // SV = Space Vehicle, counter increments each time SV info is received.
@@ -108,7 +109,7 @@ void OXS_GPS::setupGps( ) {
 //        0xB5,0x62,0x06,0x08,0x06,0x00,0xE8,0x03,0x01,0x00,0x01,0x00,0x01,0x39,  // NAV-RATE for 1 hz
         0xB5,0x62,0x06,0x08,0x06,0x00,0xC8,0x00,0x01,0x00,0x01,0x00,0xDE,0x6A, // NAV-RATE for 5 hz
 //        0xB5,0x62,0x06,0x08,0x06,0x00,0x64,0x00,0x01,0x00,0x01,0x00,0x7A,0x12, // NAV-RATE for 10 hz
-        0xB5,0x62,0x06,0x00,0x14,0x00,0x01,0x00,0x00,0x00,0xD0,0x08,0x00,0x00,0x00,0x96, //        CFG-PRT : Set port to output only UBX (so deactivate NMEA msg) and baud = 38400.
+        0xB5,0x62,0x06,0x00,0x14,0x00,0x01,0x00,0x00,0x00,0xD0,0x08,0x00,0x00,0x00,0x96, //        CFG-PRT : Set port to output only UBX (so deactivate NMEA msg) and set baud = 38400.
                             0x00,0x00,0x07,0x00,0x01,0x00,0x00,0x00,0x00,0x00,0x91,0x84  //                 rest of CFG_PRT command                            
       }  ;   
       uint8_t initGpsIdx = 0 ;
@@ -291,16 +292,17 @@ static bool next_fix;
   printer->println(GPS_altitude);
 #endif        
         break;
-    case MSG_STATUS:                              // !!!!!!!!! I do not see real need of this message because same (and more) data are in SOL
-        next_fix = (_buffer.status.fix_status & NAV_STATUS_FIX_VALID) && (_buffer.status.fix_type == FIX_3D); // si valid position and speed or 3D fix
-        if (!next_fix)
-             GPS_fix = false;
-        break;
+//    case MSG_STATUS:                              // !!!!!!!!! I do not see real need of this message because same (and more) data are in SOL, so this message is not activated in init
+//        next_fix = (_buffer.status.fix_status & NAV_STATUS_FIX_VALID) && (_buffer.status.fix_type == FIX_3D); // si valid position and speed or 3D fix
+//        if (!next_fix)
+//             GPS_fix = false;
+//        break;
     case MSG_SOL:                                // !!!! here we could also use vertical speed which is I4 in cm/sec)
         next_fix = (_buffer.solution.fix_status & NAV_STATUS_FIX_VALID) && (_buffer.solution.fix_type == FIX_3D);
+        GPS_fix_type = _buffer.solution.fix_type;
         if (!next_fix)
              GPS_fix = false;
-//        GPS_numSat = _buffer.solution.satellites;  Not used currently
+        GPS_numSat = _buffer.solution.satellites;  
 //        GPS_hdop = _buffer.solution.position_DOP;  Not used currently
         break;
     case MSG_VELNED:   // here we should add the 3d speed (if accurate enough
