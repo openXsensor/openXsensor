@@ -201,7 +201,7 @@ uint8_t OXS_OUT::formatOneValue( uint8_t currentFieldToSend) {
          break ; 
 #endif
 
-#if defined (VARIO )  && ( defined (VARIO2) || defined( AIRSPEED) ) && defined (VARIO_PRIMARY ) && defined (VARIO_SECONDARY )  && defined (PIN_PPM)
+#if defined (VARIO )  && ( defined (VARIO2) || defined( AIRSPEED) || defined( USE_6050) ) && defined (VARIO_PRIMARY ) && defined (VARIO_SECONDARY )  && defined (PIN_PPM)
       case PPM_VSPEED : 
         if ( ! switchVSpeedAvailable  ) return 0;
         valueTemp = switchVSpeed / 10 ;
