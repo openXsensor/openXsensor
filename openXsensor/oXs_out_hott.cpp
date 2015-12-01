@@ -239,7 +239,13 @@ void OXS_OUT::sendData() {
                 TxHottData.gpsMsg.GPS_fix = TxHottData.gpsMsg.GPSFixChar =  convertGpsFix[GPS_fix_type] ;
                 TxHottData.gpsMsg.GPSNumSat = GPS_numSat;
                 TxHottData.gpsMsg.altitudeLow = altitudeHott ; 
-                TxHottData.gpsMsg.altitudeHigh = altitudeHott >> 8 ; 
+                TxHottData.gpsMsg.altitudeHigh = altitudeHott >> 8 ;
+                uint16_t varioHott = 30000 ;
+#ifdef VARIO
+                varioHott += varioData->climbRate + 30000 ;
+#endif                
+                TxHottData.gpsMsg.resolutionLow = varioHott ;          //climb rate in 0.01m/s. Value of 30000 = 0.00 m/s
+                TxHottData.gpsMsg.resolutionHigh = varioHott >> 8;
               
             }  // end else => flagUpdateHottBuffer == GPS
 #endif         // end of GPS_Installed            
