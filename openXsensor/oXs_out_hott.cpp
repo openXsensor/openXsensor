@@ -206,7 +206,10 @@ void OXS_OUT::sendData() {
                         TxHottData.gpsMsg.longitudeMinHigh = degMin >> 8 ;                     // Byte 17: 003 = 0x03 <= 0x039D = 0925
                         TxHottData.gpsMsg.longitudeSecLow = decimalMin ;                           // Byte 18: 144 = 0x90 <= 0x2490 = 9360
                         TxHottData.gpsMsg.longitudeSecHigh = decimalMin >> 8 ;                     // Byte 19: 036 = 0x24 <= 0x2490 = 9360
-                        altitudeHott += (GPS_altitude / 1000)  ;                                 // convert from mm to m and keep the ofsset of 500 m
+                        TxHottData.gpsMsg.distanceLow = GPS_distance ;                             // Byte 20: 027 123 = /distance low byte 6 = 6 m
+                        TxHottData.gpsMsg.distanceHigh = GPS_distance >> 8 ;                       // Byte 21: 036 35 = /distance high byte
+                        TxHottData.gpsMsg.HomeDirection = GPS_bearing / 2 ;                        //Byte 29: HomeDirection (direction from starting point to Model position) (1 byte) 2degree = 1
+                        altitudeHott += (GPS_altitude / 1000)  ;                                 // convert from mm to m (keep the ofsset of 500 m)
                    } 
                   
  /* not yet implemented
@@ -242,7 +245,7 @@ void OXS_OUT::sendData() {
                 TxHottData.gpsMsg.altitudeHigh = altitudeHott >> 8 ;
                 uint16_t varioHott = 30000 ;
 #ifdef VARIO
-                varioHott += varioData->climbRate + 30000 ;
+                varioHott += varioData->climbRate + 30000 ;  // put vario vertical speed in GPS data
 #endif                
                 TxHottData.gpsMsg.resolutionLow = varioHott ;          //climb rate in 0.01m/s. Value of 30000 = 0.00 m/s
                 TxHottData.gpsMsg.resolutionHigh = varioHott >> 8;

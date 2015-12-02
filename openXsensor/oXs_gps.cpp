@@ -43,6 +43,19 @@ uint16_t GPS_packetCount = 0;
 //uint8_t GPS_svinfo_svid[GPS_SV_MAXSATS];    // Satellite ID
 //uint8_t GPS_svinfo_quality[GPS_SV_MAXSATS]; // Bitfield Qualtity
 //uint8_t GPS_svinfo_cno[GPS_SV_MAXSATS];     // Carrier to Noise Ratio (Signal Strength)
+
+// *********** GPS calculated data
+int16_t GPS_distance ;   // distance from home (first location) in m
+int16_t GPS_heading ;          // heading from home (in Rad)
+int32_t GPS_home_lat ;         // position of home in degre with 7 decimals
+int32_t GPS_home_lon ;         // position of home in degre with 7 decimals
+float GPS_scale ;     // scaling factor to calculate the distance depending on latitude
+int16_t GPS_bearing ;          // bearing from home in degrees
+// scaling factor from 1e-7 degrees to meters at equater
+// == 1.0e-7 * DEG_TO_RAD * RADIUS_OF_EARTH
+#define LOCATION_SCALING_FACTOR 0.011131884502145034f
+#define DEG_TO_RAD_FOR_GPS 0.017453292519943295769236907684886f
+
 bool GPS_fix ; // true if gps data are available.
 static uint8_t _msg_id; //used to identify the message type when reading the gps, is used also when buffer is parsed 
 
@@ -275,11 +288,26 @@ static bool next_fix;
         GPS_lat = _buffer.posllh.latitude;            // in degree with 7 decimals
         GPS_altitude = _buffer.posllh.altitude_msl ;  //alt in mm
         if (next_fix) {                               // enable state if a position has been received after a positieve STATUS or SOL
-            GPS_fix = true;
+            GPS_fix = true ;
+            if ( GPS_home_lat == 0 ) { 
+              GPS_home_lat = _buffer.posllh.latitude ;  // save home position
+              GPS_home_lon = _buffer.posllh.longitude ;
+              GPS_scale = cosf(GPS_home_lat * 1.0e-7f * DEG_TO_RAD_FOR_GPS); // calculate scale factor based on latitude
+            }
+            // Calculate distance
+            float dlat  = (float)(GPS_home_lat - GPS_lat);
+            float dlong  = ((float)(GPS_home_lon - GPS_lon)) * GPS_scale ;
+            GPS_distance =  sqrtf( dlat * dlat + dlong * dlong  ) * LOCATION_SCALING_FACTOR;
+            // calculate bearing
+            int32_t off_x = GPS_lon - GPS_home_lon ;
+            int32_t off_y = (GPS_lat - GPS_home_lat) / GPS_scale ;
+            GPS_bearing = 90 + atan2f(-off_y, off_x) * 57.2957795f;  // in degree
+            if (GPS_bearing < 0) GPS_bearing += 360;
         } else {
             GPS_fix = false;
         }
         GPS_lonAvailable = GPS_latAvailable = GPS_altitudeAvailable = GPS_fix; 
+        
         _new_position = true;
 #ifdef DEBUGPARSEGPS
   printer->print(F("Gps fix: "));
