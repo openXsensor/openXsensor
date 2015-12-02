@@ -146,6 +146,7 @@ void OXS_OUT::sendData() {
               TxHottData.gamMsg.altitude =  ((varioData->relativeAlt ) / 100 ) + 500 ;  //altitude in meters. offset of 500, 500 = 0m
               TxHottData.gamMsg.climbrate_L = varioData->climbRate + 30000 ;          //climb rate in 0.01m/s. Value of 30000 = 0.00 m/s
 #endif
+              TxHottData.gamMsg.climbrate3s = 120 ;                     //#28 climb rate in m/3sec. Value of 120 = 0m/3sec
 #if defined(PIN_CURRENTSENSOR)
               TxHottData.gamMsg.current =  currentData->milliAmps /100;               //current in 0.1A steps 100 == 10,0A
 #endif
@@ -245,10 +246,11 @@ void OXS_OUT::sendData() {
                 TxHottData.gpsMsg.altitudeHigh = altitudeHott >> 8 ;
                 uint16_t varioHott = 30000 ;
 #ifdef VARIO
-                varioHott += varioData->climbRate + 30000 ;  // put vario vertical speed in GPS data
+                varioHott += varioData->climbRate ;  // put vario vertical speed in GPS data
 #endif                
                 TxHottData.gpsMsg.resolutionLow = varioHott ;          //climb rate in 0.01m/s. Value of 30000 = 0.00 m/s
                 TxHottData.gpsMsg.resolutionHigh = varioHott >> 8;
+                TxHottData.gpsMsg.unknow1 = 120 ;                                       // Byte 26: 120 = 0m/3s
               
             }  // end else => flagUpdateHottBuffer == GPS
 #endif         // end of GPS_Installed            
@@ -275,12 +277,12 @@ void OXS_OUT::sendData() {
 #ifdef GPS_INSTALLED
 void convertLonLat_Hott( int32_t GPS_LatLon, uint16_t * degMin , uint16_t * decimalMin ) {
   static uint32_t GPS_LatLonAbs ;
-  static uint8_t degre0decimals ;
-  static uint16_t minute4decimals ;
-  static uint8_t minute0decimals ;
+  static uint16_t degre0decimals ;
+  static uint32_t minute4decimals ;
+  static uint16_t minute0decimals ;
   GPS_LatLonAbs = ( GPS_LatLon < 0 ? - GPS_LatLon : GPS_LatLon) / 100  ; // remove 2 decimals from original value which contains degre with 7 decimals (so next calculation are smaller)
   degre0decimals = GPS_LatLonAbs / 100000 ;                              // extract the degre without  decimal
-  minute4decimals = ( GPS_LatLonAbs - ( ((uint32_t) degre0decimals) * 100000 ) ) * 6 ; // keep the decimal of degree and convert them in minutes (*60) and remove 1 decimal (/10) in order to keep 4 decimals 
+  minute4decimals = ( GPS_LatLonAbs - ( ((uint32_t) degre0decimals) * 100000l ) ) * 6 ; // keep the decimal of degree and convert them in minutes (*60) and remove 1 decimal (/10) in order to keep 4 decimals 
   minute0decimals = minute4decimals / 10000 ;                                        // extract the minutes (without decimals)
   *degMin = degre0decimals * 100 + minute0decimals ;                                  // put degree and minutes toegether in a special format
   *decimalMin = minute4decimals - ( minute0decimals * 10000 ) ;                       // Extract the decimal part of the minutes (4 decimals) 
