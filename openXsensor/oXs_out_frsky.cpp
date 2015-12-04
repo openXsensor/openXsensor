@@ -962,9 +962,9 @@ void OXS_OUT::FrSkySportSensorGpsSend(void)
                 GPS_lonAvailable = false ;
                 gpsSportId = GPS_LONG_LATI_FIRST_ID ;
 #ifdef DEBUGSIMULATEGPS
-                gpsSportValue = ((( (((uint32_t)( GPS_lon < 0 ? -GPS_lon : GPS_lon)) * 6 ) / 100 ) + gpsSimulateCount++ )& 0x3FFFFFFF) | 0x80000000;
+                gpsSportValue = ((( ((((uint32_t)( GPS_lon < 0 ? -GPS_lon : GPS_lon)) / 10 ) * 6 ) / 10 ) + gpsSimulateCount++ )& 0x3FFFFFFF) | 0x80000000;
 #else                
-                gpsSportValue = (( (((uint32_t)( GPS_lon < 0 ? -GPS_lon : GPS_lon)) * 6 )/ 100 ) & 0x3FFFFFFF)  | 0x80000000;
+                gpsSportValue = (( ((((uint32_t)( GPS_lon < 0 ? -GPS_lon : GPS_lon)) /10 ) * 6 ) / 10 ) & 0x3FFFFFFF)  | 0x80000000;
 #endif                
                 if(GPS_lon < 0) gpsSportValue |= 0x40000000;
                 break;
@@ -972,7 +972,7 @@ void OXS_OUT::FrSkySportSensorGpsSend(void)
                 if (!GPS_latAvailable) return ;
                 GPS_latAvailable = false ;
                 gpsSportId = GPS_LONG_LATI_FIRST_ID ;
-                gpsSportValue = ((  (((uint32_t)( GPS_lat < 0 ? -GPS_lat : GPS_lat)) * 6 )/ 100 ) & 0x3FFFFFFF ) ;
+                gpsSportValue = ((  ((((uint32_t)( GPS_lat < 0 ? -GPS_lat : GPS_lat)) / 10 ) * 6 )/ 10 ) & 0x3FFFFFFF ) ;
                 if(GPS_lat < 0) gpsSportValue |= 0x40000000;
                 break;
               case 2: // GPS_altitude

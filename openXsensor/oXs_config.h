@@ -25,7 +25,7 @@
 //#define FRSKY_TYPE_HUB   // when uncommented, it forces oXs to apply only HUB protocol, otherwise, oXs detects automatically if protocol has to be SPORT or HUB
 #define SPORT_SENSOR_ID    28 // value must be between 1 and 28 
 // ***** 1.3 - Hott protocol is used (otherwise oXs assumes it is Frsky protocol) *****
-#define HOTT
+//#define HOTT
 
 // --------- 2 - Serial data pin choice ---------
 #define PIN_SERIALTX      4    // The pin which transmits the serial data to the FrSky telemetry receiver, Usually pin 4
@@ -162,7 +162,7 @@
 //#define GPS_SPEED_3D      // uncomment this line if GPS speed has to be the 3d speed instead of the 2d speed (note: 3d is probably less accurate - to test) 
 
 // --------- 12 - IMU 6050 --- (accelerometer + gyro -----------------------------------------------------------------
-//#define USE_6050 // uncomment this line if a IMU 6050 is connected
+#define USE_6050 // uncomment this line if a IMU 6050 is connected
 #define ACC_OFFSET_X -160 // fill here the first value reported when DISPLAY_ACC_OFFSET is activated
 #define ACC_OFFSET_Y -150 // fill here the second value reported when DISPLAY_ACC_OFFSET is activated
 #define ACC_OFFSET_Z -1100 // fill here the third value reported when DISPLAY_ACC_OFFSET is activated
