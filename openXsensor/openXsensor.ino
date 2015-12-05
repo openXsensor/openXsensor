@@ -696,7 +696,7 @@ void readSensors() {
             test1ValueAvailable = true ; 
             test2Value =  linear_acceleration_y * 981; 
             test2ValueAvailable = true ; 
-            test3Value = linear_acceleration_z * 981 ; 
+            test3Value = world_linear_acceleration_z ; 
             test3ValueAvailable = true ; 
   #endif
 
