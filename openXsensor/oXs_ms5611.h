@@ -10,15 +10,19 @@ struct VARIODATA {
   int32_t temperature;     // in 1/10 Celsius
 
   int64_t rawPressure ;  // in 1/10000 mBar so = Pa * 10000
-  
+
   byte SensorState ;
   int32_t rawAltitude ; // in cm * 100  
-  int32_t absoluteAlt;     // in cm  
-  bool absoluteAltAvailable ;
-  bool altitudeAt20MsecAvailable   ;  // use to say to readsensors() that an altitude is available and that dte can be calculated.
+
+struct ONE_MEASUREMENT absoluteAlt ; // value in cm
+//  int32_t absoluteAlt;     // in cm  
+//  bool absoluteAltAvailable ;
+//  bool altitudeAt20MsecAvailable   ;  // use to say to readsensors() that an altitude is available and that dte can be calculated.
   int32_t altOffset ;     // in cm
-  int32_t relativeAlt ;     // in cm
-  bool relativeAltAvailable ;   
+
+struct ONE_MEASUREMENT  relativeAlt ;     // value in cm
+//  int32_t relativeAlt ;     // in cm
+//  bool relativeAltAvailable ;   
   int32_t relativeAltMax ;     // in cm
   bool relativeAltMaxAvailable ;   
  
@@ -30,13 +34,19 @@ struct VARIODATA {
   bool vSpeed10SecAvailable ;
   
   float climbRateFloat  ;  // in cm/sec but as float
-  int32_t climbRate;       // in cm /sec = vertical speed
-  bool climbRateAvailable ;
-  bool switchClimbRateAvailable ; // use to say to the readsensors loop that that a climbrate is available (to select the one being send)
-  bool averageClimbRateAvailable ; // use to say to the readsensors loop that that a climbrate is available (to select the one being send)
-  bool sensitivityAvailable ;  //used to decide if sensivityPpm can be sent or not
+
+  struct ONE_MEASUREMENT climbRate ; // value in cm /sec = vertical speed
+  //int32_t climbRate;       // in cm /sec = vertical speed
+  //bool climbRateAvailable ;
+  
+//  bool switchClimbRateAvailable ; // use to say to the readsensors loop that that a climbrate is available (to select the one being send)
+//  bool averageClimbRateAvailable ; // use to say to the readsensors loop that that a climbrate is available (to select the one being send)
+
+struct ONE_MEASUREMENT sensitivity ;  
+//  bool sensitivityAvailable ;  //used to decide if sensivityPpm can be sent or not
+//  int sensitivity ; 
   int sensitivityPpm ;      // sensivity to apply when PPM is used. Value has to be divided by 1000 in order to calculate the smoothing parameter
-  int sensitivity ; 
+  
   
   unsigned long lastCommand2Micros ; // used to avoid some task (reading voltage sensor, currentsensor, ..) when barometric data should be soon available for reading 
                                      // = micro divided by 2 to avoid overflow on comparison
@@ -53,7 +63,7 @@ public:
   VARIODATA varioData ;
   //int64_t rawPressure; // in 1/10000 mBar
   void setup();
-  void  readSensor();
+  bool  readSensor();
 
   void resetValues();
 

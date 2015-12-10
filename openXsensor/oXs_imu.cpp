@@ -33,7 +33,7 @@ float linear_acceleration_x;
 float linear_acceleration_y;
 float linear_acceleration_z;
 float world_linear_acceleration_z ;
-bool newMpuAvailable;
+bool newImuAvailable;
 
 /*
 // ***************************************
@@ -194,10 +194,11 @@ static signed char gyro_orientation[9] = { 1, 0, 0,
 // ******************************************************************************************
 //                              Read imu 6050 sensor
 // ******************************************************************************************
-void read6050 () {
+bool read6050 () {
   // If the MPU Interrupt occurred, read the fifo and process the data
 //  if (hal.new_gyro && hal.dmp_on) {
-  if (new_mpu_data) {  // new_mpu_data is set in a call back function in an ISR attached to interrupt INT0 (reading arduino pin 2 which is connected to INT from mpu6050 )
+    bool newAccelerationAvailable = false;
+    if (new_mpu_data) {  // new_mpu_data is set in a call back function in an ISR attached to interrupt INT0 (reading arduino pin 2 which is connected to INT from mpu6050 )
 
         short gyro[3], accel[3], sensors;         // To do : gyro and sensors are not used anymore and could be removed from here 
         unsigned char more = 0;
@@ -342,7 +343,7 @@ void read6050 () {
 //              world_linear_acceleration_x = q_final[1];
 //              world_linear_acceleration_y = q_final[2];
               world_linear_acceleration_z = q_final[3] * 981.0f  ;  // conversion from g to cm/sec2 => * 981 cm/sec2
-              newMpuAvailable = true;
+              newAccelerationAvailable = true;
 #ifdef DEBUG_MPU
 //             Serial.print("acc "); Serial.print(accel[0] ) ;Serial.print(" "); Serial.print(accel[1] ) ; Serial.print(" "); Serial.println(accel[2] ) ;
 //               Serial.print("q "); Serial.print(q.w ) ;Serial.print(" "); Serial.print(q.x ) ;Serial.print(" "); Serial.print(q.y ) ; Serial.print(" "); Serial.println(q.z ) ;
@@ -358,6 +359,7 @@ void read6050 () {
           
       }  // end success
     }   // end  new_mpu_data
+    return newAccelerationAvailable ;
 }
 /***************************************
 * nav6 Protocol Configuration/State

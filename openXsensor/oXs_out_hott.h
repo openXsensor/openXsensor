@@ -256,18 +256,21 @@ class OXS_OUT {
 
 extern int ppm ; 
 extern bool ppmAvailable ;
-extern int32_t compensatedClimbRate ;
-extern bool compensatedClimbRateAvailable ;
-extern int32_t switchVSpeed ; // used to transmit the selected Vspeed
-extern bool switchVSpeedAvailable ;
-extern int32_t averageVSpeed ; // used to transmit the average Vspeed
-extern bool averageVSpeedAvailable ;
-extern int32_t test1Value ;// used in order to test the transmission of any value
-extern bool test1ValueAvailable ;
-extern int32_t test2Value ;// used in order to test the transmission of any value
-extern bool test2ValueAvailable ;
-extern int32_t test3Value ;// used in order to test the transmission of any value
-extern bool test3ValueAvailable ;
+extern struct ONE_MEASUREMENT mainVspeed ;           // used to transmit the main Vspeed(calculated based on all set up in config)
+extern struct ONE_MEASUREMENT compensatedClimbRate ; // used to transmit the compensated Vspeed
+extern struct ONE_MEASUREMENT switchVSpeed ;         // used to transmit the selected Vspeed
+extern struct ONE_MEASUREMENT averageVSpeed ;        // used to transmit the average Vspeed
+extern struct ONE_MEASUREMENT vSpeedImu ;            // used to transmit the Vspeedcalculated based on IMU
+
+#if defined(PIN_VOLTAGE) && defined(VFAS_SOURCE) 
+extern struct ONE_MEASUREMENT vfas ; 
+#endif
+
+extern struct ONE_MEASUREMENT test1 ;
+extern struct ONE_MEASUREMENT test2 ;
+extern struct ONE_MEASUREMENT test3 ;
+extern struct ONE_MEASUREMENT gliderRatio ;
+
 extern uint8_t selectedVario ;
 
 extern int32_t GPS_lon;               // longitude in degree with 7 decimals, (neg for S)

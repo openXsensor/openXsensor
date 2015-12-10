@@ -76,7 +76,7 @@ public:
   VARIODATA varioData ;
   //int64_t rawPressure; // in 1/10000 mBar
   void setup();
-  void  readSensor();
+  bool  readSensor();
 
   void resetValues();
 
@@ -87,6 +87,7 @@ private:
   bool errorCalibration ; // (true = error)
   void SendCommand(byte command);
   long getData(byte command, byte del);
+  void calculateVario() ;
   unsigned int low, high;
     int32_t D1 ;  
     int32_t D2 ;
@@ -101,6 +102,7 @@ private:
     int32_t altitudeLowPass  ;
     int32_t altitudeHighPass  ;
     int sensitivityMin ;
+    
 
     unsigned long extended2Micros ; // used to temporarilly save micros() >> 1
     unsigned long pressureMicros ; // save time when program send command asking the MS5611 to get the pressure

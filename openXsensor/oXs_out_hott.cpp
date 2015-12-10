@@ -143,12 +143,15 @@ void OXS_OUT::sendData() {
               TxHottData.gamMsg.rpm  = RpmValue /10 ;                      //#22 RPM in 10 RPM steps. 300 = 3000rpm
 #endif
 #ifdef VARIO       
-              TxHottData.gamMsg.altitude =  ((varioData->relativeAlt ) / 100 ) + 500 ;  //altitude in meters. offset of 500, 500 = 0m
-              TxHottData.gamMsg.climbrate_L = varioData->climbRate + 30000 ;          //climb rate in 0.01m/s. Value of 30000 = 0.00 m/s
+              TxHottData.gamMsg.altitude =  ((varioData->relativeAlt.value ) / 100 ) + 500 ;  //altitude in meters. offset of 500, 500 = 0m
+              TxHottData.gamMsg.climbrate_L = mainVspeed.value + 30000 ;          //climb rate in 0.01m/s. Value of 30000 = 0.00 m/s
+#else
+              TxHottData.gamMsg.altitude =  500 ;  //altitude in meters. offset of 500, 500 = 0m
+              TxHottData.gamMsg.climbrate_L = 30000 ;          //climb rate in 0.01m/s. Value of 30000 = 0.00 m/s
 #endif
               TxHottData.gamMsg.climbrate3s = 120 ;                     //#28 climb rate in m/3sec. Value of 120 = 0m/3sec
 #if defined(PIN_CURRENTSENSOR)
-              TxHottData.gamMsg.current =  currentData->milliAmps /100;               //current in 0.1A steps 100 == 10,0A
+              TxHottData.gamMsg.current =  currentData->milliAmps.value /100;               //current in 0.1A steps 100 == 10,0A
 #endif
 #if defined(USE_VOLT_X_AS_MAIN_BATTERY) && (USE_VOLT_X_AS_MAIN_BATTERY <7) && (USE_VOLT_X_AS_MAIN_BATTERY > 0) && defined(PIN_VOLTAGE)
               TxHottData.gamMsg.main_voltage = voltageData->mVolt[USE_VOLT_X_AS_MAIN_BATTERY - 1] / 100;          //Main power voltage using 0.1V steps 100 == 10,0V] / 100
@@ -157,7 +160,7 @@ void OXS_OUT::sendData() {
               TxHottData.gamMsg.batt_cap =  currentData->consumedMilliAmps / 10 ;   // used battery capacity in 10mAh steps
 #endif
 #ifdef AIRSPEED       
-               TxHottData.gamMsg.speed =  airSpeedData->airSpeed  ;                  //  Km/h 
+               TxHottData.gamMsg.speed =  airSpeedData->airSpeed.value  ;                  //  Km/h 
 #endif
 #if defined(NUMBEROFCELLS) && (NUMBEROFCELLS >= 0) 
               TxHottData.gamMsg.min_cell_volt =  voltageData->mVoltCellMin /20 ; // minimum cell voltage in 2mV steps. 124 = 2,48V
@@ -246,7 +249,7 @@ void OXS_OUT::sendData() {
                 TxHottData.gpsMsg.altitudeHigh = altitudeHott >> 8 ;
                 uint16_t varioHott = 30000 ;
 #ifdef VARIO
-                varioHott += varioData->climbRate ;  // put vario vertical speed in GPS data
+                varioHott += mainVspeed.value ;  // put vario vertical speed in GPS data
 #endif                
                 TxHottData.gpsMsg.resolutionLow = varioHott ;          //climb rate in 0.01m/s. Value of 30000 = 0.00 m/s
                 TxHottData.gpsMsg.resolutionHigh = varioHott >> 8;

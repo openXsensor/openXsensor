@@ -19,7 +19,7 @@ void gyro_data_ready_cb(void) ;
 unsigned short inv_row_2_scale(const signed char *row) ;
 unsigned short inv_orientation_matrix_to_scalar( const signed char *mtx) ;
 boolean run_mpu_self_test(boolean& gyro_ok, boolean& accel_ok) ;
-void read6050 () ;
+bool read6050 () ;   // return a flag that is true when a new acceleration is available
 void dump_all() ;
 #endif // OXS_IMU_h
 

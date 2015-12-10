@@ -34,7 +34,7 @@ void OXS_4525::setup() {
   //airSpeedData.available=false;
   calibrated4525 = false ;
 //  calibrateCount4525 = 0 ;
-  airSpeedData.airSpeedAvailable = false ;
+  airSpeedData.airSpeed.available = false ;
   airSpeedData.compensationAvailable =false ;
 
   airSpeedData.airspeedReset = true ; // set on true to force a reset the first time the 100 ms part is entered
@@ -195,14 +195,14 @@ void OXS_4525::readSensor() {
               nextAirSpeedMillis = airSpeedMillis + 200 ;
               if ( airSpeedData.smoothAirSpeed >  0) {  // normally send only if positive and greater than 300 cm/sec , otherwise send 0 but for test we keep all values to check for drift  
 #ifdef AIRSPEED_IN_KMH  // uncomment this line if GPS speed has to be in knot instead of km/h
-                  airSpeedData.airSpeed = airSpeedData.smoothAirSpeed * 0.36 ; // from cm/sec to 1/10 km/h
+                  airSpeedData.airSpeed.value = airSpeedData.smoothAirSpeed * 0.36 ; // from cm/sec to 1/10 km/h
 #else
-                  airSpeedData.airSpeed = airSpeedData.smoothAirSpeed * 0.1943844492 ; // from cm/sec to 1/10 knot/h
+                  airSpeedData.airSpeed.value = airSpeedData.smoothAirSpeed * 0.1943844492 ; // from cm/sec to 1/10 knot/h
 #endif
               } else {
-                  airSpeedData.airSpeed = 0 ;
+                  airSpeedData.airSpeed.value = 0 ;
               }    
-              airSpeedData.airSpeedAvailable = true ; 
+              airSpeedData.airSpeed.available = true ; 
 // check if offset must be reset
               if (airSpeedData.airspeedReset) { // adjust the offset if a reset command is received from Tx
                     offset4525 =  offset4525  + airSpeedData.smoothDifPressureAdc ;

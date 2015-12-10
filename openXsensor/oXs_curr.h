@@ -6,8 +6,9 @@
 
 struct CURRENTDATA {
 //  bool available;          // true if data is available
-  int32_t milliAmps;       // in mA
-  bool milliAmpsAvailable;
+struct ONE_MEASUREMENT milliAmps;       // in mA
+//  int32_t milliAmps;       // in mA
+//  bool milliAmpsAvailable;
   int32_t consumedMilliAmps; // in mA
   float floatConsumedMilliAmps; // in mA
   bool consumedMilliAmpsAvailable;

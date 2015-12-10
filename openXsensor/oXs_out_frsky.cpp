@@ -35,7 +35,10 @@
 //#define DEBUGWITHFIXVALUE     // for SPORT protocol only; send a value varying continuously (cycling) between min and max value (see code below)
 #endif
 
-
+extern OXS_MS5611 oXs_MS5611 ;
+extern OXS_VOLTAGE oXs_Voltage ; 
+extern OXS_CURRENT oXs_Current ;
+extern OXS_4525 oXs_4525 ;
 
 extern unsigned long micros( void ) ;
 extern unsigned long millis( void ) ;
@@ -45,7 +48,19 @@ extern void delay(unsigned long ms) ;
 extern uint8_t  volatile  sportData[7] ;
 extern uint8_t volatile sportDataLock ;
 extern uint8_t volatile sendStatus ;
+#if defined(PIN_VOLTAGE) && defined(VFAS_SOURCE) 
+  struct ONE_MEASUREMENT vfas ; 
+#endif
 
+#if defined(GPS_INSTALLED)
+    struct ONE_MEASUREMENT sport_gps_lon ; 
+    struct ONE_MEASUREMENT sport_gps_lat ;
+    struct ONE_MEASUREMENT sport_gps_alt ;
+    struct ONE_MEASUREMENT sport_gps_speed ; 
+    struct ONE_MEASUREMENT sport_gps_course;
+#endif
+
+extern struct ONE_MEASUREMENT sport_rpm ;
 
 //used only by Hub protocol
 static int fieldToSend ;
@@ -57,10 +72,10 @@ extern uint8_t volatile hubMaxData ;   // max number of data prepared to be send
 
 //Used by both protocols
 volatile bool sportAvailable = false ;
-int fieldContainsData[][5]  = {  SETUP_FRSKY_DATA_TO_SEND } ; // contains the set up of field to be transmitted
-int numberOfFields = sizeof(fieldContainsData) / sizeof(fieldContainsData[0]) ;
-static uint16_t convertToSportId[15] = { FRSKY_SPORT_ID } ; // this array is used to convert an index inside fieldContainsData[][0] into the SPORT field Id (or defaultfield) 
-static uint8_t convertToHubId[15] = { FRSKY_HUB_ID } ; //// this array is used to convert an index inside fieldContainsData[][0] into the Hub field Id (or defaultfield) 
+//int fieldContainsData[][5]  = {  SETUP_FRSKY_DATA_TO_SEND } ; // contains the set up of field to be transmitted
+//int numberOfFields = sizeof(fieldContainsData) / sizeof(fieldContainsData[0]) ;
+//static uint16_t convertToSportId[15] = { FRSKY_SPORT_ID } ; // this array is used to convert an index inside fieldContainsData[][0] into the SPORT field Id (or defaultfield) 
+//static uint8_t convertToHubId[15] = { FRSKY_HUB_ID } ; //// this array is used to convert an index inside fieldContainsData[][0] into the Hub field Id (or defaultfield) 
 static uint8_t currentFieldToSend = 0 ; 
 extern volatile uint8_t state ;                  //!< Holds the state of the UART.
 
@@ -116,6 +131,7 @@ void OXS_OUT::setup() {
     }
 #endif // end test on FRSKY_TYPE
     if ( sportAvailable) {
+        initMeasurement() ;
         initSportUart(  ) ;
     } else {
       	initHubUart( ) ;
@@ -146,9 +162,6 @@ void OXS_OUT::sendData()
 {
   if (sportAvailable) {
 	sendSportData( ) ;
-#ifdef GPS_INSTALLED
-  FrSkySportSensorGpsSend() ;
-#endif  
   } else {
 	sendHubData( ) ;
   }
@@ -156,886 +169,300 @@ void OXS_OUT::sendData()
 
 //For SPORT protocol
 //****************************************************** Look which value can be transmitted and load it in a set of fields used by interrupt routine
-    /* We look if a value to send is available ; if available the value is loaded
-       We have to take care that all types of value (when available) have to be transmitted after each other
-       Note : it should be possible to send more values if OXS would reply to more than one device ID because the polling occurs more often
-         Still here we will react only to one device ID (see oXs_config.h)
-       We look at the values of each sensor in sequence
-       Each value has a extra field "available":
-         Available = true = KNOWN when that value is calculated. It becomes false = UNKNOWN when the value is loaded for transmission.; 
-       There is one general status related to the transmission. This "sendStatus" is shared by all values
-         sendStatus can be  : TO_LOAD, LOADED, SENDING, SEND ; 
-             For one value, when the value is available and if sendStatus = TO_LOAD or LOADED, we can load the value (again); 
-             It is not allowed to load the value is the sendStatus = SENDING
-             sendStatus goes from TO_LOAD to LOADED (in the main loop) when the value is loaded in 'setSportNewData' (in Aserial); The indicator available of this value become false = UNKNOWN in order to avoid to load it again
-             sendStatus goes from LOADED to SENDING (in the interrupt) when the start bit is received for the right device ID 
-             sendStatus  goes from SENDING to SEND (in the interrupt) when all bytes (including Checksum) have been transmitted
+    /* oXs reacts on 6 sensorId being send by the Rx
+       In the main loop, we look periodically if a new data has to be preloaded for each of the 6 sensors
+       It is the ISR that send the data and set a flag (to 1) in a bit of "frskyStatus" to say that a new data has to be loaded (bit 0...5 are used).
+       The main loop set the bit to 0 when a data has been loaded.
        
-       When sendStatus is :
-        - "TO_LOAD:
-              - If a value is not availvable (UNKNOWN), we try to skip to next available value (in order to send as many data as possible)
-              - If a value is availvable (KNOWN), the value is loaded and flagged as UNKNOWN. sendStatus become LOADED
-        - "LOADED" :
-               - If a value is availvable (KNOWN), the value is loaded and flagged as UNKNOWN. sendStatus remains LOADED
-               - If a value is not availvable (UNKNOWN), we keep the already loaded value and sendStatus remains LOADED
-        - "SENDING", We just wait that the already value is sent (even if a new value is already available)
-         - "SEND" : sendStatus becomes "TO_LOAD" and we skip to the next value to send.
-  
    */
+
+
+volatile uint8_t frskyStatus = 0x3F  ;                                                   //Status of SPORT protocol saying if data is to load in work field (bit 0...5 are used for the 6 sensorId), initially all data are to be loaded
+uint8_t currFieldIdx[6] = { 0 , 2, 5 , 8 , 13 , 17 } ;                          // per sensor, say which field has been loaded the last time (so next time, we have to search from the next one)
+const uint8_t fieldMinIdx[7]  = { 0 , 2, 5 , 8 , 13 , 17 , 20 } ;                     // per sensor, say the first field index ; there is one entry more in the array to know the last index
+const uint8_t fieldId[20] = { 0x10 , 0x11 , 0x30 , 0x30 , 0x30 , 0x21 , 0x20 , 0x60 , 0x80, 0x80 , 0x82 , 0x83 , 0x84 , 0x50 , 0x40 , 0x41 , 0xA0 , 0x70 , 0x71 , 0x72 } ; //fieldID to send to Tx (to shift 4 bits to left
+struct ONE_MEASUREMENT * p_measurements[20] ;      // array of 20 pointers (each pointer point to a structure containing a byte saying if a value is available and to the value.
+// There are 20 possible fields to transmit in SPORT
+// They are grouped per sensor ID
+// Sensor 0 start from index = 0 and contains Alt + Vspeed
+// Sensor 1 start from index = 2 and contains Cell_1_2 , Cell_3_4 and Cell_5_6
+// Sensor 2 start from index = 5 and contains vfas , current and fuel
+// Sensor 3 start from index = 8 and contains gps_lon , gps_lat, gps_alt , gps_speed and gps_course
+// Sensor 4 start from index = 13 and contains rpm, T1, T2, airspeed
+// Sensor 5 start from index = 17 and contains accX , accY, accZ
+
+int32_t dataValue[6] ;   // keep for each sensor id the next value to be sent
+uint8_t dataId[6] ;      // keep for each sensor id the Id of next field to be sent
+uint8_t sensorSeq  ;
+
+struct ONE_MEASUREMENT no_data = { 0, 0 } ; 
+
+struct ONE_MEASUREMENT m_rpm = { 1, 1067 } ;           // 13 = start of rpm, T1, T2, airspeed
+struct ONE_MEASUREMENT m_T1 = { 1, 1078 } ;
+struct ONE_MEASUREMENT m_T2 = { 1, 1089 } ;
+struct ONE_MEASUREMENT m_airspeed = { 1, 1090 } ;      
+struct ONE_MEASUREMENT m_accX = { 1, 1110 } ;          // 17 = start of acc
+struct ONE_MEASUREMENT m_accY = { 1, 1120 } ;
+struct ONE_MEASUREMENT m_accZ = { 1, 1130 } ;
+
+void initMeasurement() {
+// pointer to Altitude
+#if defined(VARIO) 
+    p_measurements[0] = &oXs_MS5611.varioData.relativeAlt ; // we use always relative altitude in Frsky protocol
+#else
+   p_measurements[0] = &no_data ;
+#endif
+
+// pointer to VSpeed
+#if defined(VARIO)
+    p_measurements[1] = &mainVspeed ;  
+#else
+    p_measurements[1] = &no_data ;
+#endif
+
+// pointer to Cell_1_2
+#if defined(PIN_VOLTAGE) && defined(NUMBEROFCELLS) && (NUMBEROFCELLS > 0)      
+   p_measurements[2] = &oXs_Voltage.voltageData.mVoltCell_1_2 ; 
+#else
+    p_measurements[2] = &no_data ;
+#endif
+
+// pointer to Cell_3_4
+#if defined(PIN_VOLTAGE) && defined(NUMBEROFCELLS) && (NUMBEROFCELLS > 2)      
+   p_measurements[3] = &oXs_Voltage.voltageData.mVoltCell_3_4 ; 
+#else
+    p_measurements[3] = &no_data ;
+#endif
+
+// pointer to Cell_5_6
+#if defined(PIN_VOLTAGE) && defined(NUMBEROFCELLS) && (NUMBEROFCELLS > 4)      
+   p_measurements[4] = &oXs_Voltage.voltageData.mVoltCell_5_6 ; 
+#else
+    p_measurements[4] = &no_data ;
+#endif
+
+// pointer to vfas
+#if defined(PIN_VOLTAGE) && defined(VFAS_SOURCE) && (VFAS_SOURCE == VOLT1 || VFAS_SOURCE == VOLT2 || VFAS_SOURCE == VOLT3 || VFAS_SOURCE == VOLT4 || VFAS_SOURCE == VOLT5 || VFAS_SOURCE == VOLT6 )
+    p_measurements[5] = &vfas ;
+#else
+    p_measurements[5] = &no_data ;
+#endif
+   
+// pointer to current
+#if defined(PIN_CURRENTSENSOR) 
+    p_measurements[6] = &oXs_Current.currentData.milliAmps ;
+#else
+    p_measurements[6] = &no_data ;
+#endif
+
+// pointer to fuel                                    // not defined currently
+   p_measurements[7] = &no_data ;
+
+// pointer to GPS lon
+#if defined(GPS_INSTALLED)
+  p_measurements[8] = &sport_gps_lon ; 
+#else
+  p_measurements[8] = &no_data ; 
+#endif
+
+// pointer to GPS lat
+#if defined(GPS_INSTALLED)
+  p_measurements[9] = &sport_gps_lat ; 
+#else
+  p_measurements[9] = &no_data ; 
+#endif
+
+// pointer to GPS alt
+#if defined(GPS_INSTALLED)
+  p_measurements[10] = &sport_gps_alt ; 
+#else
+  p_measurements[10] = &no_data ; 
+#endif
+
+// pointer to GPS speed
+#if defined(GPS_INSTALLED)
+  p_measurements[11] = &sport_gps_speed ; 
+#else
+  p_measurements[11] = &no_data ; 
+#endif
+
+// pointer to GPS course
+#if defined(GPS_INSTALLED)
+  p_measurements[12] = &sport_gps_course ; 
+#else
+  p_measurements[12] = &no_data ; 
+#endif
+
+// pointer to RPM
+#if defined(MEASURE_RPM) 
+  p_measurements[13] = &sport_rpm ; 
+#else
+  p_measurements[13] = &no_data ; 
+#endif
+
+// pointer to T1
+#if defined(T1_SOURCE) && ( T1_SOURCE == TEST_1)
+   p_measurements[14] = &test1 ; 
+#elif defined(T1_SOURCE) && ( T1_SOURCE == TEST_2)
+   p_measurements[14] = &test2 ; 
+#elif defined(T1_SOURCE) && ( T1_SOURCE == TEST_3)
+   p_measurements[14] = &test3 ; 
+#elif defined(T1_SOURCE) && ( T1_SOURCE == GLIDER_RATIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
+   p_measurements[14] = &gliderRatio ; 
+#elif defined(T1_SOURCE) && ( T1_SOURCE == SENSITIVITY) && defined(VARIO)
+   p_measurements[14] = &oXs_MS5611.varioData.sensitivity ; 
+
+#else
+   p_measurements[14] = &no_data ; // T1 
+#endif
+
+// pointer to T2   
+#if defined(T2_SOURCE) && ( T2_SOURCE == TEST_1)
+   p_measurements[15] = &test1 ; 
+#elif defined(T2_SOURCE) && ( T2_SOURCE == TEST_2)
+   p_measurements[15] = &test2 ; 
+#elif defined(T2_SOURCE) && ( T2_SOURCE == TEST_3)
+   p_measurements[15] = &test3 ; 
+#elif defined(T2_SOURCE) && ( T2_SOURCE == GLIDER_RATIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
+   p_measurements[15] = &gliderRatio ; 
+#elif defined(T2_SOURCE) && ( T2_SOURCE == SENSITIVITY) && defined(VARIO) 
+   p_measurements[15] = &oXs_MS5611.varioData.sensitivity ; 
+#else
+   p_measurements[15] = &no_data ; // T1 
+#endif
+
+
+   
+// pointer to airspeed
+#if defined(AIRSPEED) 
+  p_measurements[16] = &oXs_4525.airSpeedData.airSpeed ; 
+#else
+  p_measurements[16] = &no_data ; 
+#endif
+
+// pointer to accX
+#if defined(ACCX_SOURCE) && ( ACCX_SOURCE == TEST_1)
+   p_measurements[17] = &test1 ; // accX
+#elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == TEST_2)
+   p_measurements[17] = &test2 ; // accX
+#elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == TEST_3)
+   p_measurements[17] = &test3 ; // accX
+#else
+   p_measurements[17] = &no_data ; // accX
+#endif
+
+// pointer to accY
+#if defined(ACCY_SOURCE) && ( ACCY_SOURCE == TEST_1)
+   p_measurements[18] = &test1 ; // accY
+#elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == TEST_2)
+   p_measurements[18] = &test2 ; // accY
+#elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == TEST_3)
+   p_measurements[18] = &test3 ; // accY
+#else
+   p_measurements[18] = &no_data ; // accY
+#endif
+
+// pointer to accZ
+#if defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == TEST_1)
+   p_measurements[19] = &test1 ; // accZ
+#elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == TEST_2)
+   p_measurements[19] = &test2 ; // accZ
+#elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == TEST_3)
+   p_measurements[19] = &test3 ; // accZ
+#else
+   p_measurements[19] = &no_data ; // accZ
+#endif
+
+}
+
 
 void OXS_OUT::sendSportData()
 {  
-#ifdef DEBUGSENDDATASTATUS
-    printer->print("Begining sendData at = ");
-    printer->print(millis());
-    printer->print(" , sendStatus = ");
-    printer->print(sendStatus);
-    printer->print("  currentFieldToSend = ");
-    printer->print(currentFieldToSend);
-    printer->print("  status of currentFieldToSend  = ");
-    printer->println(readStatusValue( currentFieldToSend ));
+                                                                          // first we calculate fields that are used only by SPORT
+#if defined(PIN_VOLTAGE) && defined(VFAS_SOURCE) 
+  #if (VFAS_SOURCE == VOLT_1) || (VFAS_SOURCE == VOLT_2) || (VFAS_SOURCE == VOLT_3) || (VFAS_SOURCE == VOLT_4) || (VFAS_SOURCE == VOLT_5) || (VFAS_SOURCE == VOLT_6)
+   if ( (!vfas.available) && ( oXs_Voltage.voltageData.mVoltAvailable[VFAS_SOURCE]) ){
+      vfas.value = oXs_Voltage.voltageData.mVolt[VFAS_SOURCE] / 10 ;  // voltage in mv is divided by 10 because SPORT expect it (volt * 100) 
+      vfas.available = true ; 
+   }
+  #else
+  #error When defined, VFAS_SOURCE must be VOLT_1, VOLT_2, ... or VOLT_6
+  #endif
 #endif
 
-      
-#ifdef DEBUGSENDDATA
-   uint8_t oldSendStatus ;
-   uint8_t oldSendStatus2 ;
-   uint8_t oldCurrentFieldToSend ;
-   unsigned long oldMs = millis();
-   oldSendStatus = sendStatus ;
-   oldCurrentFieldToSend = currentFieldToSend ;
-#endif
+#if defined(GPS_INSTALLED)
+  if (GPS_lonAvailable) {
+        sport_gps_lon.available = GPS_lonAvailable ;
+        GPS_lonAvailable = false ; 
+        sport_gps_lon.value = (( ((((uint32_t)( GPS_lon < 0 ? -GPS_lon : GPS_lon)) /10 ) * 6 ) / 10 ) & 0x3FFFFFFF)  | 0x80000000;  
+        if(GPS_lon < 0) sport_gps_lon.value |= 0x40000000;
+  }
+  if (GPS_latAvailable) {
+        sport_gps_lat.available = GPS_latAvailable ;
+        GPS_latAvailable = false ;
+        sport_gps_lat.value = ((  ((((uint32_t)( GPS_lat < 0 ? -GPS_lat : GPS_lat)) / 10 ) * 6 )/ 10 ) & 0x3FFFFFFF ) ;
+        if(GPS_lat < 0) sport_gps_lat.value |= 0x40000000;
+  }
+  if (GPS_altitudeAvailable) {
+        sport_gps_alt.available = GPS_altitudeAvailable ;
+        GPS_altitudeAvailable = false ;
+        sport_gps_alt.value = GPS_altitude / 10; // convert mm in cm 
+  }
+  #ifdef GPS_SPEED_3D
+  if (GPS_speed_3dAvailable) { 
+        sport_gps_speed.available = GPS_speed_3dAvailable ;
+        GPS_speed_3dAvailable = false ;
+    #ifdef GPS_SPEED_IN_KMH
+         sport_gps_speed.value = ( ((uint32_t) GPS_speed_3d) * 36 )  ; // convert cm/s in 1/100 of km/h (factor = 3.6)
+    #else                                
+         sport_gps_speed.value = ( ((uint32_t) GPS_speed_3d) * 700 ) / 36  ; // convert cm/s in 1/100 of knots (factor = 19.44)
+    #endif // end of GPS_SPEED_IN_KMH      
+  }
+  #else                   // use gps_Speed_2d
+  if (GPS_speed_2dAvailable) { 
+           sport_gps_speed.available = GPS_speed_2dAvailable ;
+           GPS_speed_2dAvailable = false ;
+    #ifdef GPS_SPEED_IN_KMH
+           sport_gps_speed.value = ( ((uint32_t) GPS_speed_2d) * 36 )  ; // convert cm/s in 1/100 of km/h (factor = 3.6)
+    #else                                
+           sport_gps_speed.value = ( ((uint32_t) GPS_speed_2d) * 700 ) / 36 ; // convert cm/s in 1/1000 of knots (factor = 19.44)
+    #endif // end of GPS_SPEED_IN_KMH
+  }
+  #endif //  enf of GPS_SPEED_3D  or 2D           
+  if (GPS_ground_courseAvailable) {
+            sport_gps_course.available = GPS_ground_courseAvailable ;
+            GPS_ground_courseAvailable = false ;
+            sport_gps_course.value = GPS_ground_course / 1000;               // convert from degree * 100000 to degree * 100                
+  }     
+#endif // end of GPS_INSTALLED
 
-#ifdef DEBUGTRANSMITDELAY
-   static unsigned long lastTransmit = 0 ;
-   static unsigned long newTransmit = 0 ;
-#endif
-
-#ifdef DEBUGSENDDATADELAY
-   static unsigned long milliSendDataBegin ;
-   milliSendDataBegin = millis() ;
-#endif
-
-#ifdef DEBUGSENDSENSITIVITY
-    printer->print(F("Vario1 sensitivityppm = "));
-    printer->print(varioData->sensitivityPpm) ;
-    printer->print(F(" Vario1 sensitivity = "));
-    printer->print(varioData->sensitivity) ;
-    printer->print(F(" Vario2 sensitivityppm = "));
-    printer->print(varioData_2->sensitivityPpm) ;
-    printer->print(F(" Vario2 sensitivity = "));
-    printer->println(varioData_2->sensitivity) ;
-    
-
-#endif
-
-
-     switch ( sendStatus )    {
-      case SEND :
-#ifdef DEBUGTRANSMITDELAY
-          if (currentValueType ==4) {
-            newTransmit = micros() ;
-            printer->print("  End of transmission of data type = ");
-            printer->print(currentValueType);
-            printer->print("  after a delay of  ");
-            printer->println(newTransmit - lastTransmit);
-            printer->println(" ") ;
-            lastTransmit = newTransmit ;
-          }
-#endif      
-          currentFieldToSend = nextFieldToSend(currentFieldToSend)  ;
-          if ( readStatusValue( currentFieldToSend ) == KNOWN ) {
-              loadSportValueToSend( currentFieldToSend ) ;
-              sendStatus = LOADED ; 
-          }
-          else {
-              sendStatus = TO_LOAD ;
-          }	 
-          break ;
-      case TO_LOAD :       
-	  if ( readStatusValue( currentFieldToSend) == KNOWN ) {
-              loadSportValueToSend( currentFieldToSend ) ;
-              sendStatus = LOADED ; 
-          }
-          else  {
-              currentFieldToSend = nextFieldToSend( currentFieldToSend ) ;
-              if ( readStatusValue( currentFieldToSend) == KNOWN ) {
-                  loadSportValueToSend( currentFieldToSend ) ;
-                  sendStatus = LOADED ; 
-              }
-              break ;
-          }
-          break;
-     
-      case LOADED :
-          if ( readStatusValue( currentFieldToSend ) == KNOWN)  {
-              loadSportValueToSend( currentFieldToSend ) ;
-          }	  
-          break;
-      
-      case SENDING :
-      break;
-            
-      default :
-          sendStatus = TO_LOAD ;
-#ifdef DEBUGSENDDATA
-      printer->println("le sendStatus a une valeur anormale");
-#endif  
-    } // End of Switch
-
-    
-#ifdef DEBUGSENDDATA
-    oldSendStatus2 = sendStatus ;
-    if (oldSendStatus != sendStatus) { 
-      printer->print("End sendData with new sendStatus ;  milli at begin = ");
-      printer->print(oldMs);
-      printer->print(",  old SendStatus = ");
-      printer->print(oldSendStatus);
-      printer->print( ", New sendStatus = ");
-      printer->print(oldSendStatus2);
-      printer->print(" , Old FieldToSend = ");
-      printer->print(oldCurrentFieldToSend);
-      printer->print(" , New FieldToSend = ");
-      printer->print(currentFieldToSend);
-      printer->print(" , millis on end = ");
-      printer->println(millis());
-    } 
-#endif
-
-#ifdef DEBUGSENDDATADELAY
-      printer->print("sendData, begin at = ");
-      printer->print(milliSendDataBegin);
-      printer->print(",  end at = ");
-      printer->println(millis());
-#endif
+//    Serial.print("frskyStatus "); Serial.println(frskyStatus,HEX) ;
+    if ( frskyStatus ) {                                                                                  // if at least one data has to be loaded
+      for (uint8_t sensorSeq = 0 ; sensorSeq < 6 ; sensorSeq++ ) {                                        // for each sensor (currently 6)  
+        if ( frskyStatus & (1 << sensorSeq ) )  {                          //if frskyStatus says that a data must be loaded 
+            uint8_t currFieldIdx_ = currFieldIdx[sensorSeq] ;                // retrieve the last field being loaded
+            for (uint8_t iCount = fieldMinIdx[sensorSeq] ; iCount < fieldMinIdx[sensorSeq+1] ; iCount++ ) {        // we will not seach more than the number of fields for the selected sensor 
+                currFieldIdx_++ ;                                                                          // search with next field
+                if ( currFieldIdx_ >= fieldMinIdx[sensorSeq+1] ) currFieldIdx_ = fieldMinIdx[sensorSeq] ;        // if overlap within sensor range, set idx to first idx for this sensorSeq
+//                Serial.print("currFieldIdx_ "); Serial.print(currFieldIdx_) ; 
+//                Serial.print(" p_m.av "); Serial.print( p_measurements[currFieldIdx_]->available) ;
+//                Serial.print(" p_m.va "); Serial.println( p_measurements[currFieldIdx_]->value) ;
+                if ( p_measurements[currFieldIdx_]->available  ){                                                // if data of current index of sensor is available
+ //                 p_measurements[currFieldIdx_]->available = 0 ;                                                         // mark the data as not available
+                  dataValue[sensorSeq] =  p_measurements[currFieldIdx_]->value ;                                         // store the value in a buffer
+                  dataId[sensorSeq] = fieldId[currFieldIdx_] ;                                                   // mark the data from this sensor as available
+                  cli() ;
+                  frskyStatus &= ~(1<< sensorSeq) ;                                               // says that data is loaded by resetting one bit
+                  sei();
+                  Serial.print("Load "); Serial.print(dataId[sensorSeq],HEX) ; Serial.print(" ") ; Serial.println(dataValue[sensorSeq]);
+                  break ;                                                                         // exit inner for
+                }            
+            }     
+            currFieldIdx[sensorSeq] = currFieldIdx_   ;                                            // save currentFieldIdx for this 
+        }
+      } // End for one sensorSeq 
+    }   // End of if (frskystatus)
 }
-
-
-//**************************************************************
-// Check if a value is available (return = KNOWN or UNKNOWN) 
-// fieldToSend = index of a field 
-//**************************************************************
-uint8_t OXS_OUT::readStatusValue( uint8_t fieldToSend) {
-  switch ( fieldContainsData[fieldToSend][1] )
-    {
-#ifdef PIN_VOLTAGE
-     case  VOLT1 :
-          return voltageData->mVoltAvailable[0] ;    
-     case  VOLT2 :
-          return voltageData->mVoltAvailable[1] ;
-     case  VOLT3 :
-          return voltageData->mVoltAvailable[2] ;
-     case  VOLT4 :
-          return voltageData->mVoltAvailable[3] ;
-     case  VOLT5 :
-          return voltageData->mVoltAvailable[4] ;
-     case  VOLT6 :
-          return voltageData->mVoltAvailable[5] ;     
-#endif          
-
-#ifdef VARIO
-      case  ALTIMETER :
-          return varioData->absoluteAltAvailable ;
-      case  VERTICAL_SPEED :
-          return varioData->climbRateAvailable ;
-      case  SENSITIVITY :
-          return varioData->sensitivityAvailable ;
-      case ALT_OVER_10_SEC :
-          return varioData->vSpeed10SecAvailable ;
-#endif        
-
-#ifdef VARIO2
-      case  ALTIMETER_2 :
-          return varioData_2->absoluteAltAvailable ;
-      case  VERTICAL_SPEED_2 :
-          return varioData_2->climbRateAvailable ;
-      case  SENSITIVITY_2 :
-          return varioData_2->sensitivityAvailable ;
-      case ALT_OVER_10_SEC_2 :
-          return varioData_2->vSpeed10SecAvailable ;
-#endif
-
-#if defined (VARIO)  &&  defined (VARIO2) 
-      case  VERTICAL_SPEED_A :
-          return averageVSpeedAvailable ; 
-#endif
-
-#if defined (VARIO)  &&  defined (USE_6050) 
-      case  VERTICAL_SPEED_I :
-          return vSpeedImuAvailable ; 
-#endif
-
-
-#if defined (VARIO)  && ( defined (VARIO2)  || defined (AIRSPEED)  || defined(USE_6050) ) && defined (VARIO_PRIMARY ) && defined (VARIO_SECONDARY ) && defined (PIN_PPM)
-      case  PPM_VSPEED :
-          return switchVSpeedAvailable ; 
-#endif
-
-#ifdef AIRSPEED
-      case AIR_SPEED : 
-          return airSpeedData->airSpeedAvailable ;
-      case PRANDTL_COMPENSATION : 
-          return airSpeedData->compensationAvailable ;    
-#endif
-
-#if defined (VARIO) && defined ( AIRSPEED)
-      case PRANDTL_DTE :
-           return compensatedClimbRateAvailable ;
-#endif
-          
-#ifdef PIN_CURRENTSENSOR
-      case CURRENTMA  :
-          return  currentData->milliAmpsAvailable ; 
-      case MILLIAH  :
-          return  currentData->consumedMilliAmpsAvailable ; 
-#endif
-
-#if (NUMBEROFCELLS > 0)
-      case  CELLS_1_2 :
-          return  voltageData->mVoltCell_1_2_Available ; 
-      case  CELLS_3_4 :
-          return  voltageData->mVoltCell_3_4_Available ; 
-      case  CELLS_5_6 :
-          return  voltageData->mVoltCell_5_6_Available ; 
-#endif
-
-#ifdef PIN_PPM
-      case PPM :
-        return ppmAvailable ;
-#endif
-
-
-#ifdef MEASURE_RPM
-      case RPM :
-        return RpmAvailable ;
-#endif
-
-      case TEST1 :
-        return test1ValueAvailable ;
-      case TEST2 :
-        return test2ValueAvailable ;
-      case TEST3 :
-        return test3ValueAvailable ;
-
-      default:
-          return  UNKNOWN ;
-     }
-  return  UNKNOWN ;
-}    // End readStatusValue()
-
-
-
-//**************************************************************************************
-// Search the next (index of) field to transmit 
-// 
-//**************************************************************************************
-uint8_t OXS_OUT::nextFieldToSend(  uint8_t indexField) {
-// First we look for a value that is available (KNOWN); search occurs in sequence starting from the first next value
-#ifdef DEBUGNEXTVALUETYPE
-      printer->print("nextFieldToSend - Original index = ");
-      printer->println(indexField);
-#endif
-
-  for (int countValueType=numberOfFields ; countValueType>0; countValueType--) {  
-    indexField++;
-    if ( indexField >= numberOfFields ) { 
-        indexField = 0 ;
-    }  
-#ifdef DEBUGNEXTVALUETYPE
-      printer->print("first loop for; next field =");
-      printer->println(indexField);
-#endif
-
-#ifdef VARIO       
-      if ( (fieldContainsData[indexField][1] == ALTIMETER) && ( varioData->absoluteAltAvailable == KNOWN ))  { return indexField ; }        
-      else if ( (fieldContainsData[indexField][1] == VERTICAL_SPEED)  && ( varioData->climbRateAvailable == KNOWN ) )  { return indexField ; } 
-      else if ( (fieldContainsData[indexField][1] == SENSITIVITY)  && ( varioData->sensitivityAvailable == KNOWN ) )  { return indexField ; } 
-      else if ( (fieldContainsData[indexField][1] == ALT_OVER_10_SEC)  && ( varioData->vSpeed10SecAvailable == KNOWN ) )  { return indexField ; } 
-#endif
-
-#ifdef VARIO2       
-      if ( (fieldContainsData[indexField][1] == ALTIMETER_2) && ( varioData_2->absoluteAltAvailable == KNOWN ))  { return indexField ; }        
-      else if ( (fieldContainsData[indexField][1] == VERTICAL_SPEED_2)  && ( varioData_2->climbRateAvailable == KNOWN ) )  { return indexField ; } 
-      else if ( (fieldContainsData[indexField][1] == SENSITIVITY_2)  && ( varioData_2->sensitivityAvailable == KNOWN ) )  { return indexField ; } 
-      else if ( (fieldContainsData[indexField][1] == ALT_OVER_10_SEC_2)  && ( varioData_2->vSpeed10SecAvailable == KNOWN ) )  { return indexField ; } 
-#endif
-
-#if defined (VARIO)  &&  defined (VARIO2)
-      if ( (fieldContainsData[indexField][1] == VERTICAL_SPEED_A) && ( averageVSpeedAvailable == KNOWN ))  { return indexField ; }        
-#endif
-
-#if defined (VARIO)  &&  defined (USE_6050)
-      if ( (fieldContainsData[indexField][1] == VERTICAL_SPEED_I) && ( vSpeedImuAvailable == KNOWN ))  { return indexField ; }        
-#endif
-
-#if defined (VARIO) && ( defined (VARIO2) || defined (AIRSPEED) || defined(USE_6050) ) && defined (VARIO_PRIMARY ) && defined (VARIO_SECONDARY )  && defined (PIN_PPM)
-      if  (( fieldContainsData[indexField][1] == PPM_VSPEED)  && (switchVSpeedAvailable == KNOWN ) )  { return indexField ; }    
-#endif
-
-
-#ifdef AIRSPEED       
-      if ( (fieldContainsData[indexField][1] == AIR_SPEED) && ( airSpeedData->airSpeedAvailable == KNOWN ))  { return indexField ; } 
-      if ( (fieldContainsData[indexField][1] == PRANDTL_COMPENSATION) && ( airSpeedData->compensationAvailable == KNOWN ))  { return indexField ; } 
-#endif
-
-#if defined (VARIO) && defined ( AIRSPEED)
-      if ( (fieldContainsData[indexField][1] == PRANDTL_DTE) && ( compensatedClimbRateAvailable == KNOWN ))  { return indexField ; } 
-#endif
-
-         
-#ifdef PIN_VOLTAGE
-      if ( (fieldContainsData[indexField][1] == VOLT1) && ( voltageData->mVoltAvailable[0] == KNOWN ) && ( voltageData->mVoltPin[0] < 8 ) ) { return indexField ; } 
-      if ( (fieldContainsData[indexField][1] == VOLT2) && ( voltageData->mVoltAvailable[1] == KNOWN ) && ( voltageData->mVoltPin[1] < 8 ) ) { return indexField ; } 
-      if ( (fieldContainsData[indexField][1] == VOLT3) && ( voltageData->mVoltAvailable[2] == KNOWN ) && ( voltageData->mVoltPin[2] < 8 ) ) { return indexField ; } 
-      if ( (fieldContainsData[indexField][1] == VOLT4) && ( voltageData->mVoltAvailable[3] == KNOWN ) && ( voltageData->mVoltPin[3] < 8 ) ) { return indexField ; } 
-      if ( (fieldContainsData[indexField][1] == VOLT5) && ( voltageData->mVoltAvailable[4] == KNOWN ) && ( voltageData->mVoltPin[4] < 8 ) ) { return indexField ; } 
-      if ( (fieldContainsData[indexField][1] == VOLT6) && ( voltageData->mVoltAvailable[5] == KNOWN ) && ( voltageData->mVoltPin[5] < 8 ) ) { return indexField ; } 
-#endif         
-
-#if defined (PIN_CURRENTSENSOR)
-    if ( (fieldContainsData[indexField][1] == CURRENTMA) && ( currentData->milliAmpsAvailable == KNOWN ) ){ return indexField ; }  
-    else if ( (fieldContainsData[indexField][1] == MILLIAH ) && ( currentData->consumedMilliAmpsAvailable == KNOWN ) ){ return indexField ; }  
-#endif
-
-#if (NUMBEROFCELLS > 0)
-      if ( (fieldContainsData[indexField][1] == CELLS_1_2) && ( voltageData->mVoltCell_1_2_Available == KNOWN ) ){ return indexField ; }  
-      else if ( (fieldContainsData[indexField][1] == CELLS_3_4) && ( voltageData->mVoltCell_3_4_Available == KNOWN ) ){ return indexField ; }  
-      else if ( (fieldContainsData[indexField][1] == CELLS_5_6) && ( voltageData->mVoltCell_5_6_Available == KNOWN ) ){ return indexField ; }  
-#endif          
-
-#ifdef PIN_PPM
-      if ( (fieldContainsData[indexField][1] == PPM) && ( ppmAvailable == KNOWN ) ){ return indexField ; } 
-#endif
-
-#ifdef MEASURE_RPM
-      if ( (fieldContainsData[indexField][1] == RPM) && ( RpmAvailable == KNOWN ) ){ return indexField ; } 
-#endif
-      if ( (fieldContainsData[indexField][1] == TEST1) && ( test1ValueAvailable == KNOWN ) ){ return indexField ; } 
-      if ( (fieldContainsData[indexField][1] == TEST2) && ( test2ValueAvailable == KNOWN ) ){ return indexField ; } 
-      if ( (fieldContainsData[indexField][1] == TEST3) && ( test3ValueAvailable == KNOWN ) ){ return indexField ; } 
-   } // end FOR
-
-//If no one value is available, we select next value type (even if the value is not available)
-     indexField++ ;  
-    if ( indexField >= numberOfFields ) { 
-        indexField = 0 ;
-    }
-#ifdef DEBUGNEXTVALUETYPE
-      printer->print("After FOR; index of next field =");
-      printer->println(indexField);
-#endif
-     
-      return indexField ;   
-}
-
-
-
-//*************************************
-// Load the value to transmit in a temp field that will be transmitted when start bit will be recieved
-// flag this value as "UNKNOWN" (Unknown)
-//************************************
-void OXS_OUT::loadSportValueToSend( uint8_t currentFieldToSend) {
-  static int32_t valueTemp ;
-  int fieldID ;
-  fieldID = 0 ;
-  valueTemp = 0 ; 
-  switch ( fieldContainsData[currentFieldToSend][1] ) {
-#ifdef VARIO       
-      case  ALTIMETER :
-        valueTemp = varioData->absoluteAlt  ;
-        fieldID = ALT_FIRST_ID ;
-        varioData->absoluteAltAvailable = false ;
-#ifdef DEBUGLOADVALUETOSENDALTIMETER
-        static unsigned long StartAltimeter2=micros();
-        printer->print("++ LoadValueToSend - altimeter is loaded = ");
-        printer->print( millis()  );
-        printer->print(" value = ");
-        printer->print( varioData->absoluteAlt );
-        printer->print(" , delay = ");
-        printer->println( (micros() - StartAltimeter2 )/1000 );
-        StartAltimeter2 = micros() ;
-#endif  
-        break ;
-      case VERTICAL_SPEED : 
-         valueTemp = varioData->climbRate ;
-         fieldID = VARIO_FIRST_ID ;         
-         varioData->climbRateAvailable = false ;
-#ifdef DEBUGLOADVALUETOSENDVERTICALSPEED
-          static unsigned long StartClimbRate2=micros();
-          printer->print("** LoadValueToSend - vertical speed is loaded = ");
-          printer->print( millis() );
-          printer->print(" value = ");
-          printer->print( millis() /10 );
-          printer->print(" , delay = ");
-          printer->println( (micros() - StartClimbRate2 )/1000 );
-          StartClimbRate2 = micros() ;
-#endif        
-           break ;
-         case SENSITIVITY :
-             valueTemp = varioData->sensitivity ;
-             varioData->sensitivityAvailable = false ;
-#ifdef DEBUGLOADVALUETOSENDSENSITIVITY
-            static unsigned long StartSensitivity2=micros();
-            printer->print("LoadValueToSend - Sensitivity is loaded = ");
-            printer->print( millis()  );
-            printer->print(" value = ");
-            printer->print( varioData->sensitivity );
-            printer->print(" , delay = ");
-            printer->println( (micros() - StartSensitivity2 )/1000 );
-            StartVRef2 = micros() ;
-#endif
-             break ;
-         case ALT_OVER_10_SEC :
-             valueTemp = varioData->vSpeed10Sec ;
-             varioData->vSpeed10SecAvailable = false ;
-#ifdef DEBUGLOADVALUETOSENDALT_OVER_10_SEC
-            static unsigned long StartVSpeed10Sec2=micros();
-            printer->print("LoadValueToSend - vSpeed10Sec is loaded = ");
-            printer->print( millis()  );
-            printer->print(" value = ");
-            printer->print( varioData->vSpeed10Sec );
-            printer->print(" , delay = ");
-            printer->println( (micros() - StartVSpeed10Sec2 )/1000 );
-            StartVRef2 = micros() ;
-#endif
-             break ;
-             
-             
-#endif  // End vario    
-
-#ifdef VARIO2       
-      case  ALTIMETER_2 :
-        valueTemp = varioData_2->absoluteAlt  ;
-        fieldID = ALT_FIRST_ID ;
-        varioData_2->absoluteAltAvailable = false ;
-#ifdef DEBUGLOADVALUETOSENDALTIMETER_2
-        static unsigned long StartAltimeter2_2=micros();
-        printer->print("++ LoadValueToSend - altimeter is loaded = ");
-        printer->print( millis()  );
-        printer->print(" value = ");
-        printer->print( varioData_2->absoluteAlt );
-        printer->print(" , delay = ");
-        printer->println( (micros() - StartAltimeter2_2 )/1000 );
-        StartAltimeter2 = micros() ;
-#endif  
-        break ;
-      case VERTICAL_SPEED_2 : 
-         valueTemp = varioData_2->climbRate ;
-         fieldID = VARIO_FIRST_ID ;         
-         varioData_2->climbRateAvailable = false ;
-#ifdef DEBUGLOADVALUETOSENDVERTICALSPEED_2
-          static unsigned long StartClimbRate2_2=micros();
-          printer->print("** LoadValueToSend - vertical speed is loaded = ");
-          printer->print( millis() );
-          printer->print(" value = ");
-          printer->print( millis() /10 );
-          printer->print(" , delay = ");
-          printer->println( (micros() - StartClimbRate2_2 )/1000 );
-          StartClimbRate2 = micros() ;
-#endif        
-           break ;
-         case SENSITIVITY_2 :
-             valueTemp = varioData_2->sensitivity ;
-             varioData_2->sensitivityAvailable = false ;
-#ifdef DEBUGLOADVALUETOSENDSENSITIVITY_2
-            static unsigned long StartSensitivity2_2=micros();
-            printer->print("LoadValueToSend - Sensitivity is loaded = ");
-            printer->print( millis()  );
-            printer->print(" value = ");
-            printer->print( varioData_2->sensitivity );
-            printer->print(" , delay = ");
-            printer->println( (micros() - StartSensitivity2_2 )/1000 );
-            StartVRef2 = micros() ;
-#endif
-             break ;
-         case ALT_OVER_10_SEC_2 :
-             valueTemp = varioData_2->vSpeed10Sec ;
-             varioData_2->vSpeed10SecAvailable = false ;
-#ifdef DEBUGLOADVALUETOSENDALT_OVER_10_SEC_2
-            static unsigned long StartVSpeed10Sec2_2=micros();
-            printer->print("LoadValueToSend - vSpeed10Sec is loaded = ");
-            printer->print( millis()  );
-            printer->print(" value = ");
-            printer->print( varioData_2->vSpeed10Sec );
-            printer->print(" , delay = ");
-            printer->println( (micros() - StartVSpeed10Sec2_2 )/1000 );
-            StartVRef2 = micros() ;
-#endif
-             break ;       
-#endif  // End vario2    
-
-#if defined (VARIO )  &&  defined (VARIO2)
-      case VERTICAL_SPEED_A : 
-        valueTemp = averageVSpeed ;
-        averageVSpeedAvailable = false ; 
-         fieldID = VARIO_FIRST_ID ;         
-         break ; 
-#endif
-
-#if defined (VARIO )  &&  defined (USE_6050)
-      case VERTICAL_SPEED_I : 
-        valueTemp = vSpeedImu ;
-        vSpeedImuAvailable = false ; 
-         fieldID = VARIO_FIRST_ID ;         
-         break ; 
-#endif
-
-#if defined (VARIO )  && ( defined (VARIO2) || defined( AIRSPEED) || defined(USE_6050) ) && defined (VARIO_PRIMARY ) && defined (VARIO_SECONDARY )  && defined (PIN_PPM)
-      case PPM_VSPEED : 
-        valueTemp = switchVSpeed ;
-        switchVSpeedAvailable = false ; 
-         fieldID = VARIO_FIRST_ID ;         
-         break ; 
-#endif
-
-#ifdef AIRSPEED       
-      case  AIR_SPEED :
-        valueTemp = airSpeedData->airSpeed  ;
-        fieldID = AIR_SPEED_FIRST_ID ;
-        airSpeedData->airSpeedAvailable = false ;
-#ifdef DEBUGLOADVALUETOSENDAIRSPEED
-        static unsigned long StartAirSpeed=micros();
-        printer->print("++ LoadValueToSend - airspeed is loaded = ");
-        printer->print( millis()  );
-        printer->print(" value = ");
-        printer->print( airSpeedData->airSpeed );
-        printer->print(" , delay = ");
-        printer->println( (micros() - StartAirSpeed )/1000 );
-        StartAltimeter2 = micros() ;
-#endif  
-        break ;
-      case  PRANDTL_COMPENSATION :
-        valueTemp = airSpeedData->compensation  ;
-        fieldID = T1_FIRST_ID ;
-        airSpeedData->compensationAvailable = false ;
-        break ;
-        
-#endif  // End airpseed    
-
-#if defined (VARIO) && defined ( AIRSPEED)
-      case PRANDTL_DTE :
-        valueTemp =  compensatedClimbRate ; 
-        fieldID = VARIO_FIRST_ID ; 
-        compensatedClimbRateAvailable = false ;
-        break ;
-#endif  // End defined (VARIO) && defined ( AIRSPEED)
-
-
-
-
-#ifdef PIN_VOLTAGE
-      case VOLT1 :  
-         valueTemp = voltageData->mVolt[0] ;
-         voltageData->mVoltAvailable[0] = false ;
-#ifdef DEBUGLOADVALUETOSENDVOLT1
-          static unsigned long StartVolt1=micros();
-          printer->print("LoadValueToSend - mVolt1 at ");
-          printer->print( millis()  );
-          printer->print(" value = ");
-          printer->print( voltageData->mVolt[0] );
-          printer->print(" , delay = ");
-          printer->println( (micros() - StartVolt1 )/1000 );
-          StartVolt1 = micros() ;
-#endif 
-          break ;
-      case VOLT2 :  
-         valueTemp = voltageData->mVolt[1] ;
-         voltageData->mVoltAvailable[1] = false ;
-#ifdef DEBUGLOADVALUETOSENDVOLT2
-          static unsigned long StartVolt2=micros();
-          printer->print("LoadValueToSend - mVolt2 at ");
-          printer->print( millis()  );
-          printer->print(" value = ");
-          printer->print( voltageData->mVolt[1] );
-          printer->print(" , delay = ");
-          printer->println( (micros() - StartVolt2 )/1000 );
-          StartVolt2 = micros() ;
-#endif          
-          break ;
-      case VOLT3 :  
-         valueTemp = voltageData->mVolt[2] ;
-         voltageData->mVoltAvailable[2] = false ;
-          break ;
-      case VOLT4 :  
-         valueTemp = voltageData->mVolt[3] ;
-         voltageData->mVoltAvailable[3] = false ;
-          break ;
-      case VOLT5 :  
-         valueTemp = voltageData->mVolt[4] ;
-         voltageData->mVoltAvailable[4] = false ;
-          break ;
-      case VOLT6 :  
-         valueTemp = voltageData->mVolt[5] ;
-         voltageData->mVoltAvailable[5] = false ;
-          break ;
-#endif
-
-#if defined (PIN_CURRENTSENSOR)
-      case CURRENTMA :
-         valueTemp = currentData->milliAmps ;
-         fieldID = CURR_FIRST_ID ;         
-         currentData->milliAmpsAvailable = false ;
-#ifdef DEBUGLOADVALUETOSENDCURRENTMA
-          static unsigned long StartCurrentMa=micros();
-          printer->print("LoadValueToSend CurrentMa at ");
-          printer->print( millis()  );
-          printer->print(" value = ");
-          printer->print( currentData->milliAmps );
-          printer->print(" , delay = ");
-          printer->println( (micros() - StartCurrentMa )/1000 );
-          StartCurrentMa = micros() ;
-#endif          
-         break ;
-      case MILLIAH :
-         valueTemp = currentData->consumedMilliAmps ;
-         currentData->consumedMilliAmpsAvailable = false ;
-#ifdef DEBUGLOADVALUETOSENDMILLIAH
-          static unsigned long StartMilliAh=micros();
-          printer->print("LoadValueToSend CurrentMa at ");
-          printer->print( millis()  );
-          printer->print(" value = ");
-          printer->print( currentData->consumedMilliAmps  );
-          printer->print(" , delay = ");
-          printer->println( (micros() - StartMilliAh )/1000 );
-          StartMilliAh = micros() ;
-#endif          
-         
-         break ;
-#endif
-
-#if (NUMBEROFCELLS > 0)
-      case  CELLS_1_2 :
-          valueTemp =  voltageData->mVoltCell_1_2  ; 
-          fieldID = CELLS_FIRST_ID ; 
-          voltageData->mVoltCell_1_2_Available  = false ;
-#ifdef DEBUGLOADVALUETOSENDCELL_1_2
-          static unsigned long StartCell_1_2=micros();
-          printer->print("LoadValueToSend Cell_1_2 at ");
-          printer->print( millis()  );
-          printer->print(" value = ");
-          printer->print( (voltageData->mVoltCell_1_2 & 0xFFF00000) >> 20  );
-          printer->print(" ");
-          printer->print( (voltageData->mVoltCell_1_2 & 0x000FFF00) >> 8  );
-          printer->print(" ");
-          printer->print( (voltageData->mVoltCell_1_2 & 0x000000FF) , HEX );
-          printer->print(" , delay = ");
-          printer->println( (micros() - StartCell_1_2 )/1000 );
-          StartCell_1_2 = micros() ;
-#endif                    
-          break ;
-          
-      case  CELLS_3_4 :
-          valueTemp = voltageData->mVoltCell_3_4 ; 
-          fieldID = CELLS_FIRST_ID ; 
-          voltageData->mVoltCell_3_4_Available  = false ;     
-#ifdef DEBUGLOADVALUETOSENDCELL_3_4
-          static unsigned long StartCell_3_4=micros();
-          printer->print("LoadValueToSend Cell_3_4 at ");
-          printer->print( millis()  );
-          printer->print(" value = ");
-          printer->print( (voltageData->mVoltCell_3_4 & 0xFFF00000) >> 20  );
-          printer->print(" ");
-          printer->print( (voltageData->mVoltCell_3_4 & 0x000FFF00) >> 8  );
-          printer->print(" ");
-          printer->print( (voltageData->mVoltCell_3_4 & 0x000000FF) , HEX );
-          printer->print(" , delay = ");
-          printer->println( (micros() - StartCell_3_4 )/1000 );
-          StartCell_3_4 = micros() ;
-#endif                    
-          break ;
-          
-      case  CELLS_5_6 :
-          valueTemp = voltageData->mVoltCell_5_6 ;
-          fieldID = CELLS_FIRST_ID ;  
-          voltageData->mVoltCell_5_6_Available  = false ; 
-#ifdef DEBUGLOADVALUETOSENDCELL_5_6
-          static unsigned long StartCell_5_6=micros();
-          printer->print("LoadValueToSend Cell_5_6 at ");
-          printer->print( millis()  );
-          printer->print(" value = ");
-          printer->print( (voltageData->mVoltCell_5_6 & 0xFFF00000 >> 20)  );
-          printer->print(" ");
-          printer->print( (voltageData->mVoltCell_5_6 & 0x000FFF00 >> 8)  );
-          printer->print(" ");
-          printer->print( (voltageData->mVoltCell_5_6 & 0x000000FF) , HEX );
-          
-          printer->print(" , delay = ");
-          printer->println( (micros() - StartCell_5_6 )/1000 );
-          StartCell_5_6 = micros() ;
-#endif                    
-          break ;
-
-#endif  // NUMBEROFCELLS > 0 
-
-#ifdef PIN_PPM 
-      case  PPM :
-          valueTemp = ppm ;
-          fieldID = T1_FIRST_ID ;  
-          ppmAvailable  = false ; 
-          break ;
-#endif
-
-
-#ifdef MEASURE_RPM 
-      case  RPM :
-          valueTemp = RpmValue ;
-          fieldID = RPM_FIRST_ID ;  
-          RpmAvailable  = false ;
-          break ;   
-#endif
-      case  TEST1 :
-          valueTemp = test1Value ;
-          test1ValueAvailable  = false ; 
-          break ;
-      case  TEST2 :
-          valueTemp = test2Value ;
-          test2ValueAvailable  = false ; 
-          break ;
-      case  TEST3 :
-          valueTemp = test3Value ;
-          test3ValueAvailable  = false ; 
-          break ;
-
-
-
-      }  // end Switch
-      if ( (fieldContainsData[currentFieldToSend][0] != DEFAULTFIELD)  ) fieldID = convertToSportId[ fieldContainsData[currentFieldToSend][0]] ;
-      if ( (fieldID >= VFAS_FIRST_ID) && (fieldID <= VFAS_LAST_ID) ) valueTemp = valueTemp / 10 ;
-#ifdef DEBUGWITHFIXVALUE
-      static int delta = 1 ;
-      static int32_t prevValue = 0 ;
-      static int32_t maxValue = 255;
-      static int32_t minValue = -255;
-      if (prevValue <  minValue || prevValue >  maxValue) delta = delta * -1 ;
-      prevValue  = prevValue + delta ;
-      valueTemp = prevValue ; 
-#endif //End DEBUGWITHFIXVALUE
-//      setSportNewData( &sportData, fieldID  ,  (valueTemp * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])  + fieldContainsData[currentFieldToSend][4] ) ; 
-      setSportNewData( fieldID  ,  (valueTemp * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])  + fieldContainsData[currentFieldToSend][4] ) ; 
-#ifdef DEBUGLOADVALUETOSEND
-          printer->print("Loaded at = ");
-          printer->print( millis() );
-          printer->print(" for field index = ");
-          printer->print( currentFieldToSend  );
-          printer->print(" Device ID (hex) = ");
-          printer->print( fieldID  , HEX );
-          printer->print(" , value= ");
-          printer->print( (valueTemp * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3]) + fieldContainsData[currentFieldToSend][4] );
-          printer->print(" , Hex value= ");
-          printer->println( (valueTemp * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3]) + fieldContainsData[currentFieldToSend][4] , HEX );
-
-#endif
-}  // End function
-
-
-
-#ifdef GPS_INSTALLED
- //!! shared with Aserial
-extern uint8_t volatile gpsSendStatus ; 
-extern uint8_t volatile gpsSportDataLock ;
-extern uint8_t volatile gpsSportData[7] ;
-#define GPS_DATA_COUNT 5
-
-void OXS_OUT::FrSkySportSensorGpsSend(void)
-{
-  // gpsSendStatus can be TO_LOAD, LOADED, SENDING, SEND ; it is managed here and in Aserial
-  // new data is uploaded only when gpsSendStatus == SEND or TO_LOAD
-  // each GPS data is loaded in sequence but only if available (otherwise this data is skipped)
-  static uint8_t gpsDataIdx ;
-  static uint16_t gpsSportId ;
-  static uint32_t gpsSportValue ;
-  static uint32_t gpsLastLoadedMillis ;
-#ifdef DEBUGSIMULATEGPS
-  static uint8_t gpsSimulateCount ;
-#endif  
-//   Serial.println(F("S gdps"));
-
-  if  ((gpsSendStatus == SEND || gpsSendStatus == TO_LOAD) && (millis() - gpsLastLoadedMillis > 200 ) ){  // send only one data per 200 msec (to test if it help locking found on the Tx log)
-            gpsDataIdx++;  // handle next GPS data; if not available, this field will be skipped.
-            if(gpsDataIdx >= GPS_DATA_COUNT) {
-              gpsDataIdx = 0;
-            }
-            switch(gpsDataIdx)
-            {
-              case 0: //longitude
-                if (!GPS_lonAvailable) return ;
-                GPS_lonAvailable = false ;
-                gpsSportId = GPS_LONG_LATI_FIRST_ID ;
-#ifdef DEBUGSIMULATEGPS
-                gpsSportValue = ((( ((((uint32_t)( GPS_lon < 0 ? -GPS_lon : GPS_lon)) / 10 ) * 6 ) / 10 ) + gpsSimulateCount++ )& 0x3FFFFFFF) | 0x80000000;
-#else                
-                gpsSportValue = (( ((((uint32_t)( GPS_lon < 0 ? -GPS_lon : GPS_lon)) /10 ) * 6 ) / 10 ) & 0x3FFFFFFF)  | 0x80000000;
-#endif                
-                if(GPS_lon < 0) gpsSportValue |= 0x40000000;
-                break;
-              case 1: //latitude
-                if (!GPS_latAvailable) return ;
-                GPS_latAvailable = false ;
-                gpsSportId = GPS_LONG_LATI_FIRST_ID ;
-                gpsSportValue = ((  ((((uint32_t)( GPS_lat < 0 ? -GPS_lat : GPS_lat)) / 10 ) * 6 )/ 10 ) & 0x3FFFFFFF ) ;
-                if(GPS_lat < 0) gpsSportValue |= 0x40000000;
-                break;
-              case 2: // GPS_altitude
-                if (!GPS_altitudeAvailable) return ;
-                GPS_altitudeAvailable = false ;
-                gpsSportId = GPS_ALT_FIRST_ID ;
-#ifdef DEBUGSIMULATEGPS
-                gpsSportValue = (GPS_altitude / 10) + gpsSimulateCount++; // convert mm in cm 
-#else                
-                gpsSportValue = GPS_altitude / 10; // convert mm in cm 
-#endif                
-                break;
-              case 3: // GPS_speed_3d  // could be 2D
-#ifdef GPS_SPEED_3D
-                if (!GPS_speed_3dAvailable) return ; 
-                GPS_speed_3dAvailable = false ;
-                gpsSportId = GPS_SPEED_FIRST_ID ;
-#ifdef GPS_SPEED_IN_KMH
-                gpsSportValue = ( ((uint32_t) GPS_speed_3d) * 36 )  ; // convert cm/s in 1/100 of km/h (factor = 3.6)
-#else                                
-                gpsSportValue = ( ((uint32_t) GPS_speed_3d) * 700 ) / 36  ; // convert cm/s in 1/100 of knots (factor = 19.44)
-#endif // end of GPS_SPEED_IN_KMH
-                break;
-#else                   // use gps_Speed_2d
-                if (!GPS_speed_2dAvailable) return ; 
-                GPS_speed_2dAvailable = false ;
-                gpsSportId = GPS_SPEED_FIRST_ID ;
-#ifdef GPS_SPEED_IN_KMH
-                gpsSportValue = ( ((uint32_t) GPS_speed_2d) * 36 )  ; // convert cm/s in 1/100 of km/h (factor = 3.6)
-#else                                
-                gpsSportValue = ( ((uint32_t) GPS_speed_2d) * 700 ) / 36 ; // convert cm/s in 1/1000 of knots (factor = 19.44)
-                Serial.print(F("2d Knot:"));Serial.println(gpsSportValue); 
-#endif // end of GPS_SPEED_IN_KMH
-                break;
-#endif //  enf of GPS_SPEED_3D             
-              case 4: //GPS_ground_courseAvailable
-                if (!GPS_ground_courseAvailable) return ;
-                GPS_ground_courseAvailable = false ;
-                gpsSportId = GPS_COURS_FIRST_ID ;
-                gpsSportValue = GPS_ground_course / 1000; // convert from degree * 100000 to degree * 100 
-                break;
-              default:
-                return ;
-            } // end case    
-            gpsSportDataLock = 1 ;
-            gpsSportData[0] = 0x10 ;
-            gpsSportData[1] = gpsSportId ; // low byte
-            gpsSportData[2] = gpsSportId >> 8 ; // hight byte
-            gpsSportData[3] = gpsSportValue ;
-            gpsSportData[4] = gpsSportValue >> 8 ;
-            gpsSportData[5] = gpsSportValue >> 16 ;
-            gpsSportData[6] = gpsSportValue >> 24 ;
-            gpsSportDataLock = 0 ;
-#ifdef DEBUGSENDGPS
-  Serial.print(F("ID: "));
-  Serial.println(gpsSportId , HEX);
-#endif
-
-            gpsSendStatus = LOADED ; // from here data can be sent by the interrupt in Aserial
-  } // end test on gpsSendStatus == SEND or TOLOAD          
-} // end function
-
-#endif // of of GPS_INSTALLED
 
 
 // -------------------------End of SPORT protocol--------------------------------------------------------------------------------------
@@ -1055,15 +482,10 @@ void OXS_OUT::sendHubData()  // for Hub protocol
      printer->print("Send Data at = ");
      printer->println( millis() );
 #endif
-//    static byte SwitchFrameVariant=0;
     lastMsFrame1=temp;
     SendFrame1();
-//    if (SwitchFrameVariant==0)SendFrame1A();
-//    if (SwitchFrameVariant==1)SendFrame1B();
-//    SwitchFrameVariant++;
-//    if(SwitchFrameVariant==2)SwitchFrameVariant=0 ;
   }
-//  second frame was never used; if activated again, then we have to take care that orginal data are already sent before filling the buffer
+//  second frame used for GPS
 #ifdef GPS_INSTALLED
   if ( (state == IDLE ) && (temp-lastMsFrame2) > INTERVAL_FRAME2  ) {
     lastMsFrame2=temp;
@@ -1074,32 +496,150 @@ void OXS_OUT::sendHubData()  // for Hub protocol
 
 //======================================================================================================Send Frame 1A via serial
 void OXS_OUT::SendFrame1(){
-#ifdef DEBUGHUBPROTOCOL
-  printer->print("FRSky output module: SendFrame1A:");
+  hubMaxData = 0 ; // reset of number of data to send
+
+// pointer to Altitude
+#if defined(VARIO) 
+  uint16_t Centimeter =  uint16_t(abs(oXs_MS5611.varioData.relativeAlt.value)%100);
+  int32_t Meter;
+  if (oXs_MS5611.varioData.relativeAlt.value >0){
+    Meter = (oXs_MS5611.varioData.relativeAlt.value - Centimeter);
+  } else{
+    Meter = -1*(abs(oXs_MS5611.varioData.relativeAlt.value) + Centimeter);
+  }
+  Meter=Meter/100;
+  SendValue(FRSKY_USERDATA_BARO_ALT_B, (int16_t)Meter);
+  SendValue(FRSKY_USERDATA_BARO_ALT_A, Centimeter);
 #endif
-    hubMaxData = 0 ; // reset of number of data to send
-#ifdef SEND_FixValue
-   SendValue(FRSKY_USERDATA_TEMP1,(int16_t)1234); // Fix value in T1 ; only for test purpose
+
+// VSpeed
+#if defined(VARIO) && (~defined(VSPEED_SOURCE)) || (defined (VSPEED_SOURCE) && (VSPEED_SOURCE == FIRST_BARO) )
+  SendValue( FRSKY_USERDATA_VERT_SPEED , (int16_t) oXs_MS5611.varioData.climbRate.value); 
+#elif defined(VARIO) && defined(VARIO2) && (VSPEED_SOURCE == SECOND_BARO)
+  SendValue( FRSKY_USERDATA_VERT_SPEED , (int16_t) oXs_MS5611_2.varioData.climbRate.value);  
+#elif defined(VARIO) && defined(VARIO2) && (VSPEED_SOURCE == AVERAGE_FIRST_SECOND)
+  SendValue( FRSKY_USERDATA_VERT_SPEED , (int16_t) averageVSpeed.value);  
+#elif defined(VARIO) && defined(AIRSPEED) && (VSPEED_SOURCE == AIRSPEED_COMPENSATED)
+  SendValue( FRSKY_USERDATA_VERT_SPEED , (int16_t) compensatedClimbRate.value); 
+#elif defined(VARIO) && defined(USE_6050) && (VSPEED_SOURCE == BARO_AND_IMU)
+  SendValue( FRSKY_USERDATA_VERT_SPEED , (int16_t) vSpeedImu.value); 
+#elif defined(VARIO) && ( defined (VARIO2) || defined (AIRSPEED) || defined (USE_6050) ) && defined (VARIO_SECONDARY ) && defined( VARIO_PRIMARY )  && defined (PIN_PPM)  && (VSPEED_SOURCE == PPM_SELECTION)
+  SendValue( FRSKY_USERDATA_VERT_SPEED , (int16_t) switchVSpeed.value); 
 #endif
-  for (int rowNr = 0 ; rowNr < numberOfFields ; rowNr++) {
-    if ( hubMaxData < (MAXSIZEBUFFER - 13) ){
-        loadHubValueToSend( rowNr ) ;    
-    }    
-  }    
+
+// Cell_1_2
+#if defined(PIN_VOLTAGE) && defined(NUMBEROFCELLS) && (NUMBEROFCELLS > 0)      
+  SendCellVoltage( oXs_Voltage.voltageData.mVoltCell_1_2.value ); 
+#endif
+
+// Cell_3_4
+#if defined(PIN_VOLTAGE) && defined(NUMBEROFCELLS) && (NUMBEROFCELLS > 2)      
+  SendCellVoltage( oXs_Voltage.voltageData.mVoltCell_3_4.value) ; 
+#endif
+
+// Cell_5_6
+#if defined(PIN_VOLTAGE) && defined(NUMBEROFCELLS) && (NUMBEROFCELLS > 4)      
+   SendCellVoltage( oXs_Voltage.voltageData.mVoltCell_5_6.value) ; 
+#endif
+
+// vfas
+#if defined(PIN_VOLTAGE) && defined(VFAS_SOURCE) && (VFAS_SOURCE == VOLT1)
+    SendValue( FRSKY_USERDATA_VFAS_NEW ,  (int16_t) voltageData.mVolt[0] ) ;
+#elif defined(PIN_VOLTAGE) && defined(VFAS_SOURCE) && (VFAS_SOURCE == VOLT2)
+    SendValue( FRSKY_USERDATA_VFAS_NEW ,  (int16_t) voltageData.mVolt[1] ) ;
+#elif defined(PIN_VOLTAGE) && defined(VFAS_SOURCE) && (VFAS_SOURCE == VOLT3)
+    SendValue( FRSKY_USERDATA_VFAS_NEW ,  (int16_t) voltageData.mVolt[2] ) ;
+#elif defined(PIN_VOLTAGE) && defined(VFAS_SOURCE) && (VFAS_SOURCE == VOLT4)  
+    SendValue( FRSKY_USERDATA_VFAS_NEW ,  (int16_t) voltageData.mVolt[3] ) ;
+#elif defined(PIN_VOLTAGE) && defined(VFAS_SOURCE) && (VFAS_SOURCE == VOLT5)
+    SendValue( FRSKY_USERDATA_VFAS_NEW ,  (int16_t) voltageData.mVolt[4] ) ;
+#elif defined(PIN_VOLTAGE) && defined(VFAS_SOURCE) && (VFAS_SOURCE == VOLT6)
+    SendValue( FRSKY_USERDATA_VFAS_NEW ,  (int16_t) voltageData.mVolt[5] ) ;
+#endif
+   
+// current
+#if defined(PIN_CURRENTSENSOR) 
+    SendValue( FRSKY_USERDATA_CURRENT ,  (int16_t) oXs_Current.currentData.milliAmps.value ) ;
+#endif
+
+// fuel                                     // not defined currently
+   
+// RPM
+#if defined(MEASURE_RPM) 
+    SendValue( FRSKY_USERDATA_RPM , (int16) sport_rpm.value ) ; 
+#endif
+
+// T1
+#if defined(T1_SOURCE) && ( T1_SOURCE == TEST_1)
+    SendValue( FRSKY_USERDATA_TEMP1 , (int16_t) test1.value ) ; 
+#elif defined(T1_SOURCE) && ( T1_SOURCE == TEST_2)
+    SendValue( FRSKY_USERDATA_TEMP1 , (int16_t) test2.value) ; 
+#elif defined(T1_SOURCE) && ( T1_SOURCE == TEST_3)
+    SendValue( FRSKY_USERDATA_TEMP1 , (int16_t) test3.value) ; 
+#elif defined(T1_SOURCE) && ( T1_SOURCE == GLIDER_RATIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
+    SendValue( FRSKY_USERDATA_TEMP1 , (int16_t) gliderRatio.value) ; 
+#elif defined(T1_SOURCE) && ( T1_SOURCE == SENSITIVITY) && defined(VARIO)
+    SendValue( FRSKY_USERDATA_TEMP1 , (int16_t) oXs_MS5611.varioData.sensitivity.value) ; 
+#endif
+
+// T2   
+#if defined(T2_SOURCE) && ( T2_SOURCE == TEST_1)
+   SendValue( FRSKY_USERDATA_TEMP2 , (int16_t) test1.value ) ; 
+#elif defined(T2_SOURCE) && ( T2_SOURCE == TEST_2)
+   SendValue( FRSKY_USERDATA_TEMP2 , (int16_t) test2.value ) ; 
+#elif defined(T2_SOURCE) && ( T2_SOURCE == TEST_3)
+   SendValue( FRSKY_USERDATA_TEMP2 , (int16_t) test3.value ) ; 
+#elif defined(T2_SOURCE) && ( T2_SOURCE == GLIDER_RATIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
+   SendValue( FRSKY_USERDATA_TEMP2 , (int16_t) gliderRatio.value) ; 
+#elif defined(T2_SOURCE) && ( T2_SOURCE == SENSITIVITY) && defined(VARIO)
+   SendValue( FRSKY_USERDATA_TEMP2 , (int16_t) oXs_MS5611.varioData.sensitivity.value) ; 
+#endif
+   
+// airspeed                                        // not implemented in Hub protocol; to add in T1 or T2
+#if defined(AIRSPEED) 
+  //oXs_4525.airSpeedData.airSpeed ; 
+#endif
+
+// accX
+#if defined(ACCX_SOURCE) && ( ACCX_SOURCE == TEST_1)
+   SendValue( FRSKY_USERDATA_ACC_X , (int16_t) test1.value) ;
+#elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == TEST_2)
+   SendValue( FRSKY_USERDATA_ACC_X , (int16_t) test2.value) ;
+#elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == TEST_3)
+   SendValue( FRSKY_USERDATA_ACC_X , (int16_t) test3.value) ;
+#endif
+
+// accY
+#if defined(ACCY_SOURCE) && ( ACCY_SOURCE == TEST_1)
+   SendValue( FRSKY_USERDATA_ACC_Y , (int16_t) test1.value) ;
+#elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == TEST_2)
+   SendValue( FRSKY_USERDATA_ACC_Y , (int16_t) test2.value) ;
+#elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == TEST_3)
+   SendValue( FRSKY_USERDATA_ACC_Z , (int16_t) test3.value) ;
+#endif
+
+// accZ
+#if defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == TEST_1)
+   SendValue( FRSKY_USERDATA_ACC_Z , (int16_t) test1.value) ;
+#elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == TEST_2)
+   SendValue( FRSKY_USERDATA_ACC_Z , (int16_t) test2.value) ;
+#elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == TEST_3)
+   SendValue( FRSKY_USERDATA_ACC_Z , (int16_t) test3.value) ;
+#endif
+
   if( hubMaxData > 0 ) {
     sendHubByte(0x5E) ; // End of Frame 1!
     setHubNewData(  ) ;
   }  
 #ifdef DEBUGHUBPROTOCOL
-      printer->print("Data to send = ");
+      printer->print(F("Frame 1 to send: "));
       for (int cntPrint = 0 ; cntPrint < hubData.maxData ; cntPrint++) {
         printer->print(" ");
         printer->print(hubData.data[cntPrint] , HEX);
       }
      printer->println(" "); 
-#endif
-  
-}
+#endif  
+}  // end send frame 1
 
 
 #define FRSKY_USERDATA_GPS_ALT_B    0x01  // Altitude m
@@ -1120,9 +660,6 @@ void OXS_OUT::SendFrame1(){
 #ifdef GPS_INSTALLED
 //======================================================================================================Send Frame 2 via serial used for GPS
 void OXS_OUT::SendFrame2(){
-#ifdef DEBUGHUBPROTOCOL
-  printer->print(F("FRSky output module: SendFrame2:"));
-#endif
   hubMaxData = 0 ; // reset of number of data to send
 // here we fill the buffer with all GPS data
 // GPS_lon             // longitude in degree with 7 decimals, (neg for S)
@@ -1131,32 +668,31 @@ void OXS_OUT::SendFrame2(){
 // GPS_speed_3d;       // speed in cm/s
 // GPS_speed;          // speed in cm/s
 // GPS_ground_course ; // degrees with 5 decimals
-
   uint32_t absLongLat = abs(GPS_lat) ;
   uint32_t decimalPartOfDegree = (absLongLat % 10000000 );
   uint32_t minWith7Decimals = decimalPartOfDegree * 60 ;
   SendValue(FRSKY_USERDATA_GPS_LAT_B , (uint16_t) (((absLongLat / 10000000L) * 100 ) +  (minWith7Decimals / 10000000L )) ) ; // Latitude (DDMM)
-  SendValue(FRSKY_USERDATA_GPS_LAT_A , (uint16_t) (( minWith7Decimals % 10000000L) / 1000 ) ) ; // Latitude (.MMMM)
+  SendValue(FRSKY_USERDATA_GPS_LAT_A , (uint16_t) (( minWith7Decimals % 10000000L) / 1000 ) ) ;                              // Latitude (.MMMM)
   SendValue(FRSKY_USERDATA_GPS_LAT_EW , (uint16_t)(GPS_lat < 0 ? 'S' : 'N')) ;
   absLongLat = abs(GPS_lon) ;
   decimalPartOfDegree = (absLongLat % 10000000 );
   minWith7Decimals = decimalPartOfDegree * 60 ;
   SendValue(FRSKY_USERDATA_GPS_LONG_B , (uint16_t) (((absLongLat / 10000000L) * 100 ) +  (minWith7Decimals / 10000000L )) ) ; // Longitude (DDMM)
-  SendValue(FRSKY_USERDATA_GPS_LONG_A , (uint16_t) (( minWith7Decimals % 10000000L) / 1000 ) ) ;   // Longitude (.MMMM)
+  SendValue(FRSKY_USERDATA_GPS_LONG_A , (uint16_t) (( minWith7Decimals % 10000000L) / 1000 ) ) ;                              // Longitude (.MMMM)
   SendValue(FRSKY_USERDATA_GPS_LONG_EW , (uint16_t)(GPS_lon < 0 ? 'W' : 'E')) ;
-  SendValue(FRSKY_USERDATA_GPS_ALT_B ,  (int16_t) GPS_altitude / 1000 ); // Altitude m
-  SendValue(FRSKY_USERDATA_GPS_ALT_A , (uint16_t) ( (abs(GPS_altitude) % 1000 ) / 10 ) ) ; // Altitude in centimeter
-  uint32_t GPSSpeedKnot = GPS_speed_3d * 1944 ; // speed in knots with 5 décimals (1 cm/sec = 0,0194384 knot)
-  SendValue(FRSKY_USERDATA_GPS_SPEED_B , (uint16_t) ( GPSSpeedKnot / 100000) ) ;  // Speed knots
-  SendValue(FRSKY_USERDATA_GPS_SPEED_A , (uint16_t) ( (GPSSpeedKnot % 100000 ) /1000) ) ; // Speed 2 decimals of knots
-  SendValue(FRSKY_USERDATA_GPS_CURSE_B , (uint16_t) ( GPS_ground_course / 100000 ) ) ;  // Course degrees
-  SendValue(FRSKY_USERDATA_GPS_CURSE_A , (uint16_t) ( (GPS_ground_course % 100000) / 1000 ) ) ;   // // Course 2 decimals of degrees
+  SendValue(FRSKY_USERDATA_GPS_ALT_B ,  (int16_t) GPS_altitude / 1000 );                                                      // Altitude m
+  SendValue(FRSKY_USERDATA_GPS_ALT_A , (uint16_t) ( (abs(GPS_altitude) % 1000 ) / 10 ) ) ;                                    // Altitude centimeter
+  uint32_t GPSSpeedKnot = GPS_speed_3d * 1944 ;                                                                               // speed in knots with 5 décimals (1 cm/sec = 0,0194384 knot)
+  SendValue(FRSKY_USERDATA_GPS_SPEED_B , (uint16_t) ( GPSSpeedKnot / 100000) ) ;                                              // Speed knots
+  SendValue(FRSKY_USERDATA_GPS_SPEED_A , (uint16_t) ( (GPSSpeedKnot % 100000 ) /1000) ) ;                                     // Speed 2 decimals of knots
+  SendValue(FRSKY_USERDATA_GPS_CURSE_B , (uint16_t) ( GPS_ground_course / 100000 ) ) ;                                        // Course degrees
+  SendValue(FRSKY_USERDATA_GPS_CURSE_A , (uint16_t) ( (GPS_ground_course % 100000) / 1000 ) ) ;                               // Course 2 decimals of degrees
   if( hubMaxData > 0 ) {
     sendHubByte(0x5E) ; // End of Frame 2!
     setHubNewData(  ) ;
   }  
 #ifdef DEBUGHUBPROTOCOL
-      printer->print("Data to send = ");
+      printer->print("Frame2 to send = ");
       for (int cntPrint = 0 ; cntPrint < hubData.maxData ; cntPrint++) {
         printer->print(" ");
         printer->print(hubData.data[cntPrint] , HEX);
@@ -1198,15 +734,11 @@ void OXS_OUT::sendHubByte( uint8_t byte )
 	hubMaxData ++ ;	
 }
 
-
-//***************************************************
+/*
+// ***************************************************
 // Search the value, format it and put it in a buffer
-//***************************************************
+// ***************************************************
 void OXS_OUT::loadHubValueToSend( uint8_t currentFieldToSend ) {
-//  static int16_t valueTemp ;
-//  static int fieldToSend ;
-//  static bool fieldOk ;
-//  valueTemp = 0 ; 
   fieldToSend = (int) convertToHubId[ fieldContainsData[currentFieldToSend][0] ]  ;
   if ( (fieldToSend >= FRSKY_USERDATA_GPS_ALT_B ) && (fieldToSend <= FRSKY_USERDATA_FUELPERCENT ) )  fieldOk = true ;
   else fieldOk = false ;
@@ -1216,12 +748,12 @@ void OXS_OUT::loadHubValueToSend( uint8_t currentFieldToSend ) {
       case  ALTIMETER :    
 //          if ( (SwitchFrameVariant == 0) && (varioData->absoluteAltAvailable) ) { //========================================================================== Vario Data
               if (fieldToSend == DEFAULTFIELD) {
-                  SendAlt( ( (varioData->absoluteAlt * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4] );           
-//                varioData->absoluteAltAvailable = false ;
+                  SendAlt( ( (varioData->relativeAlt.value * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4] );           
+//                varioData->absoluteAlt.available = false ;
               }
               else if(  fieldOk == true ) {
-                 SendValue((int8_t) fieldToSend ,(int16_t) ( (varioData->absoluteAlt * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4] );
-//                 varioData->absoluteAltAvailable = false ;
+                 SendValue((int8_t) fieldToSend ,(int16_t) ( (varioData->relativeAlt.value * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4] );
+//                 varioData->absoluteAlt.available = false ;
               }   
 //          }
           break ;
@@ -1230,21 +762,21 @@ void OXS_OUT::loadHubValueToSend( uint8_t currentFieldToSend ) {
               if (fieldToSend == DEFAULTFIELD) {
                  // Attempt to work around the annoying 10cm double beep
                 //SendValue(FRSKY_USERDATA_VERT_SPEED,(int16_t)varioData->climbRate); // ClimbRate in open9x Vario mode
-                if (varioData->climbRate==10) SendValue(FRSKY_USERDATA_VERT_SPEED,(int16_t)9); // ClimbRate in open9x Vario mode
-                else if (varioData->climbRate==-10) SendValue(FRSKY_USERDATA_VERT_SPEED,(int16_t)-9);
-                else SendValue(FRSKY_USERDATA_VERT_SPEED,( ( (int16_t) varioData->climbRate * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3]))+ fieldContainsData[currentFieldToSend][4] ); // ClimbRate in open9x Vario mode
+                if (varioData->climbRate.value==10) SendValue(FRSKY_USERDATA_VERT_SPEED,(int16_t)9); // ClimbRate in open9x Vario mode
+                else if (varioData->climbRate.value==-10) SendValue(FRSKY_USERDATA_VERT_SPEED,(int16_t)-9);
+                else SendValue(FRSKY_USERDATA_VERT_SPEED,( ( (int16_t) varioData->climbRate.value * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3]))+ fieldContainsData[currentFieldToSend][4] ); // ClimbRate in open9x Vario mode
 //                varioData->climbRateAvailable = false ;
               }
               else if(  fieldOk == true ) {
-                 SendValue((int8_t) fieldToSend , ( ((int16_t)varioData->climbRate * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3]))+ fieldContainsData[currentFieldToSend][4] );
-                 varioData->climbRateAvailable = false ;
+                 SendValue((int8_t) fieldToSend , ( ((int16_t)varioData->climbRate.value * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3]))+ fieldContainsData[currentFieldToSend][4] );
+                 varioData->climbRate.available = false ;
               }  
 //          }   
           break ;
        case SENSITIVITY :
-//          if ( (SwitchFrameVariant == 0) && (varioData->sensitivityAvailable ) ){
+//          if ( (SwitchFrameVariant == 0) && (varioData->sensitivity.available ) ){
              if ( fieldOk == true ) {
-               SendValue((int8_t) fieldToSend , ( ((int16_t) varioData->sensitivity * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3]))+ fieldContainsData[currentFieldToSend][4] );
+               SendValue((int8_t) fieldToSend , ( ((int16_t) varioData->sensitivity.value * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3]))+ fieldContainsData[currentFieldToSend][4] );
 //               varioData->sensitivityAvailable = false ;
              }
 //          }   
@@ -1266,11 +798,11 @@ void OXS_OUT::loadHubValueToSend( uint8_t currentFieldToSend ) {
       case  ALTIMETER_2 :    
  //         if ( (SwitchFrameVariant == 0) && (varioData_2->absoluteAltAvailable) ) { //========================================================================== Vario Data
               if (fieldToSend == DEFAULTFIELD) {
-                SendAlt( ( (varioData_2->absoluteAlt * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4]);           
+                SendAlt( ( (varioData_2->absoluteAlt.value * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4]);           
 //                varioData_2->absoluteAltAvailable = false ;
               }
               else if(  fieldOk == true ) {
-                 SendValue((int8_t) fieldToSend ,(int16_t) ( (varioData_2->absoluteAlt * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4] );
+                 SendValue((int8_t) fieldToSend ,(int16_t) ( (varioData_2->absoluteAlt.value * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4] );
 //                 varioData_2->absoluteAltAvailable = false ;
               }   
 //          }
@@ -1280,13 +812,13 @@ void OXS_OUT::loadHubValueToSend( uint8_t currentFieldToSend ) {
               if (fieldToSend == DEFAULTFIELD) {
                  // Attempt to work around the annoying 10cm double beep
                 //SendValue(FRSKY_USERDATA_VERT_SPEED,(int16_t)varioData->climbRate); // ClimbRate in open9x Vario mode
-                if (varioData_2->climbRate==10) SendValue(FRSKY_USERDATA_VERT_SPEED,(int16_t)9); // ClimbRate in open9x Vario mode
-                else if (varioData_2->climbRate==-10) SendValue(FRSKY_USERDATA_VERT_SPEED,(int16_t)-9);
-                else SendValue(FRSKY_USERDATA_VERT_SPEED, ( ( (int16_t) varioData_2->climbRate * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3]))+ fieldContainsData[currentFieldToSend][4] ); // ClimbRate in open9x Vario mode
+                if (varioData_2->climbRate.value == 10) SendValue(FRSKY_USERDATA_VERT_SPEED,(int16_t)9); // ClimbRate in open9x Vario mode
+                else if (varioData_2->climbRate.value == -10) SendValue(FRSKY_USERDATA_VERT_SPEED,(int16_t)-9);
+                else SendValue(FRSKY_USERDATA_VERT_SPEED, ( ( (int16_t) varioData_2->climbRate.value * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3]))+ fieldContainsData[currentFieldToSend][4] ); // ClimbRate in open9x Vario mode
 //                varioData_2->climbRateAvailable = false ;
               }
               else if(  fieldOk == true ) {
-                 SendValue((int8_t) fieldToSend , ( ( (int16_t) varioData_2->climbRate * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3]))+ fieldContainsData[currentFieldToSend][4] );
+                 SendValue((int8_t) fieldToSend , ( ( (int16_t) varioData_2->climbRate.value * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3]))+ fieldContainsData[currentFieldToSend][4] );
 //                 varioData_2->climbRateAvailable = false ;
               }  
 //          }   
@@ -1294,7 +826,7 @@ void OXS_OUT::loadHubValueToSend( uint8_t currentFieldToSend ) {
        case SENSITIVITY_2 :
 //          if ( (SwitchFrameVariant == 0) && (varioData_2->sensitivityAvailable ) ){
              if ( fieldOk == true ) {
-               SendValue((int8_t) fieldToSend , ( ( (int16_t) varioData_2->sensitivity * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3]))+ fieldContainsData[currentFieldToSend][4] );
+               SendValue((int8_t) fieldToSend , ( ( (int16_t) varioData_2->sensitivity.value * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3]))+ fieldContainsData[currentFieldToSend][4] );
 //               varioData_2->sensitivityAvailable = false ;
              }
 //          }   
@@ -1314,7 +846,7 @@ void OXS_OUT::loadHubValueToSend( uint8_t currentFieldToSend ) {
 #if defined (VARIO )  &&  defined (VARIO2)
       case VERTICAL_SPEED_A :
               if(  fieldOk == true ) {
-                 SendValue((int8_t) fieldToSend , ( ( (int16_t) averageVSpeed * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4] );
+                 SendValue((int8_t) fieldToSend , ( ( (int16_t) averageVSpeed.value * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4] );
               }   
           break ;   
 #endif
@@ -1322,7 +854,7 @@ void OXS_OUT::loadHubValueToSend( uint8_t currentFieldToSend ) {
 #if defined (VARIO )  && ( defined (VARIO2) || defined( AIRSPEED) || defined(USE_6050) ) && defined (VARIO_PRIMARY ) && defined (VARIO_SECONDARY ) && defined (PIN_PPM)
       case PPM_VSPEED :
               if(  fieldOk == true ) {
-                 SendValue((int8_t) fieldToSend , ( ( (int16_t) switchVSpeed * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4] );
+                 SendValue((int8_t) fieldToSend , ( ( (int16_t) switchVSpeed.value * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4] );
               }   
           break ;   
 #endif
@@ -1330,10 +862,10 @@ void OXS_OUT::loadHubValueToSend( uint8_t currentFieldToSend ) {
 #ifdef AIRSPEED       
       case  AIR_SPEED : 
               if (fieldToSend == DEFAULTFIELD) {
-                 SendGPSSpeed(  (( (int16_t) airSpeedData->airSpeed * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4]) ;
+                 SendGPSSpeed(  (( (int16_t) airSpeedData->airSpeed.value * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4]) ;
               }
               else if(  fieldOk == true ) {
-                 SendValue((int8_t) fieldToSend , ( ( (int16_t) airSpeedData->airSpeed * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4] );
+                 SendValue((int8_t) fieldToSend , ( ( (int16_t) airSpeedData->airSpeed.value * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4] );
               }  
           break ;
       case PRANDTL_COMPENSATION :    
@@ -1350,7 +882,7 @@ void OXS_OUT::loadHubValueToSend( uint8_t currentFieldToSend ) {
 #if defined (VARIO) && defined ( AIRSPEED)
       case PRANDTL_DTE :    
               if(  fieldOk == true ) {
-                 SendValue((int8_t) fieldToSend , ( ((int16_t) compensatedClimbRate * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4] );
+                 SendValue((int8_t) fieldToSend , ( ((int16_t) compensatedClimbRate.value * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4] );
               }   
           break ;                      
 #endif  // End defined (VARIO) && defined ( AIRSPEED)
@@ -1381,11 +913,11 @@ void OXS_OUT::loadHubValueToSend( uint8_t currentFieldToSend ) {
       case CURRENTMA :
 //          if ( (SwitchFrameVariant == 0) && (currentData->milliAmpsAvailable ) ) {
              if ( fieldToSend == DEFAULTFIELD ) {
-                 SendCurrentMilliAmps(( ( (int16_t) currentData->milliAmps * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3]) ) + fieldContainsData[currentFieldToSend][4]);
+                 SendCurrentMilliAmps(( ( (int16_t) currentData->milliAmps.value * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3]) ) + fieldContainsData[currentFieldToSend][4]);
 //                 currentData->milliAmpsAvailable = false ;
              }
               else if(  fieldOk == true ) {
-                 SendValue((int8_t) fieldToSend , ( ( (int16_t) currentData->milliAmps * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3]) ) + fieldContainsData[currentFieldToSend][4] );
+                 SendValue((int8_t) fieldToSend , ( ( (int16_t) currentData->milliAmps.value * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3]) ) + fieldContainsData[currentFieldToSend][4] );
 //                 currentData->milliAmpsAvailable = false ;
               }  
 //          }    
@@ -1414,7 +946,7 @@ void OXS_OUT::loadHubValueToSend( uint8_t currentFieldToSend ) {
       case  CELLS_1_2 :
 //         if ( (SwitchFrameVariant == 0) && ( voltageData->mVoltCell_1_2_Available ) ) {
              if ( fieldToSend == DEFAULTFIELD ) {
-                 SendCellVoltage( voltageData->mVoltCell_1_2 ) ;
+                 SendCellVoltage( voltageData->mVoltCell_1_2.value ) ;
 //                 voltageData->mVoltCell_1_2_Available  = false ;
              }
 //          }    
@@ -1423,7 +955,7 @@ void OXS_OUT::loadHubValueToSend( uint8_t currentFieldToSend ) {
       case  CELLS_3_4 :
 //          if ( (SwitchFrameVariant == 0) && ( voltageData->mVoltCell_3_4_Available ) ) {
              if ( fieldToSend == DEFAULTFIELD ) {
-                 SendCellVoltage( voltageData->mVoltCell_3_4 ) ;
+                 SendCellVoltage( voltageData->mVoltCell_3_4.value ) ;
 //                 voltageData->mVoltCell_3_4_Available  = false ;
              }
 //          }   
@@ -1432,7 +964,7 @@ void OXS_OUT::loadHubValueToSend( uint8_t currentFieldToSend ) {
       case  CELLS_5_6 :
 //          if ( (SwitchFrameVariant == 0) && ( voltageData->mVoltCell_5_6_Available ) ) {
              if ( fieldToSend == DEFAULTFIELD ) {
-                 SendCellVoltage( voltageData->mVoltCell_5_6 ) ;
+                 SendCellVoltage( voltageData->mVoltCell_5_6.value ) ;
 //                 voltageData->mVoltCell_5_6_Available  = false ;
 //             }
           }   
@@ -1460,17 +992,17 @@ void OXS_OUT::loadHubValueToSend( uint8_t currentFieldToSend ) {
 #endif  //  MEASURE_RPM
       case  TEST1 :
             if(  fieldOk == true ) {
-                   SendValue((int8_t) fieldToSend ,(int16_t) ( (test1Value * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4] );
+                   SendValue((int8_t) fieldToSend ,(int16_t) ( (test1.value * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4] );
              }
           break ;
       case  TEST2 :
             if(  fieldOk == true ) {
-                   SendValue((int8_t) fieldToSend ,(int16_t) ( (test2Value * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4] );
+                   SendValue((int8_t) fieldToSend ,(int16_t) ( (test2.value * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4] );
              }
           break ;
       case  TEST3 :
             if(  fieldOk == true ) {
-                   SendValue((int8_t) fieldToSend ,(int16_t) ( (test3Value * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4] );
+                   SendValue((int8_t) fieldToSend ,(int16_t) ( (test3.value * fieldContainsData[currentFieldToSend][2] / fieldContainsData[currentFieldToSend][3])) + fieldContainsData[currentFieldToSend][4] );
              }
           break ;
 
@@ -1478,8 +1010,9 @@ void OXS_OUT::loadHubValueToSend( uint8_t currentFieldToSend ) {
       }  // end Switch
 }  // End function  loadValueToSend (Frame 1)
 
-
+*/
 #ifdef PIN_VOLTAGE
+/*
 // ********************************************************** //
 //  SendVoltX => send a voltage                              //
 // ********************************************************* //
@@ -1491,18 +1024,16 @@ void OXS_OUT::SendVoltX( uint8_t VoltToSend , uint8_t indexFieldToSend) {
            }
 //         }
 }
-
+*/
 #if defined (NUMBEROFCELLS)  && (NUMBEROFCELLS > 0)
 // ********************************************************** //
 // SendCellVoltage => send a cell voltage                     //
 // ********************************************************** //
 void OXS_OUT::SendCellVoltage( uint32_t voltage) {
-  static byte cellID ;
-    static uint16_t cellVolt;
   // For SPORT, cell voltage is formatted as (hex) 12 34 56 78 where 123 = volt of cell n+1 (divided by 2), 456 idem for cell n, 7 = max number of cell and 8 = n (number of cell)
   // target format for Hub (hex) is having 2 data sent in format : 84 56 and 91 23 (where 9 = content of 8 incresed by 1)
-    cellID = (voltage & 0x0000000f);
-    cellVolt = ((voltage >> 8) & 0x0fff) ;
+    byte cellID = (voltage & 0x0000000f);
+    uint16_t cellVolt = ((voltage >> 8) & 0x0fff) ;
     uint8_t v1 = ( (cellID  )<<4 & 0xf0) | ((cellVolt & 0x0f00)>>8) ;
     uint8_t v2 = (cellVolt & 0x00ff);
     uint16_t Value = (v2<<8) | (v1 & 0x00ff) ;
@@ -1708,7 +1239,7 @@ ISR(TIMER1_COMPA_vect)
   switch (state)
   {
   // Transmit Byte.
-    case TRANSMIT :   // Output the TX buffer.************ on envoie des bits de data
+    case TRANSMIT :   // Output the TX buffer.************ we are sending each bit of data
 #if DEBUGASERIAL
           PORTC |= 1 ;
 #endif
@@ -1731,38 +1262,7 @@ ISR(TIMER1_COMPA_vect)
             state = TRANSMIT_STOP_BIT;
                 //ENABLE_TIMER0_INT() ;                   // Allow this in now.
           }
-          OCR1A += TICKS2WAITONESPORT ;  // Count one period into the future.
-  
-  /*              
-              // Here another code in order to avoid going out of interrupt during transmission
-                
-                while ( SwUartTXBitCount < 8) {
-                if( SwUartTXData & 0x01 )
-        {           // If the LSB of the TX buffer is 1:
-                    CLEAR_TX_PIN() ;                    // Send a logic 1 on the TX_PIN.
-                  }
-                else
-        {                                // Otherwise:
-                    SET_TX_PIN() ;                      // Send a logic 0 on the TX_PIN.
-                  }
-                SwUartTXData = SwUartTXData >> 1 ;    // Bitshift the TX buffer and
-                SwUartTXBitCount += 1 ;               // increment TX bit counter.
-                  OCR1A += TICKS2WAITONESPORT ;  // Count one period into the future.
-                  //digitalWrite(PIN_LED, HIGH );
-                  do { }
-                    while ( !(TIFR1 & (1 << OCF1A) ) ) ; 
-                  CLEAR_TIMER_INTERRUPT( ) ; 
-                  //digitalWrite(PIN_LED, LOW );
-                  
-                  
-              } // end while 8 bits have been sent
-                              
-                CLEAR_TX_PIN();                         // Output a logic 1.
-              state = TRANSMIT_STOP_BIT;
-    //ENABLE_TIMER0_INT() ;                 // Allow this in now.
-              OCR1A += TICKS2WAITONESPORT ;  // Count one period into the future.
-                CLEAR_TIMER_INTERRUPT( ) ;
-*/
+          OCR1A += TICKS2WAITONESPORT ;  // Count one period into the future.  
 #if DEBUGASERIAL
           PORTC &= ~1 ;
 #endif
@@ -1804,15 +1304,7 @@ ISR(TIMER1_COMPA_vect)
                 }
                 else  // 8 bytes have been send
                 {
-#ifdef GPS_INSTALLED  // fill status depending on sensorId being handled
-                  if ( currentSensorId == GPS_SENSOR_ID ) {
-                    gpsSendStatus = SEND ;
-                  } else {
-                    sendStatus = SEND ;
-                  }
-#else
-                  sendStatus = SEND ;
-#endif
+                  frskyStatus |=  1 << sensorSeq ;              // set the bit relative to sensorSeq to say that a new data has to be loaded for sensorSeq.
                   state = WAITING ;
                   OCR1A += DELAY_3500 ;   // 3.5mS gap before listening
                   TRXDDR &= ~( 1 << PIN_SERIALTX ) ;            // PIN is input
@@ -1861,116 +1353,62 @@ ISR(TIMER1_COMPA_vect)
                     else  //Done receiving =  8 bits are in SwUartRXData
                     {
 #if DEBUGASERIAL
-                    PORTC &= ~1 ;
+                        PORTC &= ~1 ;
 #endif
-                    if ( LastRx == 0x7E )
-                    {
-                        if ( SwUartRXData == sensorId )
+                        if ( LastRx == 0x7E )
                         {
-//                          struct t_sportData * volatile pdata = ThisSportData ;
-//                          FORCE_INDIRECT( pdata ) ;
-                          //if ( pdata )               // We have something to send
-                          if   ( sendStatus == LOADED ){     
-                            if ( sportDataLock == 0 ) {
-/*          This part can help debug the transmission of a value,      Mike it could be set in a #ifdef
-                                switch (idToSend) { 
-                                     case VARIO_ID :
-                                       idToSend = DIVIDER_VOLTAGE_ID ;
-                                       break ;
-                                     case DIVIDER_VOLTAGE_ID :
-                                       idToSend = VCC_ID ;
-                                       break ;
-                                      case VCC_ID :
-                                       idToSend =  ALT_ID ;
-                                       break ;
-                                      default :
-                                       idToSend = VARIO_ID ;
-                                 } 
-                                
-                                idToSend = DIVIDER_VOLTAGE_ID ;
+                            switch (SwUartRXData ) {
 
-                                TxData[0] = 0x10 ;
-              TxData[1] = idToSend ; // partie basse de l ID pour une valeur
-        TxData[2] = idToSend >> 8 ;
-        TxData[3] = TxData[3] + 1 ;
-        TxData[4] = 0 ;
-        TxData[5] = 0 ;
-        TxData[6] = 0 ;
-
- */                               
-                                TxSportData[0] = sportData[0] ;
-                                TxSportData[1] = sportData[1] ;
-                                TxSportData[2] = sportData[2] ;
-                                TxSportData[3] = sportData[3] ;
-                                TxSportData[4] = sportData[4] ;
-                                TxSportData[5] = sportData[5] ;
-                                TxSportData[6] = sportData[6] ;
-                                                        
+#define  VARIO_ID 0x1B         // replace those values by the right on
+#define  CELL_ID 0x90
+#define  CURRENT_ID 0x91
+#define  GPS_ID 0x83
+#define  RPM_ID 0x92
+#define  ACC_ID 0x93
+                              case VARIO_ID :
+                                sensorSeq = 0 ; break ;
+                              case CELL_ID :
+                                sensorSeq = 1 ; break ;
+                              case CURRENT_ID :
+                                sensorSeq = 2 ; break ;
+                              case GPS_ID :
+                                sensorSeq = 3 ; break ;
+                              case RPM_ID :
+                                sensorSeq = 4 ; break ;
+                              case ACC_ID :
+                                sensorSeq = 5 ; break ;
+                              default : 
+                                sensorSeq = 255 ;  
                             }
-                            else // locked
-                            { // Discard frame to be sent if data is locked
-                                TxSportData[0] = 0 ;
-                                TxSportData[1] = 0 ;
-                                TxSportData[2] = 0 ;
-                                TxSportData[3] = 0 ;
-                                TxSportData[4] = 0 ;
-                                TxSportData[5] = 0 ;
-                                TxSportData[6] = 0 ;
-                            }
-                            state = TxPENDING ;
-                            sendStatus = SENDING ;
-                            currentSensorId = SwUartRXData ; // save the sensorId being handled (can be the main one or the code for GPS).
-                            OCR1A += ( DELAY_400 - TICKS2WAITONESPORT) ;    // 400 uS gap before sending
-                         } // end LOADED
-                        else // No data are loaded (so there is no data yet available)
+                            if ( ( sensorSeq < 6 ) && ( ( frskyStatus & ( 1 << sensorSeq )) == 0 ) ) {    // If this sensor ID is supported by oXs and oXs has prepared data to reply data in dataValue[] for this sensorSeq    
+                                      if ( sportDataLock == 0 ) {
+                                          TxSportData[0] = 0x10 ;
+                                          TxSportData[1] = dataId[sensorSeq] << 4  ;
+                                          TxSportData[2] = dataId[sensorSeq] >> 4 ;
+                                          TxSportData[3] = dataValue[sensorSeq] ;
+                                          TxSportData[4] = dataValue[sensorSeq] >> 8 ;
+                                          TxSportData[5] = dataValue[sensorSeq] >> 16 ;
+                                          TxSportData[6] = dataValue[sensorSeq] >> 24 ;
+                                          state = TxPENDING ;
+                                          OCR1A += ( DELAY_400 - TICKS2WAITONESPORT) ;    // 400 uS gap before sending
+                                      }
+                            } // end LOADED
+                            else // No data are loaded (so there is no data yet available)
+                            {
+                                  // Wait for idle time
+                                  state = WAITING ;
+                                  OCR1A += DELAY_3500 ;   // 3.5mS gap before listening
+                            } 
+                        }    // received 1 byte and was equal to 0x7E
+                        else // So previous code is not equal to x7E 
                         {
-                          // Wait for idle time
-                          state = WAITING ;
-                          OCR1A += DELAY_3500 ;   // 3.5mS gap before listening
+                            DISABLE_TIMER_INTERRUPT() ;         // Stop the timer interrupts.
+                            state = IDLE ;                                  // Go back to idle.
+                            PCIFR = ( 1<<PCIF2 ) ;        // clear pending interrupt
+                            PCICR |= ( 1<<PCIE2 ) ;       // pin change interrupt enabled
                         }
-                      } 
-                      else if ( SwUartRXData == GPS_SENSOR_ID ) {
-                          if   ( gpsSendStatus == LOADED ){     
-                            if ( gpsSportDataLock == 0 ) {
-                                TxSportData[0] = gpsSportData[0] ;
-                                TxSportData[1] = gpsSportData[1] ;
-                                TxSportData[2] = gpsSportData[2] ;
-                                TxSportData[3] = gpsSportData[3] ;
-                                TxSportData[4] = gpsSportData[4] ;
-                                TxSportData[5] = gpsSportData[5] ;
-                                TxSportData[6] = gpsSportData[6] ;
-                             }
-                            else // locked
-                            { // Discard frame to be sent if data is locked
-                                TxSportData[0] = 0 ;
-                                TxSportData[1] = 0 ;
-                                TxSportData[2] = 0 ;
-                                TxSportData[3] = 0 ;
-                                TxSportData[4] = 0 ;
-                                TxSportData[5] = 0 ;
-                                TxSportData[6] = 0 ;
-                            }
-                            state = TxPENDING ;
-                            gpsSendStatus = SENDING ;
-                            currentSensorId = SwUartRXData ; // save the sensorId being handled (can be the main one or the code for GPS).
-                            OCR1A += ( DELAY_400 - TICKS2WAITONESPORT) ;    // 400 uS gap before sending
-                          } // end LOADED 
-                      } // end GPS_SENSOR_ID
-                      else // polling on a sensorId that does not request a reply
-                      {
-                          state = WAITING ;
-                          OCR1A += DELAY_3500 ;   // 3.5mS gap before listening
-                      }
-                  }    // received 1 byte and was equal to 0x7E
-                  else // Previous code is not equal to x7E 
-                  {
-                      DISABLE_TIMER_INTERRUPT() ;         // Stop the timer interrupts.
-                      state = IDLE ;                                  // Go back to idle.
-                      PCIFR = ( 1<<PCIF2 ) ;        // clear pending interrupt
-                      PCICR |= ( 1<<PCIE2 ) ;       // pin change interrupt enabled
-                  }
-                  LastRx = SwUartRXData ;
-               } // End receiving  1 bit or 1 byte (8 bits)
+                        LastRx = SwUartRXData ;
+                     } // End receiving  1 bit or 1 byte (8 bits)
            }
         break ;
   
@@ -1979,7 +1417,7 @@ ISR(TIMER1_COMPA_vect)
       PORTC |= 1 ;
 #endif
       TRXDDR |= ( 1 << PIN_SERIALTX ) ;       // PIN is output
-            SET_TX_PIN() ;                          // Send a logic 0 on the TX_PIN.
+      SET_TX_PIN() ;                          // Send a logic 0 on the TX_PIN.
       OCR1A = TCNT1 + TICKS2WAITONESPORT ;         // Count one period into the future.
       SwUartTXBitCount = 0 ;
       Crc = SwUartTXData = TxSportData[0] ;

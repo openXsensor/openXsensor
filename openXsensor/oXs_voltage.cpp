@@ -219,8 +219,8 @@ void OXS_VOLTAGE::voltageNrIncrease() {
             else { 
               secondMVolt = voltageData.mVolt[1]; 
             }
-            voltageData.mVoltCell_1_2 = calculateCell(0, voltageData.mVolt[0] , secondMVolt , 0, voltageData.maxNumberOfCells ) ;
-            voltageData.mVoltCell_1_2_Available = true ;   
+            voltageData.mVoltCell_1_2.value = calculateCell(0, voltageData.mVolt[0] , secondMVolt , 0, voltageData.maxNumberOfCells ) ;
+            voltageData.mVoltCell_1_2.available = true ;   
         }    
         if (voltageData.maxNumberOfCells > 2) {
             if (voltageData.maxNumberOfCells == 3) {
@@ -229,8 +229,8 @@ void OXS_VOLTAGE::voltageNrIncrease() {
             else { 
               secondMVolt = voltageData.mVolt[3] ;
             }  
-            voltageData.mVoltCell_3_4 = calculateCell(voltageData.mVolt[1] , voltageData.mVolt[2] , secondMVolt , 2 , voltageData.maxNumberOfCells) ;
-            voltageData.mVoltCell_3_4_Available = true ;
+            voltageData.mVoltCell_3_4.value = calculateCell(voltageData.mVolt[1] , voltageData.mVolt[2] , secondMVolt , 2 , voltageData.maxNumberOfCells) ;
+            voltageData.mVoltCell_3_4.available = true ;
         }
         if (voltageData.maxNumberOfCells > 4) {
             if (voltageData.maxNumberOfCells == 5) {
@@ -239,8 +239,8 @@ void OXS_VOLTAGE::voltageNrIncrease() {
             else { 
               secondMVolt = voltageData.mVolt[5] ;
             }  
-            voltageData.mVoltCell_5_6 = calculateCell(voltageData.mVolt[3] , voltageData.mVolt[4] , secondMVolt , 4 , voltageData.maxNumberOfCells) ;
-            voltageData.mVoltCell_5_6_Available = true ;
+            voltageData.mVoltCell_5_6.value = calculateCell(voltageData.mVolt[3] , voltageData.mVolt[4] , secondMVolt , 4 , voltageData.maxNumberOfCells) ;
+            voltageData.mVoltCell_5_6.available = true ;
         }
 #endif // Enf of multiplex/non multiplex
 #endif // ( NUMBEROFCELLS ) && (NUMBEROFCELLS > 0)

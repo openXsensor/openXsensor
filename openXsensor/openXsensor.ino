@@ -85,22 +85,59 @@ void setNewSequence() ;
 void checkSequence() ;
 void blinkLed( uint8_t blinkType ) ;
 
-#if defined (VARIO) && defined ( AIRSPEED)
-bool compensatedClimbRateAvailable ;
+#ifdef VARIO
+bool newVarioAvailable ;
+struct ONE_MEASUREMENT mainVspeed ;
+#endif
+#ifdef VARIO2
+bool newVarioAvailable2 ;
+#endif
+
+#if defined (VARIO) && defined ( AIRSPEED) 
+struct ONE_MEASUREMENT compensatedClimbRate ;
+// bool compensatedClimbRateAvailable ;
+// int32_t compensatedClimbRate ;
 bool switchCompensatedClimbRateAvailable ;
 float rawCompensatedClimbRate ; 
-int32_t compensatedClimbRate ;
+
 #endif
 
 #if defined (VARIO) && ( defined (VARIO2) || defined ( AIRSPEED) || defined (USE_6050) )
-int32_t switchVSpeed ;
-bool switchVSpeedAvailable ;
+struct ONE_MEASUREMENT switchVSpeed ;
+//int32_t switchVSpeed ;
+//bool switchVSpeedAvailable ;
 #endif
 
 #if defined (VARIO) && defined (VARIO2)
+struct ONE_MEASUREMENT averageVSpeed ;
 float averageVSpeedFloat ;
-int32_t averageVSpeed ;
-bool averageVSpeedAvailable ;
+#endif
+
+#if defined  (VARIO) && defined (GLIDER_RATIO_CALCULATED_AFTER_X_SEC) && GLIDER_RATIO_CALCULATED_AFTER_X_SEC >= 1 
+struct ONE_MEASUREMENT gliderRatio ;
+void calculateAverages();
+#endif
+
+#ifdef USE_6050
+  KalmanFilter kalman ;
+  float zTrack ;
+  float vTrack ;
+struct ONE_MEASUREMENT vSpeedImu ;
+//  int32_t vSpeedImu ;
+//  bool vSpeedImuAvailable ;
+  bool vTrackAvailable ;
+  bool switchVTrackAvailable ;
+  extern float linear_acceleration_x ;
+  extern float linear_acceleration_y ;
+  extern float linear_acceleration_z ;
+  extern float world_linear_acceleration_z ;
+  extern bool newImuAvailable;
+  float altitudeToKalman ;
+  int countAltitudeToKalman = 100 ;
+  int32_t altitudeOffsetToKalman ;
+  #ifdef DEBUG_KALMAN_TIME  
+    int delayKalman[5] ;
+  #endif  
 #endif
 
 uint16_t ppmus ; // duration of ppm in usec
@@ -180,12 +217,14 @@ bool ppmAvailable  ;
 int8_t prevPpmMain = -100 ; // this value is unusual; so it will forced a change at first call
 bool lowVoltage = false ;
 bool prevLowVoltage = false ;
-
+uint32_t currentLoopMillis ;
 
 volatile bool RpmSet  ;
 volatile uint16_t RpmValue ;
 unsigned long lastRpmMillis ;
-bool RpmAvailable  ;
+#if defined (MEASURE_RPM)
+  struct ONE_MEASUREMENT sport_rpm ;
+#endif
 
 int PWRValue; // calculation field for Vertical speed on PWR
 unsigned long lastMillisPWR ;
@@ -193,32 +232,17 @@ unsigned long lastMillisPWR ;
 float actualPressure  ; // default pressure in pascal; to actualise if vario exist; is used in airspeed calculation.
 int sensitivityPpmMapped ;
 int compensationPpmMapped ;
-int32_t test1Value ;// used in order to test the transmission of any value
-bool test1ValueAvailable ;
-int32_t test2Value ;// used in order to test the transmission of any value
-bool test2ValueAvailable ;
-int32_t test3Value ;// used in order to test the transmission of any value
-bool test3ValueAvailable ;
+struct ONE_MEASUREMENT test1 ; // used in order to test the transmission of any value
+struct ONE_MEASUREMENT test2 ; // used in order to test the transmission of any value
+struct ONE_MEASUREMENT test3 ; // used in order to test the transmission of any value
+//int32_t test1Value ;// used in order to test the transmission of any value
+//bool test1ValueAvailable ;
+//int32_t test2Value ;// used in order to test the transmission of any value
+//bool test2ValueAvailable ;
+//int32_t test3Value ;// used in order to test the transmission of any value
+//bool test3ValueAvailable ;
 #ifdef VARIO_PRIMARY
 uint8_t selectedVario = VARIO_PRIMARY ; // identify the vario to be used when switch vario with PPM is active (1 = first MS5611) 
-#endif
-// ********** variables used to calculate glider ratio (and other averages)
-
-/*   // first method
-#if defined  (VARIO) && defined (AVERAGING_EVERY_X_SEC) && AVERAGING_EVERY_X_SEC > 5
-        int32_t last10Altitude[10] ; // in cm
-        int16_t last10Speed[10] ;
-        uint8_t last10Idx = 0 ;
-        int32_t gliderRatio ;
-        int32_t altitudeDifference ;
-        int32_t averageVspeed ;
-        unsigned long prevAverageAltMillis  ; // save when AverageAltitude has to be calculated
-        void calculateAverages();
-*/
-// second method
-#if defined  (VARIO) && defined (GLIDER_RATIO_CALCULATED_AFTER_X_SEC) && GLIDER_RATIO_CALCULATED_AFTER_X_SEC >= 1
-        void calculateAverages();
-
 #endif
 
 //******************* Create instances of the used classes ******************************************
@@ -288,27 +312,6 @@ uint8_t selectedVario = VARIO_PRIMARY ; // identify the vario to be used when sw
   OXS_OUT oXs_Out(PIN_SERIALTX);
 #endif
 // *********************************** End of create objects *************************************************
-#ifdef USE_6050
-  KalmanFilter kalman ;
-  float zTrack ;
-  float vTrack ;
-  int32_t vSpeedImu ;
-  bool vTrackAvailable ;
-  bool vSpeedImuAvailable ;
-  bool switchVTrackAvailable ;
-  extern float linear_acceleration_x ;
-  extern float linear_acceleration_y ;
-  extern float linear_acceleration_z ;
-  extern float world_linear_acceleration_z ;
-  extern bool newMpuAvailable;
-  float altitudeToKalman ;
-  int countAltitudeToKalman = 100 ;
-  int32_t altitudeOffsetToKalman ;
-  #ifdef DEBUG_KALMAN_TIME  
-    int delayKalman[5] ;
-  #endif  
-#endif
-
 
                             // Mike I do not understand this instruction; could you explain
 #define FORCE_INDIRECT(ptr) __asm__ __volatile__ ("" : "=e" (ptr) : "0" (ptr))
@@ -358,12 +361,12 @@ void setup(){
 
 //  sensitivityPpmMapped = 0 ;
   compensationPpmMapped = 100 ;
-//  test1Value = 0 ;
-//  test2Value = 0 ;
-//  test3Value = 0 ;
-//  test1ValueAvailable = false ;
-//  test2ValueAvailable = false ;
-//  test3ValueAvailable = false ;
+//  test1.value = 0 ;
+//  test2.value = 0 ;
+//  test3.value = 0 ;
+//  test1.available = false ;
+//  test2.available = false ;
+//  test3.available = false ;
   actualPressure = 101325 ; // default pressure in pascal; to actualise if vario exist; is used in airspeed calcualtion.
 
 
@@ -398,8 +401,8 @@ void setup(){
 #endif
 
 #if defined (VARIO) && defined ( AIRSPEED)
-  compensatedClimbRateAvailable = false;
-  compensatedClimbRate = 0;
+  compensatedClimbRate.available = false;
+//  compensatedClimbRate = 0;
 #endif
 
 #ifdef GPS_INSTALLED
@@ -432,7 +435,7 @@ void setup(){
 
   RpmSet = false ;
 //  RpmValue = 0 ;
-  RpmAvailable = false ;
+//  RpmAvailable = false ;
 
 //************************* set up of sequence outputs
 #ifdef SEQUENCE_OUTPUTS
@@ -497,14 +500,48 @@ void setup(){
 //*******************************************************************************************
 //                                Main loop                                               ***
 //*******************************************************************************************
-void loop(){  
+void loop(){ 
+/*
+uint8_t flagMillis ;
+static uint32_t lastLoop20Millis ;
+static uint32_t lastLoop50Millis ;
+static uint32_t lastLoop200Millis ;
+static uint32_t lastLoop500Millis ;
+
+#define BIT20MILLIS 1 ;
+#define BIT50MILLIS 2 ;
+#define BIT200MILLIS 4 ;
+#define BIT500MILLIS 8 ;
+*/
+currentLoopMillis = millis() ;
+/*
+if ( currentLoopMillis - lastLoop20Millis > 20 ) {
+  lastLoop20Millis = currentLoopMillis ;
+  flagMillis = BIT20MILLIS ;
+}
+if ( currentLoopMillis - lastLoop50Millis > 50 ) {
+  lastLoop50Millis = currentLoopMillis ;
+  flagMillis |= BIT50MILLIS ;
+}
+if ( currentLoopMillis - lastLoop200Millis > 200 ) {
+  lastLoop200Millis = currentLoopMillis ;
+  flagMillis |= BIT200MILLIS ;
+}
+if ( currentLoopMillis - lastLoop500Millis > 500 ) {
+  lastLoop500Millis = currentLoopMillis ;
+  flagMillis |= BIT500MILLIS ;
+}
+*/
 #ifdef DEBUGENTERLOOP
   Serial.print(F("in loop="));  
   Serial.println(millis());
 #endif 
- 
+#ifdef DEBUG_BLINK_MAINLOOP
+    blinkLed(1) ;
+#endif
+  
+    // Check if a button has been pressed
 #ifdef PIN_PUSHBUTTON
-  // Check if a button has been pressed
 #if defined (VARIO) || defined (VARIO2)
     if (checkFreeTime()) checkButton(); // Do not perform calculation if there is less than 2000 usec before MS5611 ADC is available =  (9000 - 2000)/2
 #else
@@ -512,38 +549,29 @@ void loop(){
 #endif    
 #endif 
 
-    readSensors(); // read all sensors)
+    // read all sensors
+    readSensors(); 
 
-#ifdef DEBUG_BLINK_CLIMBRATE
-  static bool prevBlinkAvailable ;
-  if (  prevBlinkAvailable == false && oXs_MS5611.varioData.climbRateAvailable ) {
-    blinkLed(3) ;
-  }
-  prevBlinkAvailable = oXs_MS5611.varioData.climbRateAvailable ;  
-#endif
+    // Calculate all fields
+    calculateAllFields(); 
 
-#ifdef DEBUG_BLINK_MAINLOOP
-    blinkLed(1) ;
-#endif
- 
-    // prepare the telemetry data to be sent (nb: data are prepared but not sent
-    oXs_Out.sendData(); // choice which data can be send base on availability and some priority logic 
-
-// in debug mode, allows to send some predefined data to uart
-#if defined ( DEBUG ) && defined (DEBUGOUTDATATOSERIAL)
-    OutputToSerial() ; 
-#endif
-    
+    // prepare the telemetry data to be sent (nb: data are prepared but not sent)
+    oXs_Out.sendData(); 
+   
 // PPM Processing = Read the ppm Signal from receiver and process it 
 #ifdef PIN_PPM 
-    if (checkFreeTime()) ProcessPPMSignal(); 
+#if defined (VARIO) || defined (VARIO2)
+    if (checkFreeTime()) ProcessPPMSignal();
+#else
+    ProcessPPMSignal();
+#endif      
 #endif //PIN_PPM
 
 // if analog vario, generate the PWR value
 #if defined (VARIO) && defined(PIN_ANALOG_VSPEED)
     if (millis() > lastMillisPWR + 100) {
         if (checkFreeTime()) { // Do not change PWM if there is less than 2000 usec before MS5611 ADC is available =  (9000 - 2000)/2
-            PWRValue=map( (long) oXs_MS5611.varioData.climbRate,ANALOG_VSPEED_MIN*100,ANALOG_VSPEED_MAX * 100,0,255/5*3.2);
+            PWRValue=map( (long) oXs_MS5611.varioData.climbRate.value ,ANALOG_VSPEED_MIN*100,ANALOG_VSPEED_MAX * 100,0,255/5*3.2);
             PWRValue=constrain(PWRValue, 0, 255/5*3.2 ) ;
             analogWrite(PIN_ANALOG_VSPEED,(int)PWRValue);
             lastMillisPWR = millis() ; 
@@ -551,6 +579,7 @@ void loop(){
     }  
 #endif // analog vario 
 
+// if a sequence is set up
 #ifdef SEQUENCE_OUTPUTS
 #if (defined( SEQUENCE_MIN_VOLT_6) || defined ( SEQUENCE_MIN_CELL ) 
   if ( (lowVoltage == true) && (prevLowVoltage == false) ) {
@@ -558,9 +587,9 @@ void loop(){
     ppm = 125 ; // fix the sequence to be used when voltage is low  ; it is sequence +125
     prevPpmMain = -10 ; // will force a new sequence because ppmMain will be different from prevPpmMain
     setNewSequence() ;
-#ifdef DEBUG
-    Serial.println(F("Start sequence low voltage"));
-#endif
+    #ifdef DEBUG
+        Serial.println(F("Start sequence low voltage"));
+    #endif
   }  else if ( (lowVoltage == false) && (prevLowVoltage == true) ) {
     prevLowVoltage = false ;
     prevPpmMain = -10 ; //will force a new sequence because ppmMain will be different from prevPpmMain
@@ -568,15 +597,15 @@ void loop(){
     if ( ppmus == 0) ppm = -100 ; // force ppm to -100 (default) when no ppm signal is received ,  else it will use the current ppm value
 #else 
     ppm = -100 ; // if ppm is not configure force to go back to sequence -100 (= default);
-#endif
+#endif  // end PIN_PPM def or not
     setNewSequence() ; 
-#ifdef DEBUG
-    Serial.println(F("End sequence low voltage"));
-#endif
+    #ifdef DEBUG
+        Serial.println(F("End sequence low voltage"));
+    #endif
   }  
-#endif
+#endif // end (defined( SEQUENCE_MIN_VOLT_6) || defined ( SEQUENCE_MIN_CELL ) 
   checkSequence() ; // check if outputs have to be modified because time expired
-#endif
+#endif  // SEQUENCE_OUTPUTS
 
 // Save Persistant Data To EEProm every 10 seconds
 #ifdef SAVE_TO_EEPROM
@@ -601,84 +630,88 @@ extern uint16_t i2cTemperatureError ;
 extern uint16_t i2cReadCount ;
 
 void readSensors() {   
-//#ifdef DEBUG
-//  Serial.println(F("in readSensors"));  
-//#endif 
 #ifdef AIRSPEED
   oXs_4525.readSensor(); // Read a first time the differential pressure on 4525DO, calculate airspeed; note airspeed is read a second time in the loop in order to reduce response time
 #endif
 
-
 #ifdef VARIO
-#ifdef DEBUG_VARIO_TIME
-  unsigned long varioEnter = micros() ;
-#endif  
-  oXs_MS5611.readSensor(); // Read pressure & temperature on MS5611, calculate Altitude and vertical speed
-#ifdef DEBUG_VARIO_TIME
-  varioEnter = micros() - varioEnter ;
-  if ( varioEnter > 10 ) {
-    Serial.print("Vario ") ; Serial.println(varioEnter) ;                          // when I2C works at 400 khz, it takes about 520 usec to read the temperature or the pressure and 450 usec to perform the calculation
-    //Serial.print(" ") ; Serial.println(oXs_MS5611.varioData.absoluteAlt) ; 
-  }  
-#endif  
-  
-  if ( oXs_MS5611.varioData.absoluteAltAvailable == true and oXs_MS5611.varioData.rawPressure > 100000.0f ) actualPressure = oXs_MS5611.varioData.rawPressure / 10000.0 ; // this value can be used when calculating the Airspeed
-/* // used to debug spring of Altitude
-  test1Value = i2cReadCount ; 
-  test1ValueAvailable = true ; 
-  test2Value = i2cPressureError ; 
-  test2ValueAvailable = true ; 
-  test3Value = i2cTemperatureError ; 
-  test3ValueAvailable = true ; 
-*/  
+  newVarioAvailable = oXs_MS5611.readSensor(); // Read pressure & temperature on MS5611, calculate Altitude and vertical speed; 
+  if ( oXs_MS5611.varioData.absoluteAlt.available == true and oXs_MS5611.varioData.rawPressure > 100000.0f ) actualPressure = oXs_MS5611.varioData.rawPressure / 10000.0 ; // this value can be used when calculating the Airspeed
 #endif
 
 #ifdef VARIO2
-  oXs_MS5611_2.readSensor(); // Read pressure & temperature on MS5611, calculate Altitude and vertical speed
+  newVarioAvailable2 = oXs_MS5611_2.readSensor(); // Read pressure & temperature on MS5611, calculate Altitude and vertical speed
 #endif
-
 
 #ifdef AIRSPEED
   oXs_4525.readSensor(); // Read again the sensor in order to reduce response time/noise
-#if defined (VARIO) && defined ( AIRSPEED) 
-  if ( oXs_MS5611.varioData.altitudeAt20MsecAvailable == true ) {  // compensation is calculated only when a new altitude is available
-    calculateDte() ; 
-  }  
-#endif  
-#endif // end #ifdef AIRSPEED
-
-#if defined (VARIO) &&  defined (VARIO2)
-  if( (oXs_MS5611.varioData.averageClimbRateAvailable == true) || ( oXs_MS5611_2.varioData.averageClimbRateAvailable == true) ) {
-    averageVSpeedFloat = ( oXs_MS5611.varioData.climbRateFloat + oXs_MS5611_2.varioData.climbRateFloat ) / 2 ;
-    if ( abs((int32_t)  averageVSpeedFloat - averageVSpeed) > VARIOHYSTERESIS ) {
-          averageVSpeed = (int32_t)  averageVSpeedFloat ;
-    }    
-    averageVSpeedAvailable = true ;
-    oXs_MS5611.varioData.averageClimbRateAvailable = false ;
-    oXs_MS5611_2.varioData.averageClimbRateAvailable = false ;
-  }  
-#endif  
+#endif 
 
 #ifdef USE_6050
-//#define DEBUG_MPU_FREQ
-  #ifdef DEBUG_MPU_FREQ
-            unsigned long begin6050 = millis();
-  #endif  
-        read6050() ;
-  #ifdef DEBUG_MPU_FREQ
-        if (newMpuAvailable) {
-//            Serial.print(F("delay mpu ")) ; Serial.print( millis() - begin6050 ) ;Serial.print(F(", "));
-        }
-  #endif
+    newImuAvailable = read6050() ;
 #endif // USE_6050
 
+#ifdef PIN_VOLTAGE
+    oXs_Voltage.readSensor();    // read voltage only if there enough time to avoid delaying vario reading; It takes about 750 usec to go through the read sensor.
+#endif   // end voltage
+
+#ifdef PIN_CURRENTSENSOR
+    oXs_Current.readSensor() ; // Do not perform calculation if there is less than 2000 usec before MS5611 ADC is available =  (9000 - 2000)/2
+#endif             // End PIN_CURRENTSENSOR
+
+#ifdef GPS_INSTALLED
+    oXs_Gps.readGps() ; // Do not perform calculation if there is less than 2000 usec before MS5611 ADC is available =  (9000 - 2000)/2
+#endif             // End GPS_INSTALLED
+
+#ifdef MEASURE_RPM
+  if (millis() > ( lastRpmMillis + 200) ){  // allow transmission of RPM only once every 200 msec
+        if (RpmSet == true) {               // rpm is set 
+            RpmSet = false ;
+        } else {
+            RpmValue = 0 ;
+        }
+        sport_rpm.value = RpmValue ;
+        sport_rpm.available = true ;    
+        lastRpmMillis = millis() ;
+  }      
+#endif
+
+
+
+
+  
+}                  // ************** end of readSensors ********************************************
+
+
+//#define ALTITUDE_AVAILABLE_BIT 1
+//#define VSPEED_AVAILABLE_BIT 2 
+// ********************************* Calculate all fields that could be sent
+void calculateAllFields () {
+
+// compensated Vpeed
+#if defined(VARIO) && defined(AIRSPEED)
+    if ( newVarioAvailable ) calculateDte() ; 
+#endif 
+
+// average Vpeed
+#if defined (VARIO) &&  defined (VARIO2)
+  if( (newVarioAvailable ) || ( newVarioAvailable2 ) ) {
+    averageVSpeedFloat = ( oXs_MS5611.varioData.climbRateFloat + oXs_MS5611_2.varioData.climbRateFloat ) / 2 ;
+    if ( abs((int32_t)  averageVSpeedFloat - averageVSpeed.value) > VARIOHYSTERESIS ) {
+          averageVSpeed.value = (int32_t)  averageVSpeedFloat ;    // update only when difference is greater than hysteresis
+    }    
+    averageVSpeed.available = true ;
+  }  
+#endif  
+
+// calculate vSpeedImu & vSpeedImuAvailable 
 #if defined (VARIO) && defined (USE_6050)
-        if (newMpuAvailable) { // newMpuAvailable says that a new world_linear_acceleration is available (flag has been set inside read6050()
+        if (newImuAvailable) { // newImuAvailable says that a new world_linear_acceleration is available (flag has been returned by read6050()
+          newImuAvailable = false ;   // reset the flag saying a new world_linear_acceleration is available
   #ifdef DEBUG_KALMAN
             unsigned long beginKalman = micros();
   #endif  
-            newMpuAvailable = false ;                // reset indicator that new mpu data have to be handled    
-            if ( countAltitudeToKalman != 0) {
+            if ( countAltitudeToKalman != 0) {                                   // this calculate the initial altitude
                 if( oXs_MS5611.varioData.rawAltitude != 0) {
                   countAltitudeToKalman-- ;
                   altitudeOffsetToKalman = oXs_MS5611.varioData.rawAltitude ;
@@ -686,58 +719,52 @@ void readSensors() {
             }
             altitudeToKalman = (oXs_MS5611.varioData.rawAltitude - altitudeOffsetToKalman ) / 100 ; // convert from * 100cm to cm
             kalman.Update((float) altitudeToKalman  , world_linear_acceleration_z ,  &zTrack, &vTrack);
-            vSpeedImu = vTrack ;
-            vSpeedImuAvailable = true ;
+            vSpeedImu.value = vTrack ;
+            vSpeedImu.available = true ;
             switchVTrackAvailable = true ;
             
   #define TEST_SEND_MPU
-  #ifdef TEST_SEND_MPU
-            test1Value = linear_acceleration_x * 981 ; 
-            test1ValueAvailable = true ; 
-            test2Value =  linear_acceleration_y * 981; 
-            test2ValueAvailable = true ; 
-            test3Value = world_linear_acceleration_z ; 
-            test3ValueAvailable = true ; 
+  #ifdef TEST_SEND_MPU                                                  ///////////////////////////// !!!!!!!!!!!!!!!!!!!!!! to be changed
+            test1.value = linear_acceleration_x * 981 ; 
+            test1.available = true ; 
+            test2.value =  linear_acceleration_y * 981; 
+            test2.available = true ; 
+            test3.value = world_linear_acceleration_z ; 
+            test3.available = true ; 
   #endif
 
   #ifdef DEBUG_KALMAN_TIME
 ///           Serial.print(F("delay Kal ")) ; Serial.print( millis() - beginKalman ) ;Serial.print(F(", "));
-//            Serial.print( (int) world_linear_acceleration_z ) ; Serial.print(F(", "));Serial.print( (int) altitudeToKalman) ; Serial.print(F(", ")); Serial.print(oXs_MS5611.varioData.climbRate) ; Serial.print(F(", "));Serial.println(( int )vSpeedImu) ;
-///           Serial.print( millis() ) ; Serial.print(F(", ")); Serial.print( (int)  ) ; Serial.print(F(", "));Serial.print( (int) world_linear_acceleration_z ) ; Serial.print(F(", "));Serial.print( (int) altitudeToKalman) ; Serial.print(F(", ")); Serial.print(oXs_MS5611.varioData.climbRate) ; Serial.print(F(", "));Serial.println(( int )vSpeedImu) ;
+//            Serial.print( (int) world_linear_acceleration_z ) ; Serial.print(F(", "));Serial.print( (int) altitudeToKalman) ; Serial.print(F(", ")); Serial.print(oXs_MS5611.varioData.climbRate) ; Serial.print(F(", "));Serial.println(( int )vSpeedImu.value) ;
+///           Serial.print( millis() ) ; Serial.print(F(", ")); Serial.print( (int)  ) ; Serial.print(F(", "));Serial.print( (int) world_linear_acceleration_z ) ; Serial.print(F(", "));Serial.print( (int) altitudeToKalman) ; Serial.print(F(", ")); Serial.print(oXs_MS5611.varioData.climbRate) ; Serial.print(F(", "));Serial.println(( int )vSpeedImu.value) ;
               Serial.print("delayK ") ; Serial.print( delayKalman[0] ) ; Serial.print(" ") ; Serial.print( delayKalman[1] ) ;
               Serial.print(" ") ; Serial.print( delayKalman[2] ) ; Serial.print(" ") ; Serial.print( delayKalman[3] ) ;Serial.print(" ") ; Serial.println( delayKalman[4] ) ;
 #endif  
-
-        }
-
+        } // end of newimuAvailable 
 #endif
 
 
 
-
+// calculate selected Vspeed based on ppm
 #if defined (VARIO) && ( defined (VARIO2) || defined (AIRSPEED) || defined (USE_6050) ) && defined (VARIO_SECONDARY ) && defined( VARIO_PRIMARY )  && defined (PIN_PPM)
-  if (( selectedVario == 1) && ( oXs_MS5611.varioData.switchClimbRateAvailable == true ) )  {
-      switchVSpeed = oXs_MS5611.varioData.climbRate ;
-      switchVSpeedAvailable = true ;
-      oXs_MS5611.varioData.switchClimbRateAvailable = false ;
+  if (( selectedVario == 1) && ( newVarioAvailable ) )  {
+      switchVSpeed.value = oXs_MS5611.varioData.climbRate.value ;
+      switchVSpeed.available = true ;
   } 
   #if  defined (VARIO2)
-  else if ( ( selectedVario == 2) && ( oXs_MS5611_2.varioData.switchClimbRateAvailable == true )) {
-      switchVSpeed = oXs_MS5611_2.varioData.climbRate ;
-      switchVSpeedAvailable = true ;
-      oXs_MS5611_2.varioData.switchClimbRateAvailable = false ;
+  else if ( ( selectedVario == 2) && ( newVarioAvailable2 )) {
+      switchVSpeed.value = oXs_MS5611_2.varioData.climbRate.value ;
+      switchVSpeed.available = true ;
   }
-  else if ( ( selectedVario == 4) && ( averageVSpeedAvailable == true )) {
-      switchVSpeed = averageVSpeed ;
-      switchVSpeedAvailable = true ;
-      averageVSpeedAvailable = false ;
+  else if ( ( selectedVario == 4) && ( averageVSpeed.available == true )) {
+      switchVSpeed.value = averageVSpeed.value ;
+      switchVSpeed.available = true ;
   }
   #endif // end of VARIO2
-
   #if  defined (AIRSPEED)
-  else if ( ( selectedVario == 3) && ( switchCompensatedClimbRateAvailable == true )) {
-      switchVSpeed = compensatedClimbRate ;
-      switchVSpeedAvailable = true ;  
+  else if ( ( selectedVario == 3) && ( newVarioAvailable )) {
+      switchVSpeed.value = compensatedClimbRate.value ;
+      switchVSpeed.available = true ;  
    #if defined (SWITCH_VARIO_GET_PRIO)
       switchCompensatedClimbRateAvailable = true ; // avoid to reset the value on false in order to continue to send the same value as often as possible
    #else
@@ -746,60 +773,55 @@ void readSensors() {
   } 
   #endif // end  defined (AIRSPEED) 
   #if  defined (USE_6050)
-  else if ( ( selectedVario == 5) && ( switchVTrackAvailable == true )) {
-      switchVSpeed = vTrack ;
-      switchVSpeedAvailable = true ;
-      switchVTrackAvailable = false ;
+  else if ( ( selectedVario == 5) && ( switchVTrackAvailable )) {
+      switchVSpeed.value = vTrack ;
+      switchVSpeed.available = true ;
   }
   #endif  // end USE_6050
 #endif // end  defined (VARIO) && ( defined (VARIO2) || defined (AIRSPEED) ) && defined (VARIO_SECONDARY ) && defined( VARIO_PRIMARY ) && defined (VARIO_SECONDARY) && defined (PIN_PPM)
-  
-#ifdef PIN_VOLTAGE
-  #ifdef DEBUG_VOLTAGE_TIME
-    unsigned long beginVoltage = micros();
-  #endif  
-    if (checkFreeTime()) oXs_Voltage.readSensor();    // read voltage only if there enough time to avoid delaying vario reading; It takes about 750 usec to go through the read sensor.
-  #ifdef DEBUG_VOLTAGE_TIME
-    beginVoltage = micros() - beginVoltage ;
-    Serial.print("voltage us ") ; Serial.println(beginVoltage) ;
-  #endif  
-    
-#endif   // end voltage
-
-#ifdef PIN_CURRENTSENSOR
-    if (checkFreeTime()) oXs_Current.readSensor() ; // Do not perform calculation if there is less than 2000 usec before MS5611 ADC is available =  (9000 - 2000)/2
-#endif             // End PIN_CURRENTSENSOR
-
-#ifdef GPS_INSTALLED
-    if (checkFreeTime()) oXs_Gps.readGps() ; // Do not perform calculation if there is less than 2000 usec before MS5611 ADC is available =  (9000 - 2000)/2
-#endif             // End GPS_INSTALLED
 
 
-#ifdef MEASURE_RPM
-  if (millis() > ( lastRpmMillis + 200) ){  // allow transmission of RPM only once every 200 msec
-        if (RpmSet == true) {
-            RpmSet = false ;
-        } else {
-            RpmValue = 0 ;
-        }
-        RpmAvailable = true ;    
-        lastRpmMillis = millis() ;
-  }      
+// mainVSpeed (calculated based on the setup in config)
+#if defined(VARIO) && (~defined(VSPEED_SOURCE)) || (defined (VSPEED_SOURCE) && (VSPEED_SOURCE == FIRST_BARO) )
+    mainVspeed.value = oXs_MS5611.varioData.climbRate.value ;
+    mainVspeed.available = oXs_MS5611.varioData.climbRate.available ;
+#elif defined(VARIO) && defined(VARIO2) && (VSPEED_SOURCE == SECOND_BARO)
+    mainVspeed.value = oXs_MS5611_2.varioData.climbRate.value ;
+    mainVspeed.available = oXs_MS5611_2.varioData.climbRate.available ;
+#elif defined(VARIO) && defined(VARIO2) && (VSPEED_SOURCE == AVERAGE_FIRST_SECOND)
+    mainVspeed.value = averageVSpeed.value ;
+        mainVspeed.available = averageVSpeed.available ;
+#elif defined(VARIO) && defined(AIRSPEED) && (VSPEED_SOURCE == AIRSPEED_COMPENSATED)
+    mainVspeed.value = compensatedClimbRate.value ;
+    mainVspeed.available = compensatedClimbRate.available ;
+#elif defined(VARIO) && defined(USE_6050) && (VSPEED_SOURCE == BARO_AND_IMU)
+    mainVspeed.value = vSpeedImu.value ;
+    mainVspeed.available = vSpeedImu.available ;
+#elif defined(VARIO) && ( defined (VARIO2) || defined (AIRSPEED) || defined (USE_6050) ) && defined (VARIO_SECONDARY ) && defined( VARIO_PRIMARY )  && defined (PIN_PPM)  && (VSPEED_SOURCE == PPM_SELECTION)
+    mainVspeed.value = switchVSpeed.value   ;
+    mainVspeed.available = switchVSpeed.available   ;
 #endif
 
-// second method
+
+
+// here to be filled with other data
+
+
+// calculate glider ratio and average vertical speed (based on first vario)
 #if defined  (VARIO) && defined (GLIDER_RATIO_CALCULATED_AFTER_X_SEC) && GLIDER_RATIO_CALCULATED_AFTER_X_SEC >= 1
         calculateAverages();
 #endif        
 
 
-//#ifdef DEBUG    
-//  Serial.println(F("Go out of read sensor"));
-//#endif  
-}                  // ************** end of readSensors ********************************************
 
-
-
+////////////////////////////////////////////////////this part is probably not correct !!!!!!!!!!!!!!!!!!!!!!!
+#if defined (VARIO) && ( defined (VARIO2) )
+         averageVSpeed.available = false ;
+#endif
+#if defined (VARIO) &&  defined (USE_6050)
+  switchVTrackAvailable = false ;
+#endif  
+}
 
 
 
@@ -859,18 +881,18 @@ void calculateDte () {  // is calculated about every 2O ms each time that an alt
   if (totalEnergyLowPass == 0) { 
     totalEnergyLowPass = totalEnergyHighPass = rawTotalEnergy ; 
   }
-//  test1Value = rawCompensation; 
-//  test1ValueAvailable = true ; 
+//  test1.value = rawCompensation; 
+//  test1.available = true ; 
   
-  //test2Value = rawTotalEnergy; 
-  //test2ValueAvailable = true ; 
+  //test2.value = rawTotalEnergy; 
+  //test2.available = true ; 
   
   totalEnergyLowPass += 0.085 * ( rawTotalEnergy - totalEnergyLowPass) ;
   totalEnergyHighPass += 0.1 * ( rawTotalEnergy - totalEnergyHighPass) ;
   rawCompensatedClimbRate = ((totalEnergyHighPass - totalEnergyLowPass )  * 566667.0 ) /     oXs_MS5611.varioData.delaySmooth; // 0.566667 is the parameter to be used for 0.085 and 0.1 filtering if delay is in sec
 
-//  test3Value = rawCompensatedClimbRate ; 
-//  test3ValueAvailable = true ; 
+//  test3.value = rawCompensatedClimbRate ; 
+//  test3.available = true ; 
   abs_deltaCompensatedClimbRate =  abs(rawCompensatedClimbRate - smoothCompensatedClimbRate) ;
   if ( sensitivityPpmMapped  > 0) smoothingDteMin =   sensitivityPpmMapped  ; // a value of sensitivityPpmMapped = 50 becomes a smoothing factor 0.1
     if ( (abs_deltaCompensatedClimbRate <= SMOOTHING_DTE_MIN_AT) || (smoothingDteMin >= SMOOTHING_DTE_MAX ) ){
@@ -881,12 +903,12 @@ void calculateDte () {  // is calculated about every 2O ms each time that an alt
      expoSmoothDte_auto = smoothingDteMin + ( SMOOTHING_DTE_MAX - smoothingDteMin ) * (abs_deltaCompensatedClimbRate - SMOOTHING_DTE_MIN_AT) / (SMOOTHING_DTE_MAX_AT - SMOOTHING_DTE_MIN_AT) ;
   }
   smoothCompensatedClimbRate += expoSmoothDte_auto * (  rawCompensatedClimbRate -  smoothCompensatedClimbRate ) * 0.001; 
-  if ( abs( ((int32_t)  smoothCompensatedClimbRate) - compensatedClimbRate) > VARIOHYSTERESIS ) {
-      compensatedClimbRate = smoothCompensatedClimbRate  ;
+  if ( abs( ((int32_t)  smoothCompensatedClimbRate) - compensatedClimbRate.value) > VARIOHYSTERESIS ) {
+      compensatedClimbRate.value = smoothCompensatedClimbRate  ;
   } 
-  compensatedClimbRateAvailable = true ; // allows SPORT protocol to transmit the value every 20 ms
+  compensatedClimbRate.available = true ; // allows SPORT protocol to transmit the value every 20 ms
   switchCompensatedClimbRateAvailable = true ; ; // inform readsensors() that a switchable vspeed is available
-  oXs_MS5611.varioData.altitudeAt20MsecAvailable = false ; // avoid to handel it each time.
+//  oXs_MS5611.varioData.altitudeAt20MsecAvailable = false ; // avoid to handel it each time.
  
 #ifdef DEBUGCOMPENSATEDCLIMBRATE
   static bool firstCompensatedClimbRate = true ;
@@ -901,7 +923,7 @@ void calculateDte () {  // is calculated about every 2O ms each time that an alt
   Serial.print( rawTotalEnergy ) ;Serial.print(F(" , ")) ;
   Serial.print( oXs_MS5611.varioData.delaySmooth ) ;Serial.print(F(" , ")) ;
   Serial.print( rawCompensatedClimbRate ) ;Serial.print(F(" , ")) ;
-  Serial.print( compensatedClimbRate) ;
+  Serial.print( compensatedClimbRate.value) ;
   Serial.println(F(" ")) ; 
   } 
 #endif    
@@ -923,14 +945,13 @@ void calculateAverages( ){
         static int16_t aSpeedAtT0 ;
         static uint16_t secFromT0 ;  // in 1/10 sec
         static uint32_t millisAtT0 ;
-        static int32_t gliderRatio ;
         static unsigned long prevAverageAltMillis =  millis() + 5000 ; // wait 5 sec before calculating those data ; // save when AverageAltitude has to be calculated
         int32_t altitudeDifference ;
         unsigned long currentGliderMillis = millis() ;
         bool aSpeedWithinTolerance = true ;  
 
         if ( (uint16_t) (currentGliderMillis - prevAverageAltMillis) >   500 ) { // check on tolerance has to be done
-            altitudeDifference = oXs_MS5611.varioData.absoluteAlt -altitudeAtT0  ;
+            altitudeDifference = oXs_MS5611.varioData.absoluteAlt.value -altitudeAtT0  ;
             secFromT0 =  ( currentGliderMillis - millisAtT0 ) / 100 ;            // in 1/10 of sec
 #ifdef DEBUG_GLIDER8RATIO
             serial.print((F("secFromT0: ")); serial.println( secFromT0 ) ;
@@ -942,9 +963,9 @@ void calculateAverages( ){
                 aSpeedWithinTolerance = false ;
             }
 #endif            
-            if (  ( oXs_MS5611.varioData.climbRate <  VSPEED_MIN_TOLERANCE ) || ( oXs_MS5611.varioData.climbRate >  VSPEED_MAX_TOLERANCE ) \
+            if (  ( oXs_MS5611.varioData.climbRate.value <  VSPEED_MIN_TOLERANCE ) || ( oXs_MS5611.varioData.climbRate.value >  VSPEED_MAX_TOLERANCE ) \
                 || ( altitudeDifference > -10 ) || ( aSpeedWithinTolerance == false ) ) {    // reset all when out of tolerance
-                altitudeAtT0 = oXs_MS5611.varioData.absoluteAlt ;
+                altitudeAtT0 = oXs_MS5611.varioData.absoluteAlt.value ;
 #ifdef AIRSPEED                
                 aSpeedAtT0 = oXs_4525.airSpeedData.smoothAirSpeed ;
                 distanceSinceT0 = 0 ;
@@ -952,7 +973,7 @@ void calculateAverages( ){
                 secFromT0 = 0 ;
                 millisAtT0 = currentGliderMillis ;
                 averageVspeedSinceT0 = 0 ;
-                gliderRatio = 0 ;
+                gliderRatio.value = 0 ;
 #ifdef DEBUG_GLIDER8RATIO
             serial.println((F("Reset")); 
 #endif
@@ -963,19 +984,20 @@ void calculateAverages( ){
 #endif                
                 if (  secFromT0 >=  GLIDER_RATIO_CALCULATED_AFTER_X_SEC * 10 ) {         // *10 because secFromT0 is in 1/10 of sec 
 #ifdef AIRSPEED
-                    gliderRatio = distanceSinceT0  * -10 / altitudeDifference  ;        // when gliderRatio is > (50.0 *10) it it not realistic (*10 is done in order to add a decimal)
-                    if ( gliderRatio > 500) gliderRatio = 0 ;                                                   // 
+                    gliderRatio.value = distanceSinceT0  * -10 / altitudeDifference  ;        // when gliderRatio is > (50.0 *10) it it not realistic (*10 is done in order to add a decimal)
+                    if ( gliderRatio.value > 500) gliderRatio.value = 0 ;                                                   // 
 #endif                    
                     averageVspeedSinceT0 = altitudeDifference * 10 / secFromT0  ;      // * 10 because secFromT0 is in 1/10 of sec
                 }
              }
+            gliderRatio.available = true;
             prevAverageAltMillis += 500  ; 
-            test1Value = secFromT0 ; 
-            test1ValueAvailable = true ; 
-            test2Value = averageVspeedSinceT0 ; 
-            test2ValueAvailable = true ; 
-            test3Value = gliderRatio ; 
-            test3ValueAvailable = true ; 
+            test1.value = secFromT0 ; 
+            test1.available = true ; 
+            test2.value = averageVspeedSinceT0 ; 
+            test2.available = true ; 
+            test3.value = gliderRatio.value ; 
+            test3.available = true ; 
         }
 }        
 #endif
@@ -1360,8 +1382,8 @@ void setNewSequence() {                   // **********  setNewSequence( ) *****
        seqState = 0 ;
        seqStep = 0 ;
 #ifdef DEBUGSEQUENCE
-       test1Value = ppmMain; 
-       test1ValueAvailable = true ; 
+       test1.value = ppmMain; 
+       test1.available = true ; 
 #endif
        checkSequence() ;
     }    
@@ -1440,16 +1462,16 @@ void OutputToSerial(){
   Serial.print(F(" Sensitivity PPM="));    
   Serial.print( oXs_MS5611.varioData.sensitivityPpm);
   Serial.print(F(" ;absAlt="));  
-  Serial.print( ( (float)oXs_MS5611.varioData.absoluteAlt)/100);
+  Serial.print( ( (float)oXs_MS5611.varioData.absoluteAlt.value)/100);
   Serial.print(F(" ;Vspd="));    
-  Serial.print( ( (float)oXs_MS5611.varioData.climbRate)/100);
+  Serial.print( ( (float)oXs_MS5611.varioData.climbRate.value)/100);
   Serial.print(F(" ;Temp="));    
   Serial.print((float)oXs_MS5611.varioData.temperature/10);
 #endif // VARIO
 
 #ifdef PIN_CURRENTSENSOR
   Serial.print(F(" ;mA="));    
-  Serial.print( ( ((float)(int32_t)(oXs_Current.currentData.milliAmps))) );
+  Serial.print( ( ((float)(int32_t)(oXs_Current.currentData.milliAmps.value))) );
   Serial.print("(");    
   Serial.print(F(" ;mAh="));  
   Serial.print( oXs_Current.currentData.consumedMilliAmps);

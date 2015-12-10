@@ -13,7 +13,6 @@
 #define FRSKY  ( defined(MULTIPLEX) || defined ( HOTT) )
 #if ( FRSKY == false )
 
-
 //#define DEBUG_SETUP_PIN 5  // allows to send a pulse on an output pin during the enlapsed time that Arduino runs the set up 
 //#define DEBUG_SPORT_PIN 6  // allows to send a pulse on an output pin during the enlapsed time that Arduino checks for SPORT 
 
@@ -139,11 +138,11 @@
                       FRSKY_USERDATA_FUEL ,  FRSKY_USERDATA_ACC_X , FRSKY_USERDATA_ACC_Y , FRSKY_USERDATA_ACC_Z , 0xFF , 0xFF , 0xFF
 
   
-
+/*
 //  This is the list of codes for each available measurements
 #define ALTIMETER       1        // DEFAULTFIELD can be used in SPORT protocol (is then the same as ALT_FIRST_ID);  it MUST be used in Hub protocol because meters and centimeters are send in different fileds
 #define VERTICAL_SPEED  2        // DEFAULTFIELD can be used
-#define SENSITIVITY     3        // DEFAULTFIELD can NOT be used
+#define SENSITIVITYx     3        // DEFAULTFIELD can NOT be used
 #define ALT_OVER_10_SEC 4        // DEFAULTFIELD can NOT be used ; this is the difference of altitude over the last 10 sec (kind of averaging vertical speed)
                                  // there is no telemetry field for this; it is possible to use e.g. T1 or T2; then you can use a custom function "play value" on Tx side
 #define VOLT1           5        // DEFAULTFIELD can NOT be used
@@ -174,7 +173,7 @@
 #define VERTICAL_SPEED_I   30       // DEFAULTFIELD can be used ; this is the vertical speed based on baro and imu 
 // to do : add alt min, alt max ,  rpm max? , current max (not sure that it is neaded because it can be calculated on TX side
 // End of list of type of available measurements
-
+*/
   
  
 #define UNKNOWN false
@@ -187,6 +186,7 @@
 #define LOADED      1
 #define SENDING     2
 #define SEND        3
+
 
 
 class OXS_OUT {
@@ -241,26 +241,23 @@ class OXS_OUT {
 
 };
 
-
-
-
 extern int ppm ; 
 extern bool ppmAvailable ;
-extern int32_t compensatedClimbRate ;
-extern bool compensatedClimbRateAvailable ;
-extern int32_t switchVSpeed ; // used to transmit the selected Vspeed
-extern bool switchVSpeedAvailable ;
-extern int32_t averageVSpeed ; // used to transmit the average Vspeed
-extern bool averageVSpeedAvailable ;
-extern int32_t vSpeedImu ; // used to transmit the average Vspeed
-extern bool vSpeedImuAvailable ;
+extern struct ONE_MEASUREMENT mainVspeed ;           // used to transmit the main Vspeed(calculated based on all set up in config)
+extern struct ONE_MEASUREMENT compensatedClimbRate ; // used to transmit the compensated Vspeed
+extern struct ONE_MEASUREMENT switchVSpeed ;         // used to transmit the selected Vspeed
+extern struct ONE_MEASUREMENT averageVSpeed ;        // used to transmit the average Vspeed
+extern struct ONE_MEASUREMENT vSpeedImu ;            // used to transmit the Vspeedcalculated based on IMU
 
-extern int32_t test1Value ;// used in order to test the transmission of any value
-extern bool test1ValueAvailable ;
-extern int32_t test2Value ;// used in order to test the transmission of any value
-extern bool test2ValueAvailable ;
-extern int32_t test3Value ;// used in order to test the transmission of any value
-extern bool test3ValueAvailable ;
+#if defined(PIN_VOLTAGE) && defined(VFAS_SOURCE) 
+extern struct ONE_MEASUREMENT vfas ; 
+#endif
+
+extern struct ONE_MEASUREMENT test1 ;
+extern struct ONE_MEASUREMENT test2 ;
+extern struct ONE_MEASUREMENT test3 ;
+extern struct ONE_MEASUREMENT gliderRatio ;
+
 extern uint8_t selectedVario ;
 
 #ifdef MEASURE_RPM
@@ -315,6 +312,7 @@ extern volatile uint8_t debug04 ;
 // used by FRSKY_SPORT protocol
 void setSportNewData( uint16_t id, uint32_t value ) ;
 void initSportUart() ;
+void initMeasurement() ;
 
 // used by Hub protocol 
 #define MAXSIZEBUFFER 70  // max size of the buffer used to store the data to be sent in the hub protocol

@@ -58,7 +58,7 @@ void OXS_CURRENT::setupCurrent( ) {
   offsetCurrentSteps =  1023.0 * MVOLT_AT_ZERO_AMP / tempRef / currentDivider;
   mAmpPerStep =  currentDivider * tempRef / MVOLT_PER_AMP / 1.023 ; 
 
-  currentData.milliAmpsAvailable = false;
+  currentData.milliAmps.available = false;
   currentData.consumedMilliAmpsAvailable = false;
 //  currentData.sumCurrent = 0 ;
   resetValues();
@@ -104,13 +104,13 @@ void OXS_CURRENT::readSensor() {
   cnt++ ;
   milliTmp = millis() ;
   if(  milliTmp > ( lastCurrentMillis + 200) ){   // calculate average once per 200 millisec
-      currentData.milliAmps = ((currentData.sumCurrent / cnt) - offsetCurrentSteps ) * mAmpPerStep ;
-      if (currentData.milliAmps < 0) currentData.milliAmps = 0 ;
-	  currentData.milliAmpsAvailable = true ;
+      currentData.milliAmps.value = ((currentData.sumCurrent / cnt) - offsetCurrentSteps ) * mAmpPerStep ;
+      if (currentData.milliAmps.value < 0) currentData.milliAmps.value = 0 ;
+	  currentData.milliAmps.available = true ;
 //      if(currentData.minMilliAmps>currentData.milliAmps)currentData.minMilliAmps=currentData.milliAmps;
 //      if(currentData.maxMilliAmps<currentData.milliAmps)currentData.maxMilliAmps=currentData.milliAmps;
       currentData.sumCurrent = 0;
-      currentData.floatConsumedMilliAmps += ((float) currentData.milliAmps) * (milliTmp - lastCurrentMillis ) / 3600.0 /1000.0 ;   // Mike , is this ok when millis() overrun????
+      currentData.floatConsumedMilliAmps += ((float) currentData.milliAmps.value) * (milliTmp - lastCurrentMillis ) / 3600.0 /1000.0 ;   // Mike , is this ok when millis() overrun????
       currentData.consumedMilliAmps = (int32_t) currentData.floatConsumedMilliAmps ;
       currentData.consumedMilliAmpsAvailable = true ;
       lastCurrentMillis =  milliTmp ;
@@ -120,7 +120,7 @@ void OXS_CURRENT::readSensor() {
       printer->print(" Cnt = ");
       printer->print(cnt);
       printer->print(" average current =  ");
-      printer->print(currentData.milliAmps);
+      printer->print(currentData.milliAmps.value);
       printer->print(" consumed milliAmph =  ");
       printer->println(currentData.consumedMilliAmps);
 #endif

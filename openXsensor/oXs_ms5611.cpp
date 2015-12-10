@@ -4,7 +4,8 @@
 //#define DEBUGI2CMS5611
 //#define DEBUGDATA
 //#define DEBUGVARIOI2C
-#define DEBUGVARIO
+//#define DEBUGVARIO
+//#define DEBUG_VARIO_TIME
 #endif
 
 //extern unsigned long micros( void ) ;
@@ -40,10 +41,10 @@ OXS_MS5611::OXS_MS5611(uint8_t addr)
 
 // **************** Setup the MS5611 sensor *********************
 void OXS_MS5611::setup() {
-  varioData.absoluteAltAvailable = false ;
-  varioData.relativeAltAvailable = false ; 
-  varioData.climbRateAvailable = false ;
-  varioData.sensitivityAvailable = false ;
+  varioData.absoluteAlt.available = false ;
+  varioData.relativeAlt.available = false ; 
+  varioData.climbRate.available = false ;
+  varioData.sensitivity.available = false ;
   varioData.vSpeed10SecAvailable = false ;
 //  varioData.newClimbRateAvailable = false; 
 //  varioData.sensitivityPpm = 0 ;
@@ -137,11 +138,15 @@ void OXS_MS5611::setup() {
 //********************************************************************************************
 #define WAIT_I2C_TIME 9000 // normally we have to wait 9000 usec 
 
-void OXS_MS5611::readSensor() {   // read sensor performs a read from sensor if the delay since previous conversion command is enlapsed, else calculates once if data are available. 
+bool OXS_MS5611::readSensor() {   // read sensor performs a read from sensor if the delay since previous conversion command is enlapsed, else calculates once if data are available. 
 #ifdef  DEBUGVARIOI2C
     printer->print(F("sensorState= "));
     printer->println(varioData.SensorState);
 #endif
+#ifdef DEBUG_VARIO_TIME
+  unsigned long varioEnter = micros() ;
+#endif  
+    bool newVSpeedCalculated ; 
     extended2Micros = micros() >> 1 ;
     if (extended2Micros < varioData.lastCommand2Micros) extended2Micros = extended2Micros | 0x80000000 ;
     if ( extended2Micros  > (varioData.lastCommand2Micros + ( WAIT_I2C_TIME / 2 ) ) ) { // wait 9 msec at least before asking for reading the pressure
@@ -169,10 +174,17 @@ void OXS_MS5611::readSensor() {   // read sensor performs a read from sensor if 
           varioData.SensorState = 0 ;                         // reset state to 0 to allow reading the temperature
           if ( (D1 > 0) && (D2 > 0) &&( millis() > 1000) ) {   // we have all data and we can calculate
               calculateVario() ;
+              newVSpeedCalculated = true ;
           }
-      } 
-      
+      } // end ( varioData.SensorState == 2 )
     }
+#ifdef DEBUG_VARIO_TIME
+  varioEnter = micros() - varioEnter ;
+  if ( varioEnter > 10 ) {
+    Serial.print("Vario ") ; Serial.println(varioEnter) ;                          // when I2C works at 400 khz, it takes about 520 usec to read the temperature or the pressure and 450 usec to perform the calculation
+  }  
+#endif  
+  return newVSpeedCalculated ;                                   // return true if a new Vspeed is available  
 }  // end read sensor     
         
 void OXS_MS5611::calculateVario() {        
@@ -229,7 +241,7 @@ void OXS_MS5611::calculateVario() {
         altitudeLowPass = altitudeHighPass = altitude = varioData.rawAltitude ;
       }
       altitude += 0.04 * (varioData.rawAltitude - altitude) ;
-      varioData.altitudeAt20MsecAvailable = true ; // inform openxsens.ino that calculation of dTE can be performed
+//      varioData.altitudeAt20MsecAvailable = true ; // inform openxsens.ino that calculation of dTE can be performed
 
       altitudeLowPass += 0.085 * ( varioData.rawAltitude - altitudeLowPass) ;
       altitudeHighPass += 0.1  * ( varioData.rawAltitude - altitudeHighPass) ;
@@ -238,31 +250,33 @@ void OXS_MS5611::calculateVario() {
       abs_deltaClimbRate =  abs(climbRate2AltFloat - varioData.climbRateFloat) ;
       if ( varioData.sensitivityPpm  > 0) sensitivityMin =   varioData.sensitivityPpm ; 
       if ( (abs_deltaClimbRate <= SENSITIVITY_MIN_AT) || (sensitivityMin >= SENSITIVITY_MAX) ) {
-         varioData.sensitivity = sensitivityMin ;  
+         varioData.sensitivity.value = sensitivityMin ;  
       } else if (abs_deltaClimbRate >= SENSITIVITY_MAX_AT)  {
-         varioData.sensitivity = SENSITIVITY_MAX ; 
+         varioData.sensitivity.value = SENSITIVITY_MAX ; 
       } else {
-         varioData.sensitivity = sensitivityMin + ( SENSITIVITY_MAX - sensitivityMin ) * (abs_deltaClimbRate - SENSITIVITY_MIN_AT) / (SENSITIVITY_MAX_AT - SENSITIVITY_MIN_AT) ;
+         varioData.sensitivity.value = sensitivityMin + ( SENSITIVITY_MAX - sensitivityMin ) * (abs_deltaClimbRate - SENSITIVITY_MIN_AT) / (SENSITIVITY_MAX_AT - SENSITIVITY_MIN_AT) ;
       }
-      varioData.climbRateFloat += varioData.sensitivity * (climbRate2AltFloat - varioData.climbRateFloat)  * 0.001 ; // sensitivity is an integer and must be divided by 1000
+      varioData.climbRateFloat += varioData.sensitivity.value * (climbRate2AltFloat - varioData.climbRateFloat)  * 0.001 ; // sensitivity is an integer and must be divided by 1000
       
-      if ( abs((int32_t)  varioData.climbRateFloat - varioData.climbRate) > VARIOHYSTERESIS ) {
-          varioData.climbRate = (int32_t)  varioData.climbRateFloat  ;
+      if ( abs((int32_t)  varioData.climbRateFloat - varioData.climbRate.value) > VARIOHYSTERESIS ) {
+          //varioData.climbRate = (int32_t)  varioData.climbRateFloat  ;
+          varioData.climbRate.value = (int32_t)  varioData.climbRateFloat  ;
       }    
-      varioData.climbRateAvailable=true; // allows SPORT protocol to transmit the value
-      varioData.switchClimbRateAvailable = true ; // inform readsensors() that a switchable vspeed is available
-      varioData.averageClimbRateAvailable = true ; // inform readsensors() that a vspeed is available to calculate the average
+      //varioData.climbRateAvailable=true; // allows SPORT protocol to transmit the value
+      varioData.climbRate.available=true; // allows SPORT protocol to transmit the value
+//      varioData.switchClimbRateAvailable = true ; // inform readsensors() that a switchable vspeed is available
+//      varioData.averageClimbRateAvailable = true ; // inform readsensors() that a vspeed is available to calculate the average
       // AltitudeAvailable is set to true only once every 100 msec in order to give priority to climb rate on SPORT
       altMillis = millis() ;
       if (altMillis > nextAltMillis){
         nextAltMillis = altMillis + 100 ;
-        varioData.absoluteAlt = altitude / 100 ; // altitude is in m *10000 and AbsoluteAlt must be in m * 100
-        varioData.absoluteAltAvailable=true ;  // Altitude is considered as available only after several loop in order to reduce number of transmission on Sport.
-        varioData.sensitivityAvailable = true ;
-        if (varioData.altOffset == 0) varioData.altOffset = varioData.absoluteAlt ;
-        varioData.relativeAlt = varioData.absoluteAlt - varioData.altOffset ;
-        varioData.relativeAltAvailable = true ;
-        if ( varioData.relativeAlt > varioData.relativeAltMax ) varioData.relativeAltMax = varioData.relativeAlt ;
+        varioData.absoluteAlt.value = altitude / 100 ; // altitude is in m *10000 and AbsoluteAlt must be in m * 100
+        varioData.absoluteAlt.available=true ;  // Altitude is considered as available only after several loop in order to reduce number of transmission on Sport.
+        varioData.sensitivity.available = true ;
+        if (varioData.altOffset == 0) varioData.altOffset = varioData.absoluteAlt.value ;
+        varioData.relativeAlt.value = varioData.absoluteAlt.value - varioData.altOffset ;
+        varioData.relativeAlt.available = true ;
+        if ( varioData.relativeAlt.value > varioData.relativeAltMax ) varioData.relativeAltMax = varioData.relativeAlt.value ;
         varioData.relativeAltMaxAvailable = true ;
 
 //        if ( altMillis > nextAverageAltMillis ){ // calculation of the difference of altitude (in m) between the 10 last sec

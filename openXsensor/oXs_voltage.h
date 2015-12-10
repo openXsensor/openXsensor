@@ -28,12 +28,15 @@ struct VOLTAGEDATA {
   bool mVoltCellTot_Available ;
  
 #ifndef MULTIPLEX  
-  uint32_t mVoltCell_1_2 ;
-  bool mVoltCell_1_2_Available ;
-  uint32_t mVoltCell_3_4 ;
-  bool mVoltCell_3_4_Available ;
-  uint32_t mVoltCell_5_6 ;
-  bool mVoltCell_5_6_Available ;
+struct ONE_MEASUREMENT mVoltCell_1_2 ; 
+struct ONE_MEASUREMENT mVoltCell_3_4 ;  
+struct ONE_MEASUREMENT mVoltCell_5_6 ;  
+//  uint32_t mVoltCell_1_2 ;
+//  bool mVoltCell_1_2_Available ;
+//  uint32_t mVoltCell_3_4 ;
+//  bool mVoltCell_3_4_Available ;
+//  uint32_t mVoltCell_5_6 ;
+//  bool mVoltCell_5_6_Available ;
 #endif
 };
 
