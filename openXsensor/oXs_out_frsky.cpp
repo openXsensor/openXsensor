@@ -194,16 +194,10 @@ struct ONE_MEASUREMENT * p_measurements[20] ;      // array of 20 pointers (each
 int32_t dataValue[6] ;   // keep for each sensor id the next value to be sent
 uint8_t dataId[6] ;      // keep for each sensor id the Id of next field to be sent
 uint8_t sensorSeq  ;
+uint8_t sensorIsr  ;
 
 struct ONE_MEASUREMENT no_data = { 0, 0 } ; 
 
-struct ONE_MEASUREMENT m_rpm = { 1, 1067 } ;           // 13 = start of rpm, T1, T2, airspeed
-struct ONE_MEASUREMENT m_T1 = { 1, 1078 } ;
-struct ONE_MEASUREMENT m_T2 = { 1, 1089 } ;
-struct ONE_MEASUREMENT m_airspeed = { 1, 1090 } ;      
-struct ONE_MEASUREMENT m_accX = { 1, 1110 } ;          // 17 = start of acc
-struct ONE_MEASUREMENT m_accY = { 1, 1120 } ;
-struct ONE_MEASUREMENT m_accZ = { 1, 1130 } ;
 
 void initMeasurement() {
 // pointer to Altitude
@@ -1304,7 +1298,7 @@ ISR(TIMER1_COMPA_vect)
                 }
                 else  // 8 bytes have been send
                 {
-                  frskyStatus |=  1 << sensorSeq ;              // set the bit relative to sensorSeq to say that a new data has to be loaded for sensorSeq.
+                  frskyStatus |=  1 << sensorIsr ;              // set the bit relative to sensorIsr to say that a new data has to be loaded for sensorIsr.
                   state = WAITING ;
                   OCR1A += DELAY_3500 ;   // 3.5mS gap before listening
                   TRXDDR &= ~( 1 << PIN_SERIALTX ) ;            // PIN is input
@@ -1359,36 +1353,37 @@ ISR(TIMER1_COMPA_vect)
                         {
                             switch (SwUartRXData ) {
 
-#define  VARIO_ID 0x1B         // replace those values by the right on
-#define  CELL_ID 0x90
-#define  CURRENT_ID 0x91
-#define  GPS_ID 0x83
-#define  RPM_ID 0x92
-#define  ACC_ID 0x93
+#define  VARIO_ID        DATA_ID_VARIO       // replace those values by the right on
+#define  CELL_ID         DATA_ID_FLVSS
+#define  CURRENT_ID      DATA_ID_FAS
+#define  GPS_ID          DATA_ID_GPS
+#define  RPM_ID          DATA_ID_RPM
+#define  ACC_ID          0x1B
+
                               case VARIO_ID :
-                                sensorSeq = 0 ; break ;
+                                sensorIsr = 0 ; break ;
                               case CELL_ID :
-                                sensorSeq = 1 ; break ;
+                                sensorIsr = 1 ; break ;
                               case CURRENT_ID :
-                                sensorSeq = 2 ; break ;
+                                sensorIsr = 2 ; break ;
                               case GPS_ID :
-                                sensorSeq = 3 ; break ;
+                                sensorIsr = 3 ; break ;
                               case RPM_ID :
-                                sensorSeq = 4 ; break ;
+                                sensorIsr = 4 ; break ;
                               case ACC_ID :
-                                sensorSeq = 5 ; break ;
+                                sensorIsr = 5 ; break ;
                               default : 
-                                sensorSeq = 255 ;  
+                                sensorIsr = 255 ;  
                             }
-                            if ( ( sensorSeq < 6 ) && ( ( frskyStatus & ( 1 << sensorSeq )) == 0 ) ) {    // If this sensor ID is supported by oXs and oXs has prepared data to reply data in dataValue[] for this sensorSeq    
+                            if ( ( sensorIsr < 6 ) && ( ( frskyStatus & ( 1 << sensorIsr )) == 0 ) ) {    // If this sensor ID is supported by oXs and oXs has prepared data to reply data in dataValue[] for this sensorSeq    
                                       if ( sportDataLock == 0 ) {
                                           TxSportData[0] = 0x10 ;
-                                          TxSportData[1] = dataId[sensorSeq] << 4  ;
-                                          TxSportData[2] = dataId[sensorSeq] >> 4 ;
-                                          TxSportData[3] = dataValue[sensorSeq] ;
-                                          TxSportData[4] = dataValue[sensorSeq] >> 8 ;
-                                          TxSportData[5] = dataValue[sensorSeq] >> 16 ;
-                                          TxSportData[6] = dataValue[sensorSeq] >> 24 ;
+                                          TxSportData[1] = dataId[sensorIsr] << 4  ;
+                                          TxSportData[2] = dataId[sensorIsr] >> 4 ;
+                                          TxSportData[3] = dataValue[sensorIsr] ;
+                                          TxSportData[4] = dataValue[sensorIsr] >> 8 ;
+                                          TxSportData[5] = dataValue[sensorIsr] >> 16 ;
+                                          TxSportData[6] = dataValue[sensorIsr] >> 24 ;
                                           state = TxPENDING ;
                                           OCR1A += ( DELAY_400 - TICKS2WAITONESPORT) ;    // 400 uS gap before sending
                                       }
@@ -1614,6 +1609,7 @@ ISR(TIMER1_COMPA_vect)
 //  This function will set up pins to transmit and receive on. Control of Timer0 and External interrupt 0.
 void initSportUart(  )           //*************** initialise UART pour SPORT
 {
+/*
 #if defined ( SPORT_SENSOR_ID )  && SPORT_SENSOR_ID >= 1 && SPORT_SENSOR_ID <= 28  
     #define ID_MIN_1 (SPORT_SENSOR_ID - 1)
     #define BIT0   ( ID_MIN_1 & 0x01 )
@@ -1627,7 +1623,8 @@ void initSportUart(  )           //*************** initialise UART pour SPORT
     sensorId = ID_MIN_1 | (BIT5 << 5) | (BIT6 << 6) | (BIT7 << 7) ;
 #else
   #error "SPORT_SENSOR_ID must be between 1 and 28 (included)"
-#endif     
+#endif
+*/     
     //PORT
     TRXDDR &= ~( 1 << PIN_SERIALTX ) ;       // PIN is input.
     TRXPORT &= ~( 1 << PIN_SERIALTX ) ;      // PIN is tri-stated.

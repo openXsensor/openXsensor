@@ -23,7 +23,7 @@
 // ***** 1.2 - FrSky protocol and device ID (required when Sport protocol is used)  *****
 #define FRSKY_TYPE_SPORT   // when uncommented, it forces oXs to apply only SPORT protocol, otherwise, oXs detects automatically if protocol has to be SPORT or HUB
 //#define FRSKY_TYPE_HUB   // when uncommented, it forces oXs to apply only HUB protocol, otherwise, oXs detects automatically if protocol has to be SPORT or HUB
-#define SPORT_SENSOR_ID    28 // value must be between 1 and 28 
+//#define SPORT_SENSOR_ID    28 // value must be between 1 and 28 
 // ***** 1.3 - Hott protocol is used (otherwise oXs assumes it is Frsky protocol) *****
 //#define HOTT
 
@@ -119,20 +119,13 @@
 
 // --------- 9 - Data to transmit ---------
 // ***** 9.1 - Frsky data *****
-//#define SETUP_FRSKY_DATA_TO_SEND    \
-//                        DEFAULTFIELD , ALTIMETER , 1 , 1 , 0 , \
-//                        VSpd , PPM_VSPEED , 1 , 1 ,0 , \
-//                        T1 , VERTICAL_SPEED , 1 , 1 ,0 , \
-//                        T2 , VERTICAL_SPEED_I , 1 , 1 , 0 , \
-//                        AccY , TEST2 , 1 , 1 ,0 
-
-#define VSPEED_SOURCE  PPM_SELECTION        // select between FIRST_BARO, SECOND_BARO , AVERAGE_FIRST_SECOND, AIRSPEED_COMPENSATED , BARO_AND_IMU or PPM_SELECTION
-#define VFAS_SOURCE VOLT_4                // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
+#define VSPEED_SOURCE  PPM_SELECTION       // select between FIRST_BARO, SECOND_BARO , AVERAGE_FIRST_SECOND, AIRSPEED_COMPENSATED , BARO_AND_IMU or PPM_SELECTION
+#define VFAS_SOURCE VOLT_4                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
 #define ACCX_SOURCE TEST_1                 //  select between TEST_1, TEST_2, TEST_3
 #define ACCY_SOURCE TEST_2                 //  select between TEST_1, TEST_2, TEST_3
 #define ACCZ_SOURCE TEST_3                 //  select between TEST_1, TEST_2, TEST_3
-#define T1_SOURCE GLIDER_RATIO            //  select between TEST_1, TEST_2, TEST_3 , GLIDER_RATIO
-#define T2_SOURCE TEST_2            //  select between TEST_1, TEST_2, TEST_3, , GLIDER_RATIO
+#define T1_SOURCE GLIDER_RATIO             //  select between TEST_1, TEST_2, TEST_3 , GLIDER_RATIO
+#define T2_SOURCE TEST_2                   //  select between TEST_1, TEST_2, TEST_3, , GLIDER_RATIO
 
 // ***** 9.2 - Multiplex data *****
 #define SETUP_MULTIPLEX_DATA_TO_SEND    \
