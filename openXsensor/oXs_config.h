@@ -18,7 +18,7 @@
 
 
 // --------- 1 - Telemetry protocol ---------
-#define PROTOCOL  FRSKY_SPORT_HUB  // select between FRSKY_SPORT , FRSKY_HUB , FRSKY_SPORT_HUB , MULTIPLEX , HOTT
+#define PROTOCOL  FRSKY_SPORT  // select between FRSKY_SPORT , FRSKY_HUB , FRSKY_SPORT_HUB , MULTIPLEX , HOTT
 
 // --------- 2 - Serial data pin choice ---------
 #define PIN_SERIALTX      4    // The pin which transmits the serial data to the FrSky telemetry receiver, Usually pin 4
@@ -117,15 +117,15 @@
 #define ACCX_SOURCE     TEST_1                 //  select between TEST_1, TEST_2, TEST_3
 #define ACCY_SOURCE     TEST_2                 //  select between TEST_1, TEST_2, TEST_3
 #define ACCZ_SOURCE     TEST_3                 //  select between TEST_1, TEST_2, TEST_3
-#define T1_SOURCE       GLIDER_RATIO             //  select between TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SENSITIVITY
-#define T2_SOURCE       SENSITIVITY              //  select between TEST_1, TEST_2, TEST_3, , GLIDER_RATIO, SENSITIVITY
+#define T1_SOURCE       GLIDER_RATIO             //  select between TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SENSITIVITY, PPM
+#define T2_SOURCE       SENSITIVITY              //  select between TEST_1, TEST_2, TEST_3, , GLIDER_RATIO, SENSITIVITY, PPM
 
 // ***** 9.2 - Hott data *****
 #define BATTERY_1_SOURCE          VOLT_4                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
 #define BATTERY_2_SOURCE          VOLT_2                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
 #define MAIN_BATTERY_SOURCE       VOLT_5                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
 #define TEMPERATURE_1_SOURCE      TEST_1          //  select between TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SENSITIVITY
-#define TEMPERATURE_2_SOURCE      SENSITIVITY          //  select between TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SENSITIVITY
+#define TEMPERATURE_2_SOURCE      PPM             //  select between TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SENSITIVITY
 
 // ***** 9.3 - Multiplex data *****
 #define SETUP_MULTIPLEX_DATA_TO_SEND    \
@@ -134,7 +134,8 @@
                         5 , REL_ALTIMETER , 1 , 1 , 0 , -16384 , 16383 , \
                         7 , CELL_TOT , 1 , 1 , 0 , -16384 , 16383 , \
                         8 , ALTIMETER_MAX , 1 , 1 , 0 , -16384 , 16383 , \
-                        4 , VOLT4 , 1 , 1 , 0 , -16384 , 16383
+                        4 , VOLT4 , 1 , 1 , 0 , -16384 , 16383 , \
+                        9 , PPM , 1 , 1 , 0 , -16384 , 16383 
 
 // --------- 10 - Sequencer ---------
 //#define SEQUENCE_OUTPUTS 0b100000  

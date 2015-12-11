@@ -146,8 +146,9 @@ struct ONE_MEASUREMENT vSpeedImu ;
 
 uint16_t ppmus ; // duration of ppm in usec
 int prevPpm ; //^previous ppm
-int ppm ; // duration of pulse in range -100 / + 100 ; can exceed those limits
-bool ppmAvailable  ;
+struct ONE_MEASUREMENT ppm ; // duration of pulse in range -100 / + 100 ; can exceed those limits
+//int ppm ; // duration of pulse in range -100 / + 100 ; can exceed those limits
+//bool ppmAvailable  ;
 
 
 #ifdef SEQUENCE_OUTPUTS
@@ -426,7 +427,7 @@ void setup(){
 #ifdef PIN_PPM
 //    ppmus = 0 ;
 //    prevPpm = 0 ;
-    ppmAvailable = false ;
+    ppm.available = false ;
 #endif
 
 #ifdef PPM_INTERRUPT
@@ -480,7 +481,7 @@ void setup(){
     DDRB |= sequenceOutputs ; // set pin to output mode
     
 //#ifdef DEBUGSEQUENCE
-    ppm = -100 ; // fix the sequence to be used by default (e.g. when no PPM signal is present);  
+    ppm.value = -100 ; // fix the sequence to be used by default (e.g. when no PPM signal is present);  
     setNewSequence( ) ; 
 //#endif
 #endif //****************************** end of SEQUENCE_OUTPUTS
@@ -588,7 +589,7 @@ if ( currentLoopMillis - lastLoop500Millis > 500 ) {
 #if (defined( SEQUENCE_MIN_VOLT_6) || defined ( SEQUENCE_MIN_CELL ) 
   if ( (lowVoltage == true) && (prevLowVoltage == false) ) {
     prevLowVoltage = true ;
-    ppm = 125 ; // fix the sequence to be used when voltage is low  ; it is sequence +125
+    ppm.value = 125 ; // fix the sequence to be used when voltage is low  ; it is sequence +125
     prevPpmMain = -10 ; // will force a new sequence because ppmMain will be different from prevPpmMain
     setNewSequence() ;
     #ifdef DEBUG
@@ -598,9 +599,9 @@ if ( currentLoopMillis - lastLoop500Millis > 500 ) {
     prevLowVoltage = false ;
     prevPpmMain = -10 ; //will force a new sequence because ppmMain will be different from prevPpmMain
 #ifdef PIN_PPM
-    if ( ppmus == 0) ppm = -100 ; // force ppm to -100 (default) when no ppm signal is received ,  else it will use the current ppm value
+    if ( ppmus == 0) ppm.value = -100 ; // force ppm to -100 (default) when no ppm signal is received ,  else it will use the current ppm value
 #else 
-    ppm = -100 ; // if ppm is not configure force to go back to sequence -100 (= default);
+    ppm.value = -100 ; // if ppm is not configure force to go back to sequence -100 (= default);
 #endif  // end PIN_PPM def or not
     setNewSequence() ; 
     #ifdef DEBUG
@@ -1220,12 +1221,12 @@ void ProcessPPMSignal(){
   ppmus = ( PPM_MIN_100 + PPM_PLUS_100) / 2 ; // force a ppm equal to 0
 #endif // end of DEBUGFORCEPPM 
   if (ppmus>0){  // if a value has been defined for ppm (in microseconds)
-    ppm = map( ppmus , PPM_MIN_100, PPM_PLUS_100, -100 , 100 ) ; // map ppm in order to calibrate between -100 and 100
+    ppm.value = map( ppmus , PPM_MIN_100, PPM_PLUS_100, -100 , 100 ) ; // map ppm in order to calibrate between -100 and 100
 //    ppm = 82 ; // test only
-    ppmAvailable = true ;
+    ppm.available = true ;
 #ifdef DEBUGPPM
     static uint16_t ppmCount ;
-    if ( (((int) ppm) - ((int ) prevPpm) > 3 ) || (((int) prevPpm) - ((int ) ppm) > 3 )  )  {
+    if ( (((int) ppm.value) - ((int ) prevPpm) > 3 ) || (((int) prevPpm) - ((int ) ppm.value) > 3 )  )  {
         Serial.print(F(" us="));  Serial.print(ppmus); Serial.print(F(" c="));  Serial.println(ppmCount);
         ppmCount = 0 ;
     }  else {
@@ -1234,23 +1235,23 @@ void ProcessPPMSignal(){
 #endif
 
 #ifdef SEQUENCE_OUTPUTS
-    if ( ( ( ppm - prevPpm) > 3 ) || (( prevPpm - ppm) > 3 )  )  { // handel ppm only if it changes by more than 3 
+    if ( ( ( ppm.value - prevPpm) > 3 ) || (( prevPpm - ppm.value) > 3 )  )  { // handel ppm only if it changes by more than 3 
         setNewSequence( ) ;
     }  
 #else // so if Sequence is not used and so PPM is used for Vario sensitivity 
-    if (ppm == prevPpm) {  // test if new value is equal to previous in order to avoid unstabel handling 
+    if (ppm.value == prevPpm) {  // test if new value is equal to previous in order to avoid unstabel handling 
     
 #if defined ( VARIO_PRIMARY) && defined ( VARIO_SECONDARY)  && defined (VARIO ) && ( defined (VARIO2) || defined (AIRSPEED) || defined (USE_6050) )  && defined (PIN_PPM)
-        if ( (ppm >= (SWITCH_VARIO_MIN_AT_PPM - 4)) && (ppm <= (SWITCH_VARIO_MAX_AT_PPM + 4)) ) {
+        if ( (ppm.value >= (SWITCH_VARIO_MIN_AT_PPM - 4)) && (ppm.value <= (SWITCH_VARIO_MAX_AT_PPM + 4)) ) {
           selectedVario = VARIO_PRIMARY ;
-        } else if ( ( ppm <= (4 - SWITCH_VARIO_MIN_AT_PPM)) && (ppm >= (- 4 - SWITCH_VARIO_MAX_AT_PPM)) ) {
+        } else if ( ( ppm.value <= (4 - SWITCH_VARIO_MIN_AT_PPM)) && (ppm.value >= (- 4 - SWITCH_VARIO_MAX_AT_PPM)) ) {
             selectedVario = VARIO_SECONDARY ; 
         }  
 #endif
 
 #if defined (VARIO) || defined (VARIO2) 
-        if ( (abs(ppm) >= (SENSITIVITY_MIN_AT_PPM - 4)) && ( abs(ppm) <= (SENSITIVITY_MAX_AT_PPM + 4)) ) {
-            sensitivityPpmMapped =  map( constrain(abs(ppm), SENSITIVITY_MIN_AT_PPM , SENSITIVITY_MAX_AT_PPM ), SENSITIVITY_MIN_AT_PPM , SENSITIVITY_MAX_AT_PPM , SENSITIVITY_PPM_MIN , SENSITIVITY_PPM_MAX); // map value and change stepping to 10
+        if ( (abs(ppm.value) >= (SENSITIVITY_MIN_AT_PPM - 4)) && ( abs(ppm.value) <= (SENSITIVITY_MAX_AT_PPM + 4)) ) {
+            sensitivityPpmMapped =  map( constrain(abs(ppm.value), SENSITIVITY_MIN_AT_PPM , SENSITIVITY_MAX_AT_PPM ), SENSITIVITY_MIN_AT_PPM , SENSITIVITY_MAX_AT_PPM , SENSITIVITY_PPM_MIN , SENSITIVITY_PPM_MAX); // map value and change stepping to 10
 #if defined( VARIO) 
             oXs_MS5611.varioData.sensitivityPpm = sensitivityPpmMapped ; // adjust sensitivity when abs PPM is within range
 #endif
@@ -1262,18 +1263,18 @@ void ProcessPPMSignal(){
         
 
 #if defined (AIRSPEED)  // adjust compensation
-        if ( (abs(ppm) >= (COMPENSATION_MIN_AT_PPM - 4)) && ( abs(ppm) <= (COMPENSATION_MAX_AT_PPM + 4)) ) {
-            compensationPpmMapped =  map( constrain(abs(ppm), COMPENSATION_MIN_AT_PPM , COMPENSATION_MAX_AT_PPM ), COMPENSATION_MIN_AT_PPM , COMPENSATION_MAX_AT_PPM , COMPENSATION_PPM_MIN , COMPENSATION_PPM_MAX); // map value and change stepping to 10
+        if ( (abs(ppm.value) >= (COMPENSATION_MIN_AT_PPM - 4)) && ( abs(ppm.value) <= (COMPENSATION_MAX_AT_PPM + 4)) ) {
+            compensationPpmMapped =  map( constrain(abs(ppm.value), COMPENSATION_MIN_AT_PPM , COMPENSATION_MAX_AT_PPM ), COMPENSATION_MIN_AT_PPM , COMPENSATION_MAX_AT_PPM , COMPENSATION_PPM_MIN , COMPENSATION_PPM_MAX); // map value and change stepping to 10
             if (compensationPpmMapped == COMPENSATION_PPM_MIN ) compensationPpmMapped = 0 ; // force compensation to 0 when compensation = min
         }
-        if ( ( ppm >= (AIRSPEED_RESET_AT_PPM - 4)) && ( ppm <= (AIRSPEED_RESET_AT_PPM + 4)) ) {
+        if ( ( ppm.value >= (AIRSPEED_RESET_AT_PPM - 4)) && ( ppm.value <= (AIRSPEED_RESET_AT_PPM + 4)) ) {
             oXs_4525.airSpeedData.airspeedReset = true ; // allow a recalculation of offset 4525
         }    
 #endif
     } // end ppm == prePpm
 #endif  // end of #ifdef SEQUENCE_OUTPUTS & #else
   }  // end ppm > 0
-  prevPpm = ppm ;
+  prevPpm = ppm.value ;
 }  // end processPPMSignal
 
 
@@ -1361,7 +1362,7 @@ void ReadPPM() {
 #ifdef SEQUENCE_OUTPUTS
 void setNewSequence() {                   // **********  setNewSequence( ) **************  handle a new ppm value
 //    int8_t prevPpmMain = -100 ; // this value is unusual; so it will forced a change at first call
-    int16_t ppmAbs = ppm + 114 ;
+    int16_t ppmAbs = ppm.value + 114 ;
     int8_t ppmMain = ppmAbs / 25 ;
     int8_t ppmRest = ppmAbs % 25 ;
     if ( (ppmRest > 4) && (ppmMain >= 0) && (ppmMain <= 9) && (ppmMain != prevPpmMain) ) { // process only if valid and different from previous

@@ -574,8 +574,8 @@ started by Rainer Schloßhan
 *      #define ACCX_SOURCE TEST_1                 //  select between TEST_1, TEST_2, TEST_3
 *      #define ACCY_SOURCE TEST_2                 //  select between TEST_1, TEST_2, TEST_3
 *      #define ACCZ_SOURCE TEST_3                 //  select between TEST_1, TEST_2, TEST_3
-*      #define T1_SOURCE GLIDER_RATIO             //  select between TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SENSITIVITY
-*      #define T2_SOURCE SENSITIVITY              //  select between TEST_1, TEST_2, TEST_3, , GLIDER_RATIO, SENSITIVITY
+*      #define T1_SOURCE GLIDER_RATIO             //  select between TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SENSITIVITY , PPM
+*      #define T2_SOURCE SENSITIVITY              //  select between TEST_1, TEST_2, TEST_3, , GLIDER_RATIO, SENSITIVITY , PPM
 **** 9.2 Hott protocol ************************************************************************************ 
 *      Measurements being automatically transmitted are : 
 *         - Relative altitude(cm), main vertical Speed(cm/sec) (when at least first baro sensor is present)
@@ -663,6 +663,7 @@ started by Rainer Schloßhan
 *    CELL_6             mV(5)    Value based on 5th and 6th PIN_VOLTAGE   
 *    CELL_MIN           mV(5)    Value based on CELL_1 ... CELL_6         
 *    CELL_TOT           mV(5)    Value based on VOLT1...VOLT6             
+*    PPM                         Value set by Tx to control some functions (sensitivity, ...) (range is normally -100 / +100)
 *    TEST_1                      Value used for test
 *    TEST_2                      Value used for test
 *    TEST_3                      Value used for test

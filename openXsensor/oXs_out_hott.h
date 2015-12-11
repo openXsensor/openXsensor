@@ -288,8 +288,9 @@ class OXS_OUT {
     void setMultiplexNewData(  uint16_t id, int32_t value  , uint8_t alarm) ;
 };
 
-extern int ppm ; 
-extern bool ppmAvailable ;
+//extern int ppm ; 
+//extern bool ppmAvailable ;
+extern struct ONE_MEASUREMENT ppm ;
 extern struct ONE_MEASUREMENT mainVspeed ;           // used to transmit the main Vspeed(calculated based on all set up in config)
 extern struct ONE_MEASUREMENT compensatedClimbRate ; // used to transmit the compensated Vspeed
 extern struct ONE_MEASUREMENT switchVSpeed ;         // used to transmit the selected Vspeed

@@ -324,9 +324,9 @@ uint8_t OXS_OUT::formatOneValue( uint8_t currentFieldToSend) {
 
 #ifdef PIN_PPM 
       case  PPM :
-          if ( ! ppmAvailable  ) return 0;
-          valueTemp = ppm ;
-          ppmAvailable  = false ; 
+          if ( ! ppm.available  ) return 0;
+          valueTemp = ppm.value ;
+          ppm.available  = false ; 
           break ;
 #endif
 

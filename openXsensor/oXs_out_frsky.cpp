@@ -293,7 +293,8 @@ void initMeasurement() {
    p_measurements[14] = &gliderRatio ; 
 #elif defined(T1_SOURCE) && ( T1_SOURCE == SENSITIVITY) && defined(VARIO)
    p_measurements[14] = &oXs_MS5611.varioData.sensitivity ; 
-
+#elif defined(T1_SOURCE) && ( T1_SOURCE == PPM) && defined(PIN_PPM)
+   p_measurements[14] = &ppm ; 
 #else
    p_measurements[14] = &no_data ; // T1 
 #endif
@@ -309,6 +310,8 @@ void initMeasurement() {
    p_measurements[15] = &gliderRatio ; 
 #elif defined(T2_SOURCE) && ( T2_SOURCE == SENSITIVITY) && defined(VARIO) 
    p_measurements[15] = &oXs_MS5611.varioData.sensitivity ; 
+#elif defined(T2_SOURCE) && ( T2_SOURCE == PPM) && defined(PIN_PPM)
+   p_measurements[15] = &ppm ; 
 #else
    p_measurements[15] = &no_data ; // T1 
 #endif
@@ -553,6 +556,8 @@ void OXS_OUT::SendFrame1(){
     SendValue( FRSKY_USERDATA_TEMP1 , (int16_t) gliderRatio.value) ; 
 #elif defined(T1_SOURCE) && ( T1_SOURCE == SENSITIVITY) && defined(VARIO)
     SendValue( FRSKY_USERDATA_TEMP1 , (int16_t) oXs_MS5611.varioData.sensitivity.value) ; 
+#elif defined(T1_SOURCE) && ( T1_SOURCE == PPM) && defined(PIN_PPM)
+    SendValue( FRSKY_USERDATA_TEMP1 , (int16_t) ppm.value) ; 
 #endif
 
 // T2   
@@ -566,6 +571,8 @@ void OXS_OUT::SendFrame1(){
    SendValue( FRSKY_USERDATA_TEMP2 , (int16_t) gliderRatio.value) ; 
 #elif defined(T2_SOURCE) && ( T2_SOURCE == SENSITIVITY) && defined(VARIO)
    SendValue( FRSKY_USERDATA_TEMP2 , (int16_t) oXs_MS5611.varioData.sensitivity.value) ; 
+#elif defined(T2_SOURCE) && ( T2_SOURCE == PPM) && defined(PIN_PPM)
+    SendValue( FRSKY_USERDATA_TEMP2 , (int16_t) ppm.value) ; 
 #endif
    
 // airspeed                                        // not implemented in Hub protocol; to add in T1 or T2
