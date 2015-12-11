@@ -28,7 +28,7 @@ ISR( TIMER1_CAPT_vect, ISR_NOBLOCK )
 	if ( ++RpmCounter > 3 )
 	{
 		cli() ;
-		uint16_t time = ICR1 ;	// Read timer 1
+		uint16_t time = ICR1 ;	// Read capture register on timer 1
 		sei() ;
 		elapsed = time - lastTimerValue ;
   #if F_CPU == 20000000L   // 20MHz clock 

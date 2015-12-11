@@ -125,9 +125,7 @@ long result = 0 ;
 #endif
   bool newVSpeedCalculated  = false ; 
   if (varioData.SensorState==0) { // ========================= Read the pressure
-    extended2Micros = micros() >> 1 ;
-    if (extended2Micros < varioData.lastCommand2Micros) extended2Micros = extended2Micros | 0x80000000 ;
-    if ( extended2Micros  > varioData.lastCommand2Micros + 4500){ // wait 9 msec at least before asking for reading the pressure
+    if ( ( micros() - varioData.lastCommandMicros)  >  9000){ // wait 9 msec at least before asking for reading the pressure
 //        long result = 0;
 	      if(  ! I2c.read( BMP180_ADR, 0xF6, 3 )) { ; //read 3 bytes from the device starting from register F6; keep previous value in case of error 
         	result = I2c.receive() ;
@@ -140,14 +138,12 @@ long result = 0 ;
               D1 = 0 ; // D1 value are not processed to calculate Alt.
         }      
         I2c.write( BMP180_ADR ,0xF4 , 0x2E ) ; // ask a conversion of Temperature sending 2E in register F4
-        varioData.lastCommand2Micros = (micros() >>1 ); 
+        varioData.lastCommandMicros = (micros() >>1 ); 
         varioData.SensorState = 1;
     } // end of delay of 9 ms  
   } // end of SensorState == 1 
   else if (varioData.SensorState==1){ // =========================  
-    extended2Micros = micros() >> 1 ;
-    if (extended2Micros < varioData.lastCommand2Micros) extended2Micros = extended2Micros | 0x80000000 ;
-    if ( extended2Micros > varioData.lastCommand2Micros + 4500) { // wait 9000 usec to get Temp with high precision
+    if ( (micros() - varioData.lastCommandMicros ) > 9000) { // wait 9000 usec to get Temp with high precision
           if ( ! I2c.read( BMP180_ADR , 0xF6, 2 )) { ; //read 2 bytes from the device in register F6 ; keep previous value in case of error
                 result = I2c.receive() ;
                 result <<= 8 ;
@@ -155,14 +151,11 @@ long result = 0 ;
                 D2=result;
           }      
           I2c.write( BMP180_ADR , 0xF4 , 0x74) ;// ask a conversion of Pressure sending 74 in register F4; 74 means an average of 2 reads and so a normal wait time of 7.5 msec
-          varioData.lastCommand2Micros = (micros() >>1 ); 
+          varioData.lastCommandMicros = (micros() >>1 ); 
           varioData.SensorState=2; // 
     }  // End of process if temperature can be read 
   } // End of process if SensorState was 1  
   else if (varioData.SensorState==2) {    // ========================== new Pressure and (new or old) Temp are known so Request Pressure immediately and calculate altitude
-//    pressureMicrosPrev1 = pressureMicros ;
-//    pressureMicros = micros(); // pressureMicros is the timestamp to calculate climbrate between 2 pressures
-//    varioData.lastCommand2Micros = pressureMicros >> 1 ;
     varioData.SensorState=0;
     if ((D1 > 0) & (millis() > 1000) ) { // If D1 has been read in a previous loop and if sensor is started since more than 1 sec, then calculate pressure etc...
               calculateVario() ;

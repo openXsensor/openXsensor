@@ -1,6 +1,6 @@
 // File for Hott
 #include "oXs_out_hott.h"
-#ifdef HOTT
+#if defined(PROTOCOL) &&  (PROTOCOL == HOTT) 
 
 #ifdef DEBUG_BLINK
     #define DEBUG_BLINK_UPLOAD_HOTT_DATA
@@ -10,6 +10,11 @@
 // ************************* here Several parameters to help debugging
   #define DEBUGHOTT
 #endif
+
+extern OXS_MS5611 oXs_MS5611 ;
+extern OXS_VOLTAGE oXs_Voltage ; 
+extern OXS_CURRENT oXs_Current ;
+extern OXS_4525 oXs_4525 ;
 
 
 extern unsigned long micros( void ) ;
@@ -106,7 +111,7 @@ void OXS_OUT::sendData() {
         for ( uint8_t i = 0 ; i < TXHOTTDATA_BUFFERSIZE ; i++ ) {       // first fill the buffer with 0 
            TxHottData.txBuffer[i] = 0 ;
         }
-        if ( flagUpdateHottBuffer == 0x8d  ) {        // this flag is set to true when UART get a polling of the device. Then measurement must be filled in the buffer
+        if ( flagUpdateHottBuffer == 0x8d  ) {        // this flag is set to true when UART get a polling of the GAM device. Then measurement must be filled in the buffer
               TxHottData.gamMsg.start_byte    = 0x7c ;
               TxHottData.gamMsg.gam_sensor_id = 0x8d ; //GENRAL AIR MODULE = HOTT_TELEMETRY_GAM_SENSOR_ID
               TxHottData.gamMsg.sensor_id     = 0xd0 ;
@@ -131,12 +136,41 @@ void OXS_OUT::sendData() {
 #if  defined(NUMBEROFCELLS) && (NUMBEROFCELLS >= 6) 
               TxHottData.gamMsg.cell[5] =  voltageData->mVoltCell[5] /20 ; // Volt Cell 6 (in 2 mV increments, 210 == 4.20 V)
 #endif
-#if defined(USE_VOLT_X_AS_BATTERY1) && (USE_VOLT_X_AS_BATTERY1 <7) && (USE_VOLT_X_AS_BATTERY1 > 0) && defined(PIN_VOLTAGE)
-              TxHottData.gamMsg.Battery1 = voltageData->mVolt[USE_VOLT_X_AS_BATTERY1 - 1] / 100;    //battery 1 voltage  0.1V steps. 55 = 5.5V only pos. voltages
+#if defined(BATTERY_1_SOURCE) && ( (BATTERY_1_SOURCE == VOLT_1) || (BATTERY_1_SOURCE == VOLT_2) || (BATTERY_1_SOURCE == VOLT_3) || (BATTERY_1_SOURCE == VOLT_4) || (BATTERY_1_SOURCE == VOLT_5) || (BATTERY_1_SOURCE == VOLT_6) ) && defined(PIN_VOLTAGE)
+              TxHottData.gamMsg.Battery1 = voltageData->mVolt[BATTERY_1_SOURCE - VOLT_1] / 100;    //battery 1 voltage  0.1V steps. 55 = 5.5V only pos. voltages
 #endif
-#if defined(USE_VOLT_X_AS_BATTERY2) && (USE_VOLT_X_AS_BATTERY2 <7) && (USE_VOLT_X_AS_BATTERY2 > 0) && defined(PIN_VOLTAGE)
-              TxHottData.gamMsg.Battery2 = voltageData->mVolt[USE_VOLT_X_AS_BATTERY2 - 1] / 100;    //battery 1 voltage  0.1V steps. 55 = 5.5V only pos. voltages
+#if defined(BATTERY_2_SOURCE) && ( (BATTERY_2_SOURCE == VOLT_1) || (BATTERY_2_SOURCE == VOLT_2) || (BATTERY_2_SOURCE == VOLT_3) || (BATTERY_2_SOURCE == VOLT_4) || (BATTERY_2_SOURCE == VOLT_5) || (BATTERY_2_SOURCE == VOLT_6) ) && defined(PIN_VOLTAGE)
+              TxHottData.gamMsg.Battery2 = voltageData->mVolt[BATTERY_2_SOURCE - VOLT_1] / 100;    //battery 1 voltage  0.1V steps. 55 = 5.5V only pos. voltages
 #endif
+
+#if defined(TEMPERATURE_1_SOURCE) && (TEMPERATURE_1_SOURCE == TEST_1 )
+              TxHottData.gamMsg.temperature1 = test1.value + 20 ; // Hott applies an offset of 20. A value of 20 = 0°C    
+#elif defined(TEMPERATURE_1_SOURCE) && (TEMPERATURE_1_SOURCE == TEST_2 )
+              TxHottData.gamMsg.temperature1 = test2.value + 20 ; // Hott applies an offset of 20. A value of 20 = 0°C    
+#elif defined(TEMPERATURE_1_SOURCE) && (TEMPERATURE_1_SOURCE == TEST_3 )
+              TxHottData.gamMsg.temperature1 = test3.value + 20 ; // Hott applies an offset of 20. A value of 20 = 0°C    
+#elif defined(TEMPERATURE_1_SOURCE) && (TEMPERATURE_1_SOURCE == GLIDER_RATIO ) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
+              TxHottData.gamMsg.temperature1 = gliderRatio.value + 20 ; // Hott applies an offset of 20. A value of 20 = 0°C    
+#elif defined(TEMPERATURE_1_SOURCE) && (TEMPERATURE_1_SOURCE == SENSITIVITY ) && defined(VARIO)
+              TxHottData.gamMsg.temperature1 = oXs_MS5611.varioData.sensitivity.value + 20 ; // Hott applies an offset of 20. A value of 20 = 0°C    
+#else
+              TxHottData.gamMsg.temperature1 = 20 ; // Hott applies an offset of 20. A value of 20 = 0°C    
+#endif
+
+#if defined(TEMPERATURE_2_SOURCE) && (TEMPERATURE_2_SOURCE == TEST_1 )
+              TxHottData.gamMsg.temperature2 = test1.value + 20 ; // Hott applies an offset of 20. A value of 20 = 0°C    
+#elif defined(TEMPERATURE_2_SOURCE) && (TEMPERATURE_2_SOURCE == TEST_2 )
+              TxHottData.gamMsg.temperature2 = test2.value + 20 ; // Hott applies an offset of 20. A value of 20 = 0°C    
+#elif defined(TEMPERATURE_2_SOURCE) && (TEMPERATURE_2_SOURCE == TEST_3 )
+              TxHottData.gamMsg.temperature2 = test3.value + 20 ; // Hott applies an offset of 20. A value of 20 = 0°C    
+#elif defined(TEMPERATURE_2_SOURCE) && (TEMPERATURE_2_SOURCE == GLIDER_RATIO ) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
+              TxHottData.gamMsg.temperature2 = gliderRatio.value + 20 ; // Hott applies an offset of 20. A value of 20 = 0°C    
+#elif defined(TEMPERATURE_2_SOURCE) && (TEMPERATURE_2_SOURCE == SENSITIVITY ) && defined(VARIO)
+              TxHottData.gamMsg.temperature2 = oXs_MS5611.varioData.sensitivity.value + 20 ; // Hott applies an offset of 20. A value of 20 = 0°C    
+#else
+              TxHottData.gamMsg.temperature2 = 20 ; // Hott applies an offset of 20. A value of 20 = 0°C    
+#endif
+
               TxHottData.gamMsg.rpm++ ;
               if ( TxHottData.gamMsg.rpm > 1000) TxHottData.gamMsg.rpm = 1 ; 
 #ifdef MEASURE_RPM 
@@ -153,8 +187,8 @@ void OXS_OUT::sendData() {
 #if defined(PIN_CURRENTSENSOR)
               TxHottData.gamMsg.current =  currentData->milliAmps.value /100;               //current in 0.1A steps 100 == 10,0A
 #endif
-#if defined(USE_VOLT_X_AS_MAIN_BATTERY) && (USE_VOLT_X_AS_MAIN_BATTERY <7) && (USE_VOLT_X_AS_MAIN_BATTERY > 0) && defined(PIN_VOLTAGE)
-              TxHottData.gamMsg.main_voltage = voltageData->mVolt[USE_VOLT_X_AS_MAIN_BATTERY - 1] / 100;          //Main power voltage using 0.1V steps 100 == 10,0V] / 100
+#if defined(MAIN_BATTERY_SOURCE) && ( (MAIN_BATTERY_SOURCE == VOLT_1) || (MAIN_BATTERY_SOURCE == VOLT_2) || (MAIN_BATTERY_SOURCE == VOLT_3) || (MAIN_BATTERY_SOURCE == VOLT_4) || (MAIN_BATTERY_SOURCE == VOLT_5) || (MAIN_BATTERY_SOURCE == VOLT_6) ) && defined(PIN_VOLTAGE)
+              TxHottData.gamMsg.main_voltage = voltageData->mVolt[MAIN_BATTERY_SOURCE - VOLT_1] / 100;          //Main power voltage using 0.1V steps 100 == 10,0V] / 100
 #endif
 #if defined(PIN_CURRENTSENSOR)
               TxHottData.gamMsg.batt_cap =  currentData->consumedMilliAmps / 10 ;   // used battery capacity in 10mAh steps

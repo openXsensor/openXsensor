@@ -10,7 +10,7 @@
 #include "oXs_general.h"
 
 
-#ifdef MULTIPLEX
+#if defined(PROTOCOL) &&  (PROTOCOL == MULTIPLEX) 
 
 
 struct t_mbOneData {
@@ -47,7 +47,7 @@ struct t_mbAllData {
 #define MU_DIR     0x07  // 0,1 degrés  (0 3600)
 #define MU_LIQUID  0x0C  // 1ml      (0-16000)
 #define MU_DIST    0x0D  // 0,1 km   (0-16000)
-// Endof list of all telemetry units supported by Multiplex protocol  
+// End of list of all telemetry units supported by Multiplex protocol  
 
 
 #define MULTIPLEX_UNITS MU_LEVEL , MU_ALT , MU_VSPD , MU_LEVEL , MU_ALT , MU_VOLT , MU_VOLT , MU_VOLT , MU_VOLT , MU_VOLT ,\
@@ -145,25 +145,24 @@ class OXS_OUT {
 
 extern int ppm ; 
 extern bool ppmAvailable ;
-extern int32_t compensatedClimbRate ;
-extern bool compensatedClimbRateAvailable ;
-extern int32_t switchVSpeed ; // used to transmit the selected Vspeed
-extern bool switchVSpeedAvailable ;
-extern int32_t averageVSpeed ; // used to transmit the average Vspeed
-extern bool averageVSpeedAvailable ;
-extern int32_t test1Value ;// used in order to test the transmission of any value
-extern bool test1ValueAvailable ;
-extern int32_t test2Value ;// used in order to test the transmission of any value
-extern bool test2ValueAvailable ;
-extern int32_t test3Value ;// used in order to test the transmission of any value
-extern bool test3ValueAvailable ;
+extern struct ONE_MEASUREMENT mainVspeed ;           // used to transmit the main Vspeed(calculated based on all set up in config)
+extern struct ONE_MEASUREMENT compensatedClimbRate ; // used to transmit the compensated Vspeed
+extern struct ONE_MEASUREMENT switchVSpeed ;         // used to transmit the selected Vspeed
+extern struct ONE_MEASUREMENT averageVSpeed ;        // used to transmit the average Vspeed
+extern struct ONE_MEASUREMENT vSpeedImu ;            // used to transmit the Vspeedcalculated based on IMU
+
+
+extern struct ONE_MEASUREMENT test1 ;
+extern struct ONE_MEASUREMENT test2 ;
+extern struct ONE_MEASUREMENT test3 ;
+extern struct ONE_MEASUREMENT gliderRatio ;
+
 extern uint8_t selectedVario ;
 
 #ifdef MEASURE_RPM
 extern volatile uint16_t RpmValue ;
 extern bool RpmAvailable ;
 #endif // MEASURE_RPM
-
 
 extern volatile uint8_t debug01 ;
 extern volatile uint8_t debug02 ;

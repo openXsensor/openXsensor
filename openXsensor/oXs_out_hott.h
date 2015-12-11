@@ -10,7 +10,41 @@
 #include "oXs_general.h"
 #include "oXs_gps.h"
 
-#ifdef HOTT
+#if defined(PROTOCOL) &&  (PROTOCOL == HOTT) 
+
+// list of oXs measurements that can be selected in the config as telemetry fields.
+//#define ALTIMETER       1        
+//#define VERTICAL_SPEED  2        
+#define SENSITIVITY     3       
+//#define ALT_OVER_10_SEC 4        
+#define VOLT_1           5       
+#define VOLT_2           6       
+#define VOLT_3           7       
+#define VOLT_4           8       
+#define VOLT_5           9       
+#define VOLT_6           10      
+//#define CURRENTMA       11       
+//#define MILLIAH         12       
+//#define CELLS_1_2       13       
+//#define CELLS_3_4       14       
+//#define CELLS_5_6       15       
+//#define RPM             16       
+//#define ALTIMETER_2        17    
+//#define VERTICAL_SPEED_2   18    
+//#define SENSITIVITY_2      19    
+//#define ALT_OVER_10_SEC_2  20    
+//#define AIR_SPEED          21    
+//#define PRANDTL_COMPENSATION 22  
+//#define PPM_VSPEED         23    
+//#define PPM                24    
+//#define PRANDTL_DTE        25    
+#define TEST_1              26   
+#define TEST_2              27   
+#define TEST_3              28   
+//#define VERTICAL_SPEED_A   29    
+//#define VERTICAL_SPEED_I   30    
+//#define GLIDER_RATIO       31
+
 
 
 struct t_mbOneData {
@@ -84,16 +118,16 @@ typedef struct {
                     0x00  00  0  No alarm
                     0x01  01  A  
                     0x02  02  B  Negative Difference 2 B
-                          0x03  03  C  Negative Difference 1 C
+                    0x03  03  C  Negative Difference 1 C
                     0x04  04  D  
                     0x05  05  E  
                     0x06  06  F  Min. Sensor 1 temp. F
                     0x07  07  G  Min. Sensor 2 temp. G
                     0x08  08  H  Max. Sensor 1 temp. H
-                              0x09  09  I  Max. Sensor 2 temp. I
-                        0xA   10  J  Max. Sens. 1 voltage J
+                    0x09  09  I  Max. Sensor 2 temp. I
+                    0xA   10  J  Max. Sens. 1 voltage J
                   0xB   11  K  Max. Sens. 2 voltage K
-                                    0xC   12  L  
+                  0xC   12  L  
                   0xD   13  M  Positive Difference 2 M
                   0xE   14  N  Positive Difference 1 N
                   0xF   15  O  Min. Altitude O

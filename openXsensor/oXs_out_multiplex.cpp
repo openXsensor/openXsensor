@@ -1,6 +1,6 @@
 // File for Multiplex
 #include "oXs_out_multiplex.h"
-#ifdef MULTIPLEX
+#if defined(PROTOCOL) &&  (PROTOCOL == MULTIPLEX) 
 
 #ifdef DEBUG
 // ************************* Several parameters to help debugging
@@ -126,9 +126,9 @@ uint8_t OXS_OUT::formatOneValue( uint8_t currentFieldToSend) {
   switch ( fieldContainsData[currentFieldToSend][1] ) {
 #ifdef VARIO       
       case  ALTIMETER :
-        if ( ! varioData->absoluteAltAvailable ) return 0 ;
-        valueTemp = (varioData->absoluteAlt ) / 100 ;
-        varioData->absoluteAltAvailable = false ;
+        if ( ! varioData->absoluteAlt.available ) return 0 ;
+        valueTemp = (varioData->absoluteAlt.value ) / 100 ;
+        varioData->absoluteAlt.available = false ;
 #ifdef DEBUGFORMATONEVALUE
         Serial.print("At ");
         Serial.print( millis());
@@ -138,24 +138,24 @@ uint8_t OXS_OUT::formatOneValue( uint8_t currentFieldToSend) {
 #endif
         break ;
       case VERTICAL_SPEED : 
-         if ( ! varioData->climbRateAvailable ) return 0; 
-         valueTemp = varioData->climbRate / 10 ;
-         varioData->climbRateAvailable = false ;
+         if ( ! mainVspeed.available ) return 0; 
+         valueTemp = mainVspeed.value / 10 ;
+         mainVspeed.available = false ;
          break ;
       case SENSITIVITY :
-             if ( !varioData->sensitivityAvailable ) return 0;
-             valueTemp = varioData->sensitivity ;
-             varioData->sensitivityAvailable = false ;
+             if ( !varioData->sensitivity.available ) return 0;
+             valueTemp = varioData->sensitivity.value ;
+             varioData->sensitivity.available = false ;
              break ;
-      case ALT_OVER_10_SEC :
-             if ( ! varioData->vSpeed10SecAvailable ) return 0;
-             valueTemp = varioData->vSpeed10Sec  / 100 ; // todo : adjust decimals
-             varioData->vSpeed10SecAvailable = false ;
-             break ;
+//      case ALT_OVER_10_SEC :
+//             if ( ! varioData->vSpeed10SecAvailable ) return 0;
+//             valueTemp = varioData->vSpeed10Sec  / 100 ; // todo : adjust decimals
+//             varioData->vSpeed10SecAvailable = false ;
+//             break ;
       case  REL_ALTIMETER :
-        if ( ! varioData->relativeAltAvailable ) return 0 ;
-        valueTemp = (varioData->relativeAlt ) / 100 ;
-        varioData->relativeAltAvailable = false ;
+        if ( ! varioData->relativeAlt.available ) return 0 ;
+        valueTemp = (varioData->relativeAlt.value ) / 100 ;
+        varioData->relativeAlt.available = false ;
             break ;
       case  ALTIMETER_MAX :
         if ( ! varioData->relativeAltMaxAvailable ) return 0 ;
@@ -165,6 +165,7 @@ uint8_t OXS_OUT::formatOneValue( uint8_t currentFieldToSend) {
       
 #endif  // End vario    
 
+/*
 #ifdef VARIO2       
       case  ALTIMETER_2 :
         if ( ! varioData_2->absoluteAltAvailable  ) return 0;
@@ -192,7 +193,8 @@ uint8_t OXS_OUT::formatOneValue( uint8_t currentFieldToSend) {
         varioData_2->relativeAltAvailable = false ;           
         break ;     
 #endif  // End vario2    
-
+*/
+/*
 #if defined (VARIO )  &&  defined (VARIO2)
       case VERTICAL_SPEED_A : 
         if ( ! averageVSpeedAvailable  ) return 0;
@@ -208,27 +210,27 @@ uint8_t OXS_OUT::formatOneValue( uint8_t currentFieldToSend) {
         switchVSpeedAvailable = false ; 
          break ; 
 #endif
-
+*/
 #ifdef AIRSPEED       
       case  AIR_SPEED :
-        if ( ! airSpeedData->airSpeedAvailable  ) return 0;
-        valueTemp = airSpeedData->airSpeed  * 1.852;   //  convert from 1/10 of knots to  1/10 of Km/h 
-        airSpeedData->airSpeedAvailable = false ;
+        if ( ! airSpeedData->airSpeed.available  ) return 0;
+        valueTemp = airSpeedData->airSpeed.value  * 1.852;   //  convert from 1/10 of knots to  1/10 of Km/h 
+        airSpeedData->airSpeed.available = false ;
         break ;
-      case  PRANDTL_COMPENSATION :
-        if ( ! airSpeedData->compensationAvailable  ) return 0;
-        valueTemp = airSpeedData->compensation / 10  ;
-        airSpeedData->compensationAvailable = false ;
-        break ;
+//      case  PRANDTL_COMPENSATION :
+//        if ( ! airSpeedData->compensationAvailable  ) return 0;
+//        valueTemp = airSpeedData->compensation / 10  ;
+//        airSpeedData->compensationAvailable = false ;
+//        break ;
 #endif  // End airpseed    
 
-#if defined (VARIO) && defined ( AIRSPEED)
-      case PRANDTL_DTE :
-        if ( ! compensatedClimbRateAvailable  ) return 0;
-        valueTemp =  compensatedClimbRate / 10 ; 
-        compensatedClimbRateAvailable = false ;
-        break ;
-#endif  // End defined (VARIO) && defined ( AIRSPEED)
+//#if defined (VARIO) && defined ( AIRSPEED)
+//      case PRANDTL_DTE :
+//        if ( ! compensatedClimbRateAvailable  ) return 0;
+//        valueTemp =  compensatedClimbRate / 10 ; 
+//        compensatedClimbRateAvailable = false ;
+//        break ;
+//#endif  // End defined (VARIO) && defined ( AIRSPEED)
 
 #ifdef PIN_VOLTAGE
       case VOLT1 :  
@@ -265,9 +267,9 @@ uint8_t OXS_OUT::formatOneValue( uint8_t currentFieldToSend) {
 
 #if defined (PIN_CURRENTSENSOR)
       case CURRENTMA :
-         if ( ! currentData->milliAmpsAvailable  ) return 0;
-         valueTemp = currentData->milliAmps /100;
-         currentData->milliAmpsAvailable = false ;
+         if ( ! currentData->milliAmps.available  ) return 0;
+         valueTemp = currentData->milliAmps.value /100;
+         currentData->milliAmps.available = false ;
          break ;
       case MILLIAH :
          if ( ! currentData->consumedMilliAmpsAvailable  ) return 0;
@@ -337,19 +339,19 @@ uint8_t OXS_OUT::formatOneValue( uint8_t currentFieldToSend) {
           break ;   
 #endif
       case  TEST1 :
-          if ( ! test1ValueAvailable  ) return 0;
-          valueTemp = test1Value ;
-          test1ValueAvailable  = false ; 
+          if ( ! test1.available  ) return 0;
+          valueTemp = test1.value ;
+          test1.available  = false ; 
           break ;
       case  TEST2 :
-          if ( ! test2ValueAvailable  ) return 0;
-          valueTemp = test2Value ;
-          test2ValueAvailable  = false ; 
+          if ( ! test2.available  ) return 0;
+          valueTemp = test2.value ;
+          test2.available  = false ; 
           break ;
       case  TEST3 :
-          if ( ! test3ValueAvailable  ) return 0;
-          valueTemp = test3Value ;
-          test3ValueAvailable  = false ; 
+          if ( ! test3.available  ) return 0;
+          valueTemp = test3.value ;
+          test3.available  = false ; 
           break ;
 
 
@@ -388,9 +390,9 @@ void OXS_OUT::setMultiplexNewData(  uint16_t id, int32_t value , uint8_t alarm)
         Serial.print(" ");
         Serial.print( multiplexData.mbData[id].response[2] , HEX );
         Serial.print(" A=");
-        Serial.print( varioData->absoluteAlt );
+        Serial.print( varioData->absoluteAlt.value );
         Serial.print(" V=");
-        Serial.print( varioData->climbRate );
+        Serial.print( mainVspeed.value );
         Serial.print(" Vo=");
         Serial.print( valueOrig );
 

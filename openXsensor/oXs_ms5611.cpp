@@ -147,10 +147,8 @@ bool OXS_MS5611::readSensor() {   // read sensor performs a read from sensor if 
   unsigned long varioEnter = micros() ;
 #endif  
     bool newVSpeedCalculated ; 
-    extended2Micros = micros() >> 1 ;
-    if (extended2Micros < varioData.lastCommand2Micros) extended2Micros = extended2Micros | 0x80000000 ;
-    if ( extended2Micros  > (varioData.lastCommand2Micros + ( WAIT_I2C_TIME / 2 ) ) ) { // wait 9 msec at least before asking for reading the pressure
-        long result ;
+    if ( (micros() - varioData.lastCommandMicros) >  WAIT_I2C_TIME )  { // wait 9 msec at least before asking for reading the pressure
+        long result = 0 ;
         if(  ! I2c.read( _addr, 0, 3 )) { ; //read 3 bytes from the device after sending a command "00";  
           result = I2c.receive() ;
           result <<= 8 ;
@@ -168,7 +166,7 @@ bool OXS_MS5611::readSensor() {   // read sensor performs a read from sensor if 
           varioData.SensorState = 2 ;
           I2c.write( _addr,0x58) ;                   // ask a conversion of Temperature
         }
-        varioData.lastCommand2Micros = (micros() >>1 );    // save time of last command
+        varioData.lastCommandMicros = micros()  ;    // save time of last command
     } else {
       if  ( varioData.SensorState == 2 ) {                   // 2 means that previous call to read sensor got a Pressure
           varioData.SensorState = 0 ;                         // reset state to 0 to allow reading the temperature

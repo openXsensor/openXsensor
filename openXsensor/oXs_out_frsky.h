@@ -9,9 +9,8 @@
 #include "oXs_voltage.h" // we need the arduinodata struct
 //#include <Arduino.h>
 #include "oXs_general.h"
-
-#define FRSKY  ( defined(MULTIPLEX) || defined ( HOTT) )
-#if ( FRSKY == false )
+// this file is used only for FRSKY
+#if defined(PROTOCOL) && ( (PROTOCOL == FRSKY_SPORT) || ( PROTOCOL == FRSKY_HUB ) || (PROTOCOL == FRSKY_SPORT_HUB ) ) //if Frsky protocol is used
 
 //#define DEBUG_SETUP_PIN 5  // allows to send a pulse on an output pin during the enlapsed time that Arduino runs the set up 
 //#define DEBUG_SPORT_PIN 6  // allows to send a pulse on an output pin during the enlapsed time that Arduino checks for SPORT 
@@ -122,7 +121,7 @@
 // Endof list of all telemetry fields supported by Hub protocol (defined by Frsky) 
 
 
-  
+/*  
 // mapping of fields to send
 #define DEFAULTFIELD  0x00  // value to let OXS select automatically the best telemetry field.
 #define   Alt      1       
@@ -139,50 +138,43 @@
 #define   A3       12
 #define   A4       13
 #define   ASpd     14
+*/
 
-//#define FRSKY_SPORT_ID DEFAULTFIELD , ALT_FIRST_ID ,  VARIO_FIRST_ID  , CURR_FIRST_ID , VFAS_FIRST_ID , T1_FIRST_ID , T2_FIRST_ID , RPM_FIRST_ID , \
-//                       FUEL_FIRST_ID , ACCX_FIRST_ID , ACCY_FIRST_ID , ACCZ_FIRST_ID , A3_FIRST_ID , A4_FIRST_ID, AIR_SPEED_FIRST_ID
-
-//#define FRSKY_HUB_ID  DEFAULTFIELD , DEFAULTFIELD , FRSKY_USERDATA_VERT_SPEED , FRSKY_USERDATA_CURRENT , FRSKY_USERDATA_VFAS_NEW , FRSKY_USERDATA_TEMP1 , FRSKY_USERDATA_TEMP2 , FRSKY_USERDATA_RPM , \
-//                      FRSKY_USERDATA_FUEL ,  FRSKY_USERDATA_ACC_X , FRSKY_USERDATA_ACC_Y , FRSKY_USERDATA_ACC_Z , 0xFF , 0xFF , 0xFF
-
-  
-/*
 //  This is the list of codes for each available measurements
-#define ALTIMETER       1        // DEFAULTFIELD can be used in SPORT protocol (is then the same as ALT_FIRST_ID);  it MUST be used in Hub protocol because meters and centimeters are send in different fileds
-#define VERTICAL_SPEED  2        // DEFAULTFIELD can be used
-#define SENSITIVITYx     3        // DEFAULTFIELD can NOT be used
-#define ALT_OVER_10_SEC 4        // DEFAULTFIELD can NOT be used ; this is the difference of altitude over the last 10 sec (kind of averaging vertical speed)
-                                 // there is no telemetry field for this; it is possible to use e.g. T1 or T2; then you can use a custom function "play value" on Tx side
-#define VOLT1           5        // DEFAULTFIELD can NOT be used
-#define VOLT2           6        // DEFAULTFIELD can NOT be used
-#define VOLT3           7        // DEFAULTFIELD can NOT be used
-#define VOLT4           8        // DEFAULTFIELD can NOT be used
-#define VOLT5           9        // DEFAULTFIELD can NOT be used
-#define VOLT6           10        // DEFAULTFIELD can NOT be used
-#define CURRENTMA       11        // DEFAULTFIELD can be used
-#define MILLIAH         12        // if value must be sent as percentage, then uncomment the line "#define SEND_mAhPercentageAsFuel 4000" (see below)
-#define CELLS_1_2       13        // Only DEFAULTFIELD can be used
-#define CELLS_3_4       14        // Only DEFAULTFIELD can be used
-#define CELLS_5_6       15        // Only DEFAULTFIELD can be used
-#define RPM             16        // Only DEFAULTFIELD can be used
-#define ALTIMETER_2        17      // DEFAULTFIELD can be used in SPORT protocol (is then the same as ALT_FIRST_ID);  it MUST be used in Hub protocol because meters and centimeters are send in different fileds
-#define VERTICAL_SPEED_2   18      // DEFAULTFIELD can be used
-#define SENSITIVITY_2      19      // DEFAULTFIELD can NOT be used
-#define ALT_OVER_10_SEC_2  20      // DEFAULTFIELD can NOT be used ; this is the difference of altitude over the last 10 sec (kind of averaging vertical speed)
-#define AIR_SPEED          21      // DEFAULTFIELD can be used in SPORT only
-#define PRANDTL_COMPENSATION 22      // DEFAULTFIELD can NOT be used;use e.g. Temperature 1 or 2
-#define PPM_VSPEED         23       // DEFAULTFIELD can be used; Vpseed from first or second MS5611 or compensatedVspeed will be sent; to be used only when VARIO_SECONDARY is defined and PIN_PPM is defined
-#define PPM                24       // DEFAULTFIELD can NOT be used ;
-#define PRANDTL_DTE        25       // DEFAULTFIELD can be used
-#define TEST1              26       // reserved : only for debugging
-#define TEST2              27       // reserved : only for debugging
-#define TEST3              28       // reserved : only for debugging
-#define VERTICAL_SPEED_A   29       // DEFAULTFIELD can be used
-#define VERTICAL_SPEED_I   30       // DEFAULTFIELD can be used ; this is the vertical speed based on baro and imu 
+#define ALTIMETER       1        
+#define VERTICAL_SPEED  2        
+#define SENSITIVITY     3       
+#define ALT_OVER_10_SEC 4        
+#define VOLT_1           5       
+#define VOLT_2           6       
+#define VOLT_3           7       
+#define VOLT_4           8       
+#define VOLT_5           9       
+#define VOLT_6           10      
+#define CURRENTMA       11       
+#define MILLIAH         12       
+#define CELLS_1_2       13       
+#define CELLS_3_4       14       
+#define CELLS_5_6       15       
+#define RPM             16       
+#define ALTIMETER_2        17    
+#define VERTICAL_SPEED_2   18    
+#define SENSITIVITY_2      19    
+#define ALT_OVER_10_SEC_2  20    
+#define AIR_SPEED          21    
+#define PRANDTL_COMPENSATION 22  
+#define PPM_VSPEED         23    
+#define PPM                24    
+#define PRANDTL_DTE        25    
+#define TEST_1              26   
+#define TEST_2              27   
+#define TEST_3              28   
+#define VERTICAL_SPEED_A   29    
+#define VERTICAL_SPEED_I   30    
+#define GLIDER_RATIO       31
 // to do : add alt min, alt max ,  rpm max? , current max (not sure that it is neaded because it can be calculated on TX side
 // End of list of type of available measurements
-*/
+
   
  
 #define UNKNOWN false
@@ -221,15 +213,16 @@ class OXS_OUT {
     HardwareSerial* printer;
 #endif
  
-  
+#if defined( PROTOCOL ) &&  ( ( PROTOCOL == FRSKY_SPORT ) || ( PROTOCOL == FRSKY_SPORT_HUB ) )    
 // used by SPORT protocol
     void sendSportData() ;
     uint8_t readStatusValue( uint8_t currentValueType) ;
     void loadSportValueToSend(  uint8_t ValueTypeToLoad) ;
     uint8_t nextFieldToSend(  uint8_t indexField) ;
     void FrSkySportSensorGpsSend() ;
+#endif
 
-
+#if defined( PROTOCOL ) &&  ( ( PROTOCOL == FRSKY_HUB ) || ( PROTOCOL == FRSKY_SPORT_HUB ) )  
 // used by Hub protocol
     void sendHubData() ;
     void loadHubValueToSend(  uint8_t ValueTypeToLoad) ;
@@ -247,7 +240,7 @@ class OXS_OUT {
     void SendGPSSpeed(long speedknots) ;
     void sendHubByte( uint8_t byte ) ;
     void SendVoltX( uint8_t VoltToSend ,  uint8_t indexFieldToSend ) ;
-
+#endif
 };
 
 extern int ppm ; 

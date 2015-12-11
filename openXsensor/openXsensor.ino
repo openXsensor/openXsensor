@@ -18,7 +18,11 @@
   #include "EEPROMAnything.h"
 #endif
 
-//#include "Aserial.h"
+#if  ! defined(PROTOCOL)
+    #error The parameter PROTOCOL in config.h is not defined
+#elif ! ( (PROTOCOL == FRSKY_SPORT) or (PROTOCOL == FRSKY_HUB) or (PROTOCOL == FRSKY_SPORT_HUB) or (PROTOCOL == HOTT) or (PROTOCOL == MULTIPLEX) )    
+    #error The parameter PROTOCOL in config.h is NOT valid
+#endif
 
 #ifdef PIN_PPM
  #if PIN_PPM == 2
@@ -51,7 +55,7 @@
 
 extern unsigned long micros( void ) ;
 extern unsigned long millis( void ) ;
-static unsigned long extended2Micros ;
+static unsigned long extendedMicros ;
 
 #ifdef DEBUG_BLINK  // this does not require that DEBUG is active.; Use only one of the blink 
    //DEBUG_BLINK_MAINLOOP
@@ -829,22 +833,12 @@ void calculateAllFields () {
 bool checkFreeTime() { // return true if there is no vario or if the vario sensor must not be read within a short time.
                        // return false if a vario must be read within a short time   
 #if defined (VARIO) || defined (VARIO2)
-        extended2Micros = micros() >> 1 ;
-#ifdef VARIO
-        if (extended2Micros < oXs_MS5611.varioData.lastCommand2Micros) extended2Micros = extended2Micros | 0x80000000 ;
-        if ( extended2Micros < (oXs_MS5611.varioData.lastCommand2Micros + 3500)  ) { // Do not change PWM if there is less than 2000 usec before MS5611 ADC is available =  (9000 - 2000)/2
-            return true ;
-        } else {
-            return false  ;
-        }    
-#else // only VARIO2
-        if (extended2Micros < oXs_MS5611_2.varioData.lastCommand2Micros) extended2Micros = extended2Micros | 0x80000000 ;
-        if ( extended2Micros < (oXs_MS5611_2.varioData.lastCommand2Micros + 3500)  ) { // Do not change PWM if there is less than 2000 usec before MS5611 ADC is available =  (9000 - 2000)/2
-            return true ; 
-        } else {
-            return false ;
-        }    
-#endif // enf of at least one vario
+        extendedMicros = micros() ;
+  #ifdef VARIO
+        return ( micros() - oXs_MS5611.varioData.lastCommandMicros < 7000 ) ;   // Do not change PWM if there is less than 2000 usec before MS5611 ADC is available =  (9000 - 2000)
+  #else // only VARIO2
+        return ( micros() - oXs_MS5611_2.varioData.lastCommandMicros < 7000 ) ;   // Do not change PWM if there is less than 2000 usec before MS5611 ADC is available =  (9000 - 2000)
+  #endif // enf of at least one vario
 #else // No vario at all
   return true ;
 #endif  
