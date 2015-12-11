@@ -36,7 +36,7 @@
 //#define AIR_SPEED          21    
 //#define PRANDTL_COMPENSATION 22  
 //#define PPM_VSPEED         23    
-//#define PPM                24    
+#define PPM                24    
 //#define PRANDTL_DTE        25    
 #define TEST_1              26   
 #define TEST_2              27   

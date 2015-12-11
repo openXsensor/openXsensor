@@ -153,6 +153,8 @@ void OXS_OUT::sendData() {
               TxHottData.gamMsg.temperature1 = gliderRatio.value + 20 ; // Hott applies an offset of 20. A value of 20 = 0°C    
 #elif defined(TEMPERATURE_1_SOURCE) && (TEMPERATURE_1_SOURCE == SENSITIVITY ) && defined(VARIO)
               TxHottData.gamMsg.temperature1 = oXs_MS5611.varioData.sensitivity.value + 20 ; // Hott applies an offset of 20. A value of 20 = 0°C    
+#elif defined(TEMPERATURE_1_SOURCE) && (TEMPERATURE_1_SOURCE == PPM ) && defined(PIN_PPM)
+              TxHottData.gamMsg.temperature1 = ppm.value + 120 ; // Hott applies an offset of 20. A value of 20 = 0°C    
 #else
               TxHottData.gamMsg.temperature1 = 20 ; // Hott applies an offset of 20. A value of 20 = 0°C    
 #endif
@@ -167,6 +169,8 @@ void OXS_OUT::sendData() {
               TxHottData.gamMsg.temperature2 = gliderRatio.value + 20 ; // Hott applies an offset of 20. A value of 20 = 0°C    
 #elif defined(TEMPERATURE_2_SOURCE) && (TEMPERATURE_2_SOURCE == SENSITIVITY ) && defined(VARIO)
               TxHottData.gamMsg.temperature2 = oXs_MS5611.varioData.sensitivity.value + 20 ; // Hott applies an offset of 20. A value of 20 = 0°C    
+#elif defined(TEMPERATURE_2_SOURCE) && (TEMPERATURE_2_SOURCE == PPM ) && defined(PIN_PPM)
+              TxHottData.gamMsg.temperature2 = ppm.value + 120 ; // Hott applies an offset of 20. A value of 20 = 0°C    
 #else
               TxHottData.gamMsg.temperature2 = 20 ; // Hott applies an offset of 20. A value of 20 = 0°C    
 #endif

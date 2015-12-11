@@ -584,14 +584,15 @@ started by Rainer Schloßhan
 *         - Current (when Current sensor is present)
 *         - GPS (long, lat, speed, altitude , course, distance from home, direction from home, number of sat, type of fix) (when GPS sensor is present)
 *         - RPM (when RPM sensor is present)
-*      On top of this, you can also specify how to fill telemetry fields temperature1 and temperature2 (note : those 2 fields can only report a value from -20 up to 235)      
+*      On top of this, you can also specify how to fill telemetry fields temperature1 and temperature2 
+*      note : those 2 fields can only report a value from -20 up to 235; for PPM, a value of -100 will be displayed as 0 and +100 will be displayed as 200)      
 *      Put those line(s) as comment when no measurement has to be transmitted in those telemetry field(s)      
 *     ex:  
 *       #define BATTERY_1_SOURCE          VOLT_4                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
 *       #define BATTERY_2_SOURCE          VOLT_2                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
 *       #define MAIN_BATTERY_SOURCE       VOLT_5                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
-*       #define TEMPERATURE_1_SOURCE      TEST_1          //  select between TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SENSITIVITY
-*       #define TEMPERATURE_2_SOURCE      SENSITIVITY          //  select between TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SENSITIVITY
+*       #define TEMPERATURE_1_SOURCE      TEST_1          //  select between TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SENSITIVITY , PPM
+*       #define TEMPERATURE_2_SOURCE      SENSITIVITY          //  select between TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SENSITIVITY , PPM
 **** 9.3 Multiplex  ************************************************************************************ 
 *      For Multiplex protocol, you have to define which OXS measurements are sent to Tx and on which lines they appear on the Tx telemetry panels.
 *      You have also to specify if some scaling have to be applied by OXS and you can specify a range of value in order to set alarms on/off.
