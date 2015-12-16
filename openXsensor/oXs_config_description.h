@@ -802,7 +802,7 @@ started by Rainer Schloßhan
 *       - MP6050 Vcc     <--->  Arduino Vcc
 *       - MP6050 SDA     <--->  Arduino SDA = Arduino A4
 *       - MP6050 SCL     <--->  Arduino SCL = Arduino A5
-*       - MP6050 INT     <--->  Arduino INT0 = Arduino 2 (do not use this pin for another purpose like PPM then)
+*       - MP6050 INT     <--->  Arduino INT0 = Arduino 2 OR Arduino INT1 = Arduino 3(do not use the same pin for another purpose like PPM!)
 * In order to activate the IMU, uncomment the line #define USE_6050       
 * When IMU is activated, this version of oXs calculates a vertical speed in a different way merging the altitude from baro sensor with vertical acceleration (in Earth reference).
 * This other type of vertical speed is available in the field "VERTICAL_SPEED_I". In Frsky protocol, it is possible to transmit it e.g. as Vspd.  
@@ -822,6 +822,7 @@ started by Rainer Schloßhan
 *    - upload again oXs firmware in arduino
 ************************************************************************************************************************ 
  //#define USE_6050
+#define PIN_INT_6050 3    // Interrupt from 6050 has to be connected to Arduino pin 2 or pin 3 (do not use here the same pin as PPM) 
 #define ACC_OFFSET_X -160 // fill here the value reported when DISPLAY_ACC_OFFSET is activated
 #define ACC_OFFSET_Y -150 // fill here the value reported when DISPLAY_ACC_OFFSET is activated
 #define ACC_OFFSET_Z -1100 // fill here the value reported when DISPLAY_ACC_OFFSET is activated

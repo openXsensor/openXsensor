@@ -24,6 +24,13 @@
     #error The parameter PROTOCOL in config.h is NOT valid
 #endif
 
+#if  defined(VARIO) and (! defined(VSPEED_SOURCE))
+    #error The parameter VSPEED_SOURCE in config.h is not defined while VARIO is defined
+#elif  defined(VARIO) and  defined(VSPEED_SOURCE) and ( ! ( (VSPEED_SOURCE == FIRST_BARO) or (VSPEED_SOURCE == SECOND_BARO) or (VSPEED_SOURCE == AVERAGE_FIRST_SECOND) \
+                                                            or (VSPEED_SOURCE == AIRSPEED_COMPENSATED) or (VSPEED_SOURCE == BARO_AND_IMU) or (VSPEED_SOURCE == PPM_SELECTION) ) )
+    #error The parameter VSPEED_SOURCE in config.h is NOT valid
+#endif    
+
 #ifdef PIN_PPM
  #if PIN_PPM == 2
 	#define PPM_INTERRUPT			ON // define to use interrupt code in Aserial.cpp

@@ -11,6 +11,8 @@ This work also incorporates modifications on the official Invensense Motion
 Driver v. 5.1 library in order to reduce the size of flash memory.
 =============================================================================
 */
+
+
 #define EMPL_TARGET_ATMEGA328
 //#include <Wire.h>
 //#include "I2Cdev.h"
@@ -22,8 +24,14 @@ extern "C" {
 
 #include "oXs_imu.h"
 
+#ifdef USE_6050
+
 #ifdef DEBUG
 //      #define DEBUG_MPU
+#endif
+
+#if ! ( defined (PIN_INT_6050) && ( ( PIN_INT_6050 == 2 ) || ( PIN_INT_6050 == 3 ) ) )
+#error Error in oXs_config.h : PIN_INT_6050 must be 2 or 3 when a IMU 6050 is used
 #endif
 
 
@@ -54,11 +62,16 @@ struct hal_s {
 volatile unsigned char new_mpu_data ;
 
 // ******************* ISR for INT0 ******************************************************
-// this ISR handles interrupt 0 on rising edge ; when it occurs, it means that DMP has filled the fifo.
+// this ISR handles interrupt 0 on rising edge ; when it occurs, it means that DMP has filled the fifo
+#if PIN_INT_6050 == 2                //  Pin2 uses INT0
 ISR(INT0_vect, ISR_NOBLOCK) { // allows other interrupts to be served when this one is activated 
  new_mpu_data = 1;
 }
-
+#else                            // //  Pin3 uses INT1
+ISR(INT1_vect, ISR_NOBLOCK) { // allows other interrupts to be served when this one is activated 
+ new_mpu_data = 1;
+}
+#endif
 
 // ****************************  set up the imu 6050 (including the dmp)
 void setupImu() {
@@ -727,16 +740,21 @@ boolean initialize_mpu() {
 #endif      
       return false;
     }
-
-                                                 // initialize the interrupt INT0 (= on arduino pin 2)
-  #define IMU_INT_EDGE      0x03 // rising edge
-  #define IMU_PIN_HEX     0x02
-  #define IMU_INT_BIT     0x01
+                                                 // initialize the interrupt INT0 (= on arduino pin 2) or INT1 (on pin 3)
+#if PIN_INT_6050 == 2                            // INT0 is used
+  #define IMU_INT_EDGE      0x03 // rising edge on pin2 (INT0)
+  #define IMU_PIN_HEX       0x02
+  #define IMU_INT_BIT       0x01
+#else                                            // INT1 is used
+  #define IMU_INT_EDGE      0x0C  // rising edge on pin 3 (INT1)
+  #define IMU_PIN_HEX       0x04
+  #define IMU_INT_BIT       0x02
+#endif
   PORTD |= IMU_PIN_HEX ;  // Pullup resistor
   DDRD &= ~IMU_PIN_HEX ;  // set pin as Input
-  EICRA |= IMU_INT_EDGE ;   // Interrupt on rising edge
-  EIFR =   IMU_INT_BIT ;      // Clear interrupt flag on INT0 writing a 1
-  EIMSK |= IMU_INT_BIT ;    // Enable interrupt INT0
+  EICRA |= IMU_INT_EDGE ;    // Interrupt on rising edge
+  EIFR =   IMU_INT_BIT ;     // Clear interrupt flag on INT0 or INT1 writing a 1
+  EIMSK |= IMU_INT_BIT ;    // Enable interrupt INT0 or INT1
 
     /* Get/set hardware configuration. Start gyro. */
     /* Wake up all sensors. */
@@ -938,3 +956,4 @@ int freeMemory()  {                                                    // is cur
    return free_memory;
 }
 */
+#endif // end USE_6050
