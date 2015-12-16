@@ -211,7 +211,7 @@ void OXS_VOLTAGE::voltageNrIncrease() {
           voltageData.mVoltCellMin_Available = true ;
         }
         voltageData.mVoltCellTot_Available = true ;
-#ifndef  MULTIPLEX // not multiplex
+#if ( PROTOCOL  ==  FRSKY_SPORT ) || ( PROTOCOL  ==  FRSKY_HUB ) || ( PROTOCOL  ==  FRSKY_SPORT_HUB )  // For FRSKY protocols 
         if (voltageData.maxNumberOfCells > 0) {
             if (voltageData.maxNumberOfCells == 1) {
               secondMVolt = 0 ; 
@@ -242,7 +242,7 @@ void OXS_VOLTAGE::voltageNrIncrease() {
             voltageData.mVoltCell_5_6.value = calculateCell(voltageData.mVolt[3] , voltageData.mVolt[4] , secondMVolt , 4 , voltageData.maxNumberOfCells) ;
             voltageData.mVoltCell_5_6.available = true ;
         }
-#endif // Enf of multiplex/non multiplex
+#endif // Enf of Frsky protocols
 #endif // ( NUMBEROFCELLS ) && (NUMBEROFCELLS > 0)
         cnt=0;
         lastVoltMillis = millis() ;
