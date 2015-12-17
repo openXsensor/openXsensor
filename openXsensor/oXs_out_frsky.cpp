@@ -375,8 +375,8 @@ void OXS_OUT::sendSportData()
                                                                           // first we calculate fields that are used only by SPORT
 #if defined(PIN_VOLTAGE) && defined(VFAS_SOURCE) 
   #if (VFAS_SOURCE == VOLT_1) || (VFAS_SOURCE == VOLT_2) || (VFAS_SOURCE == VOLT_3) || (VFAS_SOURCE == VOLT_4) || (VFAS_SOURCE == VOLT_5) || (VFAS_SOURCE == VOLT_6)
-   if ( (!vfas.available) && ( oXs_Voltage.voltageData.mVoltAvailable[VFAS_SOURCE - VOLT_1]) ){
-      vfas.value = oXs_Voltage.voltageData.mVolt[VFAS_SOURCE - VOLT_1] / 10 ;  // voltage in mv is divided by 10 because SPORT expect it (volt * 100) 
+   if ( (!vfas.available) && ( oXs_Voltage.voltageData.mVolt[VFAS_SOURCE - VOLT_1].available) ){
+      vfas.value = oXs_Voltage.voltageData.mVolt[VFAS_SOURCE - VOLT_1].value / 10 ;  // voltage in mv is divided by 10 because SPORT expect it (volt * 100) 
       vfas.available = true ; 
    }
   #else
@@ -529,7 +529,7 @@ void OXS_OUT::SendFrame1(){
 
 // vfas
 #if defined(PIN_VOLTAGE) && defined(VFAS_SOURCE) &&  ( (VFAS_SOURCE == VOLT_1) || (VFAS_SOURCE == VOLT_2) || (VFAS_SOURCE == VOLT_3) || (VFAS_SOURCE == VOLT_4) || (VFAS_SOURCE == VOLT_5) || (VFAS_SOURCE == VOLT_6) )
-    SendValue( FRSKY_USERDATA_VFAS_NEW ,  (int16_t) voltageData.mVolt[VFAS_SOURCE - VOLT_1 ] ) ;
+    SendValue( FRSKY_USERDATA_VFAS_NEW ,  (int16_t) voltageData->mVolt[VFAS_SOURCE - VOLT_1 ].value ) ;
 #endif
    
 // current

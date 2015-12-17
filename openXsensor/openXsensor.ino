@@ -62,7 +62,7 @@
 
 extern unsigned long micros( void ) ;
 extern unsigned long millis( void ) ;
-static unsigned long extendedMicros ;
+//static unsigned long extendedMicros ;
 
 #ifdef DEBUG_BLINK  // this does not require that DEBUG is active.; Use only one of the blink 
    //DEBUG_BLINK_MAINLOOP
@@ -841,7 +841,7 @@ void calculateAllFields () {
 bool checkFreeTime() { // return true if there is no vario or if the vario sensor must not be read within a short time.
                        // return false if a vario must be read within a short time   
 #if defined (VARIO) || defined (VARIO2)
-        extendedMicros = micros() ;
+//        extendedMicros = micros() ;
   #ifdef VARIO
         return ( micros() - oXs_MS5611.varioData.lastCommandMicros < 7000 ) ;   // Do not change PWM if there is less than 2000 usec before MS5611 ADC is available =  (9000 - 2000)
   #else // only VARIO2

@@ -137,10 +137,10 @@ void OXS_OUT::sendData() {
               TxHottData.gamMsg.cell[5] =  voltageData->mVoltCell[5] /20 ; // Volt Cell 6 (in 2 mV increments, 210 == 4.20 V)
 #endif
 #if defined(BATTERY_1_SOURCE) && ( (BATTERY_1_SOURCE == VOLT_1) || (BATTERY_1_SOURCE == VOLT_2) || (BATTERY_1_SOURCE == VOLT_3) || (BATTERY_1_SOURCE == VOLT_4) || (BATTERY_1_SOURCE == VOLT_5) || (BATTERY_1_SOURCE == VOLT_6) ) && defined(PIN_VOLTAGE)
-              TxHottData.gamMsg.Battery1 = voltageData->mVolt[BATTERY_1_SOURCE - VOLT_1] / 100;    //battery 1 voltage  0.1V steps. 55 = 5.5V only pos. voltages
+              TxHottData.gamMsg.Battery1 = voltageData->mVolt[BATTERY_1_SOURCE - VOLT_1].value / 100;    //battery 1 voltage  0.1V steps. 55 = 5.5V only pos. voltages
 #endif
 #if defined(BATTERY_2_SOURCE) && ( (BATTERY_2_SOURCE == VOLT_1) || (BATTERY_2_SOURCE == VOLT_2) || (BATTERY_2_SOURCE == VOLT_3) || (BATTERY_2_SOURCE == VOLT_4) || (BATTERY_2_SOURCE == VOLT_5) || (BATTERY_2_SOURCE == VOLT_6) ) && defined(PIN_VOLTAGE)
-              TxHottData.gamMsg.Battery2 = voltageData->mVolt[BATTERY_2_SOURCE - VOLT_1] / 100;    //battery 1 voltage  0.1V steps. 55 = 5.5V only pos. voltages
+              TxHottData.gamMsg.Battery2 = voltageData->mVolt[BATTERY_2_SOURCE - VOLT_1].value / 100;    //battery 1 voltage  0.1V steps. 55 = 5.5V only pos. voltages
 #endif
 
 #if defined(TEMPERATURE_1_SOURCE) && (TEMPERATURE_1_SOURCE == TEST_1 )
@@ -192,7 +192,7 @@ void OXS_OUT::sendData() {
               TxHottData.gamMsg.current =  currentData->milliAmps.value /100;               //current in 0.1A steps 100 == 10,0A
 #endif
 #if defined(MAIN_BATTERY_SOURCE) && ( (MAIN_BATTERY_SOURCE == VOLT_1) || (MAIN_BATTERY_SOURCE == VOLT_2) || (MAIN_BATTERY_SOURCE == VOLT_3) || (MAIN_BATTERY_SOURCE == VOLT_4) || (MAIN_BATTERY_SOURCE == VOLT_5) || (MAIN_BATTERY_SOURCE == VOLT_6) ) && defined(PIN_VOLTAGE)
-              TxHottData.gamMsg.main_voltage = voltageData->mVolt[MAIN_BATTERY_SOURCE - VOLT_1] / 100;          //Main power voltage using 0.1V steps 100 == 10,0V] / 100
+              TxHottData.gamMsg.main_voltage = voltageData->mVolt[MAIN_BATTERY_SOURCE - VOLT_1].value / 100;          //Main power voltage using 0.1V steps 100 == 10,0V] / 100
 #endif
 #if defined(PIN_CURRENTSENSOR)
               TxHottData.gamMsg.batt_cap =  currentData->consumedMilliAmps / 10 ;   // used battery capacity in 10mAh steps

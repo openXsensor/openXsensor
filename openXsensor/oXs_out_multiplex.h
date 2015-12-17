@@ -63,12 +63,12 @@ struct t_mbAllData {
 #define SENSITIVITY     3        // DEFAULTFIELD can NOT be used
 #define ALT_OVER_10_SEC 4        // DEFAULTFIELD can NOT be used ; this is the difference of altitude over the last 10 sec (kind of averaging vertical speed)
                                  // there is no telemetry field for this; it is possible to use e.g. T1 or T2; then you can use a custom function "play value" on Tx side
-#define VOLT1           5        // DEFAULTFIELD can NOT be used
-#define VOLT2           6        // DEFAULTFIELD can NOT be used
-#define VOLT3           7        // DEFAULTFIELD can NOT be used
-#define VOLT4           8        // DEFAULTFIELD can NOT be used
-#define VOLT5           9        // DEFAULTFIELD can NOT be used
-#define VOLT6           10        // DEFAULTFIELD can NOT be used
+#define VOLT_1           5        // DEFAULTFIELD can NOT be used
+#define VOLT_2           6        // DEFAULTFIELD can NOT be used
+#define VOLT_3           7        // DEFAULTFIELD can NOT be used
+#define VOLT_4           8        // DEFAULTFIELD can NOT be used
+#define VOLT_5           9        // DEFAULTFIELD can NOT be used
+#define VOLT_6           10        // DEFAULTFIELD can NOT be used
 #define CURRENTMA       11        // DEFAULTFIELD can be used
 #define MILLIAH         12        // if value must be sent as percentage, then uncomment the line "#define SEND_mAhPercentageAsFuel 4000" (see below)
 #define CELLS_1_2       13        // Only DEFAULTFIELD can be used
@@ -84,9 +84,9 @@ struct t_mbAllData {
 #define PPM_VSPEED         23       // DEFAULTFIELD can be used; Vpseed from first or second MS5611 or compensatedVspeed will be sent; to be used only when VARIO_SECONDARY is defined and PIN_PPM is defined
 #define PPM                24       // DEFAULTFIELD can NOT be used ;
 #define PRANDTL_DTE        25       // DEFAULTFIELD can be used
-#define TEST1              26       // reserved : only for debugging
-#define TEST2             27       // reserved : only for debugging
-#define TEST3             28       // reserved : only for debugging
+#define TEST_1              26       // reserved : only for debugging
+#define TEST_2             27       // reserved : only for debugging
+#define TEST_3             28       // reserved : only for debugging
 #define VERTICAL_SPEED_A  29
 #define REL_ALTIMETER     30
 #define REL_ALTIMETER_2   31

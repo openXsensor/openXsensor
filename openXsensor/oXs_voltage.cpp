@@ -99,7 +99,7 @@ void OXS_VOLTAGE::setupVoltage( void ) {
       voltageData.mVoltPerStep[cntInit] = tempRef / 1023.0  * tempScaleVoltage[cntInit];  
     }
     voltageData.sumVoltage[cntInit] = 0 ;
-    voltageData.mVoltAvailable[cntInit] = false ; 
+    voltageData.mVolt[cntInit].available = false ; 
 #ifdef DEBUG  
     printer->print("Voltage:"); printer->print( cntInit + 1 );
     printer->print(" , pin="); printer->print( voltageData.mVoltPin[cntInit] );
@@ -158,10 +158,10 @@ void OXS_VOLTAGE::voltageNrIncrease() {
       if(millis() > ( lastVoltMillis + 500) ){   // calculate average only once every 500 msec 
         for (int cntVolt = 0 ; cntVolt < 6 ; cntVolt++) {      
           if ( voltageData.mVoltPin[cntVolt] < 8) {
-            voltageData.mVolt[cntVolt] = round( ((float) voltageData.sumVoltage[cntVolt]  * voltageData.mVoltPerStep[cntVolt] ) / (float) cnt  ) + voltageData.offset[cntVolt];
-//            voltageData.mVolt[cntVolt] = (voltageData.sumVoltage[cntVolt] / cnt  * voltageData.mVoltPerStep[cntVolt] ) + voltageData.offset[cntVolt];
-//            voltageData.mVolt[cntVolt] = (1 + cntVolt) * 3000 + cntVolt * (millis() & 0xFF)  ; // this is just to test the cell calculation ; !!!!!!!!!!!to be removed
-            voltageData.mVoltAvailable[cntVolt] = true ;
+            voltageData.mVolt[cntVolt].value = round( ((float) voltageData.sumVoltage[cntVolt]  * voltageData.mVoltPerStep[cntVolt] ) / (float) cnt  ) + voltageData.offset[cntVolt];
+//            voltageData.mVolt[cntVolt].value = (voltageData.sumVoltage[cntVolt] / cnt  * voltageData.mVoltPerStep[cntVolt] ) + voltageData.offset[cntVolt];
+//            voltageData.mVolt[cntVolt].value = (1 + cntVolt) * 3000 + cntVolt * (millis() & 0xFF)  ; // this is just to test the cell calculation ; !!!!!!!!!!!to be removed
+            voltageData.mVolt[cntVolt].available = true ;
             voltageData.sumVoltage[cntVolt] = 0 ;
 #ifdef DEBUGNEWVALUE
             printer->print("At ");
@@ -171,7 +171,7 @@ void OXS_VOLTAGE::voltageNrIncrease() {
             printer->print(" mVolt ");
             printer->print(cntVolt);
             printer->print(" = ");
-            printer->println( voltageData.mVolt[cntVolt] );
+            printer->println( voltageData.mVolt[cntVolt].value );
 #endif
           } // if
         } // End For 
@@ -182,9 +182,9 @@ void OXS_VOLTAGE::voltageNrIncrease() {
           int32_t mVoltOneCell ;
           uint8_t prevIndex = 0 ;
           if (cellIndex == 0) {
-            mVoltOneCell = voltageData.mVolt[cellIndex];
+            mVoltOneCell = voltageData.mVolt[cellIndex].value;
           } else { 
-            mVoltOneCell = voltageData.mVolt[cellIndex] - voltageData.mVolt[prevIndex] ;
+            mVoltOneCell = voltageData.mVolt[cellIndex].value - voltageData.mVolt[prevIndex].value ;
           }
           prevIndex = cellIndex ;        
           if (mVoltOneCell  < 500) {
@@ -204,7 +204,7 @@ void OXS_VOLTAGE::voltageNrIncrease() {
             if ( (voltageData.mVoltCellMin == 0) || ( voltageData.mVoltCellMin > voltageData.mVoltCell[cellIndex] ) ){
               voltageData.mVoltCellMin = voltageData.mVoltCell[cellIndex] ;
             }
-              voltageData.mVoltCellTot = voltageData.mVolt[cellIndex] ;            
+              voltageData.mVoltCellTot = voltageData.mVolt[cellIndex].value ;            
           }  
         }
         if ( voltageData.mVoltCellMin > 0 ) {
@@ -217,9 +217,9 @@ void OXS_VOLTAGE::voltageNrIncrease() {
               secondMVolt = 0 ; 
             }
             else { 
-              secondMVolt = voltageData.mVolt[1]; 
+              secondMVolt = voltageData.mVolt[1].value; 
             }
-            voltageData.mVoltCell_1_2.value = calculateCell(0, voltageData.mVolt[0] , secondMVolt , 0, voltageData.maxNumberOfCells ) ;
+            voltageData.mVoltCell_1_2.value = calculateCell(0, voltageData.mVolt[0].value , secondMVolt , 0, voltageData.maxNumberOfCells ) ;
             voltageData.mVoltCell_1_2.available = true ;   
         }    
         if (voltageData.maxNumberOfCells > 2) {
@@ -227,9 +227,9 @@ void OXS_VOLTAGE::voltageNrIncrease() {
               secondMVolt = 0 ; 
             }
             else { 
-              secondMVolt = voltageData.mVolt[3] ;
+              secondMVolt = voltageData.mVolt[3].value ;
             }  
-            voltageData.mVoltCell_3_4.value = calculateCell(voltageData.mVolt[1] , voltageData.mVolt[2] , secondMVolt , 2 , voltageData.maxNumberOfCells) ;
+            voltageData.mVoltCell_3_4.value = calculateCell(voltageData.mVolt[1].value , voltageData.mVolt[2].value , secondMVolt , 2 , voltageData.maxNumberOfCells) ;
             voltageData.mVoltCell_3_4.available = true ;
         }
         if (voltageData.maxNumberOfCells > 4) {
@@ -237,9 +237,9 @@ void OXS_VOLTAGE::voltageNrIncrease() {
               secondMVolt = 0 ; 
             }
             else { 
-              secondMVolt = voltageData.mVolt[5] ;
+              secondMVolt = voltageData.mVolt[5].value ;
             }  
-            voltageData.mVoltCell_5_6.value = calculateCell(voltageData.mVolt[3] , voltageData.mVolt[4] , secondMVolt , 4 , voltageData.maxNumberOfCells) ;
+            voltageData.mVoltCell_5_6.value = calculateCell(voltageData.mVolt[3].value , voltageData.mVolt[4].value , secondMVolt , 4 , voltageData.maxNumberOfCells) ;
             voltageData.mVoltCell_5_6.available = true ;
         }
 #endif // Enf of Frsky protocols
@@ -254,7 +254,7 @@ void OXS_VOLTAGE::voltageNrIncrease() {
         }
 #endif //SEQUENCE_MIN_CELL
 #if defined( SEQUENCE_MIN_VOLT_6) && defined (PIN_VOLTAGE_6 )
-        if ( voltageData.mVolt[5] < SEQUENCE_MIN_VOLT_6) {        
+        if ( voltageData.mVolt[5].value < SEQUENCE_MIN_VOLT_6) {        
           lowVoltage = true ;
         }
 #endif //( SEQUENCE_MIN_VOLT_6) && defined (PIN_VOLTAGE_6 )

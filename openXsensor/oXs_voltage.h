@@ -7,9 +7,10 @@
 struct VOLTAGEDATA {
   bool available;    // to remove afterward
   uint16_t vrefMilliVolts;          // in mV the internal measured voltage Reference ; to remove afterward
-  
-  int32_t mVolt[6] ;             // in mV 
-  bool mVoltAvailable[6] ;
+
+struct ONE_MEASUREMENT mVolt[6] ;  // in mV 
+//  int32_t mVolt[6] ;             // in mV 
+//  bool mVoltAvailable[6] ;
   
   byte mVoltPin[6] ;            // Arduino pin number to use to read each voltage (See hardware setting in oXs_config.h)  
   int offset[6] ;            // offset to apply while converting ADC to millivolt (See setting in oXs_config.h)  

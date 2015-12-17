@@ -233,35 +233,35 @@ uint8_t OXS_OUT::formatOneValue( uint8_t currentFieldToSend) {
 //#endif  // End defined (VARIO) && defined ( AIRSPEED)
 
 #ifdef PIN_VOLTAGE
-      case VOLT1 :  
-         if (! voltageData->mVoltAvailable[0]  ) return 0;
-         valueTemp = voltageData->mVolt[0] / 100;
-         voltageData->mVoltAvailable[0] = false ;
+      case VOLT_1 :  
+         if (! voltageData->mVolt[0].available  ) return 0;
+         valueTemp = voltageData->mVolt[0].value / 100;
+         voltageData->mVolt[0].available = false ;
          break ;
-      case VOLT2 :  
-         if ( ! voltageData->mVoltAvailable[1]  ) return 0;
-         valueTemp = voltageData->mVolt[1] / 100 ;
-         voltageData->mVoltAvailable[1] = false ;
+      case VOLT_2 :  
+         if ( ! voltageData->mVolt[1].available  ) return 0;
+         valueTemp = voltageData->mVolt[1].value / 100 ;
+         voltageData->mVolt[1].available = false ;
           break ;
-      case VOLT3 :  
-         if ( ! voltageData->mVoltAvailable[2]  ) return 0;
-         valueTemp = voltageData->mVolt[2] / 100 ;
-         voltageData->mVoltAvailable[2] = false ;
+      case VOLT_3 :  
+         if ( ! voltageData->mVolt[2].available  ) return 0;
+         valueTemp = voltageData->mVolt[2].value / 100 ;
+         voltageData->mVolt[2].available = false ;
           break ;
-      case VOLT4 :  
-         if ( ! voltageData->mVoltAvailable[3]  ) return 0;
-         valueTemp = voltageData->mVolt[3] / 100 ;
-         voltageData->mVoltAvailable[3] = false ;
+      case VOLT_4 :  
+         if ( ! voltageData->mVolt[3].available  ) return 0;
+         valueTemp = voltageData->mVolt[3].value / 100 ;
+         voltageData->mVolt[3].available = false ;
           break ;
-      case VOLT5 :  
-         if ( ! voltageData->mVoltAvailable[4]  ) return 0;
-         valueTemp = voltageData->mVolt[4] / 100 ;
-         voltageData->mVoltAvailable[4] = false ;
+      case VOLT_5 :  
+         if ( ! voltageData->mVolt[4].available  ) return 0;
+         valueTemp = voltageData->mVolt[4].value / 100 ;
+         voltageData->mVolt[4].available = false ;
           break ;
-      case VOLT6 :  
-         if ( ! voltageData->mVoltAvailable[5]  ) return 0;
-         valueTemp = voltageData->mVolt[5] / 100 ;
-         voltageData->mVoltAvailable[5] = false ;
+      case VOLT_6 :  
+         if ( ! voltageData->mVolt[5].available  ) return 0;
+         valueTemp = voltageData->mVolt[5].value / 100 ;
+         voltageData->mVolt[5].available = false ;
           break ;
 #endif
 
@@ -338,17 +338,17 @@ uint8_t OXS_OUT::formatOneValue( uint8_t currentFieldToSend) {
           RpmAvailable  = false ;
           break ;   
 #endif
-      case  TEST1 :
+      case  TEST_1 :
           if ( ! test1.available  ) return 0;
           valueTemp = test1.value ;
           test1.available  = false ; 
           break ;
-      case  TEST2 :
+      case  TEST_2 :
           if ( ! test2.available  ) return 0;
           valueTemp = test2.value ;
           test2.available  = false ; 
           break ;
-      case  TEST3 :
+      case  TEST_3 :
           if ( ! test3.available  ) return 0;
           valueTemp = test3.value ;
           test3.available  = false ; 
