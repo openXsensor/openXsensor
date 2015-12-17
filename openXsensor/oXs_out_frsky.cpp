@@ -222,9 +222,8 @@ void initMeasurement() {
 #else
     p_measurements[4] = &no_data ;
 #endif
-
 // pointer to vfas
-#if defined(PIN_VOLTAGE) && defined(VFAS_SOURCE) && (VFAS_SOURCE == VOLT1 || VFAS_SOURCE == VOLT2 || VFAS_SOURCE == VOLT3 || VFAS_SOURCE == VOLT4 || VFAS_SOURCE == VOLT5 || VFAS_SOURCE == VOLT6 )
+#if defined(PIN_VOLTAGE) && defined(VFAS_SOURCE) && ( VFAS_SOURCE == VOLT_1 || VFAS_SOURCE == VOLT_2 || VFAS_SOURCE == VOLT_3 || VFAS_SOURCE == VOLT_4 || VFAS_SOURCE == VOLT_5 || VFAS_SOURCE == VOLT_6 )
     p_measurements[5] = &vfas ;
 #else
     p_measurements[5] = &no_data ;
@@ -424,7 +423,7 @@ void OXS_OUT::sendSportData()
 //    Serial.print("frskyStatus "); Serial.println(frskyStatus,HEX) ;
     if ( frskyStatus ) {                                                                                  // if at least one data has to be loaded
       for (uint8_t sensorSeq = 0 ; sensorSeq < 6 ; sensorSeq++ ) {                                        // for each sensor (currently 6)  
-        if ( frskyStatus & (1 << sensorSeq ) )  {                          //if frskyStatus says that a data must be loaded 
+        if ( frskyStatus & (1 << sensorSeq ) )  {                          //if frskyStatus says that a data must be loaded for this sensor
             uint8_t currFieldIdx_ = currFieldIdx[sensorSeq] ;                // retrieve the last field being loaded
             for (uint8_t iCount = fieldMinIdx[sensorSeq] ; iCount < fieldMinIdx[sensorSeq+1] ; iCount++ ) {        // we will not seach more than the number of fields for the selected sensor 
                 currFieldIdx_++ ;                                                                          // search with next field
@@ -433,13 +432,13 @@ void OXS_OUT::sendSportData()
 //                Serial.print(" p_m.av "); Serial.print( p_measurements[currFieldIdx_]->available) ;
 //                Serial.print(" p_m.va "); Serial.println( p_measurements[currFieldIdx_]->value) ;
                 if ( p_measurements[currFieldIdx_]->available  ){                                                // if data of current index of sensor is available
- //                 p_measurements[currFieldIdx_]->available = 0 ;                                                         // mark the data as not available
+                  p_measurements[currFieldIdx_]->available = 0 ;                                                         // mark the data as not available
                   dataValue[sensorSeq] =  p_measurements[currFieldIdx_]->value ;                                         // store the value in a buffer
                   dataId[sensorSeq] = fieldId[currFieldIdx_] ;                                                   // mark the data from this sensor as available
                   cli() ;
                   frskyStatus &= ~(1<< sensorSeq) ;                                               // says that data is loaded by resetting one bit
                   sei();
-                  Serial.print("Load "); Serial.print(dataId[sensorSeq],HEX) ; Serial.print(" ") ; Serial.println(dataValue[sensorSeq]);
+ //                 Serial.print("Load "); Serial.print(dataId[sensorSeq],HEX) ; Serial.print(" ") ; Serial.println(dataValue[sensorSeq]);
                   break ;                                                                         // exit inner for
                 }            
             }     

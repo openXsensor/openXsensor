@@ -794,7 +794,7 @@ void calculateAllFields () {
 
 
 // mainVSpeed (calculated based on the setup in config)
-#if defined(VARIO) && (~defined(VSPEED_SOURCE)) || (defined (VSPEED_SOURCE) && (VSPEED_SOURCE == FIRST_BARO) )
+#if defined(VARIO) &&  ( (~defined(VSPEED_SOURCE)) || (defined (VSPEED_SOURCE) && (VSPEED_SOURCE == FIRST_BARO) ) )
     mainVspeed.value = oXs_MS5611.varioData.climbRate.value ;
     mainVspeed.available = oXs_MS5611.varioData.climbRate.available ;
 #elif defined(VARIO) && defined(VARIO2) && (VSPEED_SOURCE == SECOND_BARO)
@@ -805,7 +805,7 @@ void calculateAllFields () {
         mainVspeed.available = averageVSpeed.available ;
 #elif defined(VARIO) && defined(AIRSPEED) && (VSPEED_SOURCE == AIRSPEED_COMPENSATED)
     mainVspeed.value = compensatedClimbRate.value ;
-    mainVspeed.available = compensatedClimbRate.available ;
+    mainVspeed.available = compensatedClimbRate.availabl e ;
 #elif defined(VARIO) && defined(USE_6050) && (VSPEED_SOURCE == BARO_AND_IMU)
     mainVspeed.value = vSpeedImu.value ;
     mainVspeed.available = vSpeedImu.available ;

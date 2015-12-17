@@ -31,7 +31,7 @@
 // --------- 4 - Vario settings ---------
 
 // ***** 4.1 - Connecting 1 or 2 MS5611 barometric sensor *****
-#define VARIO // set as comment if there is no vario
+//#define VARIO // set as comment if there is no vario
 //#define SENSOR_IS_BMP180 // set as comment if baro sensor is MS5611
 //#define VARIO2 // set as comment if there is no second vario
 
@@ -52,7 +52,7 @@
 //#define ALT_TEMP_COMPENSATION 800
 
 // ***** 4.5 - Vertical speeds calculations *****
-//#define VARIO_PRIMARY       BARO_AND_IMU        // select between FIRST_BARO, SECOND_BARO , AVERAGE_FIRST_SECOND, AIRSPEED_COMPENSATED , BARO_AND_IMU
+#define VARIO_PRIMARY       BARO_AND_IMU        // select between FIRST_BARO, SECOND_BARO , AVERAGE_FIRST_SECOND, AIRSPEED_COMPENSATED , BARO_AND_IMU
 #define VARIO_SECONDARY     FIRST_BARO          // select between FIRST_BARO, SECOND_BARO , AVERAGE_FIRST_SECOND, AIRSPEED_COMPENSATED , BARO_AND_IMU
 #define SWITCH_VARIO_MIN_AT_PPM 10
 #define SWITCH_VARIO_MAX_AT_PPM 90
@@ -113,7 +113,7 @@
 // --------- 9 - Data to transmit ---------
 #define VSPEED_SOURCE  FIRST_BARO       // select between FIRST_BARO, SECOND_BARO , AVERAGE_FIRST_SECOND, AIRSPEED_COMPENSATED , BARO_AND_IMU or PPM_SELECTION
 // ***** 9.1 - Frsky data *****
-//#define VFAS_SOURCE     VOLT_4                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
+#define VFAS_SOURCE     VOLT_1                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
 //#define ACCX_SOURCE     TEST_1                 //  select between TEST_1, TEST_2, TEST_3
 //#define ACCY_SOURCE     TEST_2                 //  select between TEST_1, TEST_2, TEST_3
 //#define ACCZ_SOURCE     TEST_3                 //  select between TEST_1, TEST_2, TEST_3
@@ -154,7 +154,7 @@
 #define SEQUENCE_MIN_CELL   3000 // sequence_100 will be activated if lowest cell is lower that the value.
 
 // --------- 11 - GPS ------------------------------------------------------------------------------------------------
-#define GPS_INSTALLED     // uncomment this line if a GPS is connected
+//#define GPS_INSTALLED     // uncomment this line if a GPS is connected
 #define GPS_SPEED_IN_KMH  // uncomment this line if GPS speed has to be sent in km/h instead of knot/h (only for Frsky protocol)
 //#define GPS_SPEED_3D      // uncomment this line if GPS speed has to be the 3d speed instead of the 2d speed (note: 3d is probably less accurate - to test) 
 
@@ -167,7 +167,7 @@
 //#define DISPLAY_ACC_OFFSET // used ONLY in order to display the acceleration offset on pc terminal; KEEP AS COMMENT once offsets has been setup 
 
 // --------- xx - Reserved for developer. DEBUG must be activated here when we want to debug one or several functions in some other files. ---------
-//#define DEBUG
+#define DEBUG
 //#define DEBUG_BLINK   // use by developper in order to blink the led without using uart for debugging
 
 

@@ -2,7 +2,7 @@
  
 #ifdef DEBUG
 //#define DEBUGNEWVALUE
-#define DEBUGDELAY
+//#define DEBUGDELAY
 //#define DEBUGCELLCALCULATION
 //#define DEBUGLOWVOLTAGE
 #endif
@@ -180,7 +180,7 @@ void OXS_VOLTAGE::voltageNrIncrease() {
         voltageData.maxNumberOfCells = 0 ;
         for (uint8_t cellIndex = 0; cellIndex < NUMBEROFCELLS ; cellIndex++) {
           int32_t mVoltOneCell ;
-          uint8_t prevIndex ;
+          uint8_t prevIndex = 0 ;
           if (cellIndex == 0) {
             mVoltOneCell = voltageData.mVolt[cellIndex];
           } else { 
