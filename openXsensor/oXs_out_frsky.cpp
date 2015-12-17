@@ -294,6 +294,8 @@ void initMeasurement() {
    p_measurements[14] = &oXs_MS5611.varioData.sensitivity ; 
 #elif defined(T1_SOURCE) && ( T1_SOURCE == PPM) && defined(PIN_PPM)
    p_measurements[14] = &ppm ; 
+#elif defined(T1_SOURCE) && defined(PIN_VOLTAGE) && ( T1_SOURCE == VOLT_1 || T1_SOURCE == VOLT_2 || T1_SOURCE == VOLT_3 || T1_SOURCE == VOLT_4 || T1_SOURCE == VOLT_5 || T1_SOURCE == VOLT_6 )
+   p_measurements[14] = &oXs_Voltage.voltageData.mVolt[T1_SOURCE - VOLT_1] ;
 #else
    p_measurements[14] = &no_data ; // T1 
 #endif
@@ -311,8 +313,10 @@ void initMeasurement() {
    p_measurements[15] = &oXs_MS5611.varioData.sensitivity ; 
 #elif defined(T2_SOURCE) && ( T2_SOURCE == PPM) && defined(PIN_PPM)
    p_measurements[15] = &ppm ; 
+#elif defined(T2_SOURCE) && defined(PIN_VOLTAGE) && ( T2_SOURCE == VOLT_1 || T2_SOURCE == VOLT_2 || T2_SOURCE == VOLT_3 || T2_SOURCE == VOLT_4 || T2_SOURCE == VOLT_5 || T2_SOURCE == VOLT_6 )
+   p_measurements[15] = &oXs_Voltage.voltageData.mVolt[T2_SOURCE - VOLT_1] ;
 #else
-   p_measurements[15] = &no_data ; // T1 
+   p_measurements[15] = &no_data ; // T2 
 #endif
 
 
@@ -331,6 +335,8 @@ void initMeasurement() {
    p_measurements[17] = &test2 ; // accX
 #elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == TEST_3)
    p_measurements[17] = &test3 ; // accX
+#elif defined(ACCX_SOURCE) && defined(PIN_VOLTAGE) && ( ACCX_SOURCE == VOLT_1 || ACCX_SOURCE == VOLT_2 || ACCX_SOURCE == VOLT_3 || ACCX_SOURCE == VOLT_4 || ACCX_SOURCE == VOLT_5 || ACCX_SOURCE == VOLT_6 )
+   p_measurements[17] = &oXs_Voltage.voltageData.mVolt[ACCX_SOURCE - VOLT_1] ;
 #else
    p_measurements[17] = &no_data ; // accX
 #endif
@@ -342,6 +348,8 @@ void initMeasurement() {
    p_measurements[18] = &test2 ; // accY
 #elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == TEST_3)
    p_measurements[18] = &test3 ; // accY
+#elif defined(ACCY_SOURCE) && defined(PIN_VOLTAGE) && ( ACCY_SOURCE == VOLT_1 || ACCY_SOURCE == VOLT_2 || ACCY_SOURCE == VOLT_3 || ACCY_SOURCE == VOLT_4 || ACCY_SOURCE == VOLT_5 || ACCY_SOURCE == VOLT_6 )
+   p_measurements[18] = &oXs_Voltage.voltageData.mVolt[ACCY_SOURCE - VOLT_1] ;
 #else
    p_measurements[18] = &no_data ; // accY
 #endif
@@ -353,6 +361,8 @@ void initMeasurement() {
    p_measurements[19] = &test2 ; // accZ
 #elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == TEST_3)
    p_measurements[19] = &test3 ; // accZ
+#elif defined(ACCZ_SOURCE) && defined(PIN_VOLTAGE) && ( ACCZ_SOURCE == VOLT_1 || ACCZ_SOURCE == VOLT_2 || ACCZ_SOURCE == VOLT_3 || ACCZ_SOURCE == VOLT_4 || ACCZ_SOURCE == VOLT_5 || ACCZ_SOURCE == VOLT_6 )
+   p_measurements[19] = &oXs_Voltage.voltageData.mVolt[ACCZ_SOURCE - VOLT_1] ;
 #else
    p_measurements[19] = &no_data ; // accZ
 #endif
@@ -518,18 +528,8 @@ void OXS_OUT::SendFrame1(){
 #endif
 
 // vfas
-#if defined(PIN_VOLTAGE) && defined(VFAS_SOURCE) && (VFAS_SOURCE == VOLT1)
-    SendValue( FRSKY_USERDATA_VFAS_NEW ,  (int16_t) voltageData.mVolt[0] ) ;
-#elif defined(PIN_VOLTAGE) && defined(VFAS_SOURCE) && (VFAS_SOURCE == VOLT2)
-    SendValue( FRSKY_USERDATA_VFAS_NEW ,  (int16_t) voltageData.mVolt[1] ) ;
-#elif defined(PIN_VOLTAGE) && defined(VFAS_SOURCE) && (VFAS_SOURCE == VOLT3)
-    SendValue( FRSKY_USERDATA_VFAS_NEW ,  (int16_t) voltageData.mVolt[2] ) ;
-#elif defined(PIN_VOLTAGE) && defined(VFAS_SOURCE) && (VFAS_SOURCE == VOLT4)  
-    SendValue( FRSKY_USERDATA_VFAS_NEW ,  (int16_t) voltageData.mVolt[3] ) ;
-#elif defined(PIN_VOLTAGE) && defined(VFAS_SOURCE) && (VFAS_SOURCE == VOLT5)
-    SendValue( FRSKY_USERDATA_VFAS_NEW ,  (int16_t) voltageData.mVolt[4] ) ;
-#elif defined(PIN_VOLTAGE) && defined(VFAS_SOURCE) && (VFAS_SOURCE == VOLT6)
-    SendValue( FRSKY_USERDATA_VFAS_NEW ,  (int16_t) voltageData.mVolt[5] ) ;
+#if defined(PIN_VOLTAGE) && defined(VFAS_SOURCE) &&  ( (VFAS_SOURCE == VOLT_1) || (VFAS_SOURCE == VOLT_2) || (VFAS_SOURCE == VOLT_3) || (VFAS_SOURCE == VOLT_4) || (VFAS_SOURCE == VOLT_5) || (VFAS_SOURCE == VOLT_6) )
+    SendValue( FRSKY_USERDATA_VFAS_NEW ,  (int16_t) voltageData.mVolt[VFAS_SOURCE - VOLT_1 ] ) ;
 #endif
    
 // current

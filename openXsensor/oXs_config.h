@@ -114,16 +114,16 @@
 #define VSPEED_SOURCE  FIRST_BARO       // select between FIRST_BARO, SECOND_BARO , AVERAGE_FIRST_SECOND, AIRSPEED_COMPENSATED , BARO_AND_IMU or PPM_SELECTION
 // ***** 9.1 - Frsky data *****
 #define VFAS_SOURCE     VOLT_1                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
-//#define ACCX_SOURCE     TEST_1                 //  select between TEST_1, TEST_2, TEST_3
-//#define ACCY_SOURCE     TEST_2                 //  select between TEST_1, TEST_2, TEST_3
-//#define ACCZ_SOURCE     TEST_3                 //  select between TEST_1, TEST_2, TEST_3
-//#define T1_SOURCE       GLIDER_RATIO             //  select between TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SENSITIVITY, PPM
-//#define T2_SOURCE       SENSITIVITY              //  select between TEST_1, TEST_2, TEST_3, , GLIDER_RATIO, SENSITIVITY, PPM
+//#define ACCX_SOURCE     TEST_1                 //  select between TEST_1, TEST_2, TEST_3, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6 
+//#define ACCY_SOURCE     TEST_2                 //  select between TEST_1, TEST_2, TEST_3, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
+//#define ACCZ_SOURCE     TEST_3                 //  select between TEST_1, TEST_2, TEST_3, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
+//#define T1_SOURCE       GLIDER_RATIO             //  select between TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SENSITIVITY, PPM, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
+//#define T2_SOURCE       SENSITIVITY              //  select between TEST_1, TEST_2, TEST_3, , GLIDER_RATIO, SENSITIVITY, PPM, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
 
 // ***** 9.2 - Hott data *****
-//#define BATTERY_1_SOURCE          VOLT_4                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
-//#define BATTERY_2_SOURCE          VOLT_2                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
-//#define MAIN_BATTERY_SOURCE       VOLT_5                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
+//#define BATTERY_1_SOURCE          VOLT_4                 // select between VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
+//#define BATTERY_2_SOURCE          VOLT_2                 // select between VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
+//#define MAIN_BATTERY_SOURCE       VOLT_5                 // select between VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
 //#define TEMPERATURE_1_SOURCE      TEST_1          //  select between TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SENSITIVITY , PPM
 //#define TEMPERATURE_2_SOURCE      PPM             //  select between TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SENSITIVITY, PPM
 

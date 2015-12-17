@@ -571,11 +571,11 @@ started by Rainer Schloßhan
 *      Put those line(s) as comment when no measurement has to be transmitted in those telemetry field(s)
 *    ex :  
 *      #define VFAS_SOURCE VOLT_4                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
-*      #define ACCX_SOURCE TEST_1                 //  select between TEST_1, TEST_2, TEST_3
-*      #define ACCY_SOURCE TEST_2                 //  select between TEST_1, TEST_2, TEST_3
-*      #define ACCZ_SOURCE TEST_3                 //  select between TEST_1, TEST_2, TEST_3
-*      #define T1_SOURCE GLIDER_RATIO             //  select between TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SENSITIVITY , PPM
-*      #define T2_SOURCE SENSITIVITY              //  select between TEST_1, TEST_2, TEST_3, , GLIDER_RATIO, SENSITIVITY , PPM
+*      #define ACCX_SOURCE TEST_1                 //  select between TEST_1, TEST_2, TEST_3, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6 
+*      #define ACCY_SOURCE TEST_2                 //  select between TEST_1, TEST_2, TEST_3, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6 
+*      #define ACCZ_SOURCE TEST_3                 //  select between TEST_1, TEST_2, TEST_3, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6 
+*      #define T1_SOURCE GLIDER_RATIO             //  select between TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SENSITIVITY , PPM, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6 
+*      #define T2_SOURCE SENSITIVITY              //  select between TEST_1, TEST_2, TEST_3, , GLIDER_RATIO, SENSITIVITY , PPM, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6 
 **** 9.2 Hott protocol ************************************************************************************ 
 *      Measurements being automatically transmitted are : 
 *         - Relative altitude(cm), main vertical Speed(cm/sec) (when at least first baro sensor is present)
