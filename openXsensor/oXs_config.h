@@ -52,8 +52,8 @@
 //#define ALT_TEMP_COMPENSATION 800
 
 // ***** 4.5 - Vertical speeds calculations *****
-//#define VARIO_PRIMARY       BARO_AND_IMU        // select between FIRST_BARO, SECOND_BARO , AVERAGE_FIRST_SECOND, AIRSPEED_COMPENSATED , BARO_AND_IMU
-//#define VARIO_SECONDARY     FIRST_BARO          // select between FIRST_BARO, SECOND_BARO , AVERAGE_FIRST_SECOND, AIRSPEED_COMPENSATED , BARO_AND_IMU
+#define VARIO_PRIMARY       BARO_AND_IMU        // select between FIRST_BARO, SECOND_BARO , AVERAGE_FIRST_SECOND, AIRSPEED_COMPENSATED , BARO_AND_IMU
+#define VARIO_SECONDARY     FIRST_BARO          // select between FIRST_BARO, SECOND_BARO , AVERAGE_FIRST_SECOND, AIRSPEED_COMPENSATED , BARO_AND_IMU
 #define SWITCH_VARIO_MIN_AT_PPM 10
 #define SWITCH_VARIO_MAX_AT_PPM 90
 
@@ -111,7 +111,7 @@
 //#define PIN_PUSHBUTTON    2   // default is 10 but my own device is 2
 
 // --------- 9 - Data to transmit ---------
-#define VSPEED_SOURCE  FIRST_BARO       // select between FIRST_BARO, SECOND_BARO , AVERAGE_FIRST_SECOND, AIRSPEED_COMPENSATED , BARO_AND_IMU or PPM_SELECTION
+#define VSPEED_SOURCE  PPM_SELECTION       // select between FIRST_BARO, SECOND_BARO , AVERAGE_FIRST_SECOND, AIRSPEED_COMPENSATED , BARO_AND_IMU or PPM_SELECTION
 // ***** 9.1 - Frsky data *****
 //#define VFAS_SOURCE     VOLT_1                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
 #define ACCX_SOURCE     TEST3                //  select between TEST_1, TEST_2, TEST_3, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6 

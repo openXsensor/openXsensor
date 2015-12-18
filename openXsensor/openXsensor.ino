@@ -756,25 +756,24 @@ void calculateAllFields () {
 #endif
 
 
-
 // calculate selected Vspeed based on ppm
 #if defined (VARIO) && ( defined (VARIO2) || defined (AIRSPEED) || defined (USE_6050) ) && defined (VARIO_SECONDARY ) && defined( VARIO_PRIMARY )  && defined (PIN_PPM)
-  if (( selectedVario == 1) && ( newVarioAvailable ) )  {
+  if (( selectedVario == FIRST_BARO ) && ( newVarioAvailable ) )  {
       switchVSpeed.value = oXs_MS5611.varioData.climbRate.value ;
       switchVSpeed.available = true ;
   } 
   #if  defined (VARIO2)
-  else if ( ( selectedVario == 2) && ( newVarioAvailable2 )) {
+  else if ( ( selectedVario == SECOND_BARO ) && ( newVarioAvailable2 )) {
       switchVSpeed.value = oXs_MS5611_2.varioData.climbRate.value ;
       switchVSpeed.available = true ;
   }
-  else if ( ( selectedVario == 4) && ( averageVSpeed.available == true )) {
+  else if ( ( selectedVario == AVERAGE_FIRST_SECOND ) && ( averageVSpeed.available == true )) {
       switchVSpeed.value = averageVSpeed.value ;
       switchVSpeed.available = true ;
   }
   #endif // end of VARIO2
   #if  defined (AIRSPEED)
-  else if ( ( selectedVario == 3) && ( newVarioAvailable )) {
+  else if ( ( selectedVario == AIRSPEED_COMPENSATED ) && ( newVarioAvailable )) {
       switchVSpeed.value = compensatedClimbRate.value ;
       switchVSpeed.available = true ;  
    #if defined (SWITCH_VARIO_GET_PRIO)
@@ -786,7 +785,7 @@ void calculateAllFields () {
   #endif // end  defined (AIRSPEED) 
   #if  defined (USE_6050)
   else if ( ( selectedVario == 5) && ( switchVTrackAvailable )) {
-      switchVSpeed.value = vTrack ;
+      switchVSpeed.value = BARO_AND_IMU ;
       switchVSpeed.available = true ;
   }
   #endif  // end USE_6050
@@ -794,7 +793,7 @@ void calculateAllFields () {
 
 
 // mainVSpeed (calculated based on the setup in config)
-#if defined(VARIO) &&  ( (~defined(VSPEED_SOURCE)) || (defined (VSPEED_SOURCE) && (VSPEED_SOURCE == FIRST_BARO) ) )
+#if defined(VARIO) &&  ( (!defined(VSPEED_SOURCE)) || (defined(VSPEED_SOURCE) && (VSPEED_SOURCE == FIRST_BARO) ) )
     mainVspeed.value = oXs_MS5611.varioData.climbRate.value ;
     mainVspeed.available = oXs_MS5611.varioData.climbRate.available ;
 #elif defined(VARIO) && defined(VARIO2) && (VSPEED_SOURCE == SECOND_BARO)
@@ -828,17 +827,17 @@ void calculateAllFields () {
 
 ////////////////////////////////////////////////////this part is probably not correct !!!!!!!!!!!!!!!!!!!!!!!
 #if defined (VARIO) && ( defined (VARIO2) )
-         averageVSpeed.available = false ;
+//         averageVSpeed.available = false ;
 #endif
 #if defined (VARIO) &&  defined (USE_6050)
-  switchVTrackAvailable = false ;
+//  switchVTrackAvailable = false ;
 #endif  
 #if defined (VARIO) &&  defined (USE_6050) && defined(PIN_PPM)
     test1.value = oXs_MS5611.varioData.climbRate.value ;
     test1.available = oXs_MS5611.varioData.climbRate.available ;
     test2.value = vSpeedImu.value ;
     test2.available = vSpeedImu.available ;
-    test3.value = ppm.value ;
+    test3.value = ppm.value * 100 ;
     test3.available = ppm.available ;
 #endif
 
