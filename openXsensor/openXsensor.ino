@@ -735,7 +735,7 @@ void calculateAllFields () {
             vSpeedImu.available = true ;
             switchVTrackAvailable = true ;
             
-  #define TEST_SEND_MPU
+  //#define TEST_SEND_MPU
   #ifdef TEST_SEND_MPU                                                  ///////////////////////////// !!!!!!!!!!!!!!!!!!!!!! to be changed
             test1.value = linear_acceleration_x * 981 ; 
             test1.available = true ; 
