@@ -448,7 +448,7 @@ void OXS_OUT::sendSportData()
                   cli() ;
                   frskyStatus &= ~(1<< sensorSeq) ;                                               // says that data is loaded by resetting one bit
                   sei();
- //                 Serial.print("Load "); Serial.print(dataId[sensorSeq],HEX) ; Serial.print(" ") ; Serial.println(dataValue[sensorSeq]);
+                  Serial.print("Load "); Serial.print(dataId[sensorSeq],HEX) ; Serial.print(" ") ; Serial.println(dataValue[sensorSeq]);
                   break ;                                                                         // exit inner for
                 }            
             }     

@@ -833,7 +833,17 @@ void calculateAllFields () {
 #if defined (VARIO) &&  defined (USE_6050)
   switchVTrackAvailable = false ;
 #endif  
-}
+#if defined (VARIO) &&  defined (USE_6050) && defined(PIN_PPM)
+    test1.value = oXs_MS5611.varioData.climbRate.value ;
+    test1.available = oXs_MS5611.varioData.climbRate.available ;
+    test2.value = vSpeedImu.value ;
+    test2.available = vSpeedImu.available ;
+    test3.value = ppm.value ;
+    test3.available = ppm.available ;
+#endif
+
+
+} // end of calciulate all fields
 
 
 
