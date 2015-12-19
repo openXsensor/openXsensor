@@ -94,7 +94,7 @@
 #define SCALE_VOLTAGE      1.1 , 1     ,  1  , 1.004, 1   , 1                // optionnal, can be negative, can have decimals
 
 // ***** 6.3 - Max number of Lipo cells to measure (and transmit to Tx) *****
-//#define NUMBEROFCELLS 3   // keep this line but set value to 0 (zero) if you do not want to transmit cell voltage.
+//#define NUMBEROFCELLS 3   // Put this line as comment or set value to 0 (zero) if you do not want to transmit cell voltages.
 
 // ***** 6.4 - Current parameters  *****
 //#define PIN_CURRENTSENSOR   3

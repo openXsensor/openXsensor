@@ -470,7 +470,7 @@ started by Rainer Schloßhan
 *            Probably, it make no sense to measure more that 3 or 4 cells individually
 *            If you don't want to transmit cell voltage, set value to 0 (zero) or comment the line.
 *            This parameter defines the max number of cells you expect to transmit. 
-*            If OXS is connected to a lipo having less cells, OXS will send 0 volt for the "missing" cells which still let the TX calculate the total voltage and the lowest cell voltagen 
+*            If OXS is connected to a lipo having less cells, OXS will automatically reduce the number of cells which still let the TX calculate the total voltage and the lowest cell voltage 
 ************************************************************************************************************************
 #define NUMBEROFCELLS    3 
 
