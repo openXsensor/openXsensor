@@ -31,6 +31,25 @@
     #error The parameter VSPEED_SOURCE in config.h is NOT valid
 #endif    
 
+#if defined( VFAS_SOURCE ) && ( !  ( ( VFAS_SOURCE == VOLT_1) || ( VFAS_SOURCE == VOLT_2) || ( VFAS_SOURCE == VOLT_3) || ( VFAS_SOURCE == VOLT_4) || ( VFAS_SOURCE == VOLT_5) || ( VFAS_SOURCE == VOLT_6) ) )
+ #error When defined, VFAS_SOURCE must be one of following values VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
+#endif
+#if defined( ACCX_SOURCE ) && ( !  ( ( ACCX_SOURCE == VOLT_1) || ( ACCX_SOURCE == VOLT_2) || ( ACCX_SOURCE == VOLT_3) || ( ACCX_SOURCE == VOLT_4) || ( ACCX_SOURCE == VOLT_5) || ( ACCX_SOURCE == VOLT_6) || ( ACCX_SOURCE == TEST_1) || ( ACCX_SOURCE == TEST_2) || ( ACCX_SOURCE == TEST_3) ) )
+ #error When defined, ACCX_SOURCE must be one of following values TEST_1, TEST_2, TEST_3, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
+#endif
+#if defined( ACCY_SOURCE ) && ( !  ( ( ACCY_SOURCE == VOLT_1) || ( ACCY_SOURCE == VOLT_2) || ( ACCY_SOURCE == VOLT_3) || ( ACCY_SOURCE == VOLT_4) || ( ACCY_SOURCE == VOLT_5) || ( ACCY_SOURCE == VOLT_6) || ( ACCY_SOURCE == TEST_1) || ( ACCY_SOURCE == TEST_2) || ( ACCY_SOURCE == TEST_3) ) )
+ #error When defined, ACCY_SOURCE must be one of following values TEST_1, TEST_2, TEST_3, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
+#endif
+#if defined( ACCZ_SOURCE ) && ( !  ( ( ACCZ_SOURCE == VOLT_1) || ( ACCZ_SOURCE == VOLT_2) || ( ACCZ_SOURCE == VOLT_3) || ( ACCZ_SOURCE == VOLT_4) || ( ACCZ_SOURCE == VOLT_5) || ( ACCZ_SOURCE == VOLT_6) || ( ACCZ_SOURCE == TEST_1) || ( ACCZ_SOURCE == TEST_2) || ( ACCZ_SOURCE == TEST_3) ) )
+ #error When defined, ACCZ_SOURCE must be one of following values TEST_1, TEST_2, TEST_3, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
+#endif
+#if defined( T1_SOURCE ) && ( !  ( ( T1_SOURCE == PPM) || ( T1_SOURCE == GLIDER_RATIO) || ( T1_SOURCE == SENSITIVITY) || ( T1_SOURCE == VOLT_1) || ( T1_SOURCE == VOLT_2) || ( T1_SOURCE == VOLT_3) || ( T1_SOURCE == VOLT_4) || ( T1_SOURCE == VOLT_5) || ( T1_SOURCE == VOLT_6) || ( T1_SOURCE == TEST_1) || ( T1_SOURCE == TEST_2) || ( T1_SOURCE == TEST_3) ) )
+ #error When defined, T1_SOURCE must be one of following values TEST_1, TEST_2, TEST_3, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
+#endif
+#if defined( T2_SOURCE ) && ( !  ( ( T2_SOURCE == PPM) || ( T2_SOURCE == GLIDER_RATIO) || ( T2_SOURCE == SENSITIVITY) || ( T2_SOURCE == VOLT_1) || ( T2_SOURCE == VOLT_2) || ( T2_SOURCE == VOLT_3) || ( T2_SOURCE == VOLT_4) || ( T2_SOURCE == VOLT_5) || ( T2_SOURCE == VOLT_6) || ( T2_SOURCE == TEST_1) || ( T2_SOURCE == TEST_2) || ( T2_SOURCE == TEST_3) ) )
+ #error When defined, T2_SOURCE must be one of following values TEST_1, TEST_2, TEST_3, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
+#endif
+
 #ifdef PIN_PPM
  #if PIN_PPM == 2
 	#define PPM_INTERRUPT			ON // define to use interrupt code in Aserial.cpp
@@ -784,8 +803,8 @@ void calculateAllFields () {
   } 
   #endif // end  defined (AIRSPEED) 
   #if  defined (USE_6050)
-  else if ( ( selectedVario == 5) && ( switchVTrackAvailable )) {
-      switchVSpeed.value = BARO_AND_IMU ;
+  else if ( ( selectedVario == BARO_AND_IMU ) && ( switchVTrackAvailable )) {
+      switchVSpeed.value = vSpeedImu.value ;
       switchVSpeed.available = true ;
   }
   #endif  // end USE_6050

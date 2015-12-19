@@ -114,7 +114,7 @@
 #define VSPEED_SOURCE  PPM_SELECTION       // select between FIRST_BARO, SECOND_BARO , AVERAGE_FIRST_SECOND, AIRSPEED_COMPENSATED , BARO_AND_IMU or PPM_SELECTION
 // ***** 9.1 - Frsky data *****
 //#define VFAS_SOURCE     VOLT_1                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
-#define ACCX_SOURCE     TEST3                //  select between TEST_1, TEST_2, TEST_3, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6 
+#define ACCX_SOURCE     TEST_3                //  select between TEST_1, TEST_2, TEST_3, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6 
 //#define ACCY_SOURCE     VOLT_3                 //  select between TEST_1, TEST_2, TEST_3, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
 //#define ACCZ_SOURCE     TEST_3                 //  select between TEST_1, TEST_2, TEST_3, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
 #define T1_SOURCE       TEST_1             //  select between TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SENSITIVITY, PPM, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
