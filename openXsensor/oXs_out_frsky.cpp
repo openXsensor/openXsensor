@@ -290,6 +290,10 @@ void initMeasurement() {
    p_measurements[14] = &test3 ; 
 #elif defined(T1_SOURCE) && ( T1_SOURCE == GLIDER_RATIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
    p_measurements[14] = &gliderRatio ; 
+#elif defined(T1_SOURCE) && ( T1_SOURCE == SECONDS_SINCE_T0 ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
+   p_measurements[14] = &secFromT0 ; 
+#elif defined(T1_SOURCE) && ( T1_SOURCE == AVERAGE_VSPEED_SINCE_TO ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
+   p_measurements[14] = &averageVspeedSinceT0 ; 
 #elif defined(T1_SOURCE) && ( T1_SOURCE == SENSITIVITY) && defined(VARIO)
    p_measurements[14] = &oXs_MS5611.varioData.sensitivity ; 
 #elif defined(T1_SOURCE) && ( T1_SOURCE == PPM) && defined(PIN_PPM)
@@ -309,6 +313,10 @@ void initMeasurement() {
    p_measurements[15] = &test3 ; 
 #elif defined(T2_SOURCE) && ( T2_SOURCE == GLIDER_RATIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
    p_measurements[15] = &gliderRatio ; 
+#elif defined(T2_SOURCE) && ( T2_SOURCE == SECONDS_SINCE_T0 ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
+   p_measurements[15] = &secFromT0 ; 
+#elif defined(T2_SOURCE) && ( T2_SOURCE == AVERAGE_VSPEED_SINCE_TO ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
+   p_measurements[15] = &averageVspeedSinceT0 ; 
 #elif defined(T2_SOURCE) && ( T2_SOURCE == SENSITIVITY) && defined(VARIO) 
    p_measurements[15] = &oXs_MS5611.varioData.sensitivity ; 
 #elif defined(T2_SOURCE) && ( T2_SOURCE == PPM) && defined(PIN_PPM)
@@ -335,6 +343,12 @@ void initMeasurement() {
    p_measurements[17] = &test2 ; // accX
 #elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == TEST_3)
    p_measurements[17] = &test3 ; // accX
+#elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == GLIDER_RATIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
+   p_measurements[17] = &gliderRatio ; 
+#elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == SECONDS_SINCE_T0 ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
+   p_measurements[17] = &secFromT0 ; 
+#elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == AVERAGE_VSPEED_SINCE_TO ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
+   p_measurements[17] = &averageVspeedSinceT0 ; 
 #elif defined(ACCX_SOURCE) && defined(PIN_VOLTAGE) && ( ACCX_SOURCE == VOLT_1 || ACCX_SOURCE == VOLT_2 || ACCX_SOURCE == VOLT_3 || ACCX_SOURCE == VOLT_4 || ACCX_SOURCE == VOLT_5 || ACCX_SOURCE == VOLT_6 )
    p_measurements[17] = &oXs_Voltage.voltageData.mVolt[ACCX_SOURCE - VOLT_1] ;
 #else
@@ -348,6 +362,12 @@ void initMeasurement() {
    p_measurements[18] = &test2 ; // accY
 #elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == TEST_3)
    p_measurements[18] = &test3 ; // accY
+#elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == GLIDER_RATIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
+   p_measurements[18] = &gliderRatio ; 
+#elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == SECONDS_SINCE_T0 ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
+   p_measurements[18] = &secFromT0 ; 
+#elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == AVERAGE_VSPEED_SINCE_TO ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
+   p_measurements[18] = &averageVspeedSinceT0 ; 
 #elif defined(ACCY_SOURCE) && defined(PIN_VOLTAGE) && ( ACCY_SOURCE == VOLT_1 || ACCY_SOURCE == VOLT_2 || ACCY_SOURCE == VOLT_3 || ACCY_SOURCE == VOLT_4 || ACCY_SOURCE == VOLT_5 || ACCY_SOURCE == VOLT_6 )
    p_measurements[18] = &oXs_Voltage.voltageData.mVolt[ACCY_SOURCE - VOLT_1] ;
 #else
@@ -361,6 +381,12 @@ void initMeasurement() {
    p_measurements[19] = &test2 ; // accZ
 #elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == TEST_3)
    p_measurements[19] = &test3 ; // accZ
+#elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == GLIDER_RATIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
+   p_measurements[19] = &gliderRatio ; 
+#elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == SECONDS_SINCE_T0 ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
+   p_measurements[19] = &secFromT0 ; 
+#elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == AVERAGE_VSPEED_SINCE_TO ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
+   p_measurements[19] = &averageVspeedSinceT0 ; 
 #elif defined(ACCZ_SOURCE) && defined(PIN_VOLTAGE) && ( ACCZ_SOURCE == VOLT_1 || ACCZ_SOURCE == VOLT_2 || ACCZ_SOURCE == VOLT_3 || ACCZ_SOURCE == VOLT_4 || ACCZ_SOURCE == VOLT_5 || ACCZ_SOURCE == VOLT_6 )
    p_measurements[19] = &oXs_Voltage.voltageData.mVolt[ACCZ_SOURCE - VOLT_1] ;
 #else
@@ -551,8 +577,12 @@ void OXS_OUT::SendFrame1(){
     SendValue( FRSKY_USERDATA_TEMP1 , (int16_t) test2.value) ; 
 #elif defined(T1_SOURCE) && ( T1_SOURCE == TEST_3)
     SendValue( FRSKY_USERDATA_TEMP1 , (int16_t) test3.value) ; 
-#elif defined(T1_SOURCE) && ( T1_SOURCE == GLIDER_RATIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
+#elif defined(T1_SOURCE) && ( T1_SOURCE == GLIDER_RATIO) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
     SendValue( FRSKY_USERDATA_TEMP1 , (int16_t) gliderRatio.value) ; 
+#elif defined(T1_SOURCE) && ( T1_SOURCE == SECONDS_SINCE_T0 ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
+    SendValue( FRSKY_USERDATA_TEMP1 , (int16_t) secFromT0.value) ; 
+#elif defined(T1_SOURCE) && ( T1_SOURCE == AVERAGE_VSPEED_SINCE_TO ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
+    SendValue( FRSKY_USERDATA_TEMP1 , (int16_t) averageVspeedSinceT0.value) ;     
 #elif defined(T1_SOURCE) && ( T1_SOURCE == SENSITIVITY) && defined(VARIO)
     SendValue( FRSKY_USERDATA_TEMP1 , (int16_t) oXs_MS5611.varioData.sensitivity.value) ; 
 #elif defined(T1_SOURCE) && ( T1_SOURCE == PPM) && defined(PIN_PPM)
@@ -566,8 +596,12 @@ void OXS_OUT::SendFrame1(){
    SendValue( FRSKY_USERDATA_TEMP2 , (int16_t) test2.value ) ; 
 #elif defined(T2_SOURCE) && ( T2_SOURCE == TEST_3)
    SendValue( FRSKY_USERDATA_TEMP2 , (int16_t) test3.value ) ; 
-#elif defined(T2_SOURCE) && ( T2_SOURCE == GLIDER_RATIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
+#elif defined(T2_SOURCE) && ( T2_SOURCE == GLIDER_RATIO) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
    SendValue( FRSKY_USERDATA_TEMP2 , (int16_t) gliderRatio.value) ; 
+#elif defined(T2_SOURCE) && ( T2_SOURCE == SECONDS_SINCE_T0 ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
+    SendValue( FRSKY_USERDATA_TEMP2 , (int16_t) secFromT0.value) ; 
+#elif defined(T2_SOURCE) && ( T2_SOURCE == AVERAGE_VSPEED_SINCE_TO ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
+    SendValue( FRSKY_USERDATA_TEMP2 , (int16_t) averageVspeedSinceT0.value) ;     
 #elif defined(T2_SOURCE) && ( T2_SOURCE == SENSITIVITY) && defined(VARIO)
    SendValue( FRSKY_USERDATA_TEMP2 , (int16_t) oXs_MS5611.varioData.sensitivity.value) ; 
 #elif defined(T2_SOURCE) && ( T2_SOURCE == PPM) && defined(PIN_PPM)
@@ -586,6 +620,12 @@ void OXS_OUT::SendFrame1(){
    SendValue( FRSKY_USERDATA_ACC_X , (int16_t) test2.value) ;
 #elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == TEST_3)
    SendValue( FRSKY_USERDATA_ACC_X , (int16_t) test3.value) ;
+#elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == GLIDER_RATIO) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
+   SendValue( FRSKY_USERDATA_ACC_X , (int16_t) gliderRatio.value) ; 
+#elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == SECONDS_SINCE_T0 ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
+    SendValue( FRSKY_USERDATA_ACC_X , (int16_t) secFromT0.value) ; 
+#elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == AVERAGE_VSPEED_SINCE_TO ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
+    SendValue( FRSKY_USERDATA_ACC_X , (int16_t) averageVspeedSinceT0.value) ;     
 #endif
 
 // accY
@@ -595,6 +635,12 @@ void OXS_OUT::SendFrame1(){
    SendValue( FRSKY_USERDATA_ACC_Y , (int16_t) test2.value) ;
 #elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == TEST_3)
    SendValue( FRSKY_USERDATA_ACC_Z , (int16_t) test3.value) ;
+#elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == GLIDER_RATIO) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
+   SendValue( FRSKY_USERDATA_ACC_Y , (int16_t) gliderRatio.value) ; 
+#elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == SECONDS_SINCE_T0 ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
+    SendValue( FRSKY_USERDATA_ACC_Y , (int16_t) secFromT0.value) ; 
+#elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == AVERAGE_VSPEED_SINCE_TO ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
+    SendValue( FRSKY_USERDATA_ACC_Y , (int16_t) averageVspeedSinceT0.value) ;     
 #endif
 
 // accZ
@@ -604,6 +650,12 @@ void OXS_OUT::SendFrame1(){
    SendValue( FRSKY_USERDATA_ACC_Z , (int16_t) test2.value) ;
 #elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == TEST_3)
    SendValue( FRSKY_USERDATA_ACC_Z , (int16_t) test3.value) ;
+#elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == GLIDER_RATIO) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
+   SendValue( FRSKY_USERDATA_ACC_Z , (int16_t) gliderRatio.value) ; 
+#elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == SECONDS_SINCE_T0 ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
+    SendValue( FRSKY_USERDATA_ACC_Z , (int16_t) secFromT0.value) ; 
+#elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == AVERAGE_VSPEED_SINCE_TO ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
+    SendValue( FRSKY_USERDATA_ACC_Z , (int16_t) averageVspeedSinceT0.value) ;     
 #endif
 
   if( hubMaxData > 0 ) {

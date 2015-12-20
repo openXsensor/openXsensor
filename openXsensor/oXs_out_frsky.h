@@ -172,6 +172,8 @@
 #define VERTICAL_SPEED_A   29    
 #define VERTICAL_SPEED_I   30    
 #define GLIDER_RATIO       31
+#define SECONDS_SINCE_T0        32
+#define AVERAGE_VSPEED_SINCE_TO 33 
 // to do : add alt min, alt max ,  rpm max? , current max (not sure that it is neaded because it can be calculated on TX side
 // End of list of type of available measurements
 
@@ -260,6 +262,8 @@ extern struct ONE_MEASUREMENT test1 ;
 extern struct ONE_MEASUREMENT test2 ;
 extern struct ONE_MEASUREMENT test3 ;
 extern struct ONE_MEASUREMENT gliderRatio ;
+extern struct ONE_MEASUREMENT secFromT0 ; 
+extern struct ONE_MEASUREMENT averageVspeedSinceT0 ;     
 
 extern uint8_t selectedVario ;
 

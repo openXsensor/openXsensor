@@ -145,6 +145,9 @@ float averageVSpeedFloat ;
 
 #if defined  (VARIO) && defined (GLIDER_RATIO_CALCULATED_AFTER_X_SEC) && GLIDER_RATIO_CALCULATED_AFTER_X_SEC >= 1 
 struct ONE_MEASUREMENT gliderRatio ;
+struct ONE_MEASUREMENT secFromT0 ; // in 1/10 sec
+struct ONE_MEASUREMENT averageVspeedSinceT0 ; //in cm/sec
+
 void calculateAverages();
 #endif
 
@@ -971,9 +974,9 @@ void calculateDte () {  // is calculated about every 2O ms each time that an alt
 void calculateAverages( ){
         static int32_t altitudeAtT0 ; // in cm
         static int32_t distanceSinceT0 ; // in cm
-        static int32_t averageVspeedSinceT0 ; //in cm/sec
+//        static int32_t averageVspeedSinceT0 ; //in cm/sec
         static int16_t aSpeedAtT0 ;
-        static uint16_t secFromT0 ;  // in 1/10 sec
+//        static uint16_t secFromT0 ;  // in 1/10 sec
         static uint32_t millisAtT0 ;
         static unsigned long prevAverageAltMillis =  millis() + 5000 ; // wait 5 sec before calculating those data ; // save when AverageAltitude has to be calculated
         int32_t altitudeDifference ;
@@ -982,9 +985,9 @@ void calculateAverages( ){
 
         if ( (uint16_t) (currentGliderMillis - prevAverageAltMillis) >   500 ) { // check on tolerance has to be done
             altitudeDifference = oXs_MS5611.varioData.absoluteAlt.value -altitudeAtT0  ;
-            secFromT0 =  ( currentGliderMillis - millisAtT0 ) / 100 ;            // in 1/10 of sec
+            secFromT0.value =  ( currentGliderMillis - millisAtT0 ) / 100 ;            // in 1/10 of sec
 #ifdef DEBUG_GLIDER8RATIO
-            serial.print((F("secFromT0: ")); serial.println( secFromT0 ) ;
+            serial.print((F("secFromT0: ")); serial.println( secFromT0.value ) ;
 #endif
 #ifdef AIRSPEED
             if ( (aSpeedAtT0 > 300) && ( oXs_4525.airSpeedData.smoothAirSpeed > 300 ) ) {
@@ -1000,9 +1003,9 @@ void calculateAverages( ){
                 aSpeedAtT0 = oXs_4525.airSpeedData.smoothAirSpeed ;
                 distanceSinceT0 = 0 ;
 #endif                
-                secFromT0 = 0 ;
+                secFromT0.value = 0 ;
                 millisAtT0 = currentGliderMillis ;
-                averageVspeedSinceT0 = 0 ;
+                averageVspeedSinceT0.value = 0 ;
                 gliderRatio.value = 0 ;
 #ifdef DEBUG_GLIDER8RATIO
             serial.println((F("Reset")); 
@@ -1012,22 +1015,18 @@ void calculateAverages( ){
 #ifdef AIRSPEED
                 distanceSinceT0 += oXs_4525.airSpeedData.smoothAirSpeed / (1000 /  500) ;  // to adapt if delay is different.
 #endif                
-                if (  secFromT0 >=  GLIDER_RATIO_CALCULATED_AFTER_X_SEC * 10 ) {         // *10 because secFromT0 is in 1/10 of sec 
+                if (  secFromT0.value >=  GLIDER_RATIO_CALCULATED_AFTER_X_SEC * 10 ) {         // *10 because secFromT0 is in 1/10 of sec 
 #ifdef AIRSPEED
                     gliderRatio.value = distanceSinceT0  * -10 / altitudeDifference  ;        // when gliderRatio is > (50.0 *10) it it not realistic (*10 is done in order to add a decimal)
                     if ( gliderRatio.value > 500) gliderRatio.value = 0 ;                                                   // 
 #endif                    
-                    averageVspeedSinceT0 = altitudeDifference * 10 / secFromT0  ;      // * 10 because secFromT0 is in 1/10 of sec
+                    averageVspeedSinceT0.value = altitudeDifference * 10 / secFromT0.value  ;      // * 10 because secFromT0 is in 1/10 of sec
                 }
              }
-            gliderRatio.available = true;
             prevAverageAltMillis += 500  ; 
-            test1.value = secFromT0 ; 
-            test1.available = true ; 
-            test2.value = averageVspeedSinceT0 ; 
-            test2.available = true ; 
-            test3.value = gliderRatio.value ; 
-            test3.available = true ; 
+            gliderRatio.available = true;
+            secFromT0.available = true ; 
+            averageVspeedSinceT0.available = true ; 
         }
 }        
 #endif
