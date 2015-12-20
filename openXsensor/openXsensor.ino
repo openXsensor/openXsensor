@@ -31,23 +31,23 @@
     #error The parameter VSPEED_SOURCE in config.h is NOT valid
 #endif    
 
-#if defined( VFAS_SOURCE ) && ( !  ( ( VFAS_SOURCE == VOLT_1) || ( VFAS_SOURCE == VOLT_2) || ( VFAS_SOURCE == VOLT_3) || ( VFAS_SOURCE == VOLT_4) || ( VFAS_SOURCE == VOLT_5) || ( VFAS_SOURCE == VOLT_6) ) )
+#if defined( VFAS_SOURCE ) && ( !  ( ( VFAS_SOURCE == VOLT_1) || ( VFAS_SOURCE == VOLT_2) || ( VFAS_SOURCE == VOLT_3) || ( VFAS_SOURCE == VOLT_4) || ( VFAS_SOURCE == VOLT_5) || ( VFAS_SOURCE == VOLT_6) ) ) 
  #error When defined, VFAS_SOURCE must be one of following values VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
 #endif
-#if defined( ACCX_SOURCE ) && ( !  ( ( ACCX_SOURCE == VOLT_1) || ( ACCX_SOURCE == VOLT_2) || ( ACCX_SOURCE == VOLT_3) || ( ACCX_SOURCE == VOLT_4) || ( ACCX_SOURCE == VOLT_5) || ( ACCX_SOURCE == VOLT_6) || ( ACCX_SOURCE == TEST_1) || ( ACCX_SOURCE == TEST_2) || ( ACCX_SOURCE == TEST_3) ) )
- #error When defined, ACCX_SOURCE must be one of following values TEST_1, TEST_2, TEST_3, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
+#if defined( ACCX_SOURCE ) && ( !  ( ( ACCX_SOURCE == VOLT_1) || ( ACCX_SOURCE == VOLT_2) || ( ACCX_SOURCE == VOLT_3) || ( ACCX_SOURCE == VOLT_4) || ( ACCX_SOURCE == VOLT_5) || ( ACCX_SOURCE == VOLT_6) || ( ACCX_SOURCE == TEST_1) || ( ACCX_SOURCE == TEST_2) || ( ACCX_SOURCE == TEST_3) || ( ACCX_SOURCE == GLIDER_RATIO) || ( ACCX_SOURCE == SECONDS_SINCE_T0) || ( ACCX_SOURCE == AVERAGE_VSPEED_SINCE_TO) ) )
+ #error When defined, ACCX_SOURCE must be one of following values TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
 #endif
-#if defined( ACCY_SOURCE ) && ( !  ( ( ACCY_SOURCE == VOLT_1) || ( ACCY_SOURCE == VOLT_2) || ( ACCY_SOURCE == VOLT_3) || ( ACCY_SOURCE == VOLT_4) || ( ACCY_SOURCE == VOLT_5) || ( ACCY_SOURCE == VOLT_6) || ( ACCY_SOURCE == TEST_1) || ( ACCY_SOURCE == TEST_2) || ( ACCY_SOURCE == TEST_3) ) )
- #error When defined, ACCY_SOURCE must be one of following values TEST_1, TEST_2, TEST_3, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
+#if defined( ACCY_SOURCE ) && ( !  ( ( ACCY_SOURCE == VOLT_1) || ( ACCY_SOURCE == VOLT_2) || ( ACCY_SOURCE == VOLT_3) || ( ACCY_SOURCE == VOLT_4) || ( ACCY_SOURCE == VOLT_5) || ( ACCY_SOURCE == VOLT_6) || ( ACCY_SOURCE == TEST_1) || ( ACCY_SOURCE == TEST_2) || ( ACCY_SOURCE == TEST_3) || ( ACCY_SOURCE == GLIDER_RATIO) || ( ACCY_SOURCE == SECONDS_SINCE_T0) || ( ACCY_SOURCE == AVERAGE_VSPEED_SINCE_TO) ) )
+ #error When defined, ACCY_SOURCE must be one of following values TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
 #endif
-#if defined( ACCZ_SOURCE ) && ( !  ( ( ACCZ_SOURCE == VOLT_1) || ( ACCZ_SOURCE == VOLT_2) || ( ACCZ_SOURCE == VOLT_3) || ( ACCZ_SOURCE == VOLT_4) || ( ACCZ_SOURCE == VOLT_5) || ( ACCZ_SOURCE == VOLT_6) || ( ACCZ_SOURCE == TEST_1) || ( ACCZ_SOURCE == TEST_2) || ( ACCZ_SOURCE == TEST_3) ) )
- #error When defined, ACCZ_SOURCE must be one of following values TEST_1, TEST_2, TEST_3, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
+#if defined( ACCZ_SOURCE ) && ( !  ( ( ACCZ_SOURCE == VOLT_1) || ( ACCZ_SOURCE == VOLT_2) || ( ACCZ_SOURCE == VOLT_3) || ( ACCZ_SOURCE == VOLT_4) || ( ACCZ_SOURCE == VOLT_5) || ( ACCZ_SOURCE == VOLT_6) || ( ACCZ_SOURCE == TEST_1) || ( ACCZ_SOURCE == TEST_2) || ( ACCZ_SOURCE == TEST_3) || ( ACCZ_SOURCE == GLIDER_RATIO) || ( ACCZ_SOURCE == SECONDS_SINCE_T0) || ( ACCZ_SOURCE == AVERAGE_VSPEED_SINCE_TO) ) )
+ #error When defined, ACCZ_SOURCE must be one of following values TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
 #endif
-#if defined( T1_SOURCE ) && ( !  ( ( T1_SOURCE == PPM) || ( T1_SOURCE == GLIDER_RATIO) || ( T1_SOURCE == SENSITIVITY) || ( T1_SOURCE == VOLT_1) || ( T1_SOURCE == VOLT_2) || ( T1_SOURCE == VOLT_3) || ( T1_SOURCE == VOLT_4) || ( T1_SOURCE == VOLT_5) || ( T1_SOURCE == VOLT_6) || ( T1_SOURCE == TEST_1) || ( T1_SOURCE == TEST_2) || ( T1_SOURCE == TEST_3) ) )
- #error When defined, T1_SOURCE must be one of following values TEST_1, TEST_2, TEST_3, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
+#if defined( T1_SOURCE ) && ( !  ( ( T1_SOURCE == PPM) || ( T1_SOURCE == GLIDER_RATIO)  || ( T1_SOURCE == GLIDER_RATIO)  || ( T1_SOURCE == SECONDS_SINCE_T0) || ( T1_SOURCE == AVERAGE_VSPEED_SINCE_TO) || ( T1_SOURCE == VOLT_1) || ( T1_SOURCE == VOLT_2) || ( T1_SOURCE == VOLT_3) || ( T1_SOURCE == VOLT_4) || ( T1_SOURCE == VOLT_5) || ( T1_SOURCE == VOLT_6) || ( T1_SOURCE == TEST_1) || ( T1_SOURCE == TEST_2) || ( T1_SOURCE == TEST_3) ) )
+ #error When defined, T1_SOURCE must be one of following values TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , SENSITIVITY , PPM , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
 #endif
-#if defined( T2_SOURCE ) && ( !  ( ( T2_SOURCE == PPM) || ( T2_SOURCE == GLIDER_RATIO) || ( T2_SOURCE == SENSITIVITY) || ( T2_SOURCE == VOLT_1) || ( T2_SOURCE == VOLT_2) || ( T2_SOURCE == VOLT_3) || ( T2_SOURCE == VOLT_4) || ( T2_SOURCE == VOLT_5) || ( T2_SOURCE == VOLT_6) || ( T2_SOURCE == TEST_1) || ( T2_SOURCE == TEST_2) || ( T2_SOURCE == TEST_3) ) )
- #error When defined, T2_SOURCE must be one of following values TEST_1, TEST_2, TEST_3, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
+#if defined( T2_SOURCE ) && ( !  ( ( T2_SOURCE == PPM) || ( T2_SOURCE == GLIDER_RATIO) || ( T2_SOURCE == SECONDS_SINCE_T0) || ( T2_SOURCE == AVERAGE_VSPEED_SINCE_TO) || ( T2_SOURCE == SENSITIVITY) || ( T2_SOURCE == VOLT_1) || ( T2_SOURCE == VOLT_2) || ( T2_SOURCE == VOLT_3) || ( T2_SOURCE == VOLT_4) || ( T2_SOURCE == VOLT_5) || ( T2_SOURCE == VOLT_6) || ( T2_SOURCE == TEST_1) || ( T2_SOURCE == TEST_2) || ( T2_SOURCE == TEST_3) ) )
+ #error When defined, T2_SOURCE must be one of following values TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , SENSITIVITY , PPM , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
 #endif
 
 #ifdef PIN_PPM
