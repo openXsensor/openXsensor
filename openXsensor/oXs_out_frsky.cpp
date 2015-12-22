@@ -44,7 +44,7 @@ extern void delay(unsigned long ms) ;
 
 //used only by Sport protocol
 extern uint8_t  volatile  sportData[7] ;
-extern uint8_t volatile sportDataLock ;
+uint8_t volatile sportDataLock ;
 extern uint8_t volatile sendStatus ;
 #if defined(PIN_VOLTAGE) && defined(VFAS_SOURCE) 
   struct ONE_MEASUREMENT vfas ; 
@@ -1193,8 +1193,9 @@ void OXS_OUT::SendCurrentMilliAmps(int32_t milliamps)
 // ********************************** Here the code to handle the UART communication with the receiver
 #ifdef DEBUG
 //#define DEBUGSETNEWDATA
-//#define DEBUGASERIAL
 #endif
+
+#define DEBUGASERIAL              // Generate signal on A0 A1 in order to debug UART timing
 
 #define FORCE_INDIRECT(ptr) __asm__ __volatile__ ("" : "=e" (ptr) : "0" (ptr))
 
@@ -1231,7 +1232,6 @@ uint8_t LastRx ;
 uint8_t TxSportData[7] ;
 uint16_t Crc ;
 uint8_t  volatile  sportData[7] ;
-uint8_t volatile sportDataLock ;
 uint8_t volatile sendStatus ;
 uint8_t volatile gpsSendStatus ; 
 uint8_t volatile gpsSportDataLock ;
@@ -1247,7 +1247,7 @@ ISR(TIMER1_COMPA_vect)
   {
   // Transmit Byte.
     case TRANSMIT :   // Output the TX buffer in SPORT ************ we are sending each bit of data
-#if DEBUGASERIAL
+#ifdef DEBUGASERIAL
           PORTC |= 1 ;
 #endif
           if( SwUartTXBitCount < 8 )
@@ -1270,7 +1270,7 @@ ISR(TIMER1_COMPA_vect)
                 //ENABLE_TIMER0_INT() ;                   // Allow this in now.
           }
           OCR1A += TICKS2WAITONESPORT ;  // Count one period into the future.  
-#if DEBUGASERIAL
+#ifdef DEBUGASERIAL
           PORTC &= ~1 ;
 #endif
           break ;
@@ -1304,7 +1304,7 @@ ISR(TIMER1_COMPA_vect)
                       }
                   }
                   SET_TX_PIN() ;                    // Send a logic 0 on the TX_PIN.
-                  OCR1A = TCNT1 + TICKS2WAITONESPORT ;   // Count one period into the future.
+                  OCR1A = TCNT1 + TICKS2WAITONESPORT - INTERRUPT_BETWEEN_TRANSMIT;   // Count one period into the future. Compensate the time for ISR
                   SwUartTXBitCount = 0 ;
                   state = TRANSMIT ;
                   //DISABLE_TIMER0_INT() ;      // For the byte duration
@@ -1328,19 +1328,19 @@ ISR(TIMER1_COMPA_vect)
                         SwUartRXBitCount = data + 1 ;
                         data = SwUartRXData ;
                         data >>= 1 ;                         // Shift due to receiving LSB first.
-#if DEBUGASERIAL
+#ifdef DEBUGASERIAL
                         PORTC &= ~1 ;
 #endif
                         if( GET_RX_PIN( ) == 0 ) {
                             data |= 0x80 ;                    // If a logical 1 is read, let the data mirror this.
                         }
-#if DEBUGASERIAL
+#ifdef DEBUGASERIAL
                         PORTC |= 1 ;
 #endif
                         SwUartRXData = data ;
                     }
                     else { //Done receiving =  8 bits are in SwUartRXData
-#if DEBUGASERIAL
+#ifdef DEBUGASERIAL
                         PORTC &= ~1 ;
 #endif
                         if ( LastRx == 0x7E ) {
@@ -1369,7 +1369,7 @@ ISR(TIMER1_COMPA_vect)
                                 sensorIsr = 255 ;  
                             }
                             if ( ( sensorIsr < 6 ) && ( ( frskyStatus & ( 1 << sensorIsr )) == 0 ) ) {    // If this sensor ID is supported by oXs and oXs has prepared data to reply data in dataValue[] for this sensorSeq    
-                                      if ( sportDataLock == 0 ) {
+                                     // if ( sportDataLock == 0 ) {
                                           TxSportData[0] = 0x10 ;
                                           TxSportData[1] = dataId[sensorIsr] << 4  ;
                                           TxSportData[2] = dataId[sensorIsr] >> 4 ;
@@ -1378,8 +1378,8 @@ ISR(TIMER1_COMPA_vect)
                                           TxSportData[5] = dataValue[sensorIsr] >> 16 ;
                                           TxSportData[6] = dataValue[sensorIsr] >> 24 ;
                                           state = TxPENDING ;
-                                          OCR1A += ( DELAY_400 - TICKS2WAITONESPORT) ;    // 400 uS gap before sending
-                                      }
+                                          OCR1A += ( DELAY_400 - TICKS2WAITONESPORT) ;    // 400 uS gap before sending (remove 1 tick time because it was already added before
+                                      //}
                             } else  { // No data are loaded (so there is no data yet available)
                                   state = WAITING ;       // Wait for idle time
                                   OCR1A += DELAY_3500 ;   // 3.5mS gap before listening
@@ -1397,18 +1397,18 @@ ISR(TIMER1_COMPA_vect)
            }
            break ;
   
-  case TxPENDING :   // SPORT ****** we have sent a start bit and were waiting to send a byte
-#if DEBUGASERIAL
+  case TxPENDING :   // SPORT ****** we will here send a start bit before sending a byte
+#ifdef DEBUGASERIAL
         PORTC |= 1 ;
 #endif
         TRXDDR |= ( 1 << PIN_SERIALTX ) ;       // PIN is output
-        SET_TX_PIN() ;                          // Send a logic 0 on the TX_PIN.
-        OCR1A = TCNT1 + TICKS2WAITONESPORT ;    // Count one period into the future.
+        SET_TX_PIN() ;                          // Send a logic 0 on the TX_PIN. = start bit
+        OCR1A = TCNT1 +  ( TICKS2WAITONESPORT - INTERRUPT_ENTRY_TRANSMIT );    // Count one period into the future (less the time to execute ISR) .
         SwUartTXBitCount = 0 ;
         Crc = SwUartTXData = TxSportData[0] ;
         TxCount = 0 ;
         state = TRANSMIT ;
-#if DEBUGASERIAL
+#ifdef DEBUGASERIAL
         PORTC &= ~1 ;
 #endif
         break ;
@@ -1434,7 +1434,7 @@ ISR(TIMER1_COMPA_vect)
     switch (state) {
   // Transmit Byte.
       case TRANSMIT :   // Hub **** Output the TX buffer. Start bit has already been sent ************ 
-#if DEBUGASERIAL
+#ifdef DEBUGASERIAL
           PORTC |= 1 ;
 #endif
           if( SwUartTXBitCount < 8 ) {              // if all bits have not been sent
@@ -1450,7 +1450,7 @@ ISR(TIMER1_COMPA_vect)
              state = TRANSMIT_STOP_BIT;
           }
           OCR1A += TICKS2WAITONEHUB ;  // Count one period into the future.  
-#if DEBUGASERIAL
+#ifdef DEBUGASERIAL
           PORTC &= ~1 ;
 #endif
           break ;
@@ -1529,7 +1529,7 @@ void initSportUart(  )           //*************** initialise UART pour SPORT
     // Internal State Variable
     state = IDLE ;
 
-#if DEBUGASERIAL
+#ifdef DEBUGASERIAL
   DDRC = 0x03 ;   // PC0,1 as o/p debug
   PORTC = 0 ;
 #endif
@@ -1559,7 +1559,7 @@ ISR(PCINT2_vect)
     state = RECEIVE ;                 // Change state
             DISABLE_TIMER_INTERRUPT() ;       // Disable timer to change its registers.
           OCR1A = TCNT1 + TICKS2WAITONE_HALFSPORT - INTERRUPT_EXEC_CYCL - INTERRUPT_EARLY_BIAS ; // Count one and a half period into the future.
-#if DEBUGASERIAL
+#ifdef DEBUGASERIAL
           PORTC |= 1 ;
 #endif
             SwUartRXBitCount = 0 ;            // Clear received bit counter.
@@ -1592,7 +1592,7 @@ void initHubUart( )
 //  TxMax = 0 ;
   TxCount = 0 ;
 
-#if DEBUGASERIAL
+#ifdef DEBUGASERIAL
   DDRC = 0x03 ;   // PC0,1 as o/p debug
   PORTC = 0 ;
 #endif
@@ -1635,7 +1635,7 @@ void startHubTransmit()
   //TxNotEmpty = 0 ;
   state = TRANSMIT ;
   ENABLE_TIMER_INTERRUPT() ;        // Enable timer1 interrupt on again
-#if DEBUGASERIAL
+#ifdef DEBUGASERIAL
   PORTC &= ~1 ;
 #endif
 
