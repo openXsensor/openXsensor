@@ -43,7 +43,7 @@
 #if defined( ACCZ_SOURCE ) && ( !  ( ( ACCZ_SOURCE == VOLT_1) || ( ACCZ_SOURCE == VOLT_2) || ( ACCZ_SOURCE == VOLT_3) || ( ACCZ_SOURCE == VOLT_4) || ( ACCZ_SOURCE == VOLT_5) || ( ACCZ_SOURCE == VOLT_6) || ( ACCZ_SOURCE == TEST_1) || ( ACCZ_SOURCE == TEST_2) || ( ACCZ_SOURCE == TEST_3) || ( ACCZ_SOURCE == GLIDER_RATIO) || ( ACCZ_SOURCE == SECONDS_SINCE_T0) || ( ACCZ_SOURCE == AVERAGE_VSPEED_SINCE_TO) ) )
  #error When defined, ACCZ_SOURCE must be one of following values TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
 #endif
-#if defined( T1_SOURCE ) && ( !  ( ( T1_SOURCE == PPM) || ( T1_SOURCE == GLIDER_RATIO)  || ( T1_SOURCE == GLIDER_RATIO)  || ( T1_SOURCE == SECONDS_SINCE_T0) || ( T1_SOURCE == AVERAGE_VSPEED_SINCE_TO) || ( T1_SOURCE == VOLT_1) || ( T1_SOURCE == VOLT_2) || ( T1_SOURCE == VOLT_3) || ( T1_SOURCE == VOLT_4) || ( T1_SOURCE == VOLT_5) || ( T1_SOURCE == VOLT_6) || ( T1_SOURCE == TEST_1) || ( T1_SOURCE == TEST_2) || ( T1_SOURCE == TEST_3) ) )
+#if defined( T1_SOURCE ) && ( !  ( ( T1_SOURCE == PPM) || ( T1_SOURCE == GLIDER_RATIO) || ( T1_SOURCE == SECONDS_SINCE_T0) || ( T1_SOURCE == AVERAGE_VSPEED_SINCE_TO) || ( T1_SOURCE == SENSITIVITY) || ( T1_SOURCE == VOLT_1) || ( T1_SOURCE == VOLT_2) || ( T1_SOURCE == VOLT_3) || ( T1_SOURCE == VOLT_4) || ( T1_SOURCE == VOLT_5) || ( T1_SOURCE == VOLT_6) || ( T1_SOURCE == TEST_1) || ( T1_SOURCE == TEST_2) || ( T1_SOURCE == TEST_3) ) )
  #error When defined, T1_SOURCE must be one of following values TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , SENSITIVITY , PPM , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
 #endif
 #if defined( T2_SOURCE ) && ( !  ( ( T2_SOURCE == PPM) || ( T2_SOURCE == GLIDER_RATIO) || ( T2_SOURCE == SECONDS_SINCE_T0) || ( T2_SOURCE == AVERAGE_VSPEED_SINCE_TO) || ( T2_SOURCE == SENSITIVITY) || ( T2_SOURCE == VOLT_1) || ( T2_SOURCE == VOLT_2) || ( T2_SOURCE == VOLT_3) || ( T2_SOURCE == VOLT_4) || ( T2_SOURCE == VOLT_5) || ( T2_SOURCE == VOLT_6) || ( T2_SOURCE == TEST_1) || ( T2_SOURCE == TEST_2) || ( T2_SOURCE == TEST_3) ) )
@@ -55,8 +55,8 @@
 	#define PPM_INTERRUPT			ON // define to use interrupt code in Aserial.cpp
 	#define PPM_INT_MASK			0x03
 	#define PPM_INT_EDGE			0x01
-	#define PPM_PIN_HEX			0x02
-	#define PPM_INT_BIT			0x01
+	#define PPM_PIN_HEX			  0x02
+	#define PPM_INT_BIT		  	0x01
  #endif
 
  #if PIN_PPM == 3
@@ -854,13 +854,11 @@ void calculateAllFields () {
 #if defined (VARIO) &&  defined (USE_6050)
 //  switchVTrackAvailable = false ;
 #endif  
-#if defined (VARIO) &&  defined (USE_6050) && defined(PIN_PPM)
+#if defined (VARIO) &&  defined (USE_6050)
     test1.value = oXs_MS5611.varioData.climbRate.value ;
     test1.available = oXs_MS5611.varioData.climbRate.available ;
     test2.value = vSpeedImu.value ;
     test2.available = vSpeedImu.available ;
-    test3.value = ppm.value * 100 ;
-    test3.available = ppm.available ;
 #endif
 
 
