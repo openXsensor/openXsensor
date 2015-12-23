@@ -457,7 +457,7 @@ ISR(TIMER1_COMPA_vect)
               SwUartTXData = TxMultiplexData[TxCount] ;
 //                  SwUartTXData = TxCount ;
               CLEAR_TX_PIN_MB();                     // Send a logic 0 on the TX_PIN as start bit  
-              OCR1A = TCNT1 + TICKS2WAITONEMULTIPLEX ;   // Count one period into the future.
+              OCR1A = TCNT1 + TICKS2WAITONEMULTIPLEX  - INTERRUPT_BETWEEN_TRANSMIT;   // Count one period into the future.
               SwUartTXBitCount = 0 ;
               state = TRANSMIT ;
         } else {                     // 3 bytes have already been sent
@@ -504,7 +504,7 @@ ISR(TIMER1_COMPA_vect)
   
       case TxPENDING :                                         //End of delay before sending data has occurs
             CLEAR_TX_PIN_MB() ;                          // Send a start bit (logic 0 on the TX_PIN).
-            OCR1A = TCNT1 + TICKS2WAITONEMULTIPLEX ;         // Count one period into the future.
+            OCR1A = TCNT1 + TICKS2WAITONEMULTIPLEX - INTERRUPT_ENTRY_TRANSMIT;         // Count one period into the future.
             SwUartTXBitCount = 0 ;
             SwUartTXData = TxMultiplexData[0] ;
             TxCount = 0 ;

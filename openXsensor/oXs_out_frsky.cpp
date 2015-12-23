@@ -1195,7 +1195,7 @@ void OXS_OUT::SendCurrentMilliAmps(int32_t milliamps)
 //#define DEBUGSETNEWDATA
 #endif
 
-#define DEBUGASERIAL              // Generate signal on A0 A1 in order to debug UART timing
+//#define DEBUGASERIAL              // Generate signal on A0 A1 in order to debug UART timing
 
 #define FORCE_INDIRECT(ptr) __asm__ __volatile__ ("" : "=e" (ptr) : "0" (ptr))
 
@@ -1276,7 +1276,7 @@ ISR(TIMER1_COMPA_vect)
           break ;
 
   // Go to idle after stop bit was sent.
-          case TRANSMIT_STOP_BIT: // SPORT ************************************* We send a stop bit
+          case TRANSMIT_STOP_BIT: // SPORT ************************************* We have sent a stop bit, we look now if there is other byte to send
                 if ( ByteStuffByte || (++TxCount < 8 ) )    // Have we sent 8 bytes?
                 {
                   if ( ByteStuffByte )
@@ -1303,7 +1303,7 @@ ISR(TIMER1_COMPA_vect)
                         SwUartTXData = 0x7D ;         
                       }
                   }
-                  SET_TX_PIN() ;                    // Send a logic 0 on the TX_PIN.
+                  SET_TX_PIN() ;                    // Send a logic 0 on the TX_PIN. (= start bit)
                   OCR1A = TCNT1 + TICKS2WAITONESPORT - INTERRUPT_BETWEEN_TRANSMIT;   // Count one period into the future. Compensate the time for ISR
                   SwUartTXBitCount = 0 ;
                   state = TRANSMIT ;
@@ -1459,8 +1459,8 @@ ISR(TIMER1_COMPA_vect)
       case TRANSMIT_STOP_BIT: //  HUB ********************* We have sent a stop bit, now sent eventually next byte from buffer
           if ( ++TxCount < hubMaxData) {          // Have we sent all bytes? if not,
             SwUartTXData = hubData[TxCount] ;        // load next byte     
-            SET_TX_PIN() ;                           // Send a logic 0 on the TX_PIN.
-            OCR1A = TCNT1 + TICKS2WAITONEHUB ;       // Count one period into the future.
+            SET_TX_PIN() ;                           // Send a logic 0 on the TX_PIN. (= start bit)
+            OCR1A = TCNT1 + TICKS2WAITONEHUB - INTERRUPT_BETWEEN_TRANSMIT ;       // Count one period into the future.
             SwUartTXBitCount = 0 ;
             state = TRANSMIT ;
           } else {                                // if all bytes have been send, wait 100usec
@@ -1625,9 +1625,9 @@ void startHubTransmit()
   {
     return ;
   }
-  SET_TX_PIN() ;                    // Send a logic 0 on the TX_PIN.
+  SET_TX_PIN() ;                    // Send a logic 0 on the TX_PIN (=start bit).
   cli() ;
-  OCR1A = TCNT1 + TICKS2WAITONEHUB ;   // Count one period into the future.
+  OCR1A = TCNT1 + TICKS2WAITONEHUB  - INTERRUPT_ENTRY_TRANSMIT;   // Count one period into the future.
   CLEAR_TIMER_INTERRUPT() ;         // Clear interrupt bits
   sei() ;
   SwUartTXBitCount = 0 ;

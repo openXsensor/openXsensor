@@ -217,17 +217,20 @@ extern volatile uint16_t RpmValue ;
 // INTERRUPT_EARLY_BIAS is to bias the sample point a bit early in case
 // the Timer 0 interrupt (5.5uS) delays the start bit detection
   #if F_CPU == 20000000L     // 20MHz clock                                                  
-    #define INTERRUPT_EXEC_CYCL   112       // Cycles to execute interrupt routines from interrupt.
-    #define INTERRUPT_EARLY_BIAS  40       // Cycles to allow of other interrupts.
+    #define INTERRUPT_EXEC_CYCL   90       // Cycles to execute interrupt routines from interrupt.
+    #define INTERRUPT_EARLY_BIAS  32       // Cycles to allow of other interrupts.
   #elif F_CPU == 16000000L   // 16MHz clock                                                  
     #define INTERRUPT_EXEC_CYCL   90       // Cycles to execute interrupt routines from interrupt.
     #define INTERRUPT_EARLY_BIAS  32       // Cycles to allow of other interrupts.
   #elif F_CPU == 8000000L    // 8MHz clock                                                   
-    #define INTERRUPT_EXEC_CYCL   45       // Cycles to execute interrupt routines from interrupt.
-    #define INTERRUPT_EARLY_BIAS  16       // Cycles to allow of other interrupts.
+    #define INTERRUPT_EXEC_CYCL   90       // Cycles to execute interrupt routines from interrupt.
+    #define INTERRUPT_EARLY_BIAS  32       // Cycles to allow of other interrupts.
   #else
     #error Unsupported clock speed
   #endif
+
+    #define INTERRUPT_ENTRY_TRANSMIT  59   // Cycles in ISR before sending first bit from first byte; Without this correction, first bit is sent 7.4 usec to late at 8 Mhz (so it takes 59 cycles = 7.4 usec * 8)
+    #define INTERRUPT_BETWEEN_TRANSMIT  64   // Cycles in ISR before sending first bit from 2d, 3rd... bytes; Without this correction, first bit is sent 4 usec to late at 16 Mhz (so it takes 64 cycles = 4 usec * 16)
 
 // this section define some delays used ; values can be used by any protocol
   #if F_CPU == 20000000L     // 20MHz clock                                                  
