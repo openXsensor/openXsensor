@@ -555,7 +555,7 @@ void OXS_OUT::SendFrame1(){
 
 // vfas
 #if defined(PIN_VOLTAGE) && defined(VFAS_SOURCE) &&  ( (VFAS_SOURCE == VOLT_1) || (VFAS_SOURCE == VOLT_2) || (VFAS_SOURCE == VOLT_3) || (VFAS_SOURCE == VOLT_4) || (VFAS_SOURCE == VOLT_5) || (VFAS_SOURCE == VOLT_6) )
-    SendValue( FRSKY_USERDATA_VFAS_NEW ,  (int16_t) voltageData->mVolt[VFAS_SOURCE - VOLT_1 ].value ) ;
+    SendValue( FRSKY_USERDATA_VFAS_NEW ,  (int16_t) (voltageData->mVolt[VFAS_SOURCE - VOLT_1 ].value / 100) ) ; // convert mvolt in 1/10 of volt; in openTx 2.1.x, it is possible to get 1 more decimal using [VFAS_SOURCE - VOLT_1 ].value/10.)+2000);  
 #endif
    
 // current
