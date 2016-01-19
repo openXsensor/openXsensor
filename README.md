@@ -39,3 +39,5 @@ It is compatible with :
     * Temperature sensor
     * ...
   * Can calculate glider ratio to improve glider setup while flying
+  
+Note: more details about the requirements and the way to configure oXs are given in the wiki and in the file oXs_config_description.h 
