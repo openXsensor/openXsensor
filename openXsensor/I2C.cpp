@@ -96,7 +96,7 @@ void I2C::begin()
   // initialize twi prescaler and bit rate
   cbi(TWSR, TWPS0);
   cbi(TWSR, TWPS1);
-  TWBR = ((F_CPU / 100000) - 16) / 2;
+  TWBR = ((F_CPU / 400000) - 16) / 2; //use 100khz ; for 400khz use TWBR = ((F_CPU / 400000) - 16) / 2;  
   // enable twi module and acks
   TWCR = _BV(TWEN) | _BV(TWEA); 
 }
@@ -321,11 +321,11 @@ uint8_t I2C::write(uint8_t address, uint8_t registerAddress, char *data)
 {
   uint8_t bufferLength = strlen(data);
   returnStatus = 0;
-  returnStatus = write(address, registerAddress, (uint8_t*)data, bufferLength);
+  returnStatus = write(address, registerAddress,  bufferLength ,(uint8_t*)data );
   return(returnStatus);
 }
 
-uint8_t I2C::write(uint8_t address, uint8_t registerAddress, uint8_t *data, uint8_t numberBytes)
+uint8_t I2C::write(uint8_t address, uint8_t registerAddress,  uint8_t numberBytes , uint8_t * data )
 {
   returnStatus = 0;
   returnStatus = start();

@@ -84,11 +84,7 @@
 
 #define MAX_BUFFER_SIZE 32
 
-
-
-
-class I2C
-{
+class I2C {
   public:
     I2C();
     void begin();
@@ -104,13 +100,13 @@ class I2C
     uint8_t write(uint8_t, uint8_t, uint8_t);
 //    uint8_t write(int, int, int);
     uint8_t write(uint8_t, uint8_t, char*);
-    uint8_t write(uint8_t, uint8_t, uint8_t*, uint8_t);
+    uint8_t write(uint8_t, uint8_t,  uint8_t , uint8_t* );
     uint8_t read(uint8_t, uint8_t);
 //    uint8_t read(int, int);
     uint8_t read(uint8_t, uint8_t, uint8_t);
 //    uint8_t read(int, int, int);
     uint8_t read(uint8_t, uint8_t, uint8_t*);
-    uint8_t read(uint8_t, uint8_t, uint8_t, uint8_t*);
+    uint8_t read(uint8_t, uint8_t, uint8_t, uint8_t* );
     
     uint8_t scanAdr ;
 
