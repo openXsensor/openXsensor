@@ -41,3 +41,5 @@ It is compatible with :
   * Can calculate glider ratio to improve glider setup while flying
   
 Note: more details about the requirements and the way to configure oXs are given in the wiki and in the file oXs_config_description.h 
+
+Note: in old version of openXsensor (oXs), it was possible to use a configurator program in order to create the config.h file. Still, after version 2.5, this program has not been update. So, when using the latest versions of oXs, you must edit the config.h file with a text editor (or the Arduino IDE).
