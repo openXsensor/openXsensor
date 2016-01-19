@@ -34,7 +34,7 @@ void OXS_4525::setup() {
   //airSpeedData.available=false;
   calibrated4525 = false ;
 //  calibrateCount4525 = 0 ;
-  airSpeedData.airSpeedAvailable = false ;
+  airSpeedData.airSpeed.available = false ;
   airSpeedData.compensationAvailable =false ;
 
   airSpeedData.airspeedReset = true ; // set on true to force a reset the first time the 100 ms part is entered
@@ -162,7 +162,7 @@ void OXS_4525::readSensor() {
 //               rawAirSpeed =  sqrt( (float) (574 * 10520.56427 * abs(smoothDifPressureAdc) * temperature4525  /  actualPressure) ); // in cm/sec ; actual pressure must be in pa (so 101325 about at sea level)
                airSpeedData.rawAirSpeed =  2457.4 * sqrt( (float) ( abs(airSpeedData.smoothDifPressureAdc) * airSpeedData.temperature4525  /  actualPressure) ); // in cm/sec ; actual pressure must be in pa (so 101325 about at sea level)
              if ( airSpeedData.smoothDifPressureAdc < 0 ) airSpeedData.rawAirSpeed = - airSpeedData.rawAirSpeed ; // apply the sign
-              smoothAirSpeed = airSpeedData.rawAirSpeed ;
+              airSpeedData.smoothAirSpeed = airSpeedData.rawAirSpeed ;
               
 #ifdef DEBUG4525RAWDATA  
                   static bool firstRawData = true ;
@@ -178,7 +178,7 @@ void OXS_4525::readSensor() {
                         printer->print( airSpeedData.difPressureAdc_zero); printer->print(F(" , "));
                         printer->print( expoSmooth4525_adc_auto * 1000); printer->print(F(" , "));
                         printer->print( airSpeedData.smoothDifPressureAdc); printer->print(F(" , "));
-                         printer->print( smoothAirSpeed * 3.6 / 100); printer->print(F(" , "));
+                         printer->print( airSpeedData.smoothAirSpeed * 3.6 / 100); printer->print(F(" , "));
                          
                         printer->println(" ") ; 
                   }       
@@ -193,12 +193,16 @@ void OXS_4525::readSensor() {
 
         if (airSpeedMillis > nextAirSpeedMillis){ // publish airspeed only once every xx ms
               nextAirSpeedMillis = airSpeedMillis + 200 ;
-              if ( smoothAirSpeed >  300) {  // normally send only if positive and greater than 300 cm/sec , otherwise send 0 but for test we keep all values to check for drift  
-                  airSpeedData.airSpeed = smoothAirSpeed * 0.1943844492 ; // from cm/sec to 1/10 knot
+              if ( airSpeedData.smoothAirSpeed >  0) {  // normally send only if positive and greater than 300 cm/sec , otherwise send 0 but for test we keep all values to check for drift  
+#ifdef AIRSPEED_IN_KMH  // uncomment this line if GPS speed has to be in knot instead of km/h
+                  airSpeedData.airSpeed.value = airSpeedData.smoothAirSpeed * 0.36 ; // from cm/sec to 1/10 km/h
+#else
+                  airSpeedData.airSpeed.value = airSpeedData.smoothAirSpeed * 0.1943844492 ; // from cm/sec to 1/10 knot/h
+#endif
               } else {
-                  airSpeedData.airSpeed = 0 ;
+                  airSpeedData.airSpeed.value = 0 ;
               }    
-              airSpeedData.airSpeedAvailable = true ; 
+              airSpeedData.airSpeed.available = true ; 
 // check if offset must be reset
               if (airSpeedData.airspeedReset) { // adjust the offset if a reset command is received from Tx
                     offset4525 =  offset4525  + airSpeedData.smoothDifPressureAdc ;

@@ -12,12 +12,13 @@ struct AIRSPEEDDATA {
   float smoothDifPressureAdc ;  // in steps ADC
   float temperature4525;     // in Celsius
   float rawAirSpeed ;       // cm/sec
-  int32_t airSpeed ; // in km/h (no decimal)
-  bool airSpeedAvailable ;
+  struct ONE_MEASUREMENT airSpeed ;        // in km/h (no decimal)
+//  int32_t airSpeed ;        // in km/h (no decimal)
+//  bool airSpeedAvailable ;
   int32_t compensation ; // in km/h (no decimal)
   bool compensationAvailable ;
   bool airspeedReset ;
-
+  float smoothAirSpeed ;    //cm/sec
 
 
    
@@ -65,7 +66,7 @@ private:
    float abs_deltaDifPressureAdc ;
 
    float expoSmooth4525_adc_auto ;
-   float smoothAirSpeed ;    //cm/sec
+//   float smoothAirSpeed ;    //cm/sec
 
    unsigned long  airSpeedMillis ; //save time when airspeed is made available
    unsigned long  nextAirSpeedMillis ; //next time that airspeed must be available
