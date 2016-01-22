@@ -147,7 +147,6 @@ float averageVSpeedFloat ;
 struct ONE_MEASUREMENT gliderRatio ;
 struct ONE_MEASUREMENT secFromT0 ; // in 1/10 sec
 struct ONE_MEASUREMENT averageVspeedSinceT0 ; //in cm/sec
-
 void calculateAverages();
 #endif
 
@@ -709,11 +708,7 @@ void readSensors() {
         lastRpmMillis = millis() ;
   }      
 #endif
-
-
-
-
-  
+ 
 }                  // ************** end of readSensors ********************************************
 
 
@@ -861,6 +856,8 @@ void calculateAllFields () {
     test2.available = vSpeedImu.available ;
 #endif
 
+  test1.value = oXs_MS5611.varioData.temperature ;
+  test1.available = true ;
 
 } // end of calciulate all fields
 

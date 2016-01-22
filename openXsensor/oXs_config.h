@@ -1,5 +1,5 @@
 // OpenXsensor https://github.com/openXsensor/
-// started by Rainer Schloßhan
+// started by Rainer Schlosshan
 
 //******************************************************************************************************************************************************* //
 //                                                                                                                                                        //
