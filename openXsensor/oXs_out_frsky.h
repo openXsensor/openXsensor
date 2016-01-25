@@ -420,7 +420,7 @@ uint32_t millis( void ) ;
     #define DELAY_400  ((uint16_t)400.0 * 20.0 /16.0 )
     #define DELAY_100  ((uint16_t)100.0 * 20.0 /16.0 )
   #elif F_CPU == 16000000L   // 16MHz clock                                                  
-    #define DELAY_4000 ((uint16_t) (4000L * 16) )     
+    #define DELAY_4000 ((uint16_t) (3999L * 16) )     
     #define DELAY_3500 ((uint16_t) (3500L * 16) )         
     #define DELAY_2000 ((uint16_t) (2000L * 16) )     
     #define DELAY_1600 ((uint16_t) (1600L * 16) )     

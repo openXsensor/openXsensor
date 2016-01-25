@@ -96,7 +96,7 @@ extern unsigned long millis( void ) ;
 //#define DEBUGPPM
 //#define DEBUGFORCEPPM
 //#define DEBUG_VARIO_TIME
-#define DEBUG_VOLTAGE_TIME
+//#define DEBUG_VOLTAGE_TIME
 #endif
 
 int freeRam () ;
@@ -409,8 +409,19 @@ void setup(){
   oXs_Out.voltageData=&oXs_Voltage.voltageData; 
 #endif
 
+
+
 #ifdef VARIO
+#ifdef DEBUG 
+  Serial.println(F("vario setting up.."));
+  delay(1000);
+#endif 
   oXs_MS5611.setup();
+#ifdef DEBUG 
+  Serial.println(F("vario is up.."));
+  delay(1000);
+#endif 
+
   oXs_Out.varioData=&oXs_MS5611.varioData; 
   #ifdef PIN_ANALOG_VSPEED
     lastMillisPWR = 3500 ; // So we will wait for 3.5 sec before generating a Vertical speed on PWM
@@ -752,7 +763,7 @@ void calculateAllFields () {
             vSpeedImu.available = true ;
             switchVTrackAvailable = true ;
             
-  //#define TEST_SEND_MPU
+  #define TEST_SEND_MPU
   #ifdef TEST_SEND_MPU                                                  ///////////////////////////// !!!!!!!!!!!!!!!!!!!!!! to be changed
             test1.value = linear_acceleration_x * 981 ; 
             test1.available = true ; 
@@ -850,14 +861,14 @@ void calculateAllFields () {
 //  switchVTrackAvailable = false ;
 #endif  
 #if defined (VARIO) &&  defined (USE_6050)
-    test1.value = oXs_MS5611.varioData.climbRate.value ;
-    test1.available = oXs_MS5611.varioData.climbRate.available ;
-    test2.value = vSpeedImu.value ;
-    test2.available = vSpeedImu.available ;
+//    test1.value = oXs_MS5611.varioData.climbRate.value ;
+//    test1.available = oXs_MS5611.varioData.climbRate.available ;
+//    test2.value = vSpeedImu.value ;
+//    test2.available = vSpeedImu.available ;
 #endif
 
-  test1.value = oXs_MS5611.varioData.temperature ;
-  test1.available = true ;
+//  test1.value = oXs_MS5611.varioData.absoluteAlt.value/10 ;
+//  test1.available = true ;
 
 } // end of calciulate all fields
 

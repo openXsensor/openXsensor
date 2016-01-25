@@ -18,7 +18,7 @@
 
 
 // --------- 1 - Telemetry protocol ---------
-#define PROTOCOL  FRSKY_SPORT  // select between FRSKY_SPORT , FRSKY_HUB , FRSKY_SPORT_HUB , MULTIPLEX , HOTT
+#define PROTOCOL  FRSKY_SPORT_HUB  // select between FRSKY_SPORT , FRSKY_HUB , FRSKY_SPORT_HUB , MULTIPLEX , HOTT
 
 // --------- 2 - Serial data pin choice ---------
 #define PIN_SERIALTX      4    // The pin which transmits the serial data to the FrSky telemetry receiver, Usually pin 4
@@ -117,8 +117,8 @@
 //#define ACCX_SOURCE     TEST_3                   //  select between TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6 
 //#define ACCY_SOURCE     VOLT_3                 //  select between TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
 //#define ACCZ_SOURCE     TEST_3                 //  select between TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
-//#define T1_SOURCE       TEST_1                   //  select between TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , SENSITIVITY, PPM, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
-//#define T2_SOURCE       PPM                      //  select between TEST_1, TEST_2, TEST_3, , GLIDER_RATIO, SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , SENSITIVITY, PPM, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
+#define T1_SOURCE       TEST_1                   //  select between TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , SENSITIVITY, PPM, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
+#define T2_SOURCE       TEST_2                      //  select between TEST_1, TEST_2, TEST_3, , GLIDER_RATIO, SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , SENSITIVITY, PPM, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
 
 // ***** 9.2 - Hott data *****
 //#define BATTERY_1_SOURCE          VOLT_4                 // select between VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
@@ -126,9 +126,6 @@
 //#define MAIN_BATTERY_SOURCE       VOLT_5                 // select between VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
 //#define TEMPERATURE_1_SOURCE      TEST_1          //  select between TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SENSITIVITY , PPM
 //#define TEMPERATURE_2_SOURCE      PPM             //  select between TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SENSITIVITY, PPM
-
-#define SECONDS_SINCE_T0        32
-#define AVERAGE_VSPEED_SINCE_TO 33 
 
 
 // ***** 9.3 - Multiplex data *****
@@ -158,12 +155,12 @@
 #define SEQUENCE_MIN_CELL   3000 // sequence_100 will be activated if lowest cell is lower that the value.
 
 // --------- 11 - GPS ------------------------------------------------------------------------------------------------
-//#define GPS_INSTALLED     // uncomment this line if a GPS is connected
+#define GPS_INSTALLED     // uncomment this line if a GPS is connected
 #define GPS_SPEED_IN_KMH  // uncomment this line if GPS speed has to be sent in km/h instead of knot/h (only for Frsky protocol)
-//#define GPS_SPEED_3D      // uncomment this line if GPS speed has to be the 3d speed instead of the 2d speed (note: 3d is probably less accurate - to test) 
+#define GPS_SPEED_3D      // uncomment this line if GPS speed has to be the 3d speed instead of the 2d speed (note: 3d is probably less accurate - to test) 
 
 // --------- 12 - IMU 6050 --- (accelerometer + gyro -----------------------------------------------------------------
-//#define USE_6050 // uncomment this line if a IMU 6050 is connected
+#define USE_6050 // uncomment this line if a IMU 6050 is connected
 #define PIN_INT_6050 2    // Interrupt from 6050 has to be connected to Arduino pin 2 or pin 3 (do not use here the same pin as PPM)
 #define ACC_OFFSET_X -160 // fill here the first value reported when DISPLAY_ACC_OFFSET is activated
 #define ACC_OFFSET_Y -150 // fill here the second value reported when DISPLAY_ACC_OFFSET is activated
@@ -200,6 +197,10 @@ struct ONE_MEASUREMENT {
 #define FRSKY_SPORT_HUB  3
 #define MULTIPLEX        4
 #define HOTT             5
+
+#define SECONDS_SINCE_T0        32
+#define AVERAGE_VSPEED_SINCE_TO 33 
+
 
 
 #ifdef DEBUG

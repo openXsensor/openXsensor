@@ -28,6 +28,10 @@ OXS_VOLTAGE::OXS_VOLTAGE(uint8_t x)
 // **************** Setup the Current sensor *********************
 void OXS_VOLTAGE::setupVoltage( void ) {
   uint16_t tempRef ;
+#ifdef DEBUG  
+  printer->println("Enter setup voltage");
+#endif
+
 #ifdef USE_INTERNAL_REFERENCE   
   analogReference(INTERNAL) ;
 #elif defined(USE_EXTERNAL_REFERENCE)

@@ -212,7 +212,6 @@ void OXS_MS5611::calculateVario() {
       //      61645 4000  0.127811861
       //      57733 4500  0.134843581
       //      54025 5000  
-
       if ( varioData.rawPressure > 954610000) {
         varioData.rawAltitude = ( 1013250000 - varioData.rawPressure ) * 0.08526603 ; // = 500 / (101325 - 95461)  // returned value 1234567 means 123,4567 m (temp is fixed to 15 degree celcius)
       } else if ( varioData.rawPressure > 898760000) {

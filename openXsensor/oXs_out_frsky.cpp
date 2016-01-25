@@ -56,6 +56,7 @@ extern uint8_t volatile sendStatus ;
     struct ONE_MEASUREMENT sport_gps_alt ;
     struct ONE_MEASUREMENT sport_gps_speed ; 
     struct ONE_MEASUREMENT sport_gps_course;
+    extern bool GPS_fix ;
 #endif
 
 extern struct ONE_MEASUREMENT sport_rpm ;
@@ -494,25 +495,31 @@ void OXS_OUT::sendHubData()  // for Hub protocol
   static uint32_t lastMsFrame1=0;
   static uint32_t temp ;
 #ifdef GPS_INSTALLED  
-  static unsigned int lastMsFrame2=0;
+  static uint32_t lastMsFrame2=0;
 #endif
   
   temp = millis() ;
-  if (  (state == IDLE) && (temp-lastMsFrame1) >= INTERVAL_FRAME1  ) {
+
+  //  second frame used for GPS
+#ifdef GPS_INSTALLED
+  if ( (state == IDLE ) && (temp  > lastMsFrame2 + INTERVAL_FRAME2 )  && (temp  >= lastMsFrame1  + INTERVAL_FRAME1 ) && GPS_fix ) {
 #ifdef DEBUGHUBPROTOCOL
-     printer->print("Send Data at = ");
+     printer->print("F2 at ");
+     printer->println( millis() );
+#endif
+    lastMsFrame2=temp;
+    SendFrame2();
+  }
+#endif
+  if (  (state == IDLE) && (temp  >= lastMsFrame1  + INTERVAL_FRAME1 ) && (temp  >= lastMsFrame2  + INTERVAL_FRAME1 ) ) {
+#ifdef DEBUGHUBPROTOCOL
+     printer->print("F1 at ");
      printer->println( millis() );
 #endif
     lastMsFrame1=temp;
     SendFrame1();
   }
-//  second frame used for GPS
-#ifdef GPS_INSTALLED
-  if ( (state == IDLE ) && (temp-lastMsFrame2) > INTERVAL_FRAME2  ) {
-    lastMsFrame2=temp;
-    SendFrame2();
-  }
-#endif
+
 }  // end sendData Hub protocol
 
 //======================================================================================================Send Frame 1A via serial
@@ -521,12 +528,12 @@ void OXS_OUT::SendFrame1(){
 
 // pointer to Altitude
 #if defined(VARIO) 
-  uint16_t Centimeter =  uint16_t(abs(oXs_MS5611.varioData.relativeAlt.value)%100);
+  uint16_t Centimeter =  uint16_t(abs(oXs_MS5611.varioData.absoluteAlt.value)%100);
   int32_t Meter;
-  if (oXs_MS5611.varioData.relativeAlt.value >0){
-    Meter = (oXs_MS5611.varioData.relativeAlt.value - Centimeter);
+  if (oXs_MS5611.varioData.absoluteAlt.value >0){
+    Meter = (oXs_MS5611.varioData.absoluteAlt.value - Centimeter);
   } else{
-    Meter = -1*(abs(oXs_MS5611.varioData.relativeAlt.value) + Centimeter);
+    Meter = -1*(abs(oXs_MS5611.varioData.absoluteAlt.value) + Centimeter);
   }
   Meter=Meter/100;
   SendValue(FRSKY_USERDATA_BARO_ALT_B, (int16_t)Meter);
@@ -535,7 +542,7 @@ void OXS_OUT::SendFrame1(){
 
 // VSpeed
 #if defined(VARIO) 
-  SendValue( FRSKY_USERDATA_VERT_SPEED , (int16_t) mainVspeed.value); 
+  SendValue( FRSKY_USERDATA_VERT_SPEED , (int16_t) mainVspeed.value);
 #endif
 
 // Cell_1_2
@@ -713,7 +720,11 @@ void OXS_OUT::SendFrame2(){
   SendValue(FRSKY_USERDATA_GPS_LONG_EW , (uint16_t)(GPS_lon < 0 ? 'W' : 'E')) ;
   SendValue(FRSKY_USERDATA_GPS_ALT_B ,  (int16_t) GPS_altitude / 1000 );                                                      // Altitude m
   SendValue(FRSKY_USERDATA_GPS_ALT_A , (uint16_t) ( (abs(GPS_altitude) % 1000 ) / 10 ) ) ;                                    // Altitude centimeter
-  uint32_t GPSSpeedKnot = GPS_speed_3d * 1944 ;                                                                               // speed in knots with 5 décimals (1 cm/sec = 0,0194384 knot)
+#ifdef GPS_SPEED_3D
+  uint32_t GPSSpeedKnot = GPS_speed_3d * 1944L ;                                                                               // speed in knots with 5 décimals (1 cm/sec = 0,0194384 knot)
+#else  
+  uint32_t GPSSpeedKnot = GPS_speed_2d * 1944L ;
+#endif  
   SendValue(FRSKY_USERDATA_GPS_SPEED_B , (uint16_t) ( GPSSpeedKnot / 100000) ) ;                                              // Speed knots
   SendValue(FRSKY_USERDATA_GPS_SPEED_A , (uint16_t) ( (GPSSpeedKnot % 100000 ) /1000) ) ;                                     // Speed 2 decimals of knots
   SendValue(FRSKY_USERDATA_GPS_CURSE_B , (uint16_t) ( GPS_ground_course / 100000 ) ) ;                                        // Course degrees
@@ -1466,7 +1477,7 @@ ISR(TIMER1_COMPA_vect)
           } else {                                // if all bytes have been send, wait 100usec
             TxCount = 0 ;
             state = WAITING ;
-            OCR1A += DELAY_100 ;  // 100uS gap
+            OCR1A += DELAY_3500 ;  // 3500 usec gap (instead of 100uS gap)
           }
           break ;           
 
