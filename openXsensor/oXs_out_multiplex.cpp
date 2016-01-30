@@ -8,7 +8,7 @@
 //#define DEBUGFORMATONEVALUE
 #endif
 //#define DEBUG_MULTIPLEX_WITHOUT_RX  // this allows to let oXs generates dummy data when there is no Rx to give the polling on the bus. In this case, oXs does not look at the pooling to send data
-#define DEBUG_FORCE_VSPEED_TO 123
+//#define DEBUG_FORCE_VSPEED_TO 123   // this is used to force oXs to send a fixed dummy value for Vspeed in order to test if an issue result of bmp180 or from Multiplex protocol.
 
 extern unsigned long micros( void ) ;
 extern unsigned long millis( void ) ;
@@ -122,8 +122,12 @@ uint8_t OXS_OUT::formatOneValue( uint8_t currentFieldToSend) {
   static uint8_t alarm ;
 //  int fieldID ;
 //  fieldID = 0 ;
-  valueTemp = 0 ; 
-
+  valueTemp = 0 ;
+  
+#ifdef GPS_INSTALLED            
+  uint8_t GPS_no_fix = ( (GPS_fix_type != 3 ) && (GPS_fix_type != 4 ) ) ; // this flag is true when there is no fix
+#endif          
+      
   switch ( fieldContainsData[currentFieldToSend][1] ) {
 #ifdef VARIO       
       case  ALTIMETER :
@@ -358,9 +362,32 @@ uint8_t OXS_OUT::formatOneValue( uint8_t currentFieldToSend) {
           test3.available  = false ; 
           break ;
 
-
-
-
+#ifdef GPS_INSTALLED            
+      case GPS_COURSE :
+        if (GPS_no_fix ) return 0 ;
+        valueTemp = GPS_ground_course / 10000 ; // convert from degre * 100000 to 1/10 of degree
+        break ;
+      case GPS_SPEED :
+        if (GPS_no_fix ) return 0 ;
+#ifdef GPS_SPEED_3D
+        valueTemp = ((uint32_t) GPS_speed_3d) * 36 /100 ;       // convert from cm/sec to 1/10 of km/h
+#else
+        valueTemp = ((uint32_t) GPS_speed_2d) * 36 /100 ;       // convert from cm/sec to 1/10 of km/h
+#endif
+        break ;
+      case GPS_ALTITUDE : 
+        if (GPS_no_fix ) return 0 ;
+        valueTemp = GPS_altitude / 1000 ;                        // convert from mm to m 
+        break ;
+      case GPS_DISTANCE :
+        if (GPS_no_fix ) return 0 ;
+        valueTemp = GPS_distance ;                             // keep in m
+        break ;
+      case GPS_BEARING :
+        if (GPS_no_fix ) return 0 ;
+        valueTemp = GPS_bearing * 10 ;                         // convert from degree to 1/10 of degree
+        break ;
+#endif                           // end GPS_INSTALLED
       }  // end Switch
 //      if ( (fieldContainsData[currentFieldToSend][0] != 0)  ) { ;  // to be adapted in a condition that protect modification of data array while data are transfered to TX buffer array 
 //      }

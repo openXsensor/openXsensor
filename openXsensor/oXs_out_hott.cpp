@@ -255,8 +255,6 @@ void OXS_OUT::sendData() {
                    } 
                   
  /* not yet implemented
-  uint8_t distanceLow;             // Byte 20: 027 123 = /distance low byte 6 = 6 m 
-  uint8_t distanceHigh;            // Byte 21: 036 35 = /distance high byte 
   uint8_t resolutionLow;           // Byte 24: 48 = Low Byte m/s resolution 0.01m 48 = 30000 = 0.00m/s (1=0.01m/s) 
   uint8_t resolutionHigh;          // Byte 25: 117 = High Byte m/s resolution 0.01m 
   uint8_t unknow1;                 // Byte 26: 120 = 0m/3s 

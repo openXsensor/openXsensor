@@ -174,6 +174,7 @@
 #define GLIDER_RATIO       31
 #define SECONDS_SINCE_T0        32
 #define AVERAGE_VSPEED_SINCE_TO 33 
+
 // to do : add alt min, alt max ,  rpm max? , current max (not sure that it is neaded because it can be calculated on TX side
 // End of list of type of available measurements
 

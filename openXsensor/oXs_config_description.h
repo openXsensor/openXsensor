@@ -635,42 +635,46 @@ started by Rainer Schlosshan
 *     - on line 3, the relative altitude measurement (without alarms)
 *     - on line 6, the main vertical speed measurement (with alarms if it exceed 50m/s)
 *            #define SETUP_MULTIPLEX_DATA_TO_SEND    \
-*                       3 , ALTIMETER , 1 , 1 , 0 , -16384 , 16383,\
+*                       3 , REL_ALTIMETER , 1 , 1 , 0 , -16384 , 16383,\
 *                       6 , VERTICAL_SPEED , 1 , 1 , -500 , 500
 *  IMPORTANT : keep always the line "#define SETUP_DATA_TO_SEND    \"  ; do not insert any comment lines after or between the rows used for the set up.
 *   
 * Here the list of oXs measurements that can be sent
 *    Code to be used                       Meaning 
-*    ALTIMETER           cm      Absolute altitude (from first baro sensor)
-*    REL_ALTIMETER       cm      Relative altitude (from first baro sensor)  
-*    ALTIMETER_MAX       cm      Max relative altitude
-*    VERTICAL_SPEED     cm/s     Main vertical speed (as set up in VSPEED_SOURCE)
-*    SENSITIVITY        none     Vario sensitivity 
-*    VOLT_1             mV(5)     Value read on first PIN_VOLTAGE     
-*    VOLT_2             mV(5)     Value read on 2d PIN_VOLTAGE        
-*    VOLT_3             mV(5)     Value read on 3d PIN_VOLTAGE        
-*    VOLT_4             mV(5)     Value read on 4th PIN_VOLTAGE       
-*    VOLT_5             mV(5)     Value read on 5th PIN_VOLTAGE       
-*    VOLT_6             mV(5)     Value read on 6th PIN_VOLTAGE       
-*    CURRENTMA          mA        MilliAmp measured by current sensor  
+*    ALTIMETER           m      Absolute altitude (from first baro sensor)
+*    REL_ALTIMETER       m      Relative altitude (from first baro sensor)  
+*    ALTIMETER_MAX       m      Max relative altitude
+*    VERTICAL_SPEED     cm/s    Main vertical speed (as set up in VSPEED_SOURCE)
+*    SENSITIVITY        none    Vario sensitivity 
+*    VOLT_1            0.1V(5)     Value read on first PIN_VOLTAGE     
+*    VOLT_2            0.1V(5)     Value read on 2d PIN_VOLTAGE        
+*    VOLT_3            0.1V(5)     Value read on 3d PIN_VOLTAGE        
+*    VOLT_4            0.1V(5)     Value read on 4th PIN_VOLTAGE       
+*    VOLT_5            0.1V(5)     Value read on 5th PIN_VOLTAGE       
+*    VOLT_6            0.1V(5)     Value read on 6th PIN_VOLTAGE       
+*    CURRENTMA         0.1A        MilliAmp measured by current sensor  
 *    MILLIAH           mAh        Consumed milli Amp heure             
 *    RPM              Hz         Rotation per min                     
-*    AIR_SPEED        knot/10    Air speed   
-*    CELL_1             mV(5)    Value based on first PIN_VOLTAGE         
-*    CELL_2             mV(5)    Value based on first and 2d PIN_VOLTAGE  
-*    CELL_3             mV(5)    Value based on 2d and 3d PIN_VOLTAGE     
-*    CELL_4             mV(5)    Value based on 3d and 4th PIN_VOLTAGE    
-*    CELL_5             mV(5)    Value based on 4th and 5th PIN_VOLTAGE   
-*    CELL_6             mV(5)    Value based on 5th and 6th PIN_VOLTAGE   
-*    CELL_MIN           mV(5)    Value based on CELL_1 ... CELL_6         
-*    CELL_TOT           mV(5)    Value based on VOLT1...VOLT6             
+*    AIR_SPEED        0.1 km/h   Air speed   
+*    CELL_1             0.1V(5)    Value based on first PIN_VOLTAGE         
+*    CELL_2             0.1V(5)    Value based on first and 2d PIN_VOLTAGE  
+*    CELL_3             0.1V(5)    Value based on 2d and 3d PIN_VOLTAGE     
+*    CELL_4             0.1V(5)    Value based on 3d and 4th PIN_VOLTAGE    
+*    CELL_5             0.1V(5)    Value based on 4th and 5th PIN_VOLTAGE   
+*    CELL_6             0.1V(5)    Value based on 5th and 6th PIN_VOLTAGE   
+*    CELL_MIN           0.1V(5)    Value based on CELL_1 ... CELL_6         
+*    CELL_TOT           0.1V(5)    Value based on VOLT1...VOLT6             
 *    PPM                         Value set by Tx to control some functions (sensitivity, ...) (range is normally -100 / +100)
+*    GPS_COURSE        0.1 deg   Orientation of plane       
+*    GPS_SPEED         0.1 km/h  Ground speed (2D or 3D)       
+*    GPS_ALTITUDE      m         Absolute Altitude       
+*    GPS_DISTANCE      0.1 m     Distance from home
+*    GPS_BEARING       0.1 deg   Direction from home  
 *    TEST_1                      Value used for test
 *    TEST_2                      Value used for test
 *    TEST_3                      Value used for test
-*   (5) Unit depends on the calibration parameter that are used (e.g. when a voltage is provided by a temperature sensor, unit can be degree)
-*       When used in order to measure Cell(s), calibration must ensure that unit = milliVolt    
-*    Note : GPS data are currently not supported in Multiplex protocol   
+*   (5) Unit depends also on the calibration parameter that are used (e.g. when a voltage is provided by a temperature sensor, unit can be degree)
+*       When used in order to measure Cell(s), calibration must ensure that internal unit = milliVolt (and oXS will convert mVolt to 0.1Volt when transmitting over Multiplex protocol.
 **********************************************************************************************************************************************       
 
 

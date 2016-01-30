@@ -8,7 +8,7 @@
 #include "oXs_voltage.h" // we need the arduinodata struct
 //#include <Arduino.h>
 #include "oXs_general.h"
-
+#include "oXs_gps.h"
 
 #if defined(PROTOCOL) &&  (PROTOCOL == MULTIPLEX) 
 
@@ -51,42 +51,42 @@ struct t_mbAllData {
 
 
 #define MULTIPLEX_UNITS MU_LEVEL , MU_ALT , MU_VSPD , MU_LEVEL , MU_ALT , MU_VOLT , MU_VOLT , MU_VOLT , MU_VOLT , MU_VOLT ,\
-                        MU_VOLT , MU_CURR , MU_MAH , MU_VOLT , MU_VOLT ,MU_VOLT , MU_RPM , MU_ALT , MU_VSPD ,  MU_LEVEL ,\
+                        MU_VOLT , MU_CURR , MU_MAH , MU_DIR , MU_ASPD , MU_ALT , MU_RPM , MU_DIST , MU_DIR ,  MU_LEVEL ,\
                         MU_ALT , MU_ASPD , MU_VSPD , MU_LEVEL , MU_LEVEL , MU_VSPD , MU_LEVEL , MU_LEVEL , MU_LEVEL , MU_VSPD , \
                         MU_ALT , MU_ALT , MU_VOLT , MU_VOLT , MU_VOLT , MU_VOLT , MU_VOLT , MU_VOLT , MU_VOLT , MU_VOLT , \
                         MU_ALT
   
 
 //  This is the list of codes for each available measurements
-#define ALTIMETER       1        // DEFAULTFIELD can be used in SPORT protocol (is then the same as ALT_FIRST_ID);  it MUST be used in Hub protocol because meters and centimeters are send in different fileds
-#define VERTICAL_SPEED  2        // DEFAULTFIELD can be used
-#define SENSITIVITY     3        // DEFAULTFIELD can NOT be used
+#define ALTIMETER       1        
+#define VERTICAL_SPEED  2        
+#define SENSITIVITY     3        
 #define ALT_OVER_10_SEC 4        // DEFAULTFIELD can NOT be used ; this is the difference of altitude over the last 10 sec (kind of averaging vertical speed)
-                                 // there is no telemetry field for this; it is possible to use e.g. T1 or T2; then you can use a custom function "play value" on Tx side
-#define VOLT_1           5        // DEFAULTFIELD can NOT be used
-#define VOLT_2           6        // DEFAULTFIELD can NOT be used
-#define VOLT_3           7        // DEFAULTFIELD can NOT be used
-#define VOLT_4           8        // DEFAULTFIELD can NOT be used
-#define VOLT_5           9        // DEFAULTFIELD can NOT be used
-#define VOLT_6           10        // DEFAULTFIELD can NOT be used
-#define CURRENTMA       11        // DEFAULTFIELD can be used
-#define MILLIAH         12        // if value must be sent as percentage, then uncomment the line "#define SEND_mAhPercentageAsFuel 4000" (see below)
-#define CELLS_1_2       13        // Only DEFAULTFIELD can be used
-#define CELLS_3_4       14        // Only DEFAULTFIELD can be used
-#define CELLS_5_6       15        // Only DEFAULTFIELD can be used
-#define RPM             16        // Only DEFAULTFIELD can be used
-#define ALTIMETER_2        17      // DEFAULTFIELD can be used in SPORT protocol (is then the same as ALT_FIRST_ID);  it MUST be used in Hub protocol because meters and centimeters are send in different fileds
-#define VERTICAL_SPEED_2   18      // DEFAULTFIELD can be used
-#define SENSITIVITY_2      19      // DEFAULTFIELD can NOT be used
-#define ALT_OVER_10_SEC_2  20      // DEFAULTFIELD can NOT be used ; this is the difference of altitude over the last 10 sec (kind of averaging vertical speed)
-#define AIR_SPEED          21      // DEFAULTFIELD can be used in SPORT only
-#define PRANDTL_COMPENSATION 22      // DEFAULTFIELD can NOT be used;use e.g. Temperature 1 or 2
-#define PPM_VSPEED         23       // DEFAULTFIELD can be used; Vpseed from first or second MS5611 or compensatedVspeed will be sent; to be used only when VARIO_SECONDARY is defined and PIN_PPM is defined
-#define PPM                24       // DEFAULTFIELD can NOT be used ;
-#define PRANDTL_DTE        25       // DEFAULTFIELD can be used
-#define TEST_1              26       // reserved : only for debugging
-#define TEST_2             27       // reserved : only for debugging
-#define TEST_3             28       // reserved : only for debugging
+
+#define VOLT_1           5        
+#define VOLT_2           6        
+#define VOLT_3           7        
+#define VOLT_4           8        
+#define VOLT_5           9        
+#define VOLT_6           10       
+#define CURRENTMA       11        
+#define MILLIAH         12        
+#define GPS_COURSE       13       
+#define GPS_SPEED        14       
+#define GPS_ALTITUDE     15       
+#define RPM             16        
+#define GPS_DISTANCE       17     
+#define GPS_BEARING        18     
+#define SENSITIVITY_2      19     
+#define ALT_OVER_10_SEC_2  20      
+#define AIR_SPEED          21      
+#define PRANDTL_COMPENSATION 22     
+#define PPM_VSPEED         23       
+#define PPM                24       
+#define PRANDTL_DTE        25       
+#define TEST_1              26      
+#define TEST_2             27       
+#define TEST_3             28       
 #define VERTICAL_SPEED_A  29
 #define REL_ALTIMETER     30
 #define REL_ALTIMETER_2   31
@@ -177,6 +177,19 @@ void initMultiplexUart( struct t_mbAllData * volatile pdata ) ;
 
 extern volatile bool RpmSet ;
 extern volatile uint16_t RpmValue ;
+
+extern int32_t GPS_lon;               // longitude in degree with 7 decimals, (neg for S)
+extern int32_t GPS_lat;               // latitude   in degree with 7 decimals, (neg for ?)
+extern bool    GPS_latAvailable;
+extern int32_t GPS_altitude;              // altitude in mm
+extern uint16_t GPS_speed_3d;              // speed in cm/s
+extern uint16_t GPS_speed_2d;                 // speed in cm/s
+extern uint32_t GPS_ground_course ;     // degrees with 5 decimals
+extern uint8_t GPS_numSat ;
+extern uint8_t GPS_fix_type ;
+extern int16_t GPS_distance ;
+extern int16_t GPS_bearing ; 
+
 
 
 // UART's state.
@@ -283,6 +296,7 @@ extern volatile uint16_t RpmValue ;
 #define NOT_AVAILABLE  1
 #define LOCKED         2
 #define AVAILABLE      3
+
 
 #endif // End of MULTIPLEX
 #endif // OXS_OUT_MULTIPLEX_h
