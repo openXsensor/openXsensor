@@ -4,10 +4,11 @@
 
 #ifdef DEBUG
 // ************************* Several parameters to help debugging
-//#define DEBUGSETNEWDATA
+#define DEBUGSETNEWDATA
 //#define DEBUGFORMATONEVALUE
 #endif
-
+//#define DEBUG_MULTIPLEX_WITHOUT_RX  // this allows to let oXs generates dummy data when there is no Rx to give the polling on the bus. In this case, oXs does not look at the pooling to send data
+#define DEBUG_FORCE_VSPEED_TO 123
 
 extern unsigned long micros( void ) ;
 extern unsigned long millis( void ) ;
@@ -141,6 +142,9 @@ uint8_t OXS_OUT::formatOneValue( uint8_t currentFieldToSend) {
          if ( ! mainVspeed.available ) return 0; 
          valueTemp = mainVspeed.value / 10 ;
          mainVspeed.available = false ;
+#ifdef DEBUG_FORCE_VSPEED_TO
+         valueTemp = DEBUG_FORCE_VSPEED_TO ;
+#endif         
          break ;
       case SENSITIVITY :
              if ( !varioData->sensitivity.available ) return 0;
@@ -512,11 +516,39 @@ ISR(TIMER1_COMPA_vect)
             break ;
 
     case WAITING :                                  // At the end of wait time, stop timer interrupt but allow pin change interrupt in order to allow to detect incoming data
-           DISABLE_TIMER_INTERRUPT() ;    // Stop the timer interrupts.
            state = IDLE ;                           // Go back to idle.
+           DISABLE_TIMER_INTERRUPT() ;    // Stop the timer interrupts.
            CLEAR_PIN_CHANGE_INTERRUPT() ;   // clear pending pin change interrupt
            ENABLE_PIN_CHANGE_INTERRUPT() ;    // pin change interrupt enabled
+#ifdef DEBUG_MULTIPLEX_WITHOUT_RX                 // When no Rx is connected, oXs has to use only timer interrupts.
+            DISABLE_PIN_CHANGE_INTERRUPT()  ;     // pin change interrupt disabled
+            CLEAR_TIMER_INTERRUPT() ;         // Clear interrupt bits
+            ENABLE_TIMER_INTERRUPT() ;        // Enable timer1 interrupt on again
+#endif
             break ;
+
+#ifdef DEBUG_MULTIPLEX_WITHOUT_RX
+    case IDLE :                                  // When there is no RX, there is no pin change interrupt. State is IDLE by default or after sending one set of data
+                                                 // here we will load some dummy data to transmit, wait for 4msec and we will go to TxPending to transmit the data.
+            static uint8_t lineWhenDebugging = 0 ;
+            struct t_mbAllData * volatile pdataDebug;
+            pdataDebug = ThisMultiplexData ;
+            FORCE_INDIRECT( pdataDebug ) ;
+            lineWhenDebugging++ ;
+            if ( lineWhenDebugging > MB_MAX_ADRESS ) lineWhenDebugging = 0 ;
+            if  ( pdataDebug->mbData[ lineWhenDebugging ] . active == AVAILABLE )  { 
+                          TxMultiplexData[0] = pdataDebug->mbData[lineWhenDebugging].response[0] ;
+                          TxMultiplexData[1] = pdataDebug->mbData[lineWhenDebugging].response[1] ;
+                          TxMultiplexData[2] = pdataDebug->mbData[lineWhenDebugging].response[2] ;
+                          pdataDebug->mbData [ lineWhenDebugging ] . active = NOT_AVAILABLE ;  
+                  //  TxMultiplexData[0] = 0x55 ; TxMultiplexData[1] = 0xAA ; TxMultiplexData[2] = 0x55 ; // can be use to measure the timing between bits
+                          state = TxPENDING ;
+                          OCR1A += DELAY_2000 ;                                                   
+             } else {                                                           // Status was not AVAILABLE, so there are no data ready to send
+                   OCR1A += DELAY_100 ;   // 100usec gap before trying again that another data becomes available 
+             }
+             break ;
+#endif
 
   // Unknown state.
     default:        
@@ -556,6 +588,12 @@ void initMultiplexUart( struct t_mbAllData * volatile pdata )           //******
 #if DEBUGASERIAL
     DDRC = 0x01 ;   // PC0 as o/p debug = pin A0 !!!!
     PORTC = 0 ; 
+#endif
+
+#ifdef DEBUG_MULTIPLEX_WITHOUT_RX    // in this debug case, we have to enable timer interrupt without waiting for a pin change interrupt.
+            DISABLE_PIN_CHANGE_INTERRUPT()  ;     // pin change interrupt disabled
+            CLEAR_TIMER_INTERRUPT() ;         // Clear interrupt bits
+            ENABLE_TIMER_INTERRUPT() ;        // Enable timer1 interrupt on again
 #endif
 }
 

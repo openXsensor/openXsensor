@@ -147,7 +147,7 @@ bool OXS_MS5611::readSensor() {   // read sensor performs a read from sensor if 
   unsigned long varioEnter = micros() ;
 #endif  
     bool newVSpeedCalculated ; 
-    if ( (micros() - varioData.lastCommandMicros) >  WAIT_I2C_TIME )  { // wait 9 msec at least before asking for reading the pressure
+    if ( micros()  >   (varioData.lastCommandMicros + WAIT_I2C_TIME) )  { // wait 9 msec at least before asking for reading the pressure
         long result = 0 ;
         if(  ! I2c.read( _addr, 0, 3 )) { ; //read 3 bytes from the device after sending a command "00";  
           result = I2c.receive() ;

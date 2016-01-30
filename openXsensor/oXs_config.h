@@ -18,7 +18,7 @@
 
 
 // --------- 1 - Telemetry protocol ---------
-#define PROTOCOL  FRSKY_SPORT_HUB  // select between FRSKY_SPORT , FRSKY_HUB , FRSKY_SPORT_HUB , MULTIPLEX , HOTT
+#define PROTOCOL  MULTIPLEX  // select between FRSKY_SPORT , FRSKY_HUB , FRSKY_SPORT_HUB , MULTIPLEX , HOTT
 
 // --------- 2 - Serial data pin choice ---------
 #define PIN_SERIALTX      4    // The pin which transmits the serial data to the FrSky telemetry receiver, Usually pin 4
@@ -32,7 +32,7 @@
 
 // ***** 4.1 - Connecting 1 or 2 MS5611 barometric sensor *****
 #define VARIO // set as comment if there is no vario
-//#define SENSOR_IS_BMP180 // set as comment if baro sensor is MS5611
+#define SENSOR_IS_BMP180 // set as comment if baro sensor is MS5611
 //#define VARIO2 // set as comment if there is no second vario
 
 // ***** 4.2 - Sensitivity predefined by program *****
@@ -155,12 +155,12 @@
 #define SEQUENCE_MIN_CELL   3000 // sequence_100 will be activated if lowest cell is lower that the value.
 
 // --------- 11 - GPS ------------------------------------------------------------------------------------------------
-#define GPS_INSTALLED     // uncomment this line if a GPS is connected
+//#define GPS_INSTALLED     // uncomment this line if a GPS is connected
 #define GPS_SPEED_IN_KMH  // uncomment this line if GPS speed has to be sent in km/h instead of knot/h (only for Frsky protocol)
 #define GPS_SPEED_3D      // uncomment this line if GPS speed has to be the 3d speed instead of the 2d speed (note: 3d is probably less accurate - to test) 
 
 // --------- 12 - IMU 6050 --- (accelerometer + gyro -----------------------------------------------------------------
-#define USE_6050 // uncomment this line if a IMU 6050 is connected
+//#define USE_6050 // uncomment this line if a IMU 6050 is connected
 #define PIN_INT_6050 2    // Interrupt from 6050 has to be connected to Arduino pin 2 or pin 3 (do not use here the same pin as PPM)
 #define ACC_OFFSET_X -160 // fill here the first value reported when DISPLAY_ACC_OFFSET is activated
 #define ACC_OFFSET_Y -150 // fill here the second value reported when DISPLAY_ACC_OFFSET is activated

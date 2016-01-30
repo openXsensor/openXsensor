@@ -583,7 +583,8 @@ if ( currentLoopMillis - lastLoop500Millis > 500 ) {
 #ifdef DEBUG_BLINK_MAINLOOP
     blinkLed(1) ;
 #endif
-  
+extern volatile uint8_t state ; 
+  Serial.println(state) ;
     // Check if a button has been pressed
 #ifdef PIN_PUSHBUTTON
 #if defined (VARIO) || defined (VARIO2)
