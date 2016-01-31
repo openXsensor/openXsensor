@@ -165,6 +165,9 @@ float calibrated_quaternion_offset[4] = { 0.0, 0.0, 0.0, 0.0 };
 ****************************************/
 //float temp_centigrade = 0.0;  // Gyro/Accel die temperature
 float ypr[3] = { 0, 0, 0 };
+float pitch ;
+uint8_t pitchAvailable ;
+float roll ;
 //long curr_mpu_temp;
 unsigned long sensor_timestamp;
 
@@ -219,10 +222,9 @@ bool read6050 () {
                                                   // To do : in quaternion, only 16 bits from the 32 are used; it should be possible to save time and memory filling only 16 bits the dmp_read_fifo()
                                                   //         in this function, remove giro and sensors parameters.
                                                   // To do : Some temporary variable could be removed
-                                                  // To do : kalman filter takes about 4 msec to execute; it could be splitted in e.g. 4 sections in order to keep loop executing time at about 1 mec
+                                                  // To do : kalman filter takes about 4 msec to execute; it could be splitted in e.g. 4 sections in order to keep loop executing time at about 1 msec
                                                   // To do : there should be some easy way to calibrate the mpu
                                                   // To do : there should be some general function to perform all calculations based on raw sensor values (in order to keep the sensor as short as possible)
-                                                  // To do : review the Frsky SPORT protocol in order to response to several sensor_id and reduce the set up.
                                                   // To do : add some code to detect errors on I2C (there are a few write without checks)
                                                   // To do : at start up, send a few I2C SCL pulse to clear pending bytes on I2C
                                                   // To do : activate/ or not the check on quaternion validity read from fifo (to detect wrong fifo read
@@ -233,9 +235,8 @@ bool read6050 () {
                                                   // To do : remove perhaps code for accel_half detection (is not used currently ; previously was used with get and set function)
                                                   //         in case of error on I2c during set up, check that imu is reset (and not only fifo reset (because reset of fifo is different before or after dmp is enabled)
                                                   // To do : use hysteresis for Vspeed with imu
-                                                  // To do : add vspeed with imu in the list of available fields and a way to send it in HOTT protocol
                                                   // To do : detect when acc is not as usual and then tranmit Vspeed based only on baro 
-                                                  // To do : add VERTICAL_SPEED_I to HUB, MULTIPLEX and HOTT protocols
+                                                  
         /* This function gets new data from the FIFO when the DMP is in
          * use. The FIFO can contain any combination of gyro, accel,
          * quaternion, and gesture data. The sensors parameter tells the
@@ -293,6 +294,9 @@ bool read6050 () {
              getGravity(&gravity, &q);
              
 //             dmpGetYawPitchRoll(ypr, &q, &gravity);
+               pitch = atan(gravity.x / sqrt(gravity.y*gravity.y + gravity.z*gravity.z)) * radians_to_degrees; // Pitch
+               roll = atan(gravity.y / sqrt(gravity.x*gravity.x + gravity.z*gravity.z)) * radians_to_degrees; // Roll 
+               pitchAvailable = true ; 
               float q1[4];
               float q2[4];
               float q_product[4];

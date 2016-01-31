@@ -154,6 +154,9 @@ void calculateAverages();
   KalmanFilter kalman ;
   float zTrack ;
   float vTrack ;
+  extern float pitch ;
+  extern float roll ; 
+  extern uint8_t pitchAvailable ;
 struct ONE_MEASUREMENT vSpeedImu ;
 //  int32_t vSpeedImu ;
 //  bool vSpeedImuAvailable ;
@@ -867,7 +870,15 @@ void calculateAllFields () {
 //    test2.value = vSpeedImu.value ;
 //    test2.available = vSpeedImu.available ;
 #endif
-
+#ifdef USE_6050
+    if ( pitchAvailable ) {          // if pitch is available)
+      pitchAvailable = false ;
+      test1.value = pitch ;
+      test1.available = true ;
+      test2.value = roll ;
+      test2.available = true ;
+    }  
+#endif
 //  test1.value = oXs_MS5611.varioData.absoluteAlt.value/10 ;
 //  test1.available = true ;
 
