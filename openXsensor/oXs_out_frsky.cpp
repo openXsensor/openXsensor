@@ -492,14 +492,35 @@ void OXS_OUT::sendSportData()
 #if defined( PROTOCOL ) &&  ( ( PROTOCOL == FRSKY_HUB ) || ( PROTOCOL == FRSKY_SPORT_HUB ) )
 void OXS_OUT::sendHubData()  // for Hub protocol
 {
+#define FRAME2_EVERY_N_FRAME1 1
+#define MSEC_PER_BYTE 7
   static uint32_t lastMsFrame1=0;
+  static uint16_t lastFrameLength ;
   static uint32_t temp ;
+  static uint8_t countFrame1 = FRAME2_EVERY_N_FRAME1 ;
 #ifdef GPS_INSTALLED  
-  static uint32_t lastMsFrame2=0;
+  //static uint32_t lastMsFrame2=0;
+  
 #endif
   
   temp = millis() ;
-
+  if ( (state == IDLE ) && (temp  >  (lastMsFrame1 + ( lastFrameLength * MSEC_PER_BYTE) ) ) ) {
+#ifdef GPS_INSTALLED
+      if ( (countFrame1 == 0 ) && GPS_fix ) {
+          SendFrame2();
+          lastFrameLength = hubMaxData ;
+          countFrame1 = FRAME2_EVERY_N_FRAME1 ;
+          lastMsFrame1=temp; 
+      } else 
+#endif
+      {
+          SendFrame1();
+          lastFrameLength = hubMaxData ;
+          if ( countFrame1 ) countFrame1-- ;
+          lastMsFrame1=temp; 
+      }
+  }
+/*  
   //  second frame used for GPS
 #ifdef GPS_INSTALLED
   if ( (state == IDLE ) && (temp  > lastMsFrame2 + INTERVAL_FRAME2 )  && (temp  >= lastMsFrame1  + INTERVAL_FRAME1 ) && GPS_fix ) {
@@ -519,7 +540,7 @@ void OXS_OUT::sendHubData()  // for Hub protocol
     lastMsFrame1=temp;
     SendFrame1();
   }
-
+*/
 }  // end sendData Hub protocol
 
 //======================================================================================================Send Frame 1A via serial
