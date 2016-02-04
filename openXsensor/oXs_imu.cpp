@@ -165,6 +165,7 @@ float calibrated_quaternion_offset[4] = { 0.0, 0.0, 0.0, 0.0 };
 ****************************************/
 //float temp_centigrade = 0.0;  // Gyro/Accel die temperature
 float ypr[3] = { 0, 0, 0 };
+float yaw ;
 float pitch ;
 uint8_t pitchAvailable ;
 float roll ;
@@ -294,6 +295,7 @@ bool read6050 () {
              getGravity(&gravity, &q);
              
 //             dmpGetYawPitchRoll(ypr, &q, &gravity);
+               yaw = atan2(2 * q.x* q.y - 2 * q.w * q.z, 2* q.w * q.w + 2 * q.x * q.x - 1) * radians_to_degrees ; // yaw 
                pitch = atan(gravity.x / sqrt(gravity.y*gravity.y + gravity.z*gravity.z)) * radians_to_degrees; // Pitch
                roll = atan(gravity.y / sqrt(gravity.x*gravity.x + gravity.z*gravity.z)) * radians_to_degrees; // Roll 
                pitchAvailable = true ; 

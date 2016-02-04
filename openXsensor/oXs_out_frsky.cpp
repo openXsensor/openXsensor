@@ -492,8 +492,8 @@ void OXS_OUT::sendSportData()
 #if defined( PROTOCOL ) &&  ( ( PROTOCOL == FRSKY_HUB ) || ( PROTOCOL == FRSKY_SPORT_HUB ) )
 void OXS_OUT::sendHubData()  // for Hub protocol
 {
-#define FRAME2_EVERY_N_FRAME1 1
-#define MSEC_PER_BYTE 7
+#define FRAME2_EVERY_N_FRAME1 1 // n means that there is n frame1 after one frame2(gps)
+#define MSEC_PER_BYTE 7         // number of msec per byte to transmit; I expect that a value of 7 ms should work; probably it can even be reduced
   static uint32_t lastMsFrame1=0;
   static uint16_t lastFrameLength ;
   static uint32_t temp ;

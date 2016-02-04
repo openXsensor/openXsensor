@@ -154,6 +154,7 @@ void calculateAverages();
   KalmanFilter kalman ;
   float zTrack ;
   float vTrack ;
+  extern float yaw ;
   extern float pitch ;
   extern float roll ; 
   extern uint8_t pitchAvailable ;
@@ -877,6 +878,8 @@ void calculateAllFields () {
       test1.available = true ;
       test2.value = roll ;
       test2.available = true ;
+      test3.value = yaw ;
+      test3.available = true ;
     }  
 #endif
 //  test1.value = oXs_MS5611.varioData.absoluteAlt.value/10 ;
