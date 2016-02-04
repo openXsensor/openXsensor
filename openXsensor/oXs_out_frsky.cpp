@@ -493,7 +493,7 @@ void OXS_OUT::sendSportData()
 void OXS_OUT::sendHubData()  // for Hub protocol
 {
 #define FRAME2_EVERY_N_FRAME1 1 // n means that there is n frame1 after one frame2(gps)
-#define MSEC_PER_BYTE 7         // number of msec per byte to transmit; I expect that a value of 7 ms should work; probably it can even be reduced
+#define MSEC_PER_BYTE 4        // number of msec per byte to transmit; I expect that a value of 7 ms should work; probably it can even be reduced
   static uint32_t lastMsFrame1=0;
   static uint16_t lastFrameLength ;
   static uint32_t temp ;
@@ -719,6 +719,10 @@ void OXS_OUT::SendFrame1(){
 #ifdef GPS_INSTALLED
 //======================================================================================================Send Frame 2 via serial used for GPS
 void OXS_OUT::SendFrame2(){
+  static uint8_t hubGpsCount ;
+  uint32_t absLongLat ;
+  uint32_t decimalPartOfDegree ;
+  uint32_t minWith7Decimals  ;
   hubMaxData = 0 ; // reset of number of data to send
 // here we fill the buffer with all GPS data
 // GPS_lon             // longitude in degree with 7 decimals, (neg for S)
@@ -727,29 +731,37 @@ void OXS_OUT::SendFrame2(){
 // GPS_speed_3d;       // speed in cm/s
 // GPS_speed;          // speed in cm/s
 // GPS_ground_course ; // degrees with 5 decimals
-  uint32_t absLongLat = abs(GPS_lat) ;
-  uint32_t decimalPartOfDegree = (absLongLat % 10000000 );
-  uint32_t minWith7Decimals = decimalPartOfDegree * 60 ;
-  SendValue(FRSKY_USERDATA_GPS_LAT_B , (uint16_t) (((absLongLat / 10000000L) * 100 ) +  (minWith7Decimals / 10000000L )) ) ; // Latitude (DDMM)
-  SendValue(FRSKY_USERDATA_GPS_LAT_A , (uint16_t) (( minWith7Decimals % 10000000L) / 1000 ) ) ;                              // Latitude (.MMMM)
-  SendValue(FRSKY_USERDATA_GPS_LAT_EW , (uint16_t)(GPS_lat < 0 ? 'S' : 'N')) ;
-  absLongLat = abs(GPS_lon) ;
-  decimalPartOfDegree = (absLongLat % 10000000 );
-  minWith7Decimals = decimalPartOfDegree * 60 ;
-  SendValue(FRSKY_USERDATA_GPS_LONG_B , (uint16_t) (((absLongLat / 10000000L) * 100 ) +  (minWith7Decimals / 10000000L )) ) ; // Longitude (DDMM)
-  SendValue(FRSKY_USERDATA_GPS_LONG_A , (uint16_t) (( minWith7Decimals % 10000000L) / 1000 ) ) ;                              // Longitude (.MMMM)
-  SendValue(FRSKY_USERDATA_GPS_LONG_EW , (uint16_t)(GPS_lon < 0 ? 'W' : 'E')) ;
-  SendValue(FRSKY_USERDATA_GPS_ALT_B ,  (int16_t) GPS_altitude / 1000 );                                                      // Altitude m
-  SendValue(FRSKY_USERDATA_GPS_ALT_A , (uint16_t) ( (abs(GPS_altitude) % 1000 ) / 10 ) ) ;                                    // Altitude centimeter
+  if ( hubGpsCount == 0 ) {
+    absLongLat = abs(GPS_lat) ;
+    decimalPartOfDegree = (absLongLat % 10000000 );
+    minWith7Decimals = decimalPartOfDegree * 60 ;
+    SendValue(FRSKY_USERDATA_GPS_LAT_B , (uint16_t) (((absLongLat / 10000000L) * 100 ) +  (minWith7Decimals / 10000000L )) ) ; // Latitude (DDMM)
+    SendValue(FRSKY_USERDATA_GPS_LAT_A , (uint16_t) (( minWith7Decimals % 10000000L) / 1000 ) ) ;                              // Latitude (.MMMM)
+    SendValue(FRSKY_USERDATA_GPS_LAT_EW , (uint16_t)(GPS_lat < 0 ? 'S' : 'N')) ;
+  } else if ( hubGpsCount == 1 ) {
+    absLongLat = abs(GPS_lon) ;
+    decimalPartOfDegree = (absLongLat % 10000000 );
+    minWith7Decimals = decimalPartOfDegree * 60 ;
+    SendValue(FRSKY_USERDATA_GPS_LONG_B , (uint16_t) (((absLongLat / 10000000L) * 100 ) +  (minWith7Decimals / 10000000L )) ) ; // Longitude (DDMM)
+    SendValue(FRSKY_USERDATA_GPS_LONG_A , (uint16_t) (( minWith7Decimals % 10000000L) / 1000 ) ) ;                              // Longitude (.MMMM)
+    SendValue(FRSKY_USERDATA_GPS_LONG_EW , (uint16_t)(GPS_lon < 0 ? 'W' : 'E')) ;
+  } else if ( hubGpsCount == 2 ) {
+    SendValue(FRSKY_USERDATA_GPS_ALT_B ,  (int16_t) GPS_altitude / 1000 );                                                      // Altitude m
+    SendValue(FRSKY_USERDATA_GPS_ALT_A , (uint16_t) ( (abs(GPS_altitude) % 1000 ) / 10 ) ) ;                                    // Altitude centimeter
+  } else if ( hubGpsCount == 3 ) {
 #ifdef GPS_SPEED_3D
-  uint32_t GPSSpeedKnot = GPS_speed_3d * 1944L ;                                                                               // speed in knots with 5 décimals (1 cm/sec = 0,0194384 knot)
+    uint32_t GPSSpeedKnot = GPS_speed_3d * 1944L ;                                                                               // speed in knots with 5 décimals (1 cm/sec = 0,0194384 knot)
 #else  
-  uint32_t GPSSpeedKnot = GPS_speed_2d * 1944L ;
+    uint32_t GPSSpeedKnot = GPS_speed_2d * 1944L ;
 #endif  
-  SendValue(FRSKY_USERDATA_GPS_SPEED_B , (uint16_t) ( GPSSpeedKnot / 100000) ) ;                                              // Speed knots
-  SendValue(FRSKY_USERDATA_GPS_SPEED_A , (uint16_t) ( (GPSSpeedKnot % 100000 ) /1000) ) ;                                     // Speed 2 decimals of knots
-  SendValue(FRSKY_USERDATA_GPS_CURSE_B , (uint16_t) ( GPS_ground_course / 100000 ) ) ;                                        // Course degrees
-  SendValue(FRSKY_USERDATA_GPS_CURSE_A , (uint16_t) ( (GPS_ground_course % 100000) / 1000 ) ) ;                               // Course 2 decimals of degrees
+    SendValue(FRSKY_USERDATA_GPS_SPEED_B , (uint16_t) ( GPSSpeedKnot / 100000) ) ;                                              // Speed knots
+    SendValue(FRSKY_USERDATA_GPS_SPEED_A , (uint16_t) ( (GPSSpeedKnot % 100000 ) /1000) ) ;                                     // Speed 2 decimals of knots
+  } else if ( hubGpsCount == 4 ) {
+    SendValue(FRSKY_USERDATA_GPS_CURSE_B , (uint16_t) ( GPS_ground_course / 100000 ) ) ;                                        // Course degrees
+    SendValue(FRSKY_USERDATA_GPS_CURSE_A , (uint16_t) ( (GPS_ground_course % 100000) / 1000 ) ) ;                               // Course 2 decimals of degrees
+  }
+  hubGpsCount++ ;
+  if ( hubGpsCount >= 3 ) hubGpsCount = 0 ;
   if( hubMaxData > 0 ) {
     sendHubByte(0x5E) ; // End of Frame 2!
     setHubNewData(  ) ;
