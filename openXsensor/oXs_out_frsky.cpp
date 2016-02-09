@@ -746,8 +746,8 @@ void OXS_OUT::SendFrame2(){
     SendValue(FRSKY_USERDATA_GPS_LONG_A , (uint16_t) (( minWith7Decimals % 10000000L) / 1000 ) ) ;                              // Longitude (.MMMM)
     SendValue(FRSKY_USERDATA_GPS_LONG_EW , (uint16_t)(GPS_lon < 0 ? 'W' : 'E')) ;
   } else if ( hubGpsCount == 2 ) {
-    SendValue(FRSKY_USERDATA_GPS_ALT_B ,  (int16_t) GPS_altitude / 1000 );                                                      // Altitude m
-    SendValue(FRSKY_USERDATA_GPS_ALT_A , (uint16_t) ( (abs(GPS_altitude) % 1000 ) / 10 ) ) ;                                    // Altitude centimeter
+    SendValue(FRSKY_USERDATA_GPS_ALT_B ,  (int16_t) (GPS_altitude / 1000) );                                                      // Altitude m
+    SendValue(FRSKY_USERDATA_GPS_ALT_A , (uint16_t) ( ( (abs(GPS_altitude) % 1000 ) / 10 ) ) )  ;                                    // Altitude centimeter
   } else if ( hubGpsCount == 3 ) {
 #ifdef GPS_SPEED_3D
     uint32_t GPSSpeedKnot = GPS_speed_3d * 1944L ;                                                                               // speed in knots with 5 décimals (1 cm/sec = 0,0194384 knot)
