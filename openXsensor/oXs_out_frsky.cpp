@@ -662,7 +662,7 @@ void OXS_OUT::SendFrame1(){
 #elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == TEST_2)
    SendValue( FRSKY_USERDATA_ACC_Y , (int16_t) test2.value) ;
 #elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == TEST_3)
-   SendValue( FRSKY_USERDATA_ACC_Z , (int16_t) test3.value) ;
+   SendValue( FRSKY_USERDATA_ACC_Y , (int16_t) test3.value) ;
 #elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == GLIDER_RATIO) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
    SendValue( FRSKY_USERDATA_ACC_Y , (int16_t) gliderRatio.value) ; 
 #elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == SECONDS_SINCE_T0 ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
@@ -761,7 +761,7 @@ void OXS_OUT::SendFrame2(){
     SendValue(FRSKY_USERDATA_GPS_CURSE_A , (uint16_t) ( (GPS_ground_course % 100000) / 1000 ) ) ;                               // Course 2 decimals of degrees
   }
   hubGpsCount++ ;
-  if ( hubGpsCount >= 3 ) hubGpsCount = 0 ;
+  if ( hubGpsCount >= 5 ) hubGpsCount = 0 ;
   if( hubMaxData > 0 ) {
     sendHubByte(0x5E) ; // End of Frame 2!
     setHubNewData(  ) ;
