@@ -837,7 +837,7 @@ void calculateAllFields () {
         mainVspeed.available = averageVSpeed.available ;
 #elif defined(VARIO) && defined(AIRSPEED) && (VSPEED_SOURCE == AIRSPEED_COMPENSATED)
     mainVspeed.value = compensatedClimbRate.value ;
-    mainVspeed.available = compensatedClimbRate.availabl e ;
+    mainVspeed.available = compensatedClimbRate.available ;
 #elif defined(VARIO) && defined(USE_6050) && (VSPEED_SOURCE == BARO_AND_IMU)
     mainVspeed.value = vSpeedImu.value ;
     mainVspeed.available = vSpeedImu.available ;

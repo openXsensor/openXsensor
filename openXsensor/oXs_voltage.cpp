@@ -182,9 +182,9 @@ void OXS_VOLTAGE::voltageNrIncrease() {
         
 #if defined ( NUMBEROFCELLS ) && (NUMBEROFCELLS > 0)
         voltageData.maxNumberOfCells = 0 ;
+        int32_t mVoltOneCell ;
+        uint8_t prevIndex ;
         for (uint8_t cellIndex = 0; cellIndex < NUMBEROFCELLS ; cellIndex++) {
-          int32_t mVoltOneCell ;
-          uint8_t prevIndex = 0 ;
           if (cellIndex == 0) {
             mVoltOneCell = voltageData.mVolt[cellIndex].value;
           } else { 
