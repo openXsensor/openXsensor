@@ -47,7 +47,7 @@ void   blinkLed(uint8_t blinkType) ;
 #define CLEAR_TX_PIN( )  ( TRXPORT &= ~( 1 << PIN_SERIALTX ) )
 #define GET_RX_PIN( )    ( TRXPIN & ( 1 << PIN_SERIALTX ) )
 
-#endif // end #define OXS_GENERAl_h
+
 
 
 
@@ -69,4 +69,11 @@ void   blinkLed(uint8_t blinkType) ;
 #ifndef sbi
 #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
 #endif
+
+extern volatile bool RpmSet  ;
+extern volatile uint16_t RpmValue ;
+
+
+#endif // end #define OXS_GENERAl_h
+
 

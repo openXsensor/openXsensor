@@ -18,10 +18,10 @@
 
 
 // --------- 1 - Telemetry protocol ---------
-#define PROTOCOL  FRSKY_SPORT_HUB  // select between FRSKY_SPORT , FRSKY_HUB , FRSKY_SPORT_HUB , MULTIPLEX , HOTT
+#define PROTOCOL  MULTIPLEX  // select between FRSKY_SPORT , FRSKY_HUB , FRSKY_SPORT_HUB , MULTIPLEX , HOTT
 
 // --------- 2 - Serial data pin choice ---------
-#define PIN_SERIALTX      4    // The pin which transmits the serial data to the FrSky telemetry receiver, Usually pin 4
+#define PIN_SERIALTX      4    // The pin which transmits the serial data to the telemetry receiver, Usually pin 4
 
 // --------- 3 - PPM settings ---------
 //#define PIN_PPM           3       // default is 2 but my own device use 3
@@ -104,7 +104,7 @@
 #define RESISTOR_TO_CURRENT_SENSOR      39     // put as comment or set to 0 if no divider is used
 
 // --------- 7 - RPM (rotations per minute) settings ---------
-//#define MEASURE_RPM
+#define MEASURE_RPM
 
 // --------- 8 - Persistent memory settings ---------
 //#define SAVE_TO_EEPROM

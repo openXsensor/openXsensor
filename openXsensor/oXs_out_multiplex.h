@@ -157,6 +157,7 @@ extern struct ONE_MEASUREMENT test1 ;
 extern struct ONE_MEASUREMENT test2 ;
 extern struct ONE_MEASUREMENT test3 ;
 extern struct ONE_MEASUREMENT gliderRatio ;
+extern struct ONE_MEASUREMENT sport_rpm ;
 
 extern uint8_t selectedVario ;
 

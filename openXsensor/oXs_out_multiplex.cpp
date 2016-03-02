@@ -341,9 +341,9 @@ uint8_t OXS_OUT::formatOneValue( uint8_t currentFieldToSend) {
 
 #ifdef MEASURE_RPM 
       case  RPM :
-          if ( ! RpmAvailable  ) return 0;
-          valueTemp = RpmValue ;  // to adjust probably
-          RpmAvailable  = false ;
+          if ( ! sport_rpm.available  ) return 0;
+          valueTemp = sport_rpm.value ;  // to adjust probably
+          sport_rpm.available  = false ;
           break ;   
 #endif
       case  TEST_1 :
