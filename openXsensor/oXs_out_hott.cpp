@@ -8,7 +8,7 @@
 
 #ifdef DEBUG
 // ************************* here Several parameters to help debugging
-  #define DEBUGHOTT
+  //#define DEBUGHOTT
 #endif
 
 extern OXS_MS5611 oXs_MS5611 ;

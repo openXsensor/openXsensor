@@ -136,6 +136,7 @@ started by Rainer Schlosshan
 *     Sensitivity can be predefined by program and/or adjusted from TX.
 *     
 *     If you want very short reaction time of the vario, the best solution is to use a MPU6050 sensor (accelerometer/gyro) on top of a baro sensor (see below)
+*     Note: when a vario is used (#define VARIO being uncommented) , you have to specify (in section 9) how the "main vertical speed" has to be calculated
 ************************************************************************************************************************
 #define VARIO  //set as comment if there is no vario
 #define VARIO2  //set as comment if there is no second vario
@@ -549,7 +550,7 @@ started by Rainer Schlosshan
 **** 9 - Data to transmit **********************************************************************************************
 *   Depending on the parameters in the config.h file (and the sensors connected to oXs), oXs calculates several measurements 
 *   In Multiplex protocol, you have to specify whch measurements are sent (and on which line on the display) (see below) 
-*   In SPORT, HUB and HOTT protocol, main measurement are automatically transmitted in their expected field and some set up allows to transmit some extra reusing available fields .
+*   In SPORT, HUB and HOTT protocol, main measurements are automatically transmitted in their expected fields and some set up allows to transmit some extra measurements reusing available fields .
 *   One of the calculated measurement is named "main vertical speed". 
 *   Depending on content of line #define VSPEED_SOURCE, it is calculated based on 
 *      - first baro sensor

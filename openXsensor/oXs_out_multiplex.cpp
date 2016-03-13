@@ -4,7 +4,7 @@
 
 #ifdef DEBUG
 // ************************* Several parameters to help debugging
-#define DEBUGSETNEWDATA
+//#define DEBUGSETNEWDATA
 //#define DEBUGFORMATONEVALUE
 #endif
 //#define DEBUG_MULTIPLEX_WITHOUT_RX  // this allows to let oXs generates dummy data when there is no Rx to give the polling on the bus. In this case, oXs does not look at the pooling to send data

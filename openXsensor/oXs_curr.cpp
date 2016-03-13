@@ -1,7 +1,7 @@
 #include "oXs_curr.h"
 
 #ifdef DEBUG
-#define DEBUGCURRENT
+//#define DEBUGCURRENT
 #endif
 
 extern unsigned long micros( void ) ;
