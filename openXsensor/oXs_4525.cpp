@@ -160,7 +160,12 @@ void OXS_4525::readSensor() {
                // airspeed = sqr(2 * differential_pressure / air_mass_per_kg) ; air mass per kg = pressure  pa / (287.05 * (Temp celcius + 273.15))
                // so airspeed m/sec =sqr( 574.1 * differential_pressure pa * (temperature Celsius + 273.15) / pressure pa )
 //               rawAirSpeed =  sqrt( (float) (574 * 10520.56427 * abs(smoothDifPressureAdc) * temperature4525  /  actualPressure) ); // in cm/sec ; actual pressure must be in pa (so 101325 about at sea level)
-               airSpeedData.rawAirSpeed =  2457.4 * sqrt( (float) ( abs(airSpeedData.smoothDifPressureAdc) * airSpeedData.temperature4525  /  actualPressure) ); // in cm/sec ; actual pressure must be in pa (so 101325 about at sea level)
+//               Note: I do not unerstand anymore why having 10520.56427 in this formula; normally it should be 10000 (converting m/sec in cm/sec)
+#ifdef AIRSPEED_AT_SEA_LEVEL_AND_15C
+               airSpeedData.rawAirSpeed =  127.77 * sqrt( (float) ( abs(airSpeedData.smoothDifPressureAdc) ) ); // indicated airspeed is calculated at 15 Celsius and 101325 pascal
+#else               
+               airSpeedData.rawAirSpeed =  2396 * sqrt( (float) ( abs(airSpeedData.smoothDifPressureAdc) * airSpeedData.temperature4525  /  actualPressure) ); // in cm/sec ; actual pressure must be in pa (so 101325 about at sea level)
+#endif              
              if ( airSpeedData.smoothDifPressureAdc < 0 ) airSpeedData.rawAirSpeed = - airSpeedData.rawAirSpeed ; // apply the sign
               airSpeedData.smoothAirSpeed = airSpeedData.rawAirSpeed ;
               

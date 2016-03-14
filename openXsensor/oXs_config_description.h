@@ -310,6 +310,12 @@ started by Rainer Schlosshan
 * The easiest is to configure a TX mixer that will generate a pulse of e.g. 1 sec with this value (e.g. 100).
 * Please note that the request for recalibration should be send only when the airspeed (on the probe) is really zero otherwise it would generate wrong measurements.
 *
+* oXs can calculate 2 types of airspeed:
+*  - the first one is an airspeed based on air density at 15 Celcius degree and 1013 hPa (normalised sea level). It is a normalised airspeed (indicated airspeed) as normally used on aircraft.
+*    So e.g. the stall speed does not change with altitude
+*  - the second one take into account the pressure (provided by a baro sensor) and the initial airspeed sensor temperature in order to calculate a "true" airspeed (to be compared with a GPS speed when wind is null)  
+* The normalised airspeed is calculated when line #define AIRSPEED_AT_SEA_LEVEL_AND_15C is uncommented. To get the "true" airspeed, put this line as comment
+* 
 * oXs can send the airspeed in (1/10) of knot/h or in (1/10) km/h. For openTx 2.1.x, you must use the km/h option, for previous version the knot/h option.
 * To activate the km/h option, activate this line #define AIRSPEED_IN_KMH
 * Put this line as comment to activate the knot/h option
@@ -327,6 +333,7 @@ started by Rainer Schlosshan
 *     COMPENSATION_PPM_MAX     maximum compensation; in % ; default 120
 ************************************************************************************************************************
 #define AIRSPEED  MS4525
+#define AIRSPEED_AT_SEA_LEVEL_AND_15C // if this line is commented, airspeed is calculated using baro pressure and temperature (so being "true" airspeed instead of normalised airspeed)      
 #define AIRSPEED_IN_KMH  // uncomment this line if airspeed has to be in km/h instead of knot/h (openTx 2.0 expect knot/h while openTx 2.1 expect km/h) 
 
 #define AIRSPEED_RESET_AT_PPM   100

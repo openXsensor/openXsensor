@@ -69,7 +69,8 @@
 #define VSPEED_MAX_TOLERANCE  -10        // out of tolerance when Vspeed is upper than this value  (cm/sec)
 
 // --------- 5 - Airspeed settings ---------
-//#define AIRSPEED    MS4525
+#define AIRSPEED    MS4525
+#define AIRSPEED_AT_SEA_LEVEL_AND_15C // if this line is commented, airspeed is calculated using baro pressure and temperature (so being "true" airspeed instead of normalised airspeed)      
 #define AIRSPEED_IN_KMH  // uncomment this line if airspeed has to be in km/h instead of knot/h (openTx 2.0 expect knot/h while openTx 2.1 expect km/h) 
 
 #define AIRSPEED_RESET_AT_PPM   100
