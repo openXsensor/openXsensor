@@ -461,7 +461,7 @@ void OXS_OUT::sendSportData()
     if ( frskyStatus ) {                                                                                  // if at least one data has to be loaded
       for (uint8_t sensorSeq = 0 ; sensorSeq < 6 ; sensorSeq++ ) {                                        // for each sensor (currently 6)  
         if ( frskyStatus & (1 << sensorSeq ) )  {                          //if frskyStatus says that a data must be loaded for this sensor
-            uint8_t currFieldIdx_ = currFieldIdx[sensorSeq] ;                // retrieve the last field being loaded
+            uint8_t currFieldIdx_ = currFieldIdx[sensorSeq] ;                // retrieve the last field being loaded for this sensor
             for (uint8_t iCount = fieldMinIdx[sensorSeq] ; iCount < fieldMinIdx[sensorSeq+1] ; iCount++ ) {        // we will not seach more than the number of fields for the selected sensor 
                 currFieldIdx_++ ;                                                                          // search with next field
                 if ( currFieldIdx_ >= fieldMinIdx[sensorSeq+1] ) currFieldIdx_ = fieldMinIdx[sensorSeq] ;        // if overlap within sensor range, set idx to first idx for this sensorSeq
@@ -475,7 +475,9 @@ void OXS_OUT::sendSportData()
                   cli() ;
                   frskyStatus &= ~(1<< sensorSeq) ;                                               // says that data is loaded by resetting one bit
                   sei();
+#ifdef DEBUG_LOAD_SPORT
                   Serial.print("Load "); Serial.print(dataId[sensorSeq],HEX) ; Serial.print(" ") ; Serial.println(dataValue[sensorSeq]);
+#endif                  
                   break ;                                                                         // exit inner for
                 }            
             }     

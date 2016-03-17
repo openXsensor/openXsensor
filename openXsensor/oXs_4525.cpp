@@ -153,18 +153,17 @@ void OXS_4525::readSensor() {
                        expoSmooth4525_adc_auto = FILTERING4525_ADC_MIN + ( FILTERING4525_ADC_MAX - FILTERING4525_ADC_MIN) * (abs_deltaDifPressureAdc - FILTERING4525_ADC_MIN_AT) / (FILTERING4525_ADC_MAX_AT - FILTERING4525_ADC_MIN_AT) ;
                     }
                     airSpeedData.smoothDifPressureAdc += expoSmooth4525_adc_auto * ( difPressureAdc_0 - airSpeedData.smoothDifPressureAdc ) ; // 
-                    //difPressure =  ((smoothDifPressureAdc  ) * 10520.56427) ; //-  86184462.5   ; //conversion in 1/10000 of Pa
-                  //           difPressure = -((difPressureAdc - 1638) * 0.0001525972 - 1) * 6894.757f ; // convert ADC in pascal : first calculate in PSI and then * conversion factor PSI to Pa
               }  
                // calculate airspeed based on pressure, altitude and temperature
-               // airspeed = sqr(2 * differential_pressure / air_mass_per_kg) ; air mass per kg = pressure  pa / (287.05 * (Temp celcius + 273.15))
-               // so airspeed m/sec =sqr( 574.1 * differential_pressure pa * (temperature Celsius + 273.15) / pressure pa )
-//               rawAirSpeed =  sqrt( (float) (574 * 10520.56427 * abs(smoothDifPressureAdc) * temperature4525  /  actualPressure) ); // in cm/sec ; actual pressure must be in pa (so 101325 about at sea level)
-//               Note: I do not unerstand anymore why having 10520.56427 in this formula; normally it should be 10000 (converting m/sec in cm/sec)
+               // airspeed (m/sec) = sqr(2 * differential_pressure_in_Pa / air_mass_kg_per_m3) 
+               // air_mass_kg_per_m3 = pressure_in_pa / (287.05 * (Temp celcius + 273.15))
+               // and differantial_pressure_Pa =  ((smoothDifPressureAdc  ) * 1.052) ;  // with MS4525DO_001 a range of 2 PSI gives 80% of 16383 (= max of 14bits); 1 PSI = 6894,76 Pascal ; so 1 unit of ADC = 2/ (80% * 16383) * 6894,76) 
+               // so airspeed m/sec =sqr( 2 * 287.05 * 1.052 * differential_pressure_pa * (temperature Celsius + 273.15) / pressure_in_pa )
+               // rawAirSpeed cm/sec =  24,58 * 100 * sqrt( (float) abs(smoothDifPressureAdc) * temperature4525  /  actualPressure) ); // in cm/sec ; actual pressure must be in pa (so 101325 about at sea level)
 #ifdef AIRSPEED_AT_SEA_LEVEL_AND_15C
-               airSpeedData.rawAirSpeed =  127.77 * sqrt( (float) ( abs(airSpeedData.smoothDifPressureAdc) ) ); // indicated airspeed is calculated at 15 Celsius and 101325 pascal
+               airSpeedData.rawAirSpeed =  131.06 * sqrt( (float) ( abs(airSpeedData.smoothDifPressureAdc) ) ); // indicated airspeed is calculated at 15 Celsius and 101325 pascal
 #else               
-               airSpeedData.rawAirSpeed =  2396 * sqrt( (float) ( abs(airSpeedData.smoothDifPressureAdc) * airSpeedData.temperature4525  /  actualPressure) ); // in cm/sec ; actual pressure must be in pa (so 101325 about at sea level)
+               airSpeedData.rawAirSpeed =  2458 * sqrt( (float) ( abs(airSpeedData.smoothDifPressureAdc) * airSpeedData.temperature4525  /  actualPressure) ); // in cm/sec ; actual pressure must be in pa (so 101325 about at sea level)
 #endif              
              if ( airSpeedData.smoothDifPressureAdc < 0 ) airSpeedData.rawAirSpeed = - airSpeedData.rawAirSpeed ; // apply the sign
               airSpeedData.smoothAirSpeed = airSpeedData.rawAirSpeed ;
