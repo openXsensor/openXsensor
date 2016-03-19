@@ -873,7 +873,7 @@ void calculateAllFields () {
 #endif
 
 #define DEBUG_CHANGE_IN_TEST12
-#if defined( DEBUG_CHANGE__IN_TEST12 )
+#if defined( DEBUG_CHANGE_IN_TEST12 )
       static uint32_t millisLastChangeTest ;
       if (millis() > millisLastChangeTest ) {
         millisLastChangeTest += 100 ;
