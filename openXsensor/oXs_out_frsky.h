@@ -173,7 +173,10 @@
 #define VERTICAL_SPEED_I   30    
 #define GLIDER_RATIO       31
 #define SECONDS_SINCE_T0        32
-#define AVERAGE_VSPEED_SINCE_TO 33 
+#define AVERAGE_VSPEED_SINCE_TO 33
+#define PITCH               34  
+#define ROLL                35
+#define YAW                 36
 
 // to do : add alt min, alt max ,  rpm max? , current max (not sure that it is neaded because it can be calculated on TX side
 // End of list of type of available measurements
@@ -267,6 +270,11 @@ extern struct ONE_MEASUREMENT secFromT0 ;
 extern struct ONE_MEASUREMENT averageVspeedSinceT0 ;     
 
 extern uint8_t selectedVario ;
+
+extern struct ONE_MEASUREMENT yaw ;
+extern struct ONE_MEASUREMENT pitch ;
+extern struct ONE_MEASUREMENT roll ;
+
 
 #ifdef MEASURE_RPM
 extern volatile uint16_t RpmValue ;

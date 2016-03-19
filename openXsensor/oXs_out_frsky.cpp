@@ -352,6 +352,12 @@ void initMeasurement() {
    p_measurements[17] = &averageVspeedSinceT0 ; 
 #elif defined(ACCX_SOURCE) && defined(PIN_VOLTAGE) && ( ACCX_SOURCE == VOLT_1 || ACCX_SOURCE == VOLT_2 || ACCX_SOURCE == VOLT_3 || ACCX_SOURCE == VOLT_4 || ACCX_SOURCE == VOLT_5 || ACCX_SOURCE == VOLT_6 )
    p_measurements[17] = &oXs_Voltage.voltageData.mVolt[ACCX_SOURCE - VOLT_1] ;
+#elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == PITCH) && defined(USE_6050)
+   p_measurements[17] = &pitch ; // accX
+#elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == ROLL) && defined(USE_6050)
+   p_measurements[17] = &roll ; // accX
+#elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == YAW) && defined(USE_6050)
+   p_measurements[17] = &yaw ; // accX
 #else
    p_measurements[17] = &no_data ; // accX
 #endif
@@ -371,6 +377,12 @@ void initMeasurement() {
    p_measurements[18] = &averageVspeedSinceT0 ; 
 #elif defined(ACCY_SOURCE) && defined(PIN_VOLTAGE) && ( ACCY_SOURCE == VOLT_1 || ACCY_SOURCE == VOLT_2 || ACCY_SOURCE == VOLT_3 || ACCY_SOURCE == VOLT_4 || ACCY_SOURCE == VOLT_5 || ACCY_SOURCE == VOLT_6 )
    p_measurements[18] = &oXs_Voltage.voltageData.mVolt[ACCY_SOURCE - VOLT_1] ;
+#elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == PITCH) && defined(USE_6050)
+   p_measurements[18] = &pitch ; 
+#elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == ROLL) && defined(USE_6050)
+   p_measurements[18] = &roll ; 
+#elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == YAW) && defined(USE_6050)
+   p_measurements[18] = &yaw ; 
 #else
    p_measurements[18] = &no_data ; // accY
 #endif
@@ -390,6 +402,12 @@ void initMeasurement() {
    p_measurements[19] = &averageVspeedSinceT0 ; 
 #elif defined(ACCZ_SOURCE) && defined(PIN_VOLTAGE) && ( ACCZ_SOURCE == VOLT_1 || ACCZ_SOURCE == VOLT_2 || ACCZ_SOURCE == VOLT_3 || ACCZ_SOURCE == VOLT_4 || ACCZ_SOURCE == VOLT_5 || ACCZ_SOURCE == VOLT_6 )
    p_measurements[19] = &oXs_Voltage.voltageData.mVolt[ACCZ_SOURCE - VOLT_1] ;
+#elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == PITCH) && defined(USE_6050)
+   p_measurements[19] = &pitch ; // accX
+#elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == ROLL) && defined(USE_6050)
+   p_measurements[19] = &roll ; // accX
+#elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == YAW) && defined(USE_6050)
+   p_measurements[19] = &yaw ; // accX
 #else
    p_measurements[19] = &no_data ; // accZ
 #endif
@@ -655,7 +673,13 @@ void OXS_OUT::SendFrame1(){
 #elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == SECONDS_SINCE_T0 ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
     SendValue( FRSKY_USERDATA_ACC_X , (int16_t) secFromT0.value) ; 
 #elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == AVERAGE_VSPEED_SINCE_TO ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
-    SendValue( FRSKY_USERDATA_ACC_X , (int16_t) averageVspeedSinceT0.value) ;     
+    SendValue( FRSKY_USERDATA_ACC_X , (int16_t) averageVspeedSinceT0.value) ; 
+#elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == PITCH) && defined(USE_6050)
+   SendValue( FRSKY_USERDATA_ACC_X , (int16_t) pitch.value) ;
+#elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == ROLL) && defined(USE_6050)
+   SendValue( FRSKY_USERDATA_ACC_X , (int16_t) roll.value) ;
+#elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == YAW) && defined(USE_6050)
+   SendValue( FRSKY_USERDATA_ACC_X , (int16_t) yaw.value) ;        
 #endif
 
 // accY
@@ -671,6 +695,12 @@ void OXS_OUT::SendFrame1(){
     SendValue( FRSKY_USERDATA_ACC_Y , (int16_t) secFromT0.value) ; 
 #elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == AVERAGE_VSPEED_SINCE_TO ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
     SendValue( FRSKY_USERDATA_ACC_Y , (int16_t) averageVspeedSinceT0.value) ;     
+#elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == PITCH) && defined(USE_6050)
+   SendValue( FRSKY_USERDATA_ACC_Y , (int16_t) pitch.value) ;
+#elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == ROLL) && defined(USE_6050)
+   SendValue( FRSKY_USERDATA_ACC_Y , (int16_t) roll.value) ;
+#elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == YAW) && defined(USE_6050)
+   SendValue( FRSKY_USERDATA_ACC_Y , (int16_t) yaw.value) ;        
 #endif
 
 // accZ
@@ -686,6 +716,13 @@ void OXS_OUT::SendFrame1(){
     SendValue( FRSKY_USERDATA_ACC_Z , (int16_t) secFromT0.value) ; 
 #elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == AVERAGE_VSPEED_SINCE_TO ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
     SendValue( FRSKY_USERDATA_ACC_Z , (int16_t) averageVspeedSinceT0.value) ;     
+#elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == PITCH) && defined(USE_6050)
+   SendValue( FRSKY_USERDATA_ACC_Z , (int16_t) pitch.value) ;
+#elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == ROLL) && defined(USE_6050)
+   SendValue( FRSKY_USERDATA_ACC_Z , (int16_t) roll.value) ;
+#elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == YAW) && defined(USE_6050)
+   SendValue( FRSKY_USERDATA_ACC_Z , (int16_t) yaw.value) ;        
+
 #endif
 
   if( hubMaxData > 0 ) {

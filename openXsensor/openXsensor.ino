@@ -34,14 +34,14 @@
 #if defined( VFAS_SOURCE ) && ( !  ( ( VFAS_SOURCE == VOLT_1) || ( VFAS_SOURCE == VOLT_2) || ( VFAS_SOURCE == VOLT_3) || ( VFAS_SOURCE == VOLT_4) || ( VFAS_SOURCE == VOLT_5) || ( VFAS_SOURCE == VOLT_6) ) ) 
  #error When defined, VFAS_SOURCE must be one of following values VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
 #endif
-#if defined( ACCX_SOURCE ) && ( !  ( ( ACCX_SOURCE == VOLT_1) || ( ACCX_SOURCE == VOLT_2) || ( ACCX_SOURCE == VOLT_3) || ( ACCX_SOURCE == VOLT_4) || ( ACCX_SOURCE == VOLT_5) || ( ACCX_SOURCE == VOLT_6) || ( ACCX_SOURCE == TEST_1) || ( ACCX_SOURCE == TEST_2) || ( ACCX_SOURCE == TEST_3) || ( ACCX_SOURCE == GLIDER_RATIO) || ( ACCX_SOURCE == SECONDS_SINCE_T0) || ( ACCX_SOURCE == AVERAGE_VSPEED_SINCE_TO) ) )
- #error When defined, ACCX_SOURCE must be one of following values TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
+#if defined( ACCX_SOURCE ) && ( !  ( ( ACCX_SOURCE == VOLT_1) || ( ACCX_SOURCE == VOLT_2) || ( ACCX_SOURCE == VOLT_3) || ( ACCX_SOURCE == VOLT_4) || ( ACCX_SOURCE == VOLT_5) || ( ACCX_SOURCE == VOLT_6) || ( ACCX_SOURCE == TEST_1) || ( ACCX_SOURCE == TEST_2) || ( ACCX_SOURCE == TEST_3) || ( ACCX_SOURCE == GLIDER_RATIO) || ( ACCX_SOURCE == SECONDS_SINCE_T0) || ( ACCX_SOURCE == AVERAGE_VSPEED_SINCE_TO) || ( ACCX_SOURCE == PITCH) || ( ACCX_SOURCE == ROLL) || ( ACCX_SOURCE == YAW) ) )
+ #error When defined, ACCX_SOURCE must be one of following values TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, PITCH, ROLL, YAW
 #endif
-#if defined( ACCY_SOURCE ) && ( !  ( ( ACCY_SOURCE == VOLT_1) || ( ACCY_SOURCE == VOLT_2) || ( ACCY_SOURCE == VOLT_3) || ( ACCY_SOURCE == VOLT_4) || ( ACCY_SOURCE == VOLT_5) || ( ACCY_SOURCE == VOLT_6) || ( ACCY_SOURCE == TEST_1) || ( ACCY_SOURCE == TEST_2) || ( ACCY_SOURCE == TEST_3) || ( ACCY_SOURCE == GLIDER_RATIO) || ( ACCY_SOURCE == SECONDS_SINCE_T0) || ( ACCY_SOURCE == AVERAGE_VSPEED_SINCE_TO) ) )
- #error When defined, ACCY_SOURCE must be one of following values TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
+#if defined( ACCY_SOURCE ) && ( !  ( ( ACCY_SOURCE == VOLT_1) || ( ACCY_SOURCE == VOLT_2) || ( ACCY_SOURCE == VOLT_3) || ( ACCY_SOURCE == VOLT_4) || ( ACCY_SOURCE == VOLT_5) || ( ACCY_SOURCE == VOLT_6) || ( ACCY_SOURCE == TEST_1) || ( ACCY_SOURCE == TEST_2) || ( ACCY_SOURCE == TEST_3) || ( ACCY_SOURCE == GLIDER_RATIO) || ( ACCY_SOURCE == SECONDS_SINCE_T0) || ( ACCY_SOURCE == AVERAGE_VSPEED_SINCE_TO) || ( ACCY_SOURCE == PITCH) || ( ACCY_SOURCE == ROLL) || ( ACCY_SOURCE == YAW) ) )
+ #error When defined, ACCY_SOURCE must be one of following values TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, PITCH, ROLL, YAW
 #endif
-#if defined( ACCZ_SOURCE ) && ( !  ( ( ACCZ_SOURCE == VOLT_1) || ( ACCZ_SOURCE == VOLT_2) || ( ACCZ_SOURCE == VOLT_3) || ( ACCZ_SOURCE == VOLT_4) || ( ACCZ_SOURCE == VOLT_5) || ( ACCZ_SOURCE == VOLT_6) || ( ACCZ_SOURCE == TEST_1) || ( ACCZ_SOURCE == TEST_2) || ( ACCZ_SOURCE == TEST_3) || ( ACCZ_SOURCE == GLIDER_RATIO) || ( ACCZ_SOURCE == SECONDS_SINCE_T0) || ( ACCZ_SOURCE == AVERAGE_VSPEED_SINCE_TO) ) )
- #error When defined, ACCZ_SOURCE must be one of following values TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
+#if defined( ACCZ_SOURCE ) && ( !  ( ( ACCZ_SOURCE == VOLT_1) || ( ACCZ_SOURCE == VOLT_2) || ( ACCZ_SOURCE == VOLT_3) || ( ACCZ_SOURCE == VOLT_4) || ( ACCZ_SOURCE == VOLT_5) || ( ACCZ_SOURCE == VOLT_6) || ( ACCZ_SOURCE == TEST_1) || ( ACCZ_SOURCE == TEST_2) || ( ACCZ_SOURCE == TEST_3) || ( ACCZ_SOURCE == GLIDER_RATIO) || ( ACCZ_SOURCE == SECONDS_SINCE_T0) || ( ACCZ_SOURCE == AVERAGE_VSPEED_SINCE_TO) || ( ACCZ_SOURCE == PITCH) || ( ACCZ_SOURCE == ROLL) || ( ACCZ_SOURCE == YAW) ) )
+ #error When defined, ACCZ_SOURCE must be one of following values TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, PITCH, ROLL, YAW
 #endif
 #if defined( T1_SOURCE ) && ( !  ( ( T1_SOURCE == PPM) || ( T1_SOURCE == GLIDER_RATIO) || ( T1_SOURCE == SECONDS_SINCE_T0) || ( T1_SOURCE == AVERAGE_VSPEED_SINCE_TO) || ( T1_SOURCE == SENSITIVITY) || ( T1_SOURCE == VOLT_1) || ( T1_SOURCE == VOLT_2) || ( T1_SOURCE == VOLT_3) || ( T1_SOURCE == VOLT_4) || ( T1_SOURCE == VOLT_5) || ( T1_SOURCE == VOLT_6) || ( T1_SOURCE == TEST_1) || ( T1_SOURCE == TEST_2) || ( T1_SOURCE == TEST_3) ) )
  #error When defined, T1_SOURCE must be one of following values TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , SENSITIVITY , PPM , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
@@ -154,10 +154,10 @@ void calculateAverages();
   KalmanFilter kalman ;
   float zTrack ;
   float vTrack ;
-  extern float yaw ;
-  extern float pitch ;
-  extern float roll ; 
-  extern uint8_t pitchAvailable ;
+  //extern float yaw ;
+  //extern float pitch ;
+  //extern float roll ; 
+  //extern uint8_t pitchAvailable ;
 struct ONE_MEASUREMENT vSpeedImu ;
 //  int32_t vSpeedImu ;
 //  bool vSpeedImuAvailable ;
@@ -768,7 +768,7 @@ void calculateAllFields () {
             vSpeedImu.available = true ;
             switchVTrackAvailable = true ;
             
-  #define TEST_SEND_MPU
+  //#define TEST_SEND_MPU
   #ifdef TEST_SEND_MPU                                                  ///////////////////////////// !!!!!!!!!!!!!!!!!!!!!! to be changed
             test1.value = linear_acceleration_x * 981 ; 
             test1.available = true ; 
@@ -871,21 +871,24 @@ void calculateAllFields () {
 //    test2.value = vSpeedImu.value ;
 //    test2.available = vSpeedImu.available ;
 #endif
-#ifdef USE_6050
-    if ( pitchAvailable ) {          // if pitch is available)
-      pitchAvailable = false ;
-      test1.value = pitch ;
-      test1.available = true ;
-      test2.value = roll ;
-      test2.available = true ;
-      test3.value = yaw ;
-      test3.available = true ;
-    }  
+
+#define DEBUG_CHANGE_IN_TEST12
+#if defined( DEBUG_CHANGE__IN_TEST12 )
+      static uint32_t millisLastChangeTest ;
+      if (millis() > millisLastChangeTest ) {
+        millisLastChangeTest += 100 ;
+        test1.value += 1 ;
+        test1.available = true ;
+        test2.value += 1 ;
+        test2.available = true ;
+      }  
 #endif
+
+
 //  test1.value = oXs_MS5611.varioData.absoluteAlt.value/10 ;
 //  test1.available = true ;
 
-} // end of calciulate all fields
+} // end of calculate all fields
 
 
 
