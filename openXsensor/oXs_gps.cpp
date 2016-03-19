@@ -234,7 +234,7 @@ bool OXS_GPS::gpsNewFrameUBLOX(uint8_t data) // handle one byte and if this byte
             break;
         case 6:
             _ck_b += (_ck_a += data);       // checksum byte
-            if (_payload_counter < UBLOX_BUFFER_SIZE) {
+            if  (_payload_counter < UBLOX_BUFFER_SIZE)  {
                 _buffer.bytes[_payload_counter] = data; // save the content of the payload
 //                printer->print(data , HEX);
               }
@@ -262,7 +262,7 @@ bool OXS_GPS::gpsNewFrameUBLOX(uint8_t data) // handle one byte and if this byte
 //            printer->print("pac : ");  printer->print(GPS_packetCount); printer->print(",err: "); printer->print(gpsDataErrors); printer->print(",skip: "); printer->println(_skip_packet) ;
 
             if (_skip_packet) {
-                break;   // do not parde the packet to be skipped
+                break;   // do not parse the packet to be skipped
             }
                          // if we arive here, it means that a valid frame has been received and that the gpsBuffer contains the data to be parsed
             if (UBLOX_parse_gps() && (_class == 0x01) ) {

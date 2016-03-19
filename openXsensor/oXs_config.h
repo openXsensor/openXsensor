@@ -18,7 +18,7 @@
 
 
 // --------- 1 - Telemetry protocol ---------
-#define PROTOCOL  MULTIPLEX  // select between FRSKY_SPORT , FRSKY_HUB , FRSKY_SPORT_HUB , MULTIPLEX , HOTT
+#define PROTOCOL  FRSKY_SPORT  // select between FRSKY_SPORT , FRSKY_HUB , FRSKY_SPORT_HUB , MULTIPLEX , HOTT
 
 // --------- 2 - Serial data pin choice ---------
 #define PIN_SERIALTX      4    // The pin which transmits the serial data to the telemetry receiver, Usually pin 4
@@ -32,7 +32,7 @@
 
 // ***** 4.1 - Connecting 1 or 2 MS5611 barometric sensor *****
 #define VARIO // set as comment if there is no vario
-#define SENSOR_IS_BMP180 // set as comment if baro sensor is MS5611
+//#define SENSOR_IS_BMP180 // set as comment if baro sensor is MS5611
 //#define VARIO2 // set as comment if there is no second vario
 
 // ***** 4.2 - Sensitivity predefined by program *****
@@ -69,7 +69,7 @@
 #define VSPEED_MAX_TOLERANCE  -10        // out of tolerance when Vspeed is upper than this value  (cm/sec)
 
 // --------- 5 - Airspeed settings ---------
-#define AIRSPEED    MS4525
+//#define AIRSPEED    MS4525
 #define AIRSPEED_AT_SEA_LEVEL_AND_15C // if this line is commented, airspeed is calculated using baro pressure and temperature (so being "true" airspeed instead of normalised airspeed)      
 #define AIRSPEED_IN_KMH  // uncomment this line if airspeed has to be in km/h instead of knot/h (openTx 2.0 expect knot/h while openTx 2.1 expect km/h) 
 
@@ -105,7 +105,7 @@
 #define RESISTOR_TO_CURRENT_SENSOR      39     // put as comment or set to 0 if no divider is used
 
 // --------- 7 - RPM (rotations per minute) settings ---------
-#define MEASURE_RPM
+//#define MEASURE_RPM
 
 // --------- 8 - Persistent memory settings ---------
 //#define SAVE_TO_EEPROM
@@ -118,8 +118,8 @@
 //#define ACCX_SOURCE     TEST_3                   //  select between TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6 
 //#define ACCY_SOURCE     VOLT_3                 //  select between TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
 //#define ACCZ_SOURCE     TEST_3                 //  select between TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
-#define T1_SOURCE       TEST_1                   //  select between TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , SENSITIVITY, PPM, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
-#define T2_SOURCE       TEST_2                      //  select between TEST_1, TEST_2, TEST_3, , GLIDER_RATIO, SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , SENSITIVITY, PPM, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
+//#define T1_SOURCE       TEST_1                   //  select between TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , SENSITIVITY, PPM, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
+//#define T2_SOURCE       TEST_2                      //  select between TEST_1, TEST_2, TEST_3, , GLIDER_RATIO, SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , SENSITIVITY, PPM, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
 
 // ***** 9.2 - Hott data *****
 //#define BATTERY_1_SOURCE          VOLT_4                 // select between VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
@@ -157,12 +157,12 @@
 
 // --------- 11 - GPS ------------------------------------------------------------------------------------------------
 #define GPS_INSTALLED     // uncomment this line if a GPS is connected
-#define GPS_SPEED_IN_KMH  // uncomment this line if GPS speed has to be sent in km/h instead of knot/h (only for Frsky protocol)
-#define GPS_SPEED_3D      // uncomment this line if GPS speed has to be the 3d speed instead of the 2d speed (note: 3d is probably less accurate - to test) 
+//#define GPS_SPEED_IN_KMH  // uncomment this line if GPS speed has to be sent in km/h instead of knot/h (only for Frsky protocol)
+//#define GPS_SPEED_3D      // uncomment this line if GPS speed has to be the 3d speed instead of the 2d speed (note: 3d is probably less accurate - to test) 
 
 // --------- 12 - IMU 6050 --- (accelerometer + gyro -----------------------------------------------------------------
 #define USE_6050 // uncomment this line if a IMU 6050 is connected
-#define PIN_INT_6050 2    // Interrupt from 6050 has to be connected to Arduino pin 2 or pin 3 (do not use here the same pin as PPM)
+#define PIN_INT_6050 3    // Interrupt from 6050 has to be connected to Arduino pin 2 or pin 3 (do not use here the same pin as PPM)
 #define ACC_OFFSET_X -160 // fill here the first value reported when DISPLAY_ACC_OFFSET is activated
 #define ACC_OFFSET_Y -150 // fill here the second value reported when DISPLAY_ACC_OFFSET is activated
 #define ACC_OFFSET_Z -1100 // fill here the third value reported when DISPLAY_ACC_OFFSET is activated

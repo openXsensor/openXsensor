@@ -1279,9 +1279,9 @@ uint8_t TxSportData[7] ;
 uint16_t Crc ;
 uint8_t  volatile  sportData[7] ;
 uint8_t volatile sendStatus ;
-uint8_t volatile gpsSendStatus ; 
-uint8_t volatile gpsSportDataLock ;
-uint8_t volatile gpsSportData[7] ;
+//uint8_t volatile gpsSendStatus ; 
+//uint8_t volatile gpsSportDataLock ;
+//uint8_t volatile gpsSportData[7] ;
 uint8_t currentSensorId ; // save the sensor id being received and on which oXs will reply (can be the main sensor id or GPS sensor id) 
 
 
