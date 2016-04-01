@@ -575,10 +575,13 @@ started by Rainer Schlosshan
 *         - Current (when Current sensor is present)
 *         - GPS (long, lat, speed, altitude , course) (when GPS sensor is present)
 *         - RPM (hz) (when RPM sensor is present)
-*      On top of this, you can also specify how to fill telemetry fields Vfas, T1, T2, AccX, AccY, AccZ (see available options below)
+*      On top of this, you can also specify how to fill telemetry fields Vfas, Fuel, A3, A4, T1, T2, AccX, AccY, AccZ (see available options below)
 *      Put those line(s) as comment when no measurement has to be transmitted in those telemetry field(s)
 *    ex :  
 *      #define VFAS_SOURCE VOLT_4                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
+*      #define FUEL_SOURCE VOLT_4                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
+*      #define A3_SOURCE VOLT_4                   // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
+*      #define A4_SOURCE VOLT_4                   // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
 *      #define ACCX_SOURCE TEST_1                 //  select between TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, PITCH, ROLL, YAW 
 *      #define ACCY_SOURCE TEST_2                 //  select between TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, PITCH, ROLL, YAW 
 *      #define ACCZ_SOURCE TEST_3                 //  select between TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, PITCH, ROLL, YAW 

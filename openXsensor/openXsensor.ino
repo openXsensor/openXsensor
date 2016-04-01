@@ -34,6 +34,15 @@
 #if defined( VFAS_SOURCE ) && ( !  ( ( VFAS_SOURCE == VOLT_1) || ( VFAS_SOURCE == VOLT_2) || ( VFAS_SOURCE == VOLT_3) || ( VFAS_SOURCE == VOLT_4) || ( VFAS_SOURCE == VOLT_5) || ( VFAS_SOURCE == VOLT_6) ) ) 
  #error When defined, VFAS_SOURCE must be one of following values VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
 #endif
+#if defined( FUEL_SOURCE ) && ( !  ( ( FUEL_SOURCE == VOLT_1) || ( FUEL_SOURCE == VOLT_2) || ( FUEL_SOURCE == VOLT_3) || ( FUEL_SOURCE == VOLT_4) || ( FUEL_SOURCE == VOLT_5) || ( FUEL_SOURCE == VOLT_6) ) ) 
+ #error When defined, FUEL_SOURCE must be one of following values VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
+#endif
+#if defined( A3_SOURCE ) && ( !  ( ( A3_SOURCE == VOLT_1) || ( A3_SOURCE == VOLT_2) || ( A3_SOURCE == VOLT_3) || ( A3_SOURCE == VOLT_4) || ( A3_SOURCE == VOLT_5) || ( A3_SOURCE == VOLT_6) ) ) 
+ #error When defined, A3_SOURCE must be one of following values VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
+#endif
+#if defined( A4_SOURCE ) && ( !  ( ( A4_SOURCE == VOLT_1) || ( A4_SOURCE == VOLT_2) || ( A4_SOURCE == VOLT_3) || ( A4_SOURCE == VOLT_4) || ( A4_SOURCE == VOLT_5) || ( A4_SOURCE == VOLT_6) ) ) 
+ #error When defined, A4_SOURCE must be one of following values VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
+#endif
 #if defined( ACCX_SOURCE ) && ( !  ( ( ACCX_SOURCE == VOLT_1) || ( ACCX_SOURCE == VOLT_2) || ( ACCX_SOURCE == VOLT_3) || ( ACCX_SOURCE == VOLT_4) || ( ACCX_SOURCE == VOLT_5) || ( ACCX_SOURCE == VOLT_6) || ( ACCX_SOURCE == TEST_1) || ( ACCX_SOURCE == TEST_2) || ( ACCX_SOURCE == TEST_3) || ( ACCX_SOURCE == GLIDER_RATIO) || ( ACCX_SOURCE == SECONDS_SINCE_T0) || ( ACCX_SOURCE == AVERAGE_VSPEED_SINCE_TO) || ( ACCX_SOURCE == PITCH) || ( ACCX_SOURCE == ROLL) || ( ACCX_SOURCE == YAW) ) )
  #error When defined, ACCX_SOURCE must be one of following values TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, PITCH, ROLL, YAW
 #endif

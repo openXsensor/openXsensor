@@ -168,10 +168,10 @@ void OXS_OUT::sendData() {
 #if defined( PROTOCOL ) &&  ( ( PROTOCOL == FRSKY_SPORT ) || ( PROTOCOL == FRSKY_SPORT_HUB ) )
 
 volatile uint8_t frskyStatus = 0x3F  ;                                                   //Status of SPORT protocol saying if data is to load in work field (bit 0...5 are used for the 6 sensorId), initially all data are to be loaded
-uint8_t currFieldIdx[6] = { 0 , 2, 5 , 8 , 13 , 17 } ;                          // per sensor, say which field has been loaded the last time (so next time, we have to search from the next one)
-const uint8_t fieldMinIdx[7]  = { 0 , 2, 5 , 8 , 13 , 17 , 20 } ;                     // per sensor, say the first field index ; there is one entry more in the array to know the last index
-const uint8_t fieldId[20] = { 0x10 , 0x11 , 0x30 , 0x30 , 0x30 , 0x21 , 0x20 , 0x60 , 0x80, 0x80 , 0x82 , 0x83 , 0x84 , 0x50 , 0x40 , 0x41 , 0xA0 , 0x70 , 0x71 , 0x72 } ; //fieldID to send to Tx (to shift 4 bits to left
-struct ONE_MEASUREMENT * p_measurements[20] ;      // array of 20 pointers (each pointer point to a structure containing a byte saying if a value is available and to the value.
+uint8_t currFieldIdx[6] = { 0 , 2, 5 , 10 , 15 , 19 } ;                          // per sensor, say which field has been loaded the last time (so next time, we have to search from the next one)
+const uint8_t fieldMinIdx[7]  = { 0 , 2, 5 , 10 , 15 , 19 , 22 } ;                     // per sensor, say the first field index ; there is one entry more in the array to know the last index
+const uint8_t fieldId[22] = { 0x10 , 0x11 , 0x30 , 0x30 , 0x30 , 0x21 , 0x20 , 0x60 ,0x90, 0x91 , 0x80, 0x80 , 0x82 , 0x83 , 0x84 , 0x50 , 0x40 , 0x41 , 0xA0 , 0x70 , 0x71 , 0x72 } ; //fieldID to send to Tx (to shift 4 bits to left
+struct ONE_MEASUREMENT * p_measurements[22] ;      // array of 20 pointers (each pointer point to a structure containing a byte saying if a value is available and to the value.
 // There are 20 possible fields to transmit in SPORT
 // They are grouped per sensor ID
 // Sensor 0 start from index = 0 and contains Alt + Vspeed
@@ -237,179 +237,198 @@ void initMeasurement() {
     p_measurements[6] = &no_data ;
 #endif
 
-// pointer to fuel                                    // not defined currently
-   p_measurements[7] = &no_data ;
+// pointer to fuel                                    
+#if defined(FUEL_SOURCE) && defined(PIN_VOLTAGE) && ( FUEL_SOURCE == VOLT_1 || FUEL_SOURCE == VOLT_2 || FUEL_SOURCE == VOLT_3 || FUEL_SOURCE == VOLT_4 || FUEL_SOURCE == VOLT_5 || FUEL_SOURCE == VOLT_6 )
+    p_measurements[7] =  &oXs_Voltage.voltageData.mVolt[FUEL_SOURCE - VOLT_1];
+#else
+    p_measurements[7] = &no_data ;
+#endif
+
+// pointer to A3                                    
+#if defined(A3_SOURCE) && defined(PIN_VOLTAGE) && ( A3_SOURCE == VOLT_1 || A3_SOURCE == VOLT_2 || A3_SOURCE == VOLT_3 || A3_SOURCE == VOLT_4 || A3_SOURCE == VOLT_5 || A3_SOURCE == VOLT_6 )
+    p_measurements[8] =  &oXs_Voltage.voltageData.mVolt[A3_SOURCE - VOLT_1];
+#else
+    p_measurements[8] = &no_data ;
+#endif
+
+// pointer to A4                                    
+#if defined(A4_SOURCE) && defined(PIN_VOLTAGE) && ( A4_SOURCE == VOLT_1 || A4_SOURCE == VOLT_2 || A4_SOURCE == VOLT_3 || A4_SOURCE == VOLT_4 || A4_SOURCE == VOLT_5 || A4_SOURCE == VOLT_6 )
+    p_measurements[9] =  &oXs_Voltage.voltageData.mVolt[A4_SOURCE - VOLT_1];
+#else
+    p_measurements[9] = &no_data ;
+#endif
+
 
 // pointer to GPS lon
 #if defined(GPS_INSTALLED)
-  p_measurements[8] = &sport_gps_lon ; 
-#else
-  p_measurements[8] = &no_data ; 
-#endif
-
-// pointer to GPS lat
-#if defined(GPS_INSTALLED)
-  p_measurements[9] = &sport_gps_lat ; 
-#else
-  p_measurements[9] = &no_data ; 
-#endif
-
-// pointer to GPS alt
-#if defined(GPS_INSTALLED)
-  p_measurements[10] = &sport_gps_alt ; 
+  p_measurements[10] = &sport_gps_lon ; 
 #else
   p_measurements[10] = &no_data ; 
 #endif
 
-// pointer to GPS speed
+// pointer to GPS lat
 #if defined(GPS_INSTALLED)
-  p_measurements[11] = &sport_gps_speed ; 
+  p_measurements[11] = &sport_gps_lat ; 
 #else
   p_measurements[11] = &no_data ; 
 #endif
 
-// pointer to GPS course
+// pointer to GPS alt
 #if defined(GPS_INSTALLED)
-  p_measurements[12] = &sport_gps_course ; 
+  p_measurements[12] = &sport_gps_alt ; 
 #else
   p_measurements[12] = &no_data ; 
 #endif
 
-// pointer to RPM
-#if defined(MEASURE_RPM) 
-  p_measurements[13] = &sport_rpm ; 
+// pointer to GPS speed
+#if defined(GPS_INSTALLED)
+  p_measurements[13] = &sport_gps_speed ; 
 #else
   p_measurements[13] = &no_data ; 
 #endif
 
+// pointer to GPS course
+#if defined(GPS_INSTALLED)
+  p_measurements[14] = &sport_gps_course ; 
+#else
+  p_measurements[14] = &no_data ; 
+#endif
+
+// pointer to RPM
+#if defined(MEASURE_RPM) 
+  p_measurements[15] = &sport_rpm ; 
+#else
+  p_measurements[15] = &no_data ; 
+#endif
+
 // pointer to T1
 #if defined(T1_SOURCE) && ( T1_SOURCE == TEST_1)
-   p_measurements[14] = &test1 ; 
+   p_measurements[16] = &test1 ; 
 #elif defined(T1_SOURCE) && ( T1_SOURCE == TEST_2)
-   p_measurements[14] = &test2 ; 
+   p_measurements[16] = &test2 ; 
 #elif defined(T1_SOURCE) && ( T1_SOURCE == TEST_3)
-   p_measurements[14] = &test3 ; 
+   p_measurements[16] = &test3 ; 
 #elif defined(T1_SOURCE) && ( T1_SOURCE == GLIDER_RATIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
-   p_measurements[14] = &gliderRatio ; 
+   p_measurements[16] = &gliderRatio ; 
 #elif defined(T1_SOURCE) && ( T1_SOURCE == SECONDS_SINCE_T0 ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
-   p_measurements[14] = &secFromT0 ; 
+   p_measurements[16] = &secFromT0 ; 
 #elif defined(T1_SOURCE) && ( T1_SOURCE == AVERAGE_VSPEED_SINCE_TO ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
-   p_measurements[14] = &averageVspeedSinceT0 ; 
+   p_measurements[16] = &averageVspeedSinceT0 ; 
 #elif defined(T1_SOURCE) && ( T1_SOURCE == SENSITIVITY) && defined(VARIO)
-   p_measurements[14] = &oXs_MS5611.varioData.sensitivity ; 
+   p_measurements[16] = &oXs_MS5611.varioData.sensitivity ; 
 #elif defined(T1_SOURCE) && ( T1_SOURCE == PPM) && defined(PIN_PPM)
-   p_measurements[14] = &ppm ; 
+   p_measurements[16] = &ppm ; 
 #elif defined(T1_SOURCE) && defined(PIN_VOLTAGE) && ( T1_SOURCE == VOLT_1 || T1_SOURCE == VOLT_2 || T1_SOURCE == VOLT_3 || T1_SOURCE == VOLT_4 || T1_SOURCE == VOLT_5 || T1_SOURCE == VOLT_6 )
-   p_measurements[14] = &oXs_Voltage.voltageData.mVolt[T1_SOURCE - VOLT_1] ;
+   p_measurements[16] = &oXs_Voltage.voltageData.mVolt[T1_SOURCE - VOLT_1] ;
 #else
-   p_measurements[14] = &no_data ; // T1 
+   p_measurements[16] = &no_data ; // T1 
 #endif
 
 // pointer to T2   
 #if defined(T2_SOURCE) && ( T2_SOURCE == TEST_1)
-   p_measurements[15] = &test1 ; 
+   p_measurements[17] = &test1 ; 
 #elif defined(T2_SOURCE) && ( T2_SOURCE == TEST_2)
-   p_measurements[15] = &test2 ; 
+   p_measurements[17] = &test2 ; 
 #elif defined(T2_SOURCE) && ( T2_SOURCE == TEST_3)
-   p_measurements[15] = &test3 ; 
+   p_measurements[17] = &test3 ; 
 #elif defined(T2_SOURCE) && ( T2_SOURCE == GLIDER_RATIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
-   p_measurements[15] = &gliderRatio ; 
+   p_measurements[17] = &gliderRatio ; 
 #elif defined(T2_SOURCE) && ( T2_SOURCE == SECONDS_SINCE_T0 ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
-   p_measurements[15] = &secFromT0 ; 
+   p_measurements[17] = &secFromT0 ; 
 #elif defined(T2_SOURCE) && ( T2_SOURCE == AVERAGE_VSPEED_SINCE_TO ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
-   p_measurements[15] = &averageVspeedSinceT0 ; 
+   p_measurements[17] = &averageVspeedSinceT0 ; 
 #elif defined(T2_SOURCE) && ( T2_SOURCE == SENSITIVITY) && defined(VARIO) 
-   p_measurements[15] = &oXs_MS5611.varioData.sensitivity ; 
+   p_measurements[17] = &oXs_MS5611.varioData.sensitivity ; 
 #elif defined(T2_SOURCE) && ( T2_SOURCE == PPM) && defined(PIN_PPM)
-   p_measurements[15] = &ppm ; 
+   p_measurements[17] = &ppm ; 
 #elif defined(T2_SOURCE) && defined(PIN_VOLTAGE) && ( T2_SOURCE == VOLT_1 || T2_SOURCE == VOLT_2 || T2_SOURCE == VOLT_3 || T2_SOURCE == VOLT_4 || T2_SOURCE == VOLT_5 || T2_SOURCE == VOLT_6 )
-   p_measurements[15] = &oXs_Voltage.voltageData.mVolt[T2_SOURCE - VOLT_1] ;
+   p_measurements[17] = &oXs_Voltage.voltageData.mVolt[T2_SOURCE - VOLT_1] ;
 #else
-   p_measurements[15] = &no_data ; // T2 
+   p_measurements[17] = &no_data ; // T2 
 #endif
 
 
    
 // pointer to airspeed
 #if defined(AIRSPEED) 
-  p_measurements[16] = &oXs_4525.airSpeedData.airSpeed ; 
+  p_measurements[18] = &oXs_4525.airSpeedData.airSpeed ; 
 #else
-  p_measurements[16] = &no_data ; 
+  p_measurements[18] = &no_data ; 
 #endif
 
 // pointer to accX
 #if defined(ACCX_SOURCE) && ( ACCX_SOURCE == TEST_1)
-   p_measurements[17] = &test1 ; // accX
+   p_measurements[19] = &test1 ; // accX
 #elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == TEST_2)
-   p_measurements[17] = &test2 ; // accX
+   p_measurements[19] = &test2 ; // accX
 #elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == TEST_3)
-   p_measurements[17] = &test3 ; // accX
+   p_measurements[19] = &test3 ; // accX
 #elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == GLIDER_RATIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
-   p_measurements[17] = &gliderRatio ; 
+   p_measurements[19] = &gliderRatio ; 
 #elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == SECONDS_SINCE_T0 ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
-   p_measurements[17] = &secFromT0 ; 
+   p_measurements[19] = &secFromT0 ; 
 #elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == AVERAGE_VSPEED_SINCE_TO ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
-   p_measurements[17] = &averageVspeedSinceT0 ; 
+   p_measurements[19] = &averageVspeedSinceT0 ; 
 #elif defined(ACCX_SOURCE) && defined(PIN_VOLTAGE) && ( ACCX_SOURCE == VOLT_1 || ACCX_SOURCE == VOLT_2 || ACCX_SOURCE == VOLT_3 || ACCX_SOURCE == VOLT_4 || ACCX_SOURCE == VOLT_5 || ACCX_SOURCE == VOLT_6 )
-   p_measurements[17] = &oXs_Voltage.voltageData.mVolt[ACCX_SOURCE - VOLT_1] ;
+   p_measurements[19] = &oXs_Voltage.voltageData.mVolt[ACCX_SOURCE - VOLT_1] ;
 #elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == PITCH) && defined(USE_6050)
-   p_measurements[17] = &pitch ; // accX
+   p_measurements[19] = &pitch ; // accX
 #elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == ROLL) && defined(USE_6050)
-   p_measurements[17] = &roll ; // accX
+   p_measurements[19] = &roll ; // accX
 #elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == YAW) && defined(USE_6050)
-   p_measurements[17] = &yaw ; // accX
+   p_measurements[19] = &yaw ; // accX
 #else
-   p_measurements[17] = &no_data ; // accX
+   p_measurements[19] = &no_data ; // accX
 #endif
 
 // pointer to accY
 #if defined(ACCY_SOURCE) && ( ACCY_SOURCE == TEST_1)
-   p_measurements[18] = &test1 ; // accY
+   p_measurements[20] = &test1 ; // accY
 #elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == TEST_2)
-   p_measurements[18] = &test2 ; // accY
+   p_measurements[20] = &test2 ; // accY
 #elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == TEST_3)
-   p_measurements[18] = &test3 ; // accY
+   p_measurements[20] = &test3 ; // accY
 #elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == GLIDER_RATIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
-   p_measurements[18] = &gliderRatio ; 
+   p_measurements[20] = &gliderRatio ; 
 #elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == SECONDS_SINCE_T0 ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
-   p_measurements[18] = &secFromT0 ; 
+   p_measurements[20] = &secFromT0 ; 
 #elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == AVERAGE_VSPEED_SINCE_TO ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
-   p_measurements[18] = &averageVspeedSinceT0 ; 
+   p_measurements[20] = &averageVspeedSinceT0 ; 
 #elif defined(ACCY_SOURCE) && defined(PIN_VOLTAGE) && ( ACCY_SOURCE == VOLT_1 || ACCY_SOURCE == VOLT_2 || ACCY_SOURCE == VOLT_3 || ACCY_SOURCE == VOLT_4 || ACCY_SOURCE == VOLT_5 || ACCY_SOURCE == VOLT_6 )
-   p_measurements[18] = &oXs_Voltage.voltageData.mVolt[ACCY_SOURCE - VOLT_1] ;
+   p_measurements[20] = &oXs_Voltage.voltageData.mVolt[ACCY_SOURCE - VOLT_1] ;
 #elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == PITCH) && defined(USE_6050)
-   p_measurements[18] = &pitch ; 
+   p_measurements[20] = &pitch ; 
 #elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == ROLL) && defined(USE_6050)
-   p_measurements[18] = &roll ; 
+   p_measurements[20] = &roll ; 
 #elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == YAW) && defined(USE_6050)
-   p_measurements[18] = &yaw ; 
+   p_measurements[20] = &yaw ; 
 #else
-   p_measurements[18] = &no_data ; // accY
+   p_measurements[20] = &no_data ; // accY
 #endif
 
 // pointer to accZ
 #if defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == TEST_1)
-   p_measurements[19] = &test1 ; // accZ
+   p_measurements[21] = &test1 ; // accZ
 #elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == TEST_2)
-   p_measurements[19] = &test2 ; // accZ
+   p_measurements[21] = &test2 ; // accZ
 #elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == TEST_3)
-   p_measurements[19] = &test3 ; // accZ
+   p_measurements[21] = &test3 ; // accZ
 #elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == GLIDER_RATIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
-   p_measurements[19] = &gliderRatio ; 
+   p_measurements[21] = &gliderRatio ; 
 #elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == SECONDS_SINCE_T0 ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
-   p_measurements[19] = &secFromT0 ; 
+   p_measurements[21] = &secFromT0 ; 
 #elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == AVERAGE_VSPEED_SINCE_TO ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
-   p_measurements[19] = &averageVspeedSinceT0 ; 
+   p_measurements[21] = &averageVspeedSinceT0 ; 
 #elif defined(ACCZ_SOURCE) && defined(PIN_VOLTAGE) && ( ACCZ_SOURCE == VOLT_1 || ACCZ_SOURCE == VOLT_2 || ACCZ_SOURCE == VOLT_3 || ACCZ_SOURCE == VOLT_4 || ACCZ_SOURCE == VOLT_5 || ACCZ_SOURCE == VOLT_6 )
-   p_measurements[19] = &oXs_Voltage.voltageData.mVolt[ACCZ_SOURCE - VOLT_1] ;
+   p_measurements[21] = &oXs_Voltage.voltageData.mVolt[ACCZ_SOURCE - VOLT_1] ;
 #elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == PITCH) && defined(USE_6050)
-   p_measurements[19] = &pitch ; // accX
+   p_measurements[21] = &pitch ; // accX
 #elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == ROLL) && defined(USE_6050)
-   p_measurements[19] = &roll ; // accX
+   p_measurements[21] = &roll ; // accX
 #elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == YAW) && defined(USE_6050)
-   p_measurements[19] = &yaw ; // accX
+   p_measurements[21] = &yaw ; // accX
 #else
-   p_measurements[19] = &no_data ; // accZ
+   p_measurements[21] = &no_data ; // accZ
 #endif
 
 }
@@ -611,11 +630,14 @@ void OXS_OUT::SendFrame1(){
     SendValue( FRSKY_USERDATA_CURRENT ,  (int16_t) oXs_Current.currentData.milliAmps.value ) ;
 #endif
 
-// fuel                                     // not defined currently
+// fuel                                     
+#if defined(FUEL_SOURCE) && defined(PIN_VOLTAGE) && ( FUEL_SOURCE == VOLT_1 || FUEL_SOURCE == VOLT_2 || FUEL_SOURCE == VOLT_3 || FUEL_SOURCE == VOLT_4 || FUEL_SOURCE == VOLT_5 || FUEL_SOURCE == VOLT_6 )
+    SendValue(FRSKY_USERDATA_FUEL,  (int16_t)  voltageData->mVolt[FUEL_SOURCE - VOLT_1].value ) ;
+#endif
    
 // RPM
 #if defined(MEASURE_RPM) 
-    SendValue( FRSKY_USERDATA_RPM , (int16) sport_rpm.value ) ; 
+    SendValue( FRSKY_USERDATA_RPM , (int16_t) sport_rpm.value ) ; 
 #endif
 
 // T1
