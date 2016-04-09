@@ -180,7 +180,7 @@ struct ONE_MEASUREMENT vSpeedImu ;
   float altitudeToKalman ;
   int countAltitudeToKalman = 100 ;
   int32_t altitudeOffsetToKalman ;
-  extern uint32_t lastImuInterruptMillis ;
+  extern volatile uint32_t lastImuInterruptMillis ;
   #ifdef DEBUG_KALMAN_TIME  
     int delayKalman[5] ;
   #endif  
@@ -916,7 +916,7 @@ static uint32_t previousYawRateMillis ;
 
 } // end of calculate all fields
 
-extern uint32_t lastImuInterruptMillis ;
+
 
 //***************** checkFreeTime ********* if there is at least 2000 usec before the next MS5611 read (in order to avoid delaying it 
 bool checkFreeTime() { // return true if there is no vario or if the vario sensor must not be read within a short time.

@@ -62,7 +62,7 @@ struct hal_s {
 volatile unsigned char new_mpu_data ;
 
 // ******************* ISR for INT0 ******************************************************
-uint32_t lastImuInterruptMillis ;
+volatile uint32_t lastImuInterruptMillis ;
 // this ISR handles interrupt 0 on rising edge ; when it occurs, it means that DMP has filled the fifo
 #if PIN_INT_6050 == 2                //  Pin2 uses INT0
 ISR(INT0_vect, ISR_NOBLOCK) { // allows other interrupts to be served when this one is activated 
