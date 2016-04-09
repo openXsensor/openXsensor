@@ -88,7 +88,7 @@
 #define REFERENCE_VOLTAGE 4970    // set value in milliVolt; if commented, oXs will use or 1100 (if internal ref is used) or 5000 (if internal ref is not used) 
 
 // ***** 6.2 - Voltage parameters *****
-#define PIN_VOLTAGE         0  , 1     , 2   , 8    , 8   , 8               // set this line as comment if no one voltage have to be measured, set a value to 8 for the voltage(s) not to be measured.
+//#define PIN_VOLTAGE         0  , 1     , 2   , 8    , 8   , 8               // set this line as comment if no one voltage have to be measured, set a value to 8 for the voltage(s) not to be measured.
 #define RESISTOR_TO_GROUND  12 , 20    , 30  , 19.8 , 50  , 60               // set value to 0 when no divider is used for a voltage, can contains decimals 
 #define RESISTOR_TO_VOLTAGE 50 , 100.1 , 200 , 39   , 500 , 600              // set value to 0 when no divider is used for a voltage, can contains decimals 
 #define OFFSET_VOLTAGE      0 , 0     , 0   , 0    , 0   , 0                // optionnal, can be negative, must be integer
@@ -115,14 +115,14 @@
 #define VSPEED_SOURCE  BARO_AND_IMU       // select between FIRST_BARO, SECOND_BARO , AVERAGE_FIRST_SECOND, AIRSPEED_COMPENSATED , BARO_AND_IMU or PPM_SELECTION
 // ***** 9.1 - Frsky data *****
 //#define VFAS_SOURCE   VOLT_1                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
-#define FUEL_SOURCE   VOLT_1                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
+//#define FUEL_SOURCE   VOLT_1                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
 //#define A3_SOURCE     VOLT_1                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
 //#define A4_SOURCE     VOLT_1                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
 #define ACCX_SOURCE     PITCH                   //  select between TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, PITCH, ROLL , YAW 
 #define ACCY_SOURCE     ROLL                 //  select between TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, PITCH, ROLL , YAW
 #define ACCZ_SOURCE     YAW                 //  select between TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, PITCH, ROLL , YAW
 #define T1_SOURCE       TEST_1                   //  select between TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , SENSITIVITY, PPM, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
-#define T2_SOURCE       TEST_2                      //  select between TEST_1, TEST_2, TEST_3, , GLIDER_RATIO, SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , SENSITIVITY, PPM, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
+//#define T2_SOURCE       TEST_2                      //  select between TEST_1, TEST_2, TEST_3, , GLIDER_RATIO, SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , SENSITIVITY, PPM, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
 
 // ***** 9.2 - Hott data *****
 //#define BATTERY_1_SOURCE          VOLT_4                 // select between VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6

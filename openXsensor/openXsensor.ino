@@ -180,6 +180,7 @@ struct ONE_MEASUREMENT vSpeedImu ;
   float altitudeToKalman ;
   int countAltitudeToKalman = 100 ;
   int32_t altitudeOffsetToKalman ;
+  extern uint32_t lastImuInterruptMillis ;
   #ifdef DEBUG_KALMAN_TIME  
     int delayKalman[5] ;
   #endif  
@@ -881,7 +882,23 @@ void calculateAllFields () {
 //    test2.available = vSpeedImu.available ;
 #endif
 
-#define DEBUG_CHANGE_IN_TEST12
+#if defined (VARIO) &&  defined (USE_6050)
+static int32_t  previousYaw ;
+static uint32_t previousYawRateMillis ;
+      if (lastImuInterruptMillis >= previousYawRateMillis + 200 ) {
+        test1.value = (yaw.value - previousYaw) * 100000 / (lastImuInterruptMillis - previousYawRateMillis) ; // calculate yaw rate in degree * 100 / sec
+        test1.available = true ;
+        previousYaw = yaw.value ;
+        previousYawRateMillis = lastImuInterruptMillis ;
+      }
+//    test1.value = oXs_MS5611.varioData.climbRate.value ;
+//    test1.available = oXs_MS5611.varioData.climbRate.available ;
+//    test2.value = vSpeedImu.value ;
+//    test2.available = vSpeedImu.available ;
+#endif
+
+
+//#define DEBUG_CHANGE_IN_TEST12
 #if defined( DEBUG_CHANGE_IN_TEST12 )
       static uint32_t millisLastChangeTest ;
       if (millis() > millisLastChangeTest ) {
@@ -899,7 +916,7 @@ void calculateAllFields () {
 
 } // end of calculate all fields
 
-
+extern uint32_t lastImuInterruptMillis ;
 
 //***************** checkFreeTime ********* if there is at least 2000 usec before the next MS5611 read (in order to avoid delaying it 
 bool checkFreeTime() { // return true if there is no vario or if the vario sensor must not be read within a short time.
