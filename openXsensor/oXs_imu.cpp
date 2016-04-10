@@ -70,7 +70,7 @@ ISR(INT0_vect, ISR_NOBLOCK) { // allows other interrupts to be served when this 
 ISR(INT1_vect, ISR_NOBLOCK) { // allows other interrupts to be served when this one is activated 
 #endif
  new_mpu_data = 1;
- lastImuInterruptMillis = millis();
+ //lastImuInterruptMillis = millis();
 }
 
 
@@ -211,12 +211,13 @@ static signed char gyro_orientation[9] = { 1, 0, 0,
 // ******************************************************************************************
 //                              Read imu 6050 sensor
 // ******************************************************************************************
+
 bool read6050 () {
   // If the MPU Interrupt occurred, read the fifo and process the data
 //  if (hal.new_gyro && hal.dmp_on) {
     bool newAccelerationAvailable = false;
-    if (new_mpu_data) {  // new_mpu_data is set in a call back function in an ISR attached to interrupt INT0 (reading arduino pin 2 which is connected to INT from mpu6050 )
-
+    if (new_mpu_data) {  // new_mpu_data is set in a call back function in an ISR attached to interrupt INT0 (reading arduino pin 2 (or 3) which is connected to INT from mpu6050 )
+        
         short gyro[3], accel[3], sensors;         // To do : gyro and sensors are not used anymore and could be removed from here 
         unsigned char more = 0;
         long quat[4];

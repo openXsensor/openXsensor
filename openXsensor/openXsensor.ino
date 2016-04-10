@@ -183,7 +183,7 @@ struct ONE_MEASUREMENT vSpeedImu ;
   extern volatile uint32_t lastImuInterruptMillis ;
   #ifdef DEBUG_KALMAN_TIME  
     int delayKalman[5] ;
-  #endif  
+  #endif
 #endif
 
 uint16_t ppmus ; // duration of ppm in usec
@@ -761,8 +761,10 @@ void calculateAllFields () {
 
 // calculate vSpeedImu & vSpeedImuAvailable 
 #if defined (VARIO) && defined (USE_6050)
+
         if (newImuAvailable) { // newImuAvailable says that a new world_linear_acceleration is available (flag has been returned by read6050()
           newImuAvailable = false ;   // reset the flag saying a new world_linear_acceleration is available
+         
   #ifdef DEBUG_KALMAN
             unsigned long beginKalman = micros();
   #endif  
@@ -885,12 +887,21 @@ void calculateAllFields () {
 #if defined (VARIO) &&  defined (USE_6050)
 static int32_t  previousYaw ;
 static uint32_t previousYawRateMillis ;
-      if (lastImuInterruptMillis >= previousYawRateMillis + 200 ) {
-        test1.value = (yaw.value - previousYaw) * 100000 / (lastImuInterruptMillis - previousYawRateMillis) ; // calculate yaw rate in degree * 100 / sec
+ uint32_t currentMillis ;
+        currentMillis = millis() ;
+      if (currentMillis >= previousYawRateMillis + 200 ) {
+        test1.value = (yaw.value - previousYaw) * 1000 / (int32_t) (currentMillis - previousYawRateMillis )  ; // calculate yaw rate in degree / sec
         test1.available = true ;
+#define DEBUGYAWRATE
+#ifdef DEBUGYAWRATE
+        //Serial.print(lastImuInterruptMillis) ;  Serial.print(" ") ; Serial.print( previousYawRateMillis ) ;Serial.print(" ") ; Serial.print( yaw.value ) ; Serial.print(" ") ; Serial.print( test1.value ) ; Serial.print(" ") ; Serial.println(oXs_MS5611.varioData.absoluteAlt.value) ;
+         Serial.print( currentMillis ) ;Serial.print(" ") ; Serial.print( yaw.value ) ; Serial.print(" ") ; Serial.print( test1.value ) ; Serial.print(" ") ; Serial.println(oXs_MS5611.varioData.absoluteAlt.value) ;
+#endif
+
         previousYaw = yaw.value ;
-        previousYawRateMillis = lastImuInterruptMillis ;
-      }
+        previousYawRateMillis = currentMillis ;
+     
+      }      
 //    test1.value = oXs_MS5611.varioData.climbRate.value ;
 //    test1.available = oXs_MS5611.varioData.climbRate.available ;
 //    test2.value = vSpeedImu.value ;
