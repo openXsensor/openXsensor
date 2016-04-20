@@ -641,7 +641,7 @@ void OXS_OUT::SendFrame1(){
    
 // current
 #if defined(PIN_CURRENTSENSOR) 
-    SendValue( FRSKY_USERDATA_CURRENT ,  (int16_t) oXs_Current.currentData.milliAmps.value ) ;
+    SendValue( FRSKY_USERDATA_CURRENT ,  (int16_t) oXs_Current.currentData.milliAmps.value / 100 ) ;
 #endif
 
 // fuel                                     
