@@ -161,6 +161,11 @@ extern struct ONE_MEASUREMENT sport_rpm ;
 
 extern uint8_t selectedVario ;
 
+extern struct ONE_MEASUREMENT yaw ;
+extern struct ONE_MEASUREMENT pitch ;
+extern struct ONE_MEASUREMENT roll ;
+
+
 #ifdef MEASURE_RPM
 extern volatile uint16_t RpmValue ;
 extern bool RpmAvailable ;

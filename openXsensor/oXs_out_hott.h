@@ -308,6 +308,11 @@ extern struct ONE_MEASUREMENT gliderRatio ;
 
 extern uint8_t selectedVario ;
 
+extern struct ONE_MEASUREMENT yaw ;
+extern struct ONE_MEASUREMENT pitch ;
+extern struct ONE_MEASUREMENT roll ;
+
+
 extern int32_t GPS_lon;               // longitude in degree with 7 decimals, (neg for S)
 extern int32_t GPS_lat;               // latitude   in degree with 7 decimals, (neg for ?)
 extern bool    GPS_latAvailable;
