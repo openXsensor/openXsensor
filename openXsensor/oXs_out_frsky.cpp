@@ -50,6 +50,10 @@ extern uint8_t volatile sendStatus ;
   struct ONE_MEASUREMENT vfas ; 
 #endif
 
+#if defined(PIN_CURRENTSENSOR) 
+    struct ONE_MEASUREMENT sport_currentData ;
+#endif
+
 #if defined(GPS_INSTALLED)
     struct ONE_MEASUREMENT sport_gps_lon ; 
     struct ONE_MEASUREMENT sport_gps_lat ;
@@ -58,6 +62,8 @@ extern uint8_t volatile sendStatus ;
     struct ONE_MEASUREMENT sport_gps_course;
     extern bool GPS_fix ;
 #endif
+
+
 
 extern struct ONE_MEASUREMENT sport_rpm ;
 
@@ -232,7 +238,7 @@ void initMeasurement() {
    
 // pointer to current
 #if defined(PIN_CURRENTSENSOR) 
-    p_measurements[6] = &oXs_Current.currentData.milliAmps ;
+    p_measurements[6] = &sport_currentData ;
 #else
     p_measurements[6] = &no_data ;
 #endif
@@ -446,6 +452,14 @@ void OXS_OUT::sendSportData()
   #else
   #error When defined, VFAS_SOURCE must be VOLT_1, VOLT_2, ... or VOLT_6
   #endif
+#endif
+
+#if defined(PIN_CURRENTSENSOR) 
+    if ( oXs_Current.currentData.milliAmps.available) {
+      oXs_Current.currentData.milliAmps.available = false ; 
+      sport_currentData.value = oXs_Current.currentData.milliAmps.value ;
+      sport_currentData.available = true ;
+    }  
 #endif
 
 #if defined(GPS_INSTALLED)

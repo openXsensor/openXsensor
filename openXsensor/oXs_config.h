@@ -18,7 +18,7 @@
 
 
 // --------- 1 - Telemetry protocol ---------
-#define PROTOCOL  MULTIPLEX  // select between FRSKY_SPORT , FRSKY_HUB , FRSKY_SPORT_HUB , MULTIPLEX , HOTT
+#define PROTOCOL  FRSKY_SPORT_HUB  // select between FRSKY_SPORT , FRSKY_HUB , FRSKY_SPORT_HUB , MULTIPLEX , HOTT
 
 // --------- 2 - Serial data pin choice ---------
 #define PIN_SERIALTX      4    // The pin which transmits the serial data to the telemetry receiver, Usually pin 4
@@ -98,7 +98,7 @@
 //#define NUMBEROFCELLS 3   // Put this line as comment or set value to 0 (zero) if you do not want to transmit cell voltages.
 
 // ***** 6.4 - Current parameters  *****
-//#define PIN_CURRENTSENSOR   3
+#define PIN_CURRENTSENSOR   3
 #define MVOLT_AT_ZERO_AMP              2500    // in millivolt
 #define MVOLT_PER_AMP                  60      // in milliVolt per Amp
 #define RESISTOR_TO_GROUND_FOR_CURRENT  19.8   // put as comment or set to 0 if no divider is used
