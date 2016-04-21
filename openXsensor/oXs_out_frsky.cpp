@@ -457,7 +457,7 @@ void OXS_OUT::sendSportData()
 #if defined(PIN_CURRENTSENSOR) 
     if ( oXs_Current.currentData.milliAmps.available) {
       oXs_Current.currentData.milliAmps.available = false ; 
-      sport_currentData.value = oXs_Current.currentData.milliAmps.value ;
+      sport_currentData.value = oXs_Current.currentData.milliAmps.value  / 100 ;
       sport_currentData.available = true ;
     }  
 #endif
