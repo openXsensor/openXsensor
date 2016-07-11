@@ -103,6 +103,7 @@ extern unsigned long millis( void ) ;
 //#define DEBUGENTERLOOP
 //#define DEBUGSEQUENCE
 //#define DEBUGPPM
+//#define DEBUGPPMVALUE
 //#define DEBUGFORCEPPM
 //#define DEBUG_VARIO_TIME
 //#define DEBUG_VOLTAGE_TIME
@@ -892,7 +893,7 @@ static uint32_t previousYawRateMillis ;
       if (currentMillis >= previousYawRateMillis + 200 ) {
         test1.value = (yaw.value - previousYaw) * 1000 / (int32_t) (currentMillis - previousYawRateMillis )  ; // calculate yaw rate in degree / sec
         test1.available = true ;
-#define DEBUGYAWRATE
+//#define DEBUGYAWRATE
 #ifdef DEBUGYAWRATE
         //Serial.print(lastImuInterruptMillis) ;  Serial.print(" ") ; Serial.print( previousYawRateMillis ) ;Serial.print(" ") ; Serial.print( yaw.value ) ; Serial.print(" ") ; Serial.print( test1.value ) ; Serial.print(" ") ; Serial.println(oXs_MS5611.varioData.absoluteAlt.value) ;
          Serial.print( currentMillis ) ;Serial.print(" ") ; Serial.print( yaw.value ) ; Serial.print(" ") ; Serial.print( test1.value ) ; Serial.print(" ") ; Serial.println(oXs_MS5611.varioData.absoluteAlt.value) ;
@@ -1313,12 +1314,16 @@ void ProcessPPMSignal(){
   ReadPPM(); // set ppmus to 0 if ppm is not available or has not been colletect X time, other fill ppmus with the (max) pulse duration in usec 
 #ifdef DEBUGFORCEPPM
 //for debuging ppm without having a connection to ppm; force ppm to a value
-  ppmus = ( PPM_MIN_100 + PPM_PLUS_100) / 2 ; // force a ppm equal to 0
+  ppmus = ( PPM_MIN_100 + PPM_PLUS_100) / 2 ; // force a ppm equal to 0 (neutral)
 #endif // end of DEBUGFORCEPPM 
   if (ppmus>0){  // if a value has been defined for ppm (in microseconds)
     ppm.value = map( ppmus , PPM_MIN_100, PPM_PLUS_100, -100 , 100 ) ; // map ppm in order to calibrate between -100 and 100
 //    ppm = 82 ; // test only
     ppm.available = true ;
+#ifdef DEBUGPPMVALUE
+       Serial.print(micros()); Serial.print(F("="));  Serial.println(ppm.value);
+#endif
+      
 #ifdef DEBUGPPM
     static uint16_t ppmCount ;
     if ( (((int) ppm.value) - ((int ) prevPpm) > 3 ) || (((int) prevPpm) - ((int ) ppm.value) > 3 )  )  {
@@ -1428,7 +1433,7 @@ void ReadPPM() {
          static uint8_t ppmIdx ;
          static uint16_t ppmTemp ;
          static uint16_t ppmMax ; // highest value of ppmTemp received ; Some ppm measurement are wrong (to low) because there are some interrupt some 
-#define PPM_COUNT_MAX 10 // select the max of 10 ppm
+#define PPM_COUNT_MAX 2 // select the max of 10 ppm
         cli() ;
         if ( !PulseTimeAvailable ) { // if no new pulse is available just exit with ppmus = 0
               ppmus = 0 ;

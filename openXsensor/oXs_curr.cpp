@@ -105,7 +105,7 @@ void OXS_CURRENT::readSensor() {
   milliTmp = millis() ;
   if(  milliTmp > ( lastCurrentMillis + 200) ){   // calculate average once per 200 millisec
       currentData.milliAmps.value = ((currentData.sumCurrent / cnt) - offsetCurrentSteps ) * mAmpPerStep ;
-      if (currentData.milliAmps.value < 0) currentData.milliAmps.value = 0 ;
+//      if (currentData.milliAmps.value < 0) currentData.milliAmps.value = 0 ;
 	  currentData.milliAmps.available = true ;
 //      if(currentData.minMilliAmps>currentData.milliAmps)currentData.minMilliAmps=currentData.milliAmps;
 //      if(currentData.maxMilliAmps<currentData.milliAmps)currentData.maxMilliAmps=currentData.milliAmps;

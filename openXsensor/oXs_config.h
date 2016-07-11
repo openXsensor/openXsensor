@@ -18,13 +18,13 @@
 
 
 // --------- 1 - Telemetry protocol ---------
-#define PROTOCOL  FRSKY_SPORT_HUB  // select between FRSKY_SPORT , FRSKY_HUB , FRSKY_SPORT_HUB , MULTIPLEX , HOTT
+#define PROTOCOL  FRSKY_SPORT  // select between FRSKY_SPORT , FRSKY_HUB , FRSKY_SPORT_HUB , MULTIPLEX , HOTT
 
 // --------- 2 - Serial data pin choice ---------
 #define PIN_SERIALTX      4    // The pin which transmits the serial data to the telemetry receiver, Usually pin 4
 
 // --------- 3 - PPM settings ---------
-//#define PIN_PPM           3       // default is 2 but my own device use 3
+#define PIN_PPM           3       // default is 2 but my own device use 3
 #define PPM_MIN_100       980     // default 1500 - 512 ; // pulse width (usec) when TX sends a channel = -100
 #define PPM_PLUS_100      1990    // default 1500 + 512 ; // pulse width (usec) when TX sends a channel = +100
 
@@ -98,7 +98,7 @@
 //#define NUMBEROFCELLS 3   // Put this line as comment or set value to 0 (zero) if you do not want to transmit cell voltages.
 
 // ***** 6.4 - Current parameters  *****
-#define PIN_CURRENTSENSOR   3
+//#define PIN_CURRENTSENSOR   3
 #define MVOLT_AT_ZERO_AMP              2500    // in millivolt
 #define MVOLT_PER_AMP                  60      // in milliVolt per Amp
 #define RESISTOR_TO_GROUND_FOR_CURRENT  19.8   // put as comment or set to 0 if no divider is used
@@ -112,17 +112,17 @@
 //#define PIN_PUSHBUTTON    2   // default is 10 but my own device is 2
 
 // --------- 9 - Data to transmit ---------
-#define VSPEED_SOURCE  BARO_AND_IMU       // select between FIRST_BARO, SECOND_BARO , AVERAGE_FIRST_SECOND, AIRSPEED_COMPENSATED , BARO_AND_IMU or PPM_SELECTION
+#define VSPEED_SOURCE  FIRST_BARO       // select between FIRST_BARO, SECOND_BARO , AVERAGE_FIRST_SECOND, AIRSPEED_COMPENSATED , BARO_AND_IMU or PPM_SELECTION
 // ***** 9.1 - Frsky data *****
 //#define VFAS_SOURCE   VOLT_1                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
 //#define FUEL_SOURCE   VOLT_1                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
 //#define A3_SOURCE     VOLT_1                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
 //#define A4_SOURCE     VOLT_1                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
-#define ACCX_SOURCE     PITCH                   //  select between TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, PITCH, ROLL , YAW 
-#define ACCY_SOURCE     ROLL                 //  select between TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, PITCH, ROLL , YAW
-#define ACCZ_SOURCE     YAW                 //  select between TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, PITCH, ROLL , YAW
-#define T1_SOURCE       TEST_1                   //  select between TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , SENSITIVITY, PPM, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
-//#define T2_SOURCE       TEST_2                      //  select between TEST_1, TEST_2, TEST_3, , GLIDER_RATIO, SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , SENSITIVITY, PPM, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
+//#define ACCX_SOURCE     PITCH                   //  select between TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, PITCH, ROLL , YAW 
+//#define ACCY_SOURCE     ROLL                 //  select between TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, PITCH, ROLL , YAW
+//#define ACCZ_SOURCE     YAW                 //  select between TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, PITCH, ROLL , YAW
+//#define T1_SOURCE       TEST_1                   //  select between TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , SENSITIVITY, PPM, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
+#define T2_SOURCE       PPM                      //  select between TEST_1, TEST_2, TEST_3, , GLIDER_RATIO, SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , SENSITIVITY, PPM, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
 
 // ***** 9.2 - Hott data *****
 //#define BATTERY_1_SOURCE          VOLT_4                 // select between VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
@@ -134,13 +134,14 @@
 
 // ***** 9.3 - Multiplex data *****
 #define SETUP_MULTIPLEX_DATA_TO_SEND    \
-                        3 , ALTIMETER , 1 , 1 , 0 , -16384 , 16383 , \
-                        6 , VERTICAL_SPEED , 1 , 1 , 0, -500 , 500 , \
                         5 , REL_ALTIMETER , 1 , 1 , 0 , -16384 , 16383 , \
-                        7 , CELL_TOT , 1 , 1 , 0 , -16384 , 16383 , \
-                        8 , ALTIMETER_MAX , 1 , 1 , 0 , -16384 , 16383 , \
-                        4 , VOLT_4 , 1 , 1 , 0 , -16384 , 16383 , \
-                        9 , PPM , 1 , 1 , 0 , -16384 , 16383 
+                        7 , ALTIMETER_MAX , 1 , 1 , 0 , -16384 , 16383 , \
+                        6 , VERTICAL_SPEED , 1 , 1 , 0, -500 , 500 
+                        
+                        // 7 , CELL_TOT , 1 , 1 , 0 , -16384 , 16383 , \
+                        // 4 , VOLT_4 , 1 , 1 , 0 , -16384 , 16383 , \
+                        // 9 , PPM , 1 , 1 , 0 , -16384 , 16383 
+                        // 3 , ALTIMETER , 1 , 1 , 0 , -16384 , 16383 , \
 
 // --------- 10 - Sequencer ---------
 //#define SEQUENCE_OUTPUTS 0b100000  
@@ -164,12 +165,12 @@
 //#define GPS_SPEED_3D      // uncomment this line if GPS speed has to be the 3d speed instead of the 2d speed (note: 3d is probably less accurate - to test) 
 
 // --------- 12 - IMU 6050 --- (accelerometer + gyro -----------------------------------------------------------------
-#define USE_6050 // uncomment this line if a IMU 6050 is connected
-#define PIN_INT_6050 3    // Interrupt from 6050 has to be connected to Arduino pin 2 or pin 3 (do not use here the same pin as PPM)
-#define ACC_OFFSET_X -160 // fill here the first value reported when DISPLAY_ACC_OFFSET is activated
-#define ACC_OFFSET_Y -150 // fill here the second value reported when DISPLAY_ACC_OFFSET is activated
-#define ACC_OFFSET_Z -1100 // fill here the third value reported when DISPLAY_ACC_OFFSET is activated
-//#define DISPLAY_ACC_OFFSET // used ONLY in order to display the acceleration offset on pc terminal; KEEP AS COMMENT once offsets has been setup 
+//#define USE_6050 // uncomment this line if a IMU 6050 is connected
+#define PIN_INT_6050 3   // Interrupt from 6050 has to be connected to Arduino pin 2 or pin 3 (do not use here the same pin as PPM)
+#define ACC_OFFSET_X -160 // fill here the first value reported when DISPLAY_ACC_OFFSET is activated (eg. -160)
+#define ACC_OFFSET_Y -150 // fill here the second value reported when DISPLAY_ACC_OFFSET is activated (eg. -150)
+#define ACC_OFFSET_Z -1100 // fill here the third value reported when DISPLAY_ACC_OFFSET is activated (eg. -1100)
+//#define DISPLAY_ACC_OFFSET // used ONLY in order to display the acceleration offset on pc terminal; KEEP AS COMMENT once offsets have been setup 
 
 // --------- xx - Reserved for developer. DEBUG must be activated here when we want to debug one or several functions in some other files. ---------
 #define DEBUG

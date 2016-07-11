@@ -838,9 +838,9 @@ started by Rainer Schlosshan
 ************************************************************************************************************************ 
  //#define USE_6050
 #define PIN_INT_6050 3    // Interrupt from 6050 has to be connected to Arduino pin 2 or pin 3 (do not use here the same pin as PPM) 
-#define ACC_OFFSET_X -160 // fill here the value reported when DISPLAY_ACC_OFFSET is activated
-#define ACC_OFFSET_Y -150 // fill here the value reported when DISPLAY_ACC_OFFSET is activated
-#define ACC_OFFSET_Z -1100 // fill here the value reported when DISPLAY_ACC_OFFSET is activated
+#define ACC_OFFSET_X 0 // fill here the value reported when DISPLAY_ACC_OFFSET is activated (eg. -160)
+#define ACC_OFFSET_Y 0 // fill here the value reported when DISPLAY_ACC_OFFSET is activated (eg. -150)
+#define ACC_OFFSET_Z 0 // fill here the value reported when DISPLAY_ACC_OFFSET is activated (eg. -1100)
 #define DISPLAY_ACC_OFFSET
 
  

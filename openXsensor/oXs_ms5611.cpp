@@ -2,7 +2,7 @@
 
 #ifdef DEBUG
 //#define DEBUGI2CMS5611
-//#define DEBUGDATA
+//#define DEBUG_VARIO_DATA
 //#define DEBUGVARIOI2C
 //#define DEBUGVARIO
 //#define DEBUG_VARIO_TIME
@@ -288,18 +288,18 @@ void OXS_MS5611::calculateVario() {
 //        }  
 
       } // end If (altMillis > nextAltMillis)
-#ifdef DEBUGDATA
+#ifdef DEBUG_VARIO_DATA
       static bool firstPrintAlt = true ;
       if (firstPrintAlt == true) {
           firstPrintAlt = false ;
 //          printer->println(F( "T,Ra,Sm,A,NC,DS,AHP,ALP,CR2, Temp" )) ;
-          printer->println(F( "T,Ra,Alt,vpsd, Alt2, rawVspd, vspd2 , smoothAlt, smoothVspd" )) ;
+          Serial.println(F( "T,Ra,Alt,vpsd, Alt2, rawVspd, vspd2 , smoothAlt, smoothVspd" )) ;
       }    
-            printer->print( varioData.temperature ) ; printer->print(",");
-            printer->print(  (float) varioData.rawAltitude  ) ; printer->print(","); // alt is displayed in CM with 2 decimal
+            Serial.print( varioData.temperature ) ; printer->print(",");
+            Serial.print(  (float) varioData.rawAltitude  ) ; Serial.print(","); // alt is displayed in CM with 2 decimal
  //           printer->print(  expoSmooth ) ;             printer->print(" ,");
-            printer->print( (float) altitude  ) ;             printer->print(" ,");
-            printer->print( varioData.climbRate ) ;            printer->print(" ,"); 
+            Serial.print( (float) altitude  ) ;             Serial.print(" ,");
+            Serial.print( varioData.climbRate.value ) ;            Serial.print(" ,"); 
  //           printer->print( delaySmooth ) ;            printer->print(" ,"); 
  //           printer->print( altitudeHighPass ) ;             printer->print(" ,"); 
  //           printer->print( altitudeLowPass ) ;            printer->print(" ,"); 
@@ -310,7 +310,7 @@ void OXS_MS5611::calculateVario() {
  //           printer->print( smoothRateVSpeed ) ;            printer->print(" ,"); 
  //           printer->print( expoSmooth5611_alt_auto * 1000 ) ;            printer->print(" ,"); 
  //           printer->print( expoSmooth5611_vSpeed_auto * 1000 ) ;            printer->print(" ,"); 
-            printer->println( ) ;
+            Serial.println( ) ;
             
 #endif        
 
