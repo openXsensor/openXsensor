@@ -186,7 +186,8 @@ void I2C::scan()
 //      Serial.print("Found device at address - ");
 //      Serial.print(" 0x");
 //      Serial.println(s,HEX);
-        if( scanAdr == 0) scanAdr = s ;
+      //  if( scanAdr == 0) 
+          scanAdr = s ;
       
       totalDevicesFound++;
     }
