@@ -73,10 +73,10 @@ started by Rainer Schlosshan
 *   OXS has to be connected to the receiver in order to transmit his data.
 *   Therefore, one DIGITAL Arduino pin that has to be connected to "Rx" pin from receiver (for D series RX) or to S.Port signal pin (for X series RX).
 *   You must specify the Arduino pin being used.
-*   Default: 4 ; allowed values are 0 up to 7 but take care not using the same pin for 2 features.
+*   Default: 4 ; allowed values are 2 or 4 but take care not using the same pin for 2 features.
 ************************************************************************************************************************
 #define PIN_SERIALTX  4
-                                
+
 
 **** 3 - PPM settings **************************************************************************************************
 *   OXS can (optionally) read a PPM Signal coming from Tx.
@@ -849,6 +849,7 @@ started by Rainer Schlosshan
 * You can then select the parts that you want to debug by uncommenting the specifics DEBUG parameters you want in each file
 * Note: OXS allows to transmit 3 fields named TEST1, TEST2, TEST3. You can fill those fields with whatever you want where you want if you want to transmit additional data to the Tx.
 * Just fill in test1Value (or 2, 3) with an int32_t and test1ValueAvailable (or 2, 3) with true and add those OXS measurements in the data to be sent section. 
+* Enabling DEBUG will allow to use Arduino Serial Monitor (115200 baud) to see init data and live sensor values
 ************************************************************************************************************************
 //#define DEBUG
 
