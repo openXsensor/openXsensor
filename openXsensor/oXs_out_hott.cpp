@@ -95,6 +95,45 @@ void OXS_OUT::setup() {
 #endif
 }
 
+#if defined(NUMBEROFCELLS) && (NUMBEROFCELLS > 0) && defined(CELL_UNDERVOLTAGE_WARNING)
+/* Determine whether a warning has to be sent to the transmitter. */
+byte OXS_OUT::warning_beeps_Hott(void) {
+    /* Define the state variables for the state machine controlling
+       the warning generation.  W_IDLE is the IDLE state but that name
+       cannot be used because IDLE is already defined in
+       oXs_out_hott.h. */
+    static enum {W_IDLE = 0, WARNING, DEADTIME} state = W_IDLE;
+    static unsigned long warning_start_time;
+    static uint8_t current_warning;
+
+    /* In order not to flood the transmitter with warnings, we
+       transmit our warnings only every 3 seconds.  If the dead time
+       is over, fall back into the idle state. */
+    if (state == DEADTIME && millis() - warning_start_time > 3000)
+	state = W_IDLE;
+
+    /* State WARNING indicates that we just started to transmit a
+       warning.  Repeat it for 500ms to make sure the transmitter can
+       receive it.  After 500ms we stop transmitting the warning and
+       disable new warnings for a while. */
+    if (state == WARNING && millis() - warning_start_time > 500) {
+	    state = DEADTIME;
+	    current_warning = 0;
+	}
+
+    /* In the idle state, we are ready to accept new warnings. */
+    if (state == W_IDLE) {
+	if (voltageData->mVoltCellMin < CELL_UNDERVOLTAGE_WARNING) {
+	    warning_start_time = millis();
+	    state = WARNING;
+	    current_warning = 17; /* Cell undervoltage warning */
+	}
+    }
+
+    return current_warning;
+}
+#endif
+
 
 void OXS_OUT::sendData() {
 #ifdef DEBUGHOTT
@@ -204,6 +243,10 @@ void OXS_OUT::sendData() {
               TxHottData.gamMsg.min_cell_volt =  voltageData->mVoltCellMin /20 ; // minimum cell voltage in 2mV steps. 124 = 2,48V
 #endif
 
+#if defined(NUMBEROFCELLS) && (NUMBEROFCELLS > 0) && defined(CELL_UNDERVOLTAGE_WARNING)
+	      // Transmitter warning message
+	      TxHottData.gamMsg.warning_beeps = warning_beeps_Hott();
+#endif
 
 // field of msg not implemented
 //  byte climbrate3s;                     //#28 climb rate in m/3sec. Value of 120 = 0m/3sec

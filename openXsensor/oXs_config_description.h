@@ -30,7 +30,8 @@ started by Rainer Schlosshan
 *   6.1 - Voltage Reference to measure voltages and current
 *   6.2 - Voltages parameters
 *   6.3 - Max number of lipo cells to measure (and transmit to Tx)
-*   6.4 - Current sensor parameters
+*   6.4 - Lipo cell undervoltage warning
+*   6.5 - Current sensor parameters
 *  7 - RPM (rotations per minute) sensor settings (optional)
 *  8 - Persistent memory settings (optional)
 *  9 - Data to transmit - This part specifies list of codes to be used and how to combine them
@@ -373,7 +374,7 @@ started by Rainer Schlosshan
 *       - must specify the values of resistors being used for the voltage dividers (see below)
 *       - can specify offset and/or scaling to apply
 * 
-*     Note : one analog pin can also be used to measure a current using a current sensor; the set up for a current sensor is described in section 6.4 (see below);
+*     Note : one analog pin can also be used to measure a current using a current sensor; the set up for a current sensor is described in section 6.5 (see below);
 *          Do not use the same analog pin to measure a voltage and a current.
 *     Take care : do NOT use pins A4 and A5 if you use a vario or an airspeed (those pins are reserved for the barometric and pressure sensors).
 *     
@@ -483,7 +484,19 @@ started by Rainer Schlosshan
 #define NUMBEROFCELLS    3 
 
 
-* 6.4 - Current sensor  parameters   **************************************************************************************
+* 6.4 - Lipo cell undervoltage warning ****************************************
+*
+*     This parameter is only used with the HoTT protocol.  HoTT
+*     transmitters allow the telemetry sensor to issue a warning when
+*     a lipo cell drops below a threshold voltage.  OXS issues the
+*     undervoltage warning when CELL_UNDERVOLTAGE_WARNING is defined
+*     and any cell voltage drops below CELL_UNDERVOLTAGE_WARNING
+*     Millivolts.
+*******************************************************************************
+#define CELL_UNDERVOLTAGE_WARNING 3300
+
+
+* 6.5 - Current sensor  parameters   **************************************************************************************
 *     It is possible to measure a current (and current consumption) if a current sensor is connected.
 *     Connecting a current sensor is an optional feature.
 *     It requires some additional hardware. It can be an IC like ACS712 (for 5, 20, 30 amp) or ACS758 (for 50, 100, 150, 200 amp).
