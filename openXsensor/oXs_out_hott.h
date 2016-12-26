@@ -286,6 +286,7 @@ class OXS_OUT {
     void formatAllMultiplexData() ; 
     uint8_t formatOneValue ( uint8_t currentFieldToSend ) ;
     void setMultiplexNewData(  uint16_t id, int32_t value  , uint8_t alarm) ;
+    byte warning_beeps_Hott(void);
 };
 
 //extern int ppm ; 

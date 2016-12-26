@@ -97,7 +97,10 @@
 // ***** 6.3 - Max number of Lipo cells to measure (and transmit to Tx) *****
 //#define NUMBEROFCELLS 3   // Put this line as comment or set value to 0 (zero) if you do not want to transmit cell voltages.
 
-// ***** 6.4 - Current parameters  *****
+// ***** 6.4 - Lipo cell undervoltage warning *****
+//#define CELL_UNDERVOLTAGE_WARNING 3300 // Warning threshold in mV
+
+// ***** 6.5 - Current parameters  *****
 //#define PIN_CURRENTSENSOR   3
 #define MVOLT_AT_ZERO_AMP              2500    // in millivolt
 #define MVOLT_PER_AMP                  60      // in milliVolt per Amp
