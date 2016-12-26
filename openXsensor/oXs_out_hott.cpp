@@ -618,22 +618,17 @@ ISR(TIMER1_COMPA_vect)
                   if( !(GET_RX_PIN( ) == 0 )) data |= 0x80 ;  // If a logical 1 is read, let the data mirror this.
                   SwUartRXData = data ;
                } else {                                       //Done receiving =  8 bits are in SwUartRXData
-                  if ( LastRx == HOTT_BINARY_MODE_REQUEST_ID ) {     // if the previous byte identifies a polling for a reply in binary format
-                           if ( SwUartRXData == HOTT_TELEMETRY_GAM_SENSOR_ID 
+                  if ( LastRx == HOTT_BINARY_MODE_REQUEST_ID         // if previous and cuurrent byte form a valid binary format request
+                           && ( SwUartRXData == HOTT_TELEMETRY_GAM_SENSOR_ID 
 #ifdef GPS_INSTALLED                           
                               || SwUartRXData == HOTT_TELEMETRY_GPS_SENSOR_ID
 #endif                           
-                                                                               ) {// the sensor has to reply (if it has data; here we assume it has always data and the data will be in the Hott buffer)
+																)) {// the sensor has to reply (if it has data; here we assume it has always data and the data will be in the Hott buffer)
                                flagUpdateHottBuffer = SwUartRXData ;         // flag to say to send function that the buffer must be filled. It is expected that send function is called fast enough (so main loop may not be blocked) 
                                state = TxPENDING ;
                                OCR1A += ( DELAY_4000 - TICKS2WAITONEHOTT) ;                   // 4ms gap before sending; normally Hott protocols says to wait 5 msec but this is too much for timer1
                                delayTxPendingCount  = 1 ;            //  ask for 1 more delay of 1ms in order to reach the total of 5msec                 
-                           } else  {
-                                state = WAITING ;
-                                OCR1A += ( DELAY_4000 - TICKS2WAITONEHOTT) ;                // 4mS gap before listening (take care that 4096 is the max we can wait because timer 1 is 16 bits and prescaler = 1)
-                           }      // end last byte was a polling code
-
-                  } else {                                // Previous code is not equal to HOTT_BINARY_MODE_REQUEST_ID , enter to iddle mode (so we will accept to read another byte)                                 
+                  } else {                                // Previous code is not equal to HOTT_BINARY_MODE_REQUEST_ID , enter to idle mode (so we will accept to read another byte)                                 
                       DISABLE_TIMER_INTERRUPT() ;         // Stop the timer interrupts.
                       state = IDLE ;                      // Go back to idle.
                       PCIFR = ( 1<<PCIF2 ) ;              // clear pending interrupt
