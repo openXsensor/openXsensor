@@ -296,12 +296,17 @@ bool read6050 () {
              getGravity(&gravity, &q);
              
 //             dmpGetYawPitchRoll(ypr, &q, &gravity);
-               yaw.value = 10*atan2(2 * q.x* q.y - 2 * q.w * q.z, 2* q.w * q.w + 2 * q.x * q.x - 1) * radians_to_degrees ; // yaw in 1/10 of degree
-               pitch.value = 10*atan(gravity.x / sqrt(gravity.y*gravity.y + gravity.z*gravity.z)) * radians_to_degrees; // Pitch in 1/10 of degree
-               roll.value = 10*atan(gravity.y / sqrt(gravity.x*gravity.x + gravity.z*gravity.z)) * radians_to_degrees; // Roll in 1/10 of degree 
-               yaw.available = true ;
-               pitch.available = true ;
-               roll.available = true ; 
+               static uint8_t yawCount ;
+               yawCount++ ;
+               if (yawCount >= 20 ) {  
+                  yaw.value = 10*atan2(2 * q.x* q.y - 2 * q.w * q.z, 2* q.w * q.w + 2 * q.x * q.x - 1) * radians_to_degrees ; // yaw in 1/10 of degree
+                  pitch.value = 10*atan(gravity.x / sqrt(gravity.y*gravity.y + gravity.z*gravity.z)) * radians_to_degrees; // Pitch in 1/10 of degree
+                  roll.value = 10*atan(gravity.y / sqrt(gravity.x*gravity.x + gravity.z*gravity.z)) * radians_to_degrees; // Roll in 1/10 of degree 
+                  yaw.available = true ;
+                  pitch.available = true ;
+                  roll.available = true ;
+               }
+                
               float q1[4];
               float q2[4];
               float q_product[4];

@@ -5,16 +5,16 @@
 #include "oXs_config.h"
 
 struct VOLTAGEDATA {
-  bool available;    // to remove afterward
+//  bool available;    // to remove afterward
   uint16_t vrefMilliVolts;          // in mV the internal measured voltage Reference ; to remove afterward
 
-struct ONE_MEASUREMENT mVolt[6] ;  // in mV 
+  struct ONE_MEASUREMENT mVolt[6] ;  // in mV 
 //  int32_t mVolt[6] ;             // in mV 
 //  bool mVoltAvailable[6] ;
   
   byte mVoltPin[6] ;            // Arduino pin number to use to read each voltage (See hardware setting in oXs_config.h)  
-  int offset[6] ;            // offset to apply while converting ADC to millivolt (See setting in oXs_config.h)  
-  float mVoltPerStep[6] ;            // rate to apply while converting ADC to millivolt (See setting in oXs_config.h)  
+  int offset[6] ;               // offset to apply while converting ADC to millivolt (See setting in oXs_config.h)  
+  float mVoltPerStep[6] ;       // rate to apply while converting ADC to millivolt (See setting in oXs_config.h)  
 
   bool atLeastOneVolt ;         // true if there is at least one voltage to measure (added because otherwise a while in cpp never end)
   
@@ -35,7 +35,6 @@ struct ONE_MEASUREMENT mVoltCell_5_6 ;
 #endif
 };
 
-//#define VOLT_BUFFER_LENGTH 20   // not used anymore;averages are calculated at fix time
 
 class OXS_VOLTAGE {
   public:

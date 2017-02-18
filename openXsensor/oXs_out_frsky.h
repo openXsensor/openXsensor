@@ -7,6 +7,7 @@
 #include "oXs_4525.h" // we need the airspeeddata struct
 #include "oXs_curr.h" // we need the currentdata struct
 #include "oXs_voltage.h" // we need the arduinodata struct
+#include "oXs_ads1115.h" // we need the data
 //#include <Arduino.h>
 #include "oXs_general.h"
 // this file is used only for FRSKY
@@ -23,9 +24,13 @@
 #define DATA_ID_FAS    0x22  //          2
 #define DATA_ID_GPS    0x83  //          3
 #define DATA_ID_RPM    0xE4  //          4
-#define DATA_ID_ACC    0x1B  //          ?
+#define DATA_ID_ACC    0x67  //          7
 //       #define DATA_ID_SP2UH  0x45  5
 //       #define DATA_ID_SP2UR  0xC6  6
+
+//list of 28 device ID codes is (in sequence)
+// 0x00,0xA1,0x22,0x83,0xE4,0x45,0xC6,0x67,0x48,0xE9,0x6A,0xCB,0xAC,0x0D,0x8E,0x2F,0xD0,0x71,0xF2,0x53,0x34,0x95,0x16,0xB7,0x98,0x39,0xBA,0x1B
+
 
 // FrSky new DATA IDs (2 bytes) (copied from openTX telemetry/frsky_sport.cpp on 11 jul 2014)
 #define ALT_FIRST_ID            0x0100
@@ -177,6 +182,10 @@
 #define PITCH               34  
 #define ROLL                35
 #define YAW                 36
+#define ADS_1               37
+#define ADS_2               38
+#define ADS_3               39
+#define ADS_4               40
 
 // to do : add alt min, alt max ,  rpm max? , current max (not sure that it is neaded because it can be calculated on TX side
 // End of list of type of available measurements
@@ -258,7 +267,7 @@ extern struct ONE_MEASUREMENT switchVSpeed ;         // used to transmit the sel
 extern struct ONE_MEASUREMENT averageVSpeed ;        // used to transmit the average Vspeed
 extern struct ONE_MEASUREMENT vSpeedImu ;            // used to transmit the Vspeedcalculated based on IMU
 
-#if defined(PIN_VOLTAGE) && defined(VFAS_SOURCE) 
+#if defined(VFAS_SOURCE) 
 extern struct ONE_MEASUREMENT vfas ; 
 #endif
 

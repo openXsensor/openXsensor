@@ -35,7 +35,7 @@ void OXS_4525::setup() {
   calibrated4525 = false ;
 //  calibrateCount4525 = 0 ;
   airSpeedData.airSpeed.available = false ;
-  airSpeedData.compensationAvailable =false ;
+//  airSpeedData.compensationAvailable =false ;
 
   airSpeedData.airspeedReset = true ; // set on true to force a reset the first time the 100 ms part is entered
 //  airSpeedData.sensitivity4525Ppm = 0 ;
@@ -133,18 +133,18 @@ void OXS_4525::readSensor() {
                    } // end calibration
               }  else { // sensor is calibrated
                     difPressureAdc_0 = difPressureAdc - offset4525 ;
- // calculate a moving average on 4 values                   
+ // calculate a moving average on 4 values ( used only for vspeed compensation )                 
                     difPressureAdcSum4Values += difPressureAdc - difPressureAdc4Values[countAverage] ;
                     difPressureAdc4Values[countAverage] = difPressureAdc ;
                     if( (++countAverage) >= 4 ) countAverage = 0 ;
-                    airSpeedData.difPressureAdc_zero = (float) difPressureAdcSum4Values * 0.25 - offset4525 ;
+                    airSpeedData.difPressureAdc_zero = (float) difPressureAdcSum4Values * 0.25 - offset4525 ;  
 
 
 #define FILTERING4525_ADC_MIN        0.001   // 
 #define FILTERING4525_ADC_MAX        0.01 // 
 #define FILTERING4525_ADC_MIN_AT       10 // when abs(delta between ADC and current value) is less than MIN_AT , apply MIN  
 #define FILTERING4525_ADC_MAX_AT       100 // when abs(delta between ADC and current value) is more than MAX_AT , apply MAX (interpolation in between)
-                    abs_deltaDifPressureAdc =  abs(difPressureAdc_0 - airSpeedData.smoothDifPressureAdc) ;
+                    abs_deltaDifPressureAdc =  abs(difPressureAdc_0 - smoothDifPressureAdc) ;
                     if (abs_deltaDifPressureAdc <= FILTERING4525_ADC_MIN_AT) {
                        expoSmooth4525_adc_auto = FILTERING4525_ADC_MIN ;  
                     } else if (abs_deltaDifPressureAdc >= FILTERING4525_ADC_MAX_AT)  {
@@ -152,7 +152,7 @@ void OXS_4525::readSensor() {
                     } else {
                        expoSmooth4525_adc_auto = FILTERING4525_ADC_MIN + ( FILTERING4525_ADC_MAX - FILTERING4525_ADC_MIN) * (abs_deltaDifPressureAdc - FILTERING4525_ADC_MIN_AT) / (FILTERING4525_ADC_MAX_AT - FILTERING4525_ADC_MIN_AT) ;
                     }
-                    airSpeedData.smoothDifPressureAdc += expoSmooth4525_adc_auto * ( difPressureAdc_0 - airSpeedData.smoothDifPressureAdc ) ; // 
+                    smoothDifPressureAdc += expoSmooth4525_adc_auto * ( difPressureAdc_0 - smoothDifPressureAdc ) ; // 
               }  
                // calculate airspeed based on pressure, altitude and temperature
                // airspeed (m/sec) = sqr(2 * differential_pressure_in_Pa / air_mass_kg_per_m3) 
@@ -161,12 +161,11 @@ void OXS_4525::readSensor() {
                // so airspeed m/sec =sqr( 2 * 287.05 * 1.052 * differential_pressure_pa * (temperature Celsius + 273.15) / pressure_in_pa )
                // rawAirSpeed cm/sec =  24,58 * 100 * sqrt( (float) abs(smoothDifPressureAdc) * temperature4525  /  actualPressure) ); // in cm/sec ; actual pressure must be in pa (so 101325 about at sea level)
 #ifdef AIRSPEED_AT_SEA_LEVEL_AND_15C
-               airSpeedData.rawAirSpeed =  131.06 * sqrt( (float) ( abs(airSpeedData.smoothDifPressureAdc) ) ); // indicated airspeed is calculated at 15 Celsius and 101325 pascal
+               airSpeedData.smoothAirSpeed =  131.06 * sqrt( (float) ( abs(smoothDifPressureAdc) ) ); // indicated airspeed is calculated at 15 Celsius and 101325 pascal
 #else               
-               airSpeedData.rawAirSpeed =  2458 * sqrt( (float) ( abs(airSpeedData.smoothDifPressureAdc) * airSpeedData.temperature4525  /  actualPressure) ); // in cm/sec ; actual pressure must be in pa (so 101325 about at sea level)
+               airSpeedData.smoothAirSpeed =  2458 * sqrt( (float) ( abs(smoothDifPressureAdc) * airSpeedData.temperature4525  /  actualPressure) ); // in cm/sec ; actual pressure must be in pa (so 101325 about at sea level)
 #endif              
-             if ( airSpeedData.smoothDifPressureAdc < 0 ) airSpeedData.rawAirSpeed = - airSpeedData.rawAirSpeed ; // apply the sign
-              airSpeedData.smoothAirSpeed = airSpeedData.rawAirSpeed ;
+             if ( smoothDifPressureAdc < 0 ) airSpeedData.smoothAirSpeed = - airSpeedData.smoothAirSpeed ; // apply the sign
               
 #ifdef DEBUG4525RAWDATA  
                   static bool firstRawData = true ;
@@ -188,7 +187,7 @@ void OXS_4525::readSensor() {
                   }       
 #endif
               
-           } // en if data[0] is valid
+           } // end if data[0] is valid
         } // end no error on I2C    
         airSpeedMillis = millis() ;
 #ifdef DEBUG4525READINOUTDELAY
@@ -198,7 +197,7 @@ void OXS_4525::readSensor() {
         if (airSpeedMillis > nextAirSpeedMillis){ // publish airspeed only once every xx ms
               nextAirSpeedMillis = airSpeedMillis + 200 ;
               if ( airSpeedData.smoothAirSpeed >  0) {  // normally send only if positive and greater than 300 cm/sec , otherwise send 0 but for test we keep all values to check for drift  
-#ifdef AIRSPEED_IN_KMH  // uncomment this line if GPS speed has to be in knot instead of km/h
+#ifdef AIRSPEED_IN_KMH  // uncomment this line if AIR speed has to be in knot instead of km/h
                   airSpeedData.airSpeed.value = airSpeedData.smoothAirSpeed * 0.36 ; // from cm/sec to 1/10 km/h
 #else
                   airSpeedData.airSpeed.value = airSpeedData.smoothAirSpeed * 0.1943844492 ; // from cm/sec to 1/10 knot/h
@@ -209,7 +208,7 @@ void OXS_4525::readSensor() {
               airSpeedData.airSpeed.available = true ; 
 // check if offset must be reset
               if (airSpeedData.airspeedReset) { // adjust the offset if a reset command is received from Tx
-                    offset4525 =  offset4525  + airSpeedData.smoothDifPressureAdc ;
+                    offset4525 =  offset4525  + smoothDifPressureAdc ;
                     airSpeedData.airspeedReset = false ; // avoid that offset is changed again and again if PPM do not send a command
               }
  

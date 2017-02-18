@@ -5,19 +5,10 @@
 #include "oXs_config.h"
 
 struct CURRENTDATA {
-//  bool available;          // true if data is available
-struct ONE_MEASUREMENT milliAmps;       // in mA
-//  int32_t milliAmps;       // in mA
-//  bool milliAmpsAvailable;
-  int32_t consumedMilliAmps; // in mA
-  float floatConsumedMilliAmps; // in mA
-  bool consumedMilliAmpsAvailable;
-  
-  int32_t sumCurrent ;
-//  int32_t sumForMampH ;
- 
-//  int32_t maxMilliAmps;       // in mA
-//  int32_t minMilliAmps;       // in mA
+  struct ONE_MEASUREMENT milliAmps;       // in mA
+  struct ONE_MEASUREMENT consumedMilliAmps;       // in mA
+  //int32_t consumedMilliAmps; // in mA
+  //bool consumedMilliAmpsAvailable;
 };
 
 class OXS_CURRENT {
@@ -39,7 +30,8 @@ private:
   byte _pinCurrent;
   float offsetCurrentSteps ;
   float mAmpPerStep ; 
-
+  float floatConsumedMilliAmps; // in mA
+  int32_t sumCurrent ;
 };
 
 #endif // OXS_CURRENT_h

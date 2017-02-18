@@ -8,17 +8,14 @@
 //#define CALCULATEINTEGER
 
 struct AIRSPEEDDATA {
-  //bool available;          // true if data is available
-  float smoothDifPressureAdc ;  // in steps ADC
-  float temperature4525;     // in Celsius
-  float rawAirSpeed ;       // cm/sec
+//  float smoothDifPressureAdc ;  // in steps ADC
+  float temperature4525;     // in Celsius , used when compensation is calculated
+//  float rawAirSpeed ;       // cm/sec
   struct ONE_MEASUREMENT airSpeed ;        // in km/h (no decimal)
-//  int32_t airSpeed ;        // in km/h (no decimal)
-//  bool airSpeedAvailable ;
-  int32_t compensation ; // in km/h (no decimal)
-  bool compensationAvailable ;
+//  int32_t compensation ; // in km/h (no decimal)
+//  bool compensationAvailable ;
   bool airspeedReset ;
-  float smoothAirSpeed ;    //cm/sec
+  float smoothAirSpeed ;    //cm/sec ; use in glider ratio
 
 
    
@@ -57,16 +54,18 @@ private:
    int32_t difPressureSum ;
    
 //   unsigned long extended2Micros ; // used to temporarilly save micros() >> 1
-   uint8_t data[4];
+   uint8_t data[4];                 // get the 4 bytes returned by MS4225
    int32_t difPressureAdc;          // in steps ADC 
    int32_t temperature4525Adc ;   // in steps ADC
    
    float offset4525 ; 
    float difPressureAdc_0 ;
    float abs_deltaDifPressureAdc ;
+   float smoothDifPressureAdc ;  // in steps ADC/
 
    float expoSmooth4525_adc_auto ;
 //   float smoothAirSpeed ;    //cm/sec
+//  float rawAirSpeed ;       // cm/sec
 
    unsigned long  airSpeedMillis ; //save time when airspeed is made available
    unsigned long  nextAirSpeedMillis ; //next time that airspeed must be available
