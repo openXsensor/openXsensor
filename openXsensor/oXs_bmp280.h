@@ -1,5 +1,5 @@
-#ifndef OXS_BMP180_h
-#define OXS_BMP180_h
+#ifndef OXS_BMP280_h
+#define OXS_BMP280_h
 
 
 #include "Arduino.h"
@@ -7,39 +7,38 @@
 #include "I2C.h"
 #include "oXs_ms5611.h"
 
-#define BMP180_ADR 0x77 // I2C address of BMP180
+#define BMP280_ADR 0x77 // I2C address of BMP280 (can also be 0x76
 
 /*=========================================================================
-    CALIBRATION DATA for BMP180
+    CALIBRATION DATA for BMP280
     -----------------------------------------------------------------------*/
     typedef struct
     {
-      int16_t  ac1;
-      int16_t  ac2;
-      int16_t  ac3;
-      uint16_t ac4;
-      uint16_t ac5;
-      uint16_t ac6;
-      int16_t  b1;
-      int16_t  b2;
-      int16_t  mb;
-      int16_t  mc;
-      int16_t  md;
-    } bmp085_calib_data;
+      uint16_t  dig_T1;
+      int16_t  dig_T2;
+      int16_t  dig_T3;
+      uint16_t dig_P1; 
+      int16_t dig_P2;
+      int16_t dig_P3;
+      int16_t  dig_P4;
+      int16_t  dig_P5;
+      int16_t  dig_P6;
+      int16_t  dig_P7;
+      int16_t  dig_P8;
+      int16_t  dig_P9;
+    } BMP280_CALIB_DATA;
 /*=========================================================================*/
 
-class OXS_BMP180 {
+class OXS_BMP280 {
 public:
 #ifdef DEBUG  
-  OXS_BMP180( HardwareSerial &print);
+  OXS_BMP280( HardwareSerial &print);
 #else
-  OXS_BMP180( void ) ;
+  OXS_BMP280( void ) ;
 #endif
   VARIODATA varioData ;
-  //int64_t rawPressure; // in 1/10000 mBar
   void setup();
   bool  readSensor();
-
   void resetValues();
 
 private:
@@ -50,7 +49,8 @@ private:
   void SendCommand(byte command);
   long getData(byte command, byte del);
   void calculateVario() ;
-  unsigned int low, high;
+   uint16_t low, high;
+/*
     int32_t D1 ;  
     int32_t D2 ;
     int32_t D2Prev ;
@@ -59,7 +59,7 @@ private:
     int32_t TEMP  ;
     int64_t OFF, SENS;
     int16_t   alt_temp_compensation ;
-
+*/
     int32_t altitude  ; // in cm * 100 
     int32_t altitudeLowPass  ;
     int32_t altitudeHighPass  ;
@@ -81,10 +81,10 @@ private:
 #ifdef DEBUG
   HardwareSerial* printer;
 #endif
-}; // end class OXS_MS5611
+}; // end class OXS_BMP280
 
 
-#endif // OXS_BMP180
+#endif // OXS_BMP280
 
 
 

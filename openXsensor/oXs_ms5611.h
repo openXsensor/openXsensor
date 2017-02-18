@@ -7,36 +7,24 @@
 #include "I2C.h"
 
 struct VARIODATA {
-  int32_t temperature;     // in 1/10 Celsius
-
+  int32_t temperature;     // in 1/100 Celsius
   int64_t rawPressure ;  // in 1/10000 mBar so = Pa * 10000
-
   byte SensorState ;
   int32_t rawAltitude ; // in cm * 100  
-
-struct ONE_MEASUREMENT absoluteAlt ;      // value in cm
-struct ONE_MEASUREMENT  relativeAlt ;     // value in cm
-
+  struct ONE_MEASUREMENT absoluteAlt ;      // value in cm
+  struct ONE_MEASUREMENT  relativeAlt ;     // value in cm
   int32_t altOffset ;     // in cm
-
-
   int32_t relativeAltMax ;     // in cm
   bool relativeAltMaxAvailable ;   
- 
   float delaySmooth ; // smoothed delay between 2 altitude calculations
-  
   int32_t prevAlt[20] ;   // table contains the 20 latest altitude
   byte idxPrevAlt ;       // index of last entry in table
   int32_t vSpeed10Sec; // Altitude gain/loose between 10 sec (is calculated and send every 500 msec)
   bool vSpeed10SecAvailable ;
-  
   float climbRateFloat  ;  // in cm/sec but as float
-
   struct ONE_MEASUREMENT climbRate ; // value in cm /sec = vertical speed
-
-struct ONE_MEASUREMENT sensitivity ;  
+  struct ONE_MEASUREMENT sensitivity ;  
   int sensitivityPpm ;      // sensivity to apply when PPM is used. Value has to be divided by 1000 in order to calculate the smoothing parameter  
-  
   unsigned long lastCommandMicros ; // used to avoid some task (reading voltage sensor, currentsensor, ..) when barometric data should be soon available for reading 
 };
 

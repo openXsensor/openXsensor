@@ -59,7 +59,7 @@ void OXS_CURRENT::setupCurrent( ) {
   mAmpPerStep =  currentDivider * tempRef / MVOLT_PER_AMP / 1.023 ; 
 
   currentData.milliAmps.available = false;
-  currentData.consumedMilliAmpsAvailable = false;
+  currentData.consumedMilliAmps.available = false;
 //  currentData.sumCurrent = 0 ;
   resetValues();
 #ifdef DEBUG  
@@ -100,19 +100,20 @@ void OXS_CURRENT::readSensor() {
 
   analogRead(_pinCurrent) ; // make a first read to let ADCMux to set up
   delayMicroseconds(200) ; // wait to be sure
-  currentData.sumCurrent += analogRead(_pinCurrent) ; 
+  //currentData.sumCurrent += analogRead(_pinCurrent) ; 
+  sumCurrent += analogRead(_pinCurrent) ; 
   cnt++ ;
   milliTmp = millis() ;
   if(  milliTmp > ( lastCurrentMillis + 200) ){   // calculate average once per 200 millisec
-      currentData.milliAmps.value = ((currentData.sumCurrent / cnt) - offsetCurrentSteps ) * mAmpPerStep ;
+      currentData.milliAmps.value = ((sumCurrent / cnt) - offsetCurrentSteps ) * mAmpPerStep ;
 //      if (currentData.milliAmps.value < 0) currentData.milliAmps.value = 0 ;
 	  currentData.milliAmps.available = true ;
 //      if(currentData.minMilliAmps>currentData.milliAmps)currentData.minMilliAmps=currentData.milliAmps;
 //      if(currentData.maxMilliAmps<currentData.milliAmps)currentData.maxMilliAmps=currentData.milliAmps;
-      currentData.sumCurrent = 0;
-      currentData.floatConsumedMilliAmps += ((float) currentData.milliAmps.value) * (milliTmp - lastCurrentMillis ) / 3600.0 /1000.0 ;   // Mike , is this ok when millis() overrun????
-      currentData.consumedMilliAmps = (int32_t) currentData.floatConsumedMilliAmps ;
-      currentData.consumedMilliAmpsAvailable = true ;
+      sumCurrent = 0;
+      floatConsumedMilliAmps += ((float) currentData.milliAmps.value) * (milliTmp - lastCurrentMillis ) / 3600.0 /1000.0 ;   // Mike , is this ok when millis() overrun????
+      currentData.consumedMilliAmps.value = (int32_t) floatConsumedMilliAmps ;
+      currentData.consumedMilliAmps.available = true ;
       lastCurrentMillis =  milliTmp ;
 #ifdef DEBUGCURRENT
       printer->print("At time  = ");
@@ -122,7 +123,7 @@ void OXS_CURRENT::readSensor() {
       printer->print(" average current =  ");
       printer->print(currentData.milliAmps.value);
       printer->print(" consumed milliAmph =  ");
-      printer->println(currentData.consumedMilliAmps);
+      printer->println(currentData.consumedMilliAmps.value);
 #endif
       cnt = 0;
   }  
@@ -130,10 +131,8 @@ void OXS_CURRENT::readSensor() {
 #endif // end of readSensor
 
 void OXS_CURRENT::resetValues(){
-  currentData.consumedMilliAmps=0;
-  currentData.floatConsumedMilliAmps=0;
-//  currentData.maxMilliAmps= 0;    // it is better to reset to 0 instead of the new value
-//  currentData.minMilliAmps= 0 ;   // it is better to reset to 0 instead of the new value
+  currentData.consumedMilliAmps.value=0;
+  floatConsumedMilliAmps=0;
 }
 
 

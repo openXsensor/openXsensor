@@ -45,8 +45,8 @@ started by Rainer Schlosshan
 
 
 **** 1 - telemetry Protocol **********************************************************************
-* Currently oXs supports 3 telemetry protocols : Multiplex , Frsky and Hott (=Graupner)
-* One (and only one) has to be selected; e.g. if you activate the Multiplex, the Frsky and Hott are disactivated (and the opposite) 
+* Currently oXs supports 4 telemetry protocols : Multiplex , Frsky, Jeti and Hott (=Graupner)
+* One (and only one) has to be selected; e.g. if you activate the Multiplex, the Frsky, Jeti and Hott are disactivated (and the opposite) 
 * FrSky uses 2 different protocols:
 *       - SPORT is used for X series receivers (like X8R or X6R)
 *       - HUB is used for D series receivers (like D4R-II)
@@ -65,15 +65,15 @@ started by Rainer Schlosshan
 *               DATA_ID_RPM    0xE4  //          4
 *               DATA_ID_ACC    0x1B  //          ?
 *  
-*  To select the protocol to be used by oXs, fill the line #define PROTOCOL with one of the allowed values: FRSKY_SPORT , FRSKY_HUB , FRSKY_SPORT_HUB , MULTIPLEX , HOTT
+*  To select the protocol to be used by oXs, fill the line #define PROTOCOL with one of the allowed values: FRSKY_SPORT , FRSKY_HUB , FRSKY_SPORT_HUB , MULTIPLEX , HOTT; JETI
 ************************************************************************************************************************
-#define PROTOCOL FRSKY_SPORT    // select between FRSKY_SPORT , FRSKY_HUB , FRSKY_SPORT_HUB , MULTIPLEX , HOTT
+#define PROTOCOL FRSKY_SPORT    // select between FRSKY_SPORT , FRSKY_HUB , FRSKY_SPORT_HUB , MULTIPLEX , HOTT, JETI
 
 **** 2 - Serial data pin ***********************************************************************************************
 *   OXS has to be connected to the receiver in order to transmit his data.
-*   Therefore, one DIGITAL Arduino pin that has to be connected to "Rx" pin from receiver (for D series RX) or to S.Port signal pin (for X series RX).
+*   Therefore, one DIGITAL Arduino pin has to be connected to the receiver.
 *   You must specify the Arduino pin being used.
-*   Default: 4 ; allowed values are 0 up to 7 but take care not using the same pin for 2 features.
+*   Default: 4 ; allowed values are 2 or 4 but take care not using the same pin for 2 features.
 ************************************************************************************************************************
 #define PIN_SERIALTX  4
                                 
@@ -112,8 +112,9 @@ started by Rainer Schlosshan
 *
 * 4.1 - Connecting 1 or 2 barometric sensor(s) is an optional feature: *********************************************
 *     oXs uses normally MS5611 barometric sensor. Such a sensor is usually mount on a board (like the GY-63) which have a 3.3 voltage regulator and a I2C level shifter.
-*     Still it is possible to use a board with a BMP085 or BMP180 sensor (which are cheaper but less accurate). Please note that only the first sensor can be a BMP085 or BMP180.
+*     Still it is possible to use a board with a BMP085 or BMP180 or a BMP280 sensor (which are cheaper but less accurate). Please note that only the first sensor can be a BMP085, BMP180 or BMP280.
 *     It is possible to connect 1 or 2  baro sensors; the first sensor can be a BMP085 or BMP180 or a MS5611; the second one must be a MS5611 (because BMPxxx have only one I2C address)
+*         Note : when using an Arduino with 5 Volt Vcc, select always a baro sensor board which have a 3.3 voltage regulator and a I2C level shifter.
 *     Each sensor can calculate the absolute/relative altitude (in meter with 1 decimal) and the vertical speed (in meter/sec with 2 decimals).
 *     A second sensor can be useful because if it is associated with a TEK probe and if option PPM is used, it is possible to select from the TX the sensor that will generate the vario tones.
 *     This allows to switch e.g. between a pneumatic compensated and an uncompensated vario.
@@ -121,7 +122,8 @@ started by Rainer Schlosshan
 *        Note: to get a faster reaction time, sensitivity has to be increased (e.g. using 80 instead of 50 as SENSITIVITY_MIN)
 *     When 2 baro sensors are used, oXs can transmit as vertical speed the average from both sensors.
 *     Uncomment the line "#define VARIO" to enable first sensor.
-*     Uncomment the line "#define SENSOR_IS_BMP180" if a BMP085 or BMP180 is used as first sensor instead of a MS5611. 
+*     Uncomment the line "#define SENSOR_IS_BMP180" if a BMP085 or BMP180 is used as first sensor instead of a MS5611.
+*     Uncomment the line "#define SENSOR_IS_BMP280" if a BMP280 is used as first sensor instead of a MS5611.  
 *     Uncomment the line "#define VARIO2" to enable second sensor.
 *     Both sensors are connected in parallel (using same Arduino pins A4 and A5).
 *     First sensor ( MS5611 or BMPxxx) reacts on an I2C address 0x77.
@@ -316,7 +318,7 @@ started by Rainer Schlosshan
 *  - the second one take into account the pressure (provided by a baro sensor) and the initial airspeed sensor temperature in order to calculate a "true" airspeed (to be compared with a GPS speed when wind is null)  
 * The normalised airspeed is calculated when line #define AIRSPEED_AT_SEA_LEVEL_AND_15C is uncommented. To get the "true" airspeed, put this line as comment
 * 
-* oXs can send the airspeed in (1/10) of knot/h or in (1/10) km/h. For openTx 2.1.x, you must use the km/h option, for previous version the knot/h option.
+* oXs can send the airspeed in (1/10) of knot/h or in (1/10) km/h. For openTx, you normally must use the knot/h option (only some old 2.1.x versions requires km/h option).
 * To activate the km/h option, activate this line #define AIRSPEED_IN_KMH
 * Put this line as comment to activate the knot/h option
 *
@@ -334,7 +336,7 @@ started by Rainer Schlosshan
 ************************************************************************************************************************
 #define AIRSPEED  MS4525
 #define AIRSPEED_AT_SEA_LEVEL_AND_15C // if this line is commented, airspeed is calculated using baro pressure and temperature (so being "true" airspeed instead of normalised airspeed)      
-#define AIRSPEED_IN_KMH  // uncomment this line if airspeed has to be in km/h instead of knot/h (openTx 2.0 expect knot/h while openTx 2.1 expect km/h) 
+//#define AIRSPEED_IN_KMH  // uncomment this line if airspeed has to be in km/h instead of knot/h ( except some old versions, openTx expects knot/h) 
 
 #define AIRSPEED_RESET_AT_PPM   100
 
@@ -527,6 +529,73 @@ started by Rainer Schlosshan
 #define RESISTOR_TO_GROUND_FOR_CURRENT  10
 #define RESISTOR_TO_CURRENT_SENSOR      40
 
+***** 6.5 - Ads1115 parameters  *************************************************************************************
+*    It is possible to connect an external ADC of the type ads1115. 
+*    This device is very cheap (about 2 $) and can provide more accuracy than internal Arduino ADC
+*    It has 16 bits resolution, accurate internal voltage reference, a programmable gain amplifier and the ability to measure directly the voltage between 2 pins 
+*    See datatsheet of ads1115 for more details
+*    oXs can be connected to one of those device via I2C bus. It can then provide up to 4 voltage measurements named ADS_VOLT_1 ...ADS_VOLT_4
+*    oXs allows to convert one ads voltage measurement into current and consumption (when ads1115 isconnected to a current sensor) 
+*    oXs also allows to convert one ads voltage measurement into airspeed and compensated vario (when ads1115 is connected to a differential baro sensor like the MPXV7002) 
+*          MPXV7002 sensor is a cheapier and easier to find alternative to the MS4525 sensor (but is less accurate)
+*    In order to use an ads1115 ADC, you must uncomment ACD_MEASURE and specify several sets of 4 parameters. 
+*    Attention : let line ADC_MEASURE as comment if ads1115 is not used (in order to avoid I2C errors and slow down oXs)
+*        In ACD_MEASURE, you specify the ads115 pins being used for voltage measurement
+*              Fill always 4 values. Still, if you do not need all 4 measurements, use the value ADS_OFF for the unrequired measurement(s)
+*              Note : the more measurements you ask for, the more time it require to get each of them because ads can only perfom one at a time
+*              Select 4 values between A0_TO_A1, A0_TO_A3, A1_TO_A3, A2_TO_A3, A0_TO_GND, A1_TO_GND, A2_TO_GND, A3_TO_GND, ADS_OFF
+*        In ADC_FULL_SCALE_VOLT, you specify the ads1115 gain parameter for each of the 4 measurements.
+*              Fill always 4 values even if you do not need all 4 measurements
+*              This allows to amplify a low voltage applied on input pins before it is converted by the ADC. So accuracy of conversion is optimum. 
+*              Select between MV6144 MV4096 MV2048 MV1024 MV512 MV256 where the digits give the max mvolt being applied on the pin (e.g. for A0_TO_GND) or between 2 pins (e.g. for A0_TO_A1)
+*        In ADS_SCALE, you specify a scaling factor to be applied on each measurement in order to get a value that conforms the expected measurement.
+*              Fill always 4 values even if you do not need all 4 measurements
+*              When scaling parameter = 1, oXs returns a value = 1 when the voltage applied on ads1115 pin(s) is the max voltage set by ADC_FULL_SCALE_VOLT. 
+*              So, if ADC_FULL_SCALE_VOLT is set on MV512, when input voltage will be 512mv (or more)), oXs will return 1 if ADS_SCALE = 1.
+*              If you do not have a voltage divider on ads1115, you probably expect that oXs returns 512; then set ADS_SCALE to 512.
+*              If you have a voltage divider, the voltage that you want to measure is greater than the voltage applied on ads1115 pin and you have to increase ADS_SCALE.
+*              e.g. if your voltage divider divides your voltage by 10, you must set ADS_SCALE to 5120 (= 512 * 10)
+*              Note: ADS_SCALE can have decimals (e.g. 100.5) . It can be positive or negative; It can't be 0
+*        In ADS_OFFSET, you specify an offset to be applied. 
+*              Fill always 4 values even if you do not need all 4 measurements
+*              When no offset has to be applied, set the value on 0
+*              The specified offset is added to the value calculated after scaling.  
+*              each value must be an integer (positive or negative); it can be 0
+*        In ADS_RATE, you specify the number of milli sec that ads1115 takes to convert a voltage.      
+*              Fill always 4 values even if you do not need all 4 measurements
+*              Using a high value reduces power consumption still, it reduces the number of measurements that can be performed/transmitted per second    
+*              Select values between MS137, MS69, MS35, MS18, MS9, MS5, MS3 , MS2;  the digits correspond to the number of milli sec (e.g. MS18 means 18 msec)
+*              Note : oXs will wait at least the specified delay but it can be that the delay is higher due to other tasks to be performed by oXs
+*        In ADS_AVERAGING_ON, you specify the number of voltages to be collected in order to calculate an average. 
+*              Fill always 4 values even if you do not need all 4 measurements. If you do not want averaging, set the value on 1
+*              It must must be an integer, positive and different from 0.
+*              Note : Increasing the value is a way to reduce noise. Still it increase the delay between 2 transmissions 
+*        In ADS_CURRENT_BASED_ON, you specify which voltage measurement (if any) is used for current (and current consumption)
+*              Uncomment this line only when a conversion is requested 
+*              Keep this line as comment if there is no current sensor or if the wurrent sensor is connected to an Arduino pin as explained in section 6.4
+*              Fill only one value; select a value between ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
+*              Note : when oXs calculate a curent based on a voltage, it used also 2 parameters from section 6.4 : MVOLT_AT_ZERO_AMP and MVOLT_PER_AMP
+*        In ADS_AIRSPEED_BASED_ON, you specify which voltage measurement (if any) is used for airspeed
+*              Uncomment this line only when an analog airspeed sensor is connected to ads1115 
+*              Keep this line as comment if there is no airspeed sensor connected to ads1115
+*              Fill only one value; select a value between ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
+*              Note : A typical airspeed sensor is the MPXV7002DP which is easaly available on ebay or aliexpress.com.
+*                     When this sensor is used, you have to configure ads1115 in following way:
+*                     - ask only for one ads1115 measurement and it must be a differential voltage : so use this setup : ADS_MEASURE A0_to_A1, ADS_OFF, ADS_OFF, ADS_OFF
+*                     - connect one resistor of about 10kohm between ads1115 Vcc and ads1115 A1 and another one of the same value between ads1115 Ground and ads1115 A1; so A1 pin get Vcc/2 volt
+*                     - set the ads1115 gain in order to get 2048 mvolt at full scale:  so use : ADC_FULL_SCALE_VOLT MV2048,MV2048,MV2048,MV2048  
+*                     - set the ads rate in order to make ADC conversion as fast as possible; so use : ADS_RATE MS2, MS2, MS2, MS2
+*                     - the other parameters are not critical (not used for airspeed)
+************************************************************************************************************************
+#define ADS_MEASURE A1_TO_GND ,   ADS_OFF , ADS_OFF , ADS_OFF // uncomment when ADS1115 is used; select 4 values between A0_TO_A1, A0_TO_A3, A1_TO_A3, A2_TO_A3, A0_TO_GND, A1_TO_GND, A2_TO_GND, A3_TO_GND, ADS_OFF
+#define ADS_FULL_SCALE_VOLT  MV4096, MV4096, MV4096, MV4096 //  select between MV6144 MV4096 MV2048 MV1024 MV512 MV256
+#define ADS_OFFSET 0, 0 , 0 , 0 // must be an integer (positive or negative)
+#define ADS_SCALE 2, 10, 1, 1 // can be a float
+#define ADS_RATE  MS137 , MS5, MS3 , MS2 // select between MS137, MS69, MS35, MS18, MS9, MS5, MS3 , MS2
+#define ADS_AVERAGING_ON 1 , 10, 50, 50 // number of values used for averaging (must be between 1 and 254) 
+#define ADS_CURRENT_BASED_ON ADS_VOLT_1  // uncomment if current, and comsumption have to be calculated based on one of ADS voltage measurement; select then the voltage to be used between ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
+#define ADS_AIRSPEED_BASED_ON ADS_VOLT1  // uncomment if airspeed (and dte) have to be calculated based on one of ADS voltage measurement ; select then the voltage to be used between ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
+
 **** 7 - RPM (rotations per minute) sensor settings (optional) ***************************************************************************
 *      It is possible to measure RPM using a sensor connected to pin ICP (=PB0, = pin 8) of OXS.
 *      This sensor must provide a level change (0 - Vcc) on this pin each time a blade passes in front of it.
@@ -557,7 +626,7 @@ started by Rainer Schlosshan
 **** 9 - Data to transmit **********************************************************************************************
 *   Depending on the parameters in the config.h file (and the sensors connected to oXs), oXs calculates several measurements 
 *   In Multiplex protocol, you have to specify whch measurements are sent (and on which line on the display) (see below) 
-*   In SPORT, HUB and HOTT protocol, main measurements are automatically transmitted in their expected fields and some set up allows to transmit some extra measurements reusing available fields .
+*   In SPORT, HUB , JETI and HOTT protocol, main measurements are automatically transmitted in their expected fields and some set up allows to transmit some extra measurements reusing available fields .
 *   One of the calculated measurement is named "main vertical speed". 
 *   Depending on content of line #define VSPEED_SOURCE, it is calculated based on 
 *      - first baro sensor
@@ -679,16 +748,24 @@ started by Rainer Schlosshan
 *    GPS_COURSE        0.1 deg   Orientation of plane       
 *    GPS_SPEED         0.1 km/h  Ground speed (2D or 3D)       
 *    GPS_ALTITUDE      m         Absolute Altitude       
-*    GPS_DISTANCE      0.1 m     Distance from home
+*    GPS_DISTANCE      m         Distance from home
 *    GPS_BEARING       0.1 deg   Direction from home  
 *    TEST_1                      Value used for test
 *    TEST_2                      Value used for test
 *    TEST_3                      Value used for test
 *   (5) Unit depends also on the calibration parameter that are used (e.g. when a voltage is provided by a temperature sensor, unit can be degree)
 *       When used in order to measure Cell(s), calibration must ensure that internal unit = milliVolt (and oXS will convert mVolt to 0.1Volt when transmitting over Multiplex protocol.
+***** 9.4 - Jeti data ************************************************************************************************************************
+*      Measurements being automatically transmitted are : 
+*         - Relative altitude(cm), main vertical Speed(cm/sec) (when at least first baro sensor is present) and maximum altitude
+*         - Cell voltages including min and total (when NUMBER_OF_CELLS > 0) 
+*         - Current and consumption (when Current sensor is present)
+*         - GPS (long, lat, speed, altitude , course, distance and direction from home) (when GPS sensor is present)
+*      On top of this, you can also specify to send one of the 6 voltage (if voltage is measured)
+
+//#define VOLTAGE_SOURCE   VOLT_1                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
+
 **********************************************************************************************************************************************       
-
-
 **** 10 - Sequencer (ON/OFF) for several digital outputs **************************************************************************************
 * oXs allows you to control (HIGH/LOW) up to 6 digitals Arduino outputs in different sequences.
 * Each sequence is composed of one or several steps; each step defines for how long (= a duration) which outputs are HIGH and which outputs are LOW.
@@ -777,7 +854,7 @@ started by Rainer Schlosshan
 *          So, if you Raw pin get more that 6 volt, it is safe to add another voltage regulator to drop the GPS Vcc down.  
 *    - GPS Tx pin is connected to Arduino Rx pin      
 *    - GPS Rx pin is connected to a resistor (e.g. 10k) and the other pin of the resistor is connected to Arduino pin 6 (digital pin 6). 
-*          This resistor is added (at least for a Arduino 5 volt) in order to protect the GPS pin. 
+*          This resistor is added (at least for an Arduino 5 volt) in order to protect the GPS pin. 
 *          This is requested because Arduino will generate a signal with a high level equal to arduino Vcc (so normally 5 volt) while the GPS module should normally not accept more than 3.3 Volt.
 *          To be safier, you could even add a second resistor between GPS Rx pin and Ground (value= 22k) but, in my case, it worked without this second resistor. 
 *          Note: it would be possible to use another pin than Arduino pin 6 but then it requires to change some parameters in file oXs_gps.cpp (see "Setup the GPS sensor").
@@ -846,9 +923,10 @@ started by Rainer Schlosshan
  
 **** xx - Reserved for developer. **************************************************************************************
 * DEBUG must be activated here when you want to debug one or several functions in some other files.
+* Enabling DEBUG will allow to use Arduino Serial Monitor at 115200 baud (or 38600 when GPS is activated) to see init data and some live sensor values
 * You can then select the parts that you want to debug by uncommenting the specifics DEBUG parameters you want in each file
 * Note: OXS allows to transmit 3 fields named TEST1, TEST2, TEST3. You can fill those fields with whatever you want where you want if you want to transmit additional data to the Tx.
-* Just fill in test1Value (or 2, 3) with an int32_t and test1ValueAvailable (or 2, 3) with true and add those OXS measurements in the data to be sent section. 
+* Just fill in test1.value (or 2, 3) with an int32_t and test1.available (or 2, 3) with true and add those OXS measurements in the data to be sent section. 
 ************************************************************************************************************************
 //#define DEBUG
 

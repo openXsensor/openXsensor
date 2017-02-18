@@ -1,4 +1,4 @@
-#include "oXs_bmp180.h"
+#include "oXs_bmp280.h"
 
 #ifdef DEBUG
 //#define DEBUGI2CMS5611
@@ -10,34 +10,33 @@ extern unsigned long micros( void ) ;
 extern unsigned long millis( void ) ;
 extern void delay(unsigned long ms) ;
 
-static bmp085_calib_data _bmp085_coeffs;   // Last read accelerometer data will be available here
-static uint8_t           _bmp085Mode;
-
-
-//long result ;
+static BMP280_CALIB_DATA _bmp280_coeffs;   // Last read calibration data will be available here
+//static uint8_t           _bmp085Mode;
 
 
 #ifdef DEBUG  
-OXS_BMP180::OXS_BMP180( HardwareSerial &print)
+OXS_BMP280::OXS_BMP280( HardwareSerial &print)
 #else
-OXS_BMP180::OXS_BMP180(void)
+OXS_BMP280::OXS_BMP280(void)
 #endif
 {
   // constructor
-//  _addr=addr;
+  //_addr=addr;
+#define I2C_BMP280_ADR 0x77 ; 
+  _addr = I2C_BMP280_ADR ;
   varioData.SensorState = 0 ;
 #ifdef DEBUG  
   printer = &print; //operate on the address of print
-//  printer->begin(115200);
-//  printer->print("Vario Sensor:MS5611 I2C Addr=");
-//  printer->println(addr,HEX);
+  printer->begin(115200);
+  printer->print("Vario Sensor:BMP280 I2C Addr=");
+  printer->println(_addr,HEX);
 #endif
 }
 
 
-// **************** Setup the BMP180 sensor *********************
-void OXS_BMP180::setup() {
-  unsigned int _calibrationData[12]; // The factory calibration data of the BMP180
+// **************** Setup the BMP280 sensor *********************
+void OXS_BMP280::setup() {
+  unsigned int _calibrationData[13]; // The factory calibration data of the BMP280
   varioData.absoluteAlt.available = false ;
   varioData.relativeAlt.available = false ; 
   varioData.climbRate.available = false ;
@@ -55,7 +54,7 @@ void OXS_BMP180::setup() {
 
   
 #ifdef DEBUG
-  printer->print(F("Vario Sensor:BMP180 "));
+  printer->print(F("Vario Sensor:BMP280 "));
   printer->println(" ");
   printer->print(F(" milli="));  
   printer->println(millis());
@@ -64,14 +63,20 @@ void OXS_BMP180::setup() {
   
   I2c.begin() ;
   I2c.timeOut( 80); //initialise the time out in order to avoid infinite loop
-#ifdef DEBUGI2CBMP180
+#ifdef DEBUGI2CBMP280
   I2c.scan() ;
   printer->print(F("last I2C scan adr: "));
   printer->println( I2c.scanAdr , HEX  );
 #endif  
+
+// write in register 0xF4 value 0x33 (it means oversampling temperature 1 X , oversampling pressure 8 X and normal mode = continue )
+    errorI2C = I2c.write( _addr , (uint8_t) 0xF4 , (uint8_t) 0x33 ) ;
+// write in register 0xF5 value 0x00 (it means 0.5msec between sampling, no filter, I2C protocol )
+    errorI2C = I2c.write( _addr , (uint8_t) 0xF5 , (uint8_t) 0x00 ) ;
+
     errorCalibration = false ;
-    for (byte i = 1; i <=11; i++) {
-       errorI2C =  I2c.read( BMP180_ADR, 0xA8 + i*2, 2 ) ; //read 2 bytes from the device after sending the register to be read (first register = 0xAA (=register AC1)
+    for (byte i = 1; i <=12; i++) {
+       errorI2C =  I2c.read( _addr , 0x86 + i*2, 2 ) ; //read 2 bytes from the device after sending the register to be read (first register = 0x86 (=register AC1)
        if ( errorI2C > 0 ) {
 #ifdef DEBUG
             printer->print(F("error code in setup I2CRead: "));
@@ -79,8 +84,8 @@ void OXS_BMP180::setup() {
 #endif
             errorCalibration = true ;
         } else {
-            high = I2c.receive() ;
             low = I2c.receive() ;
+            high = I2c.receive() ;
             _calibrationData[i] = high<<8 | low;
         }  
 #ifdef DEBUG
@@ -93,20 +98,22 @@ void OXS_BMP180::setup() {
 #endif
     } // End for 
 
-    _bmp085_coeffs.ac1 = _calibrationData[1];
-    _bmp085_coeffs.ac2 = _calibrationData[2];
-    _bmp085_coeffs.ac3 = _calibrationData[3];
-    _bmp085_coeffs.ac4 = _calibrationData[4];
-    _bmp085_coeffs.ac5 = _calibrationData[5];
-    _bmp085_coeffs.ac6 = _calibrationData[6];
-    _bmp085_coeffs.b1  = _calibrationData[7];
-    _bmp085_coeffs.b2  = _calibrationData[8];
-    _bmp085_coeffs.mb  = _calibrationData[9];
-    _bmp085_coeffs.mc  = _calibrationData[10];
-    _bmp085_coeffs.md  = _calibrationData[11];
-    _bmp085Mode        = 1; // perform an average of 2 pressure reads
+    _bmp280_coeffs.dig_T1 = _calibrationData[1];
+    _bmp280_coeffs.dig_T2 = _calibrationData[2];
+    _bmp280_coeffs.dig_T3 = _calibrationData[3];
+    _bmp280_coeffs.dig_P1 = _calibrationData[4];
+    _bmp280_coeffs.dig_P2 = _calibrationData[5];
+    _bmp280_coeffs.dig_P3 = _calibrationData[6];
+    _bmp280_coeffs.dig_P4  = _calibrationData[7];
+    _bmp280_coeffs.dig_P5  = _calibrationData[8];
+    _bmp280_coeffs.dig_P6  = _calibrationData[9];
+    _bmp280_coeffs.dig_P7  = _calibrationData[10];
+    _bmp280_coeffs.dig_P8  = _calibrationData[11];
+    _bmp280_coeffs.dig_P9  = _calibrationData[12];
+    //_bmp280Mode        = 1; // perform an average of 2 pressure reads
 
 
+    
 
 #ifdef DEBUG  
   printer->println(F("setup vario done."));  
@@ -118,110 +125,68 @@ void OXS_BMP180::setup() {
 //********************************************************************************************
 //***                            read the sensor                                           ***
 //********************************************************************************************
-bool OXS_BMP180::readSensor() {
-long result = 0 ;
-#ifdef  DEBUGVARIOI2C
-    printer->print(F("sensorState= "));
-    printer->println(varioData.SensorState);
-#endif
-  bool newVSpeedCalculated  = false ; 
-  if (varioData.SensorState==0) { // ========================= Read the pressure
-    if (  micros()   >   varioData.lastCommandMicros + 9000){ // wait 9 msec at least before asking for reading the pressure
-//        long result = 0;
-	      if(  ! I2c.read( BMP180_ADR, 0xF6, 3 )) { ; //read 3 bytes from the device starting from register F6; keep previous value in case of error 
-        	result = I2c.receive() ;
-         	result <<= 8 ;
-         	result |= I2c.receive() ;
-         	result <<= 8 ;
-         	result |= I2c.receive() ;
-                D1=result >> 7; // divide by 2* (8- the parameter for number of averages)
-        } else {
-              D1 = 0 ; // D1 value are not processed to calculate Alt.
-        }      
-        I2c.write( BMP180_ADR ,0xF4 , 0x2E ) ; // ask a conversion of Temperature sending 2E in register F4
-        varioData.lastCommandMicros = micros(); 
-        varioData.SensorState = 1;
-    } // end of delay of 9 ms  
-  } // end of SensorState == 1 
-  else if (varioData.SensorState==1){ // =========================  
-    if ( micros() > varioData.lastCommandMicros + 9000) { // wait 9000 usec to get Temp with high precision
-          if ( ! I2c.read( BMP180_ADR , 0xF6, 2 )) { ; //read 2 bytes from the device in register F6 ; keep previous value in case of error
-                result = I2c.receive() ;
-                result <<= 8 ;
-                result |= I2c.receive() ;
-                D2=result;
-          }      
-          I2c.write( BMP180_ADR , 0xF4 , 0x74) ;// ask a conversion of Pressure sending 74 in register F4; 74 means an average of 2 reads and so a normal wait time of 7.5 msec
-          varioData.lastCommandMicros = micros() ; 
-          varioData.SensorState=2; // 
-    }  // End of process if temperature can be read 
-  } // End of process if SensorState was 1  
-  else if (varioData.SensorState==2) {    // ========================== new Pressure and (new or old) Temp are known so Request Pressure immediately and calculate altitude
-    varioData.SensorState=0;
-    if ((D1 > 0) & (millis() > 1000) ) { // If D1 has been read in a previous loop and if sensor is started since more than 1 sec, then calculate pressure etc...
+bool OXS_BMP280::readSensor() {
+    static uint32_t lastBMP280ReadMicro ;
+    bool newVSpeedCalculated  = false ; 
+    if ( micros() > (  lastBMP280ReadMicro + 20000) ) { 
+          int32_t adc_T = 0 ;
+          int32_t adc_P = 0 ;
+          int32_t t_fine; // t_fine carries fine temperature as global value
+          int32_t var1 ; 
+          int32_t var2 ;
+          int32_t T; // Returns temperature in DegC, resolution is 0.01 DegC. Output value of “5123” equals 51.23 DegC.
+          uint32_t p; // pressure in pascal
+          
+          errorI2C = I2c.read( _addr , (uint8_t) 0xF7 , (uint8_t) 6) ; // read 6 bytes starting from register F7
+          adc_P = I2c.receive() ;
+          adc_P <<= 8 ;
+          adc_P |= I2c.receive() ;
+          adc_P <<= 8 ;
+          adc_P |= I2c.receive() ;
+          adc_P = adc_P >> 4 ;  
+          adc_T = I2c.receive() ;
+          adc_T <<= 8 ;
+          adc_T |= I2c.receive() ;
+          adc_T <<= 8 ;
+          adc_T |= I2c.receive()  ;
+          adc_T = adc_T >> 4 ;
+          lastBMP280ReadMicro = micros() ;
+          
+          var1 = ((((adc_T>>3) - ((int32_t)_bmp280_coeffs.dig_T1<<1))) * ((int32_t)_bmp280_coeffs.dig_T2)) >> 11;
+          var2 = (((((adc_T>>4) - ((int32_t)_bmp280_coeffs.dig_T1)) * ((adc_T>>4) - ((int32_t)_bmp280_coeffs.dig_T1))) >> 12) * ((int32_t)_bmp280_coeffs.dig_T3)) >> 14;
+          t_fine = var1 + var2;
+          varioData.temperature = (t_fine * 5 + 128) >> 8; 
+          
+          var1 = (((int32_t)t_fine)>>1) - (int32_t)64000;
+          var2 = (((var1>>2) * (var1>>2)) >> 11 ) * ((int32_t)_bmp280_coeffs.dig_P6);
+          var2 = var2 + ((var1*((int32_t)_bmp280_coeffs.dig_P5))<<1);
+          var2 = (var2>>2)+(((int32_t)_bmp280_coeffs.dig_P4)<<16);
+          var1 = (((_bmp280_coeffs.dig_P3 * (((var1>>2) * (var1>>2)) >> 13 )) >> 3) + ((((int32_t)_bmp280_coeffs.dig_P2) * var1)>>1))>>18;
+          var1 =((((32768+var1))*((int32_t)_bmp280_coeffs.dig_P1))>>15);
+          if (var1 == 0) { 
+            varioData.rawPressure = 0 ; 
+          } else {
+            p = (((uint32_t)(((int32_t)1048576) - adc_P)-(var2>>12)))*3125;
+            if (p < 0x80000000)   {
+              p = (p << 1) / ((uint32_t)var1);
+            }   else   {
+              p = (p / (uint32_t)var1) * 2;
+            }
+            var1 = (((int32_t)_bmp280_coeffs.dig_P9) * ((int32_t)(((p>>3) * (p>>3))>>13)))>>12;
+            var2 = (((int32_t)(p>>2)) * ((int32_t)_bmp280_coeffs.dig_P8))>>13;
+            varioData.rawPressure = (uint32_t)((int32_t)p + ((var1 + var2 + _bmp280_coeffs.dig_P7) >> 4))*  10000 ;  
+          }  
+          if ( (errorI2C == 0 ) & (millis() > 1000) ) { // If no I2c error  and if sensor is started since more than 1 sec, then calculate pressure etc...
               calculateVario() ;
               newVSpeedCalculated = true ;
-    }
-  } //   end ( varioData.SensorState == 2 )     
+          }
+  } //   end check on 20 msec     
   return newVSpeedCalculated ;                             // return true if a new Vspeed is available  
 }  // end read sensor     
 
 
-void OXS_BMP180::calculateVario() {       
-      if (D2Prev == 0) D2Prev = D2 ;
-      D2Apply = (D2 + D2Prev ) / 2 ;
-      D2Prev = D2 ; 
-#if BMP085_USE_DATASHEET_VALS
-    _bmp085_coeffs.ac1 = 408;
-    _bmp085_coeffs.ac2 = -72;
-    _bmp085_coeffs.ac3 = -14383;
-    _bmp085_coeffs.ac4 = 32741;
-    _bmp085_coeffs.ac5 = 32757;
-    _bmp085_coeffs.ac6 = 23153;
-    _bmp085_coeffs.b1  = 6190;
-    _bmp085_coeffs.b2  = 4;
-    _bmp085_coeffs.mb  = -32768;
-    _bmp085_coeffs.mc  = -8711;
-    _bmp085_coeffs.md  = 2868;
-    _bmp085Mode        = 0;
-    D2Apply = 27898 ;
-    D1 = 23843 ;
-#endif      
-      int32_t X1 = (D2Apply - (int32_t)_bmp085_coeffs.ac6) * ((int32_t)_bmp085_coeffs.ac5) >> 15;
-      int32_t X2 = ((int32_t)_bmp085_coeffs.mc << 11) / (X1+(int32_t)_bmp085_coeffs.md);
-      int32_t b5 = X1 + X2 ;
-      varioData.temperature = ( b5 + 8 ) >> 4 ; // = Temperature
 
-      // calcul of pressure.
-      int32_t p ;
-      int32_t b6 = b5 - 4000;
-      int32_t x1 = (_bmp085_coeffs.b2 * ((b6 * b6) >> 12)) >> 11;
-      int32_t x2 = (_bmp085_coeffs.ac2 * b6) >> 11;
-      int32_t x3 = x1 + x2;
-      int32_t b3 = (((((int32_t) _bmp085_coeffs.ac1) * 4 + x3) << _bmp085Mode) + 2) >> 2;
-      x1 = (_bmp085_coeffs.ac3 * b6) >> 13;
-      x2 = (_bmp085_coeffs.b1 * ((b6 * b6) >> 12)) >> 16;
-      x3 = ((x1 + x2) + 2) >> 2;
-      uint32_t b4 = (_bmp085_coeffs.ac4 * (uint32_t) (x3 + 32768)) >> 15;
-      uint32_t b7 = ((uint32_t) (D1 - b3) * (50000 >> _bmp085Mode));
-      if (b7 < 0x80000000) 
-      {
-        p = (b7 << 1) / b4;
-      }
-      else
-      {
-        p = (b7 / b4) << 1;
-      }
-      x1 = (p >> 8) * (p >> 8);
-      x1 = (x1 * 3038) >> 16;
-      x2 = (-7357 * p) >> 16;
-      varioData.rawPressure = (p + ((x1 + x2 + 3791) >> 4)) * 10000;
-
-//      varioData.temperature= TEMP;
-//      OFF  = (((int64_t)_calibrationData[2]) << 16) + ( (_calibrationData[4] * dT) >> 7);
-//      OFF  = (((int64_t)_calibrationData[2]) << 16) + ( ( (_calibrationData[4] - alt_temp_compensation ) * dT) >> 7);
-//      SENS = (((int64_t)_calibrationData[1]) << 15) + ((_calibrationData[3] * dT) >> 8);
-//      varioData.rawPressure= (((((((int64_t) D1) * (int64_t) SENS) >> 21) - OFF) * 10000 ) >> 15) ; // 1013.25 mb gives 1013250000 is a factor to keep higher precision (=1/100 cm).
+void OXS_BMP280::calculateVario() {       
       
       // altitude = 44330 * (1.0 - pow(pressure /sealevelPressure,0.1903));
       // other alternative (faster) = 1013.25 = 0 m , 954.61 = 500m , etc...

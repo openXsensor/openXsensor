@@ -280,9 +280,9 @@ uint8_t OXS_OUT::formatOneValue( uint8_t currentFieldToSend) {
          currentData->milliAmps.available = false ;
          break ;
       case MILLIAH :
-         if ( ! currentData->consumedMilliAmpsAvailable  ) return 0;
-         valueTemp = currentData->consumedMilliAmps ;
-         currentData->consumedMilliAmpsAvailable = false ;
+         if ( ! currentData->consumedMilliAmps.available  ) return 0;
+         valueTemp = currentData->consumedMilliAmps.value ;
+         currentData->consumedMilliAmps.available = false ;
          break ;
 #endif
 

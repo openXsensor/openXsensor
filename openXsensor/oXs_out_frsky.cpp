@@ -46,7 +46,7 @@ extern void delay(unsigned long ms) ;
 extern uint8_t  volatile  sportData[7] ;
 uint8_t volatile sportDataLock ;
 extern uint8_t volatile sendStatus ;
-#if defined(PIN_VOLTAGE) && defined(VFAS_SOURCE) 
+#if defined(VFAS_SOURCE) 
   struct ONE_MEASUREMENT vfas ; 
 #endif
 
@@ -177,7 +177,7 @@ volatile uint8_t frskyStatus = 0x3F  ;                                          
 uint8_t currFieldIdx[6] = { 0 , 2, 5 , 10 , 15 , 19 } ;                          // per sensor, say which field has been loaded the last time (so next time, we have to search from the next one)
 const uint8_t fieldMinIdx[7]  = { 0 , 2, 5 , 10 , 15 , 19 , 22 } ;                     // per sensor, say the first field index ; there is one entry more in the array to know the last index
 const uint8_t fieldId[22] = { 0x10 , 0x11 , 0x30 , 0x30 , 0x30 , 0x21 , 0x20 , 0x60 ,0x90, 0x91 , 0x80, 0x80 , 0x82 , 0x83 , 0x84 , 0x50 , 0x40 , 0x41 , 0xA0 , 0x70 , 0x71 , 0x72 } ; //fieldID to send to Tx (to shift 4 bits to left
-struct ONE_MEASUREMENT * p_measurements[22] ;      // array of 20 pointers (each pointer point to a structure containing a byte saying if a value is available and to the value.
+struct ONE_MEASUREMENT * p_measurements[22] ;      // array of 22 pointers (each pointer point to a structure containing a byte saying if a value is available and to the value.
 // There are 20 possible fields to transmit in SPORT
 // They are grouped per sensor ID
 // Sensor 0 start from index = 0 and contains Alt + Vspeed
@@ -232,6 +232,7 @@ void initMeasurement() {
 // pointer to vfas
 #if defined(PIN_VOLTAGE) && defined(VFAS_SOURCE) && ( VFAS_SOURCE == VOLT_1 || VFAS_SOURCE == VOLT_2 || VFAS_SOURCE == VOLT_3 || VFAS_SOURCE == VOLT_4 || VFAS_SOURCE == VOLT_5 || VFAS_SOURCE == VOLT_6 )
     p_measurements[5] = &vfas ;
+#elif defined(ADS_MEASURE) && defined(VFAS_SOURCE) && ( VFAS_SOURCE == ADS_VOLT_1 || VFAS_SOURCE == ADS_VOLT_2 || VFAS_SOURCE == ADS_VOLT_3 || VFAS_SOURCE == ADS_VOLT_4 )
 #else
     p_measurements[5] = &no_data ;
 #endif
@@ -443,14 +444,25 @@ void initMeasurement() {
 void OXS_OUT::sendSportData()
 {  
                                                                           // first we calculate fields that are used only by SPORT
-#if defined(PIN_VOLTAGE) && defined(VFAS_SOURCE) 
-  #if (VFAS_SOURCE == VOLT_1) || (VFAS_SOURCE == VOLT_2) || (VFAS_SOURCE == VOLT_3) || (VFAS_SOURCE == VOLT_4) || (VFAS_SOURCE == VOLT_5) || (VFAS_SOURCE == VOLT_6)
+#if defined(VFAS_SOURCE)
+  #if defined(PIN_VOLTAGE) &&  ( (VFAS_SOURCE == VOLT_1) || (VFAS_SOURCE == VOLT_2) || (VFAS_SOURCE == VOLT_3) || (VFAS_SOURCE == VOLT_4) || (VFAS_SOURCE == VOLT_5) || (VFAS_SOURCE == VOLT_6) )
    if ( (!vfas.available) && ( oXs_Voltage.voltageData.mVolt[VFAS_SOURCE - VOLT_1].available) ){
       vfas.value = oXs_Voltage.voltageData.mVolt[VFAS_SOURCE - VOLT_1].value / 10 ;  // voltage in mv is divided by 10 because SPORT expect it (volt * 100) 
       vfas.available = true ; 
    }
+  #elif defined(ADS_MEASURE) && ( (VFAS_SOURCE == ADS_VOLT_1) || (VFAS_SOURCE == ADS_VOLT_2) || (VFAS_SOURCE == ADS_VOLT_3) || (VFAS_SOURCE == ADS_VOLT_4) )
+   if ( (!vfas.available) && ( ads_Conv[VFAS_SOURCE - ADS_VOLT_1].available) ){
+      vfas.value = ads_Conv[VFAS_SOURCE - ADS_VOLT_1].value / 10 ;  // voltage in mv is divided by 10 because SPORT expect it (volt * 100) 
+      vfas.available = true ; 
+   }
   #else
-  #error When defined, VFAS_SOURCE must be VOLT_1, VOLT_2, ... or VOLT_6
+    #if  ( (VFAS_SOURCE == ADS_VOLT_1) || (VFAS_SOURCE == ADS_VOLT_2) || (VFAS_SOURCE == ADS_VOLT_3) || (VFAS_SOURCE == ADS_VOLT_4) )
+      #error When VFAS_SOURCE is ADS_VOLT_1, ADS_VOLT_2,... ADS_VOLT_4 then ADS_MEASURE must be defined too.
+    #elif   ( (VFAS_SOURCE == VOLT_1) || (VFAS_SOURCE == VOLT_2) || (VFAS_SOURCE == VOLT_3) || (VFAS_SOURCE == VOLT_4) || (VFAS_SOURCE == VOLT_5) || (VFAS_SOURCE == VOLT_6) )
+      #error When VFAS_SOURCE is VOLT_1, VOLT_2,... VOLT_6 then PIN_VOLTAGE must be defined too.
+    #else
+      #error When defined, VFAS_SOURCE must be VOLT_1, VOLT_2,... VOLT_6 or ADS_VOLT_1, ADS_VOLT_2,... ADS_VOLT_4
+    #endif   
   #endif
 #endif
 
@@ -546,7 +558,7 @@ void OXS_OUT::sendSportData()
 void OXS_OUT::sendHubData()  // for Hub protocol
 {
 #define FRAME2_EVERY_N_FRAME1 1 // n means that there is n frame1 after one frame2(gps)
-#define MSEC_PER_BYTE 4        // number of msec per byte to transmit; I expect that a value of 7 ms should work; probably it can even be reduced
+#define MSEC_PER_BYTE 6        // number of msec per byte to transmit; I expect that a value of 7 ms should work; probably it can even be reduced up to 6.
   static uint32_t lastMsFrame1=0;
   static uint16_t lastFrameLength ;
   static uint32_t temp ;
@@ -637,6 +649,8 @@ void OXS_OUT::SendFrame1(){
 // vfas
 #if defined(PIN_VOLTAGE) && defined(VFAS_SOURCE) &&  ( (VFAS_SOURCE == VOLT_1) || (VFAS_SOURCE == VOLT_2) || (VFAS_SOURCE == VOLT_3) || (VFAS_SOURCE == VOLT_4) || (VFAS_SOURCE == VOLT_5) || (VFAS_SOURCE == VOLT_6) )
     SendValue( FRSKY_USERDATA_VFAS_NEW ,  (int16_t) (voltageData->mVolt[VFAS_SOURCE - VOLT_1 ].value / 100) ) ; // convert mvolt in 1/10 of volt; in openTx 2.1.x, it is possible to get 1 more decimal using [VFAS_SOURCE - VOLT_1 ].value/10.)+2000);  
+#elif defined(ADS_MEASURE) && defined(VFAS_SOURCE) &&  ( (VFAS_SOURCE == ADS_VOLT_1) || (VFAS_SOURCE == ADS_VOLT_2) || (VFAS_SOURCE == ADS_VOLT_3) || (VFAS_SOURCE == ADS_VOLT_4)  )
+    SendValue( FRSKY_USERDATA_VFAS_NEW ,  (int16_t) (ads_Conv[VFAS_SOURCE - ADS_VOLT_1 ].value / 100) ) ; // convert mvolt in 1/10 of volt; in openTx 2.1.x, it is possible to get 1 more decimal using [VFAS_SOURCE - VOLT_1 ].value/10.)+2000);  
 #endif
    
 // current
@@ -1470,7 +1484,7 @@ ISR(TIMER1_COMPA_vect)
 #define  CURRENT_ID      DATA_ID_FAS
 #define  GPS_ID          DATA_ID_GPS
 #define  RPM_ID          DATA_ID_RPM
-#define  ACC_ID          0x1B
+#define  ACC_ID          DATA_ID_ACC
 
                               case VARIO_ID :
                                 sensorIsr = 0 ; break ;

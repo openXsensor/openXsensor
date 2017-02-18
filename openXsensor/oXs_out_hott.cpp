@@ -195,7 +195,7 @@ void OXS_OUT::sendData() {
               TxHottData.gamMsg.main_voltage = voltageData->mVolt[MAIN_BATTERY_SOURCE - VOLT_1].value / 100;          //Main power voltage using 0.1V steps 100 == 10,0V] / 100
 #endif
 #if defined(PIN_CURRENTSENSOR)
-              TxHottData.gamMsg.batt_cap =  currentData->consumedMilliAmps / 10 ;   // used battery capacity in 10mAh steps
+              TxHottData.gamMsg.batt_cap =  currentData->consumedMilliAmps.value / 10 ;   // used battery capacity in 10mAh steps
 #endif
 #ifdef AIRSPEED       
                TxHottData.gamMsg.speed =  airSpeedData->airSpeed.value  ;                  //  Km/h 
@@ -628,9 +628,9 @@ ISR(TIMER1_COMPA_vect)
                                state = TxPENDING ;
                                OCR1A += ( DELAY_4000 - TICKS2WAITONEHOTT) ;                   // 4ms gap before sending; normally Hott protocols says to wait 5 msec but this is too much for timer1
                                delayTxPendingCount  = 1 ;            //  ask for 1 more delay of 1ms in order to reach the total of 5msec                 
-                           } else  {
-                                state = WAITING ;
-                                OCR1A += ( DELAY_4000 - TICKS2WAITONEHOTT) ;                // 4mS gap before listening (take care that 4096 is the max we can wait because timer 1 is 16 bits and prescaler = 1)
+//                           } else  {
+//                                state = WAITING ;
+//                                OCR1A += ( DELAY_4000 - TICKS2WAITONEHOTT) ;                // 4mS gap before listening (take care that 4096 is the max we can wait because timer 1 is 16 bits and prescaler = 1)
                            }      // end last byte was a polling code
 
                   } else {                                // Previous code is not equal to HOTT_BINARY_MODE_REQUEST_ID , enter to iddle mode (so we will accept to read another byte)                                 

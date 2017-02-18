@@ -2,11 +2,14 @@
 #include "oXs_voltage.h"
 #include "oXs_ms5611.h"
 #include "oXs_bmp180.h"
+#include "oXs_bmp280.h"
 #include "oXs_4525.h"
+#include "oXs_ads1115.h"
 #include "oXs_curr.h"
 #include "oXs_out_frsky.h"
 #include "oXs_out_multiplex.h"
 #include "oXs_out_hott.h"
+#include "oXs_out_jeti.h"
 #include "oXs_general.h"
 #include "oXs_gps.h"
 #ifdef USE_6050
@@ -20,7 +23,7 @@
 
 #if  ! defined(PROTOCOL)
     #error The parameter PROTOCOL in config.h is not defined
-#elif ! ( (PROTOCOL == FRSKY_SPORT) or (PROTOCOL == FRSKY_HUB) or (PROTOCOL == FRSKY_SPORT_HUB) or (PROTOCOL == HOTT) or (PROTOCOL == MULTIPLEX) )    
+#elif ! ( (PROTOCOL == FRSKY_SPORT) or (PROTOCOL == FRSKY_HUB) or (PROTOCOL == FRSKY_SPORT_HUB) or (PROTOCOL == HOTT) or (PROTOCOL == MULTIPLEX)  or (PROTOCOL == JETI))    
     #error The parameter PROTOCOL in config.h is NOT valid
 #endif
 
@@ -31,8 +34,14 @@
     #error The parameter VSPEED_SOURCE in config.h is NOT valid
 #endif    
 
-#if defined( VFAS_SOURCE ) && ( !  ( ( VFAS_SOURCE == VOLT_1) || ( VFAS_SOURCE == VOLT_2) || ( VFAS_SOURCE == VOLT_3) || ( VFAS_SOURCE == VOLT_4) || ( VFAS_SOURCE == VOLT_5) || ( VFAS_SOURCE == VOLT_6) ) ) 
- #error When defined, VFAS_SOURCE must be one of following values VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
+#if defined( PIN_CURRENTSENSOR ) and defined(ADS_MEASURE) and defined(ADS_CURRENT_BASED_ON)
+  #error It is not allowed in config.h to ask for current calculation based both arduino Adc and on ads1115; define only or PIN_CURRENTSENSOR or ADS_CURRENT_BASED_ON
+#endif            
+
+
+
+#if defined( VFAS_SOURCE ) && ( !  ( ( VFAS_SOURCE == VOLT_1) || ( VFAS_SOURCE == VOLT_2) || ( VFAS_SOURCE == VOLT_3) || ( VFAS_SOURCE == VOLT_4) || ( VFAS_SOURCE == VOLT_5) || ( VFAS_SOURCE == VOLT_6) || ( VFAS_SOURCE == ADS_VOLT_1) || ( VFAS_SOURCE == ADS_VOLT_2) || ( VFAS_SOURCE == ADS_VOLT_3) || ( VFAS_SOURCE == ADS_VOLT_4)) ) 
+ #error When defined, VFAS_SOURCE must be one of following values VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4 
 #endif
 #if defined( FUEL_SOURCE ) && ( !  ( ( FUEL_SOURCE == VOLT_1) || ( FUEL_SOURCE == VOLT_2) || ( FUEL_SOURCE == VOLT_3) || ( FUEL_SOURCE == VOLT_4) || ( FUEL_SOURCE == VOLT_5) || ( FUEL_SOURCE == VOLT_6) ) ) 
  #error When defined, FUEL_SOURCE must be one of following values VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
@@ -58,8 +67,11 @@
 #if defined( T2_SOURCE ) && ( !  ( ( T2_SOURCE == PPM) || ( T2_SOURCE == GLIDER_RATIO) || ( T2_SOURCE == SECONDS_SINCE_T0) || ( T2_SOURCE == AVERAGE_VSPEED_SINCE_TO) || ( T2_SOURCE == SENSITIVITY) || ( T2_SOURCE == VOLT_1) || ( T2_SOURCE == VOLT_2) || ( T2_SOURCE == VOLT_3) || ( T2_SOURCE == VOLT_4) || ( T2_SOURCE == VOLT_5) || ( T2_SOURCE == VOLT_6) || ( T2_SOURCE == TEST_1) || ( T2_SOURCE == TEST_2) || ( T2_SOURCE == TEST_3) ) )
  #error When defined, T2_SOURCE must be one of following values TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , SENSITIVITY , PPM , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6
 #endif
-
-#ifdef PIN_PPM
+#if defined ( ADS_AIRSPEED_BASED_ON ) && ( ! ( ( ADS_AIRSPEED_BASED_ON == ADS_VOLT_1) || ( ADS_AIRSPEED_BASED_ON == ADS_VOLT_2) || ( ADS_AIRSPEED_BASED_ON == ADS_VOLT_3) || ( ADS_AIRSPEED_BASED_ON == ADS_VOLT_4) ) )
+ #error When defined, ADS_AIRSPEED_BASED_ON must be one of following values ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
+#endif
+  
+#ifdef PIN_PPMADS_VOLT_1, ADS_VOLT_2,... ADS_VOLT_4
  #if PIN_PPM == 2
 	#define PPM_INTERRUPT			ON // define to use interrupt code in Aserial.cpp
 	#define PPM_INT_MASK			0x03
@@ -85,6 +97,8 @@
                                
 #define I2C_4525_Add        0x28 // 0x28 is the default I2C adress of a 4525DO sensor
 
+#define I2C_ADS_Add 0x48 // default I2C address of ads1115 when addr pin is connected to ground
+
 #define PIN_LED            13  // The Signal LED (default=13=onboard LED)
 
 
@@ -109,6 +123,7 @@ extern unsigned long millis( void ) ;
 //#define DEBUG_VOLTAGE_TIME
 #endif
 
+// ************ declare some functions being used ***************
 int freeRam () ;
 void checkButton() ;
 void readSensors() ;
@@ -125,6 +140,7 @@ void setNewSequence() ;
 void checkSequence() ;
 void blinkLed( uint8_t blinkType ) ;
 
+// *********** declare some variables *****************************
 #ifdef VARIO
 bool newVarioAvailable ;
 struct ONE_MEASUREMENT mainVspeed ;
@@ -135,8 +151,6 @@ bool newVarioAvailable2 ;
 
 #if defined (VARIO) && defined ( AIRSPEED) 
 struct ONE_MEASUREMENT compensatedClimbRate ;
-// bool compensatedClimbRateAvailable ;
-// int32_t compensatedClimbRate ;
 bool switchCompensatedClimbRateAvailable ;
 float rawCompensatedClimbRate ; 
 
@@ -144,8 +158,6 @@ float rawCompensatedClimbRate ;
 
 #if defined (VARIO) && ( defined (VARIO2) || defined ( AIRSPEED) || defined (USE_6050) )
 struct ONE_MEASUREMENT switchVSpeed ;
-//int32_t switchVSpeed ;
-//bool switchVSpeedAvailable ;
 #endif
 
 #if defined (VARIO) && defined (VARIO2)
@@ -158,19 +170,14 @@ struct ONE_MEASUREMENT gliderRatio ;
 struct ONE_MEASUREMENT secFromT0 ; // in 1/10 sec
 struct ONE_MEASUREMENT averageVspeedSinceT0 ; //in cm/sec
 void calculateAverages();
+boolean gliderRatioPpmOn = false ;
 #endif
 
 #ifdef USE_6050
   KalmanFilter kalman ;
   float zTrack ;
   float vTrack ;
-  //extern float yaw ;
-  //extern float pitch ;
-  //extern float roll ; 
-  //extern uint8_t pitchAvailable ;
-struct ONE_MEASUREMENT vSpeedImu ;
-//  int32_t vSpeedImu ;
-//  bool vSpeedImuAvailable ;
+  struct ONE_MEASUREMENT vSpeedImu ;
   bool vTrackAvailable ;
   bool switchVTrackAvailable ;
   extern float linear_acceleration_x ;
@@ -185,13 +192,12 @@ struct ONE_MEASUREMENT vSpeedImu ;
   #ifdef DEBUG_KALMAN_TIME  
     int delayKalman[5] ;
   #endif
-#endif
+#endif // end of USE_6050
 
 uint16_t ppmus ; // duration of ppm in usec
 int prevPpm ; //^previous ppm
 struct ONE_MEASUREMENT ppm ; // duration of pulse in range -100 / + 100 ; can exceed those limits
-//int ppm ; // duration of pulse in range -100 / + 100 ; can exceed those limits
-//bool ppmAvailable  ;
+
 
 
 #ifdef SEQUENCE_OUTPUTS
@@ -265,7 +271,7 @@ struct ONE_MEASUREMENT ppm ; // duration of pulse in range -100 / + 100 ; can ex
 int8_t prevPpmMain = -100 ; // this value is unusual; so it will forced a change at first call
 bool lowVoltage = false ;
 bool prevLowVoltage = false ;
-uint32_t currentLoopMillis ;
+//uint32_t currentLoopMillis ;
 
 volatile bool RpmSet  ;
 volatile uint16_t RpmValue ;
@@ -293,17 +299,22 @@ struct ONE_MEASUREMENT test3 ; // used in order to test the transmission of any 
 uint8_t selectedVario = VARIO_PRIMARY ; // identify the vario to be used when switch vario with PPM is active (1 = first MS5611) 
 #endif
 
+
 //******************* Create instances of the used classes ******************************************
 #ifdef VARIO
   #ifdef SENSOR_IS_BMP180
       #ifdef DEBUG  
         OXS_BMP180 oXs_MS5611 = OXS_BMP180(Serial);
       #else
-      //OXS_BMP180 oXs_MS5611() ;
         OXS_BMP180 oXs_MS5611 = OXS_BMP180();
       #endif  //DEBUG
-  
-  #else // not a BMP180
+  #elif defined(SENSOR_IS_BMP280 )
+      #ifdef DEBUG  
+        OXS_BMP280 oXs_MS5611 = OXS_BMP280(Serial);
+      #else
+        OXS_BMP280 oXs_MS5611 = OXS_BMP280();
+      #endif  //DEBUG
+  #else // not a BMP180 or BMP280
       #ifdef DEBUG  
         OXS_MS5611 oXs_MS5611(I2C_MS5611_Add,Serial);
       #else
@@ -353,7 +364,16 @@ uint8_t selectedVario = VARIO_PRIMARY ; // identify the vario to be used when sw
   #endif //DEBUG
 #endif
 
-//Create a class used for telemetry
+#ifdef ADS_MEASURE
+  #ifdef DEBUG
+    OXS_ADS1115 oXs_ads1115(  I2C_ADS_Add , Serial);
+  #else
+    OXS_ADS1115 oXs_ads1115( I2C_ADS_Add );
+  #endif //DEBUG
+#endif
+
+
+//Create a class used for telemetry ;content of class depends on the selected protocol (managed via #ifdef in different files)
 #ifdef DEBUG  
   OXS_OUT oXs_Out(PIN_SERIALTX,Serial);
 #else
@@ -398,14 +418,11 @@ void setup(){
   pinMode(PIN_LED, OUTPUT); // The signal LED (used for the function debug loop)
 #endif
 
-
 #ifdef PIN_PUSHBUTTON  
   pinMode(PIN_PUSHBUTTON, INPUT_PULLUP);
 #endif
+
   pinMode(PIN_LED, OUTPUT); // The signal LED (used for the function push button)
-
-
-
 
 //  sensitivityPpmMapped = 0 ;
   compensationPpmMapped = 100 ;
@@ -418,13 +435,11 @@ void setup(){
   actualPressure = 101325 ; // default pressure in pascal; to actualise if vario exist; is used in airspeed calcualtion.
 
 
-  // Invoke all setup methods and set reference
+  // ******** Invoke all setup methods and set reference
 #ifdef PIN_VOLTAGE
   oXs_Voltage.setupVoltage(); 
   oXs_Out.voltageData=&oXs_Voltage.voltageData; 
 #endif
-
-
 
 #ifdef VARIO
 #ifdef DEBUG 
@@ -472,6 +487,18 @@ void setup(){
 
 #ifdef USE_6050
     setupImu() ;
+#endif
+
+#ifdef ADS_MEASURE
+  oXs_ads1115.setup() ;
+#if defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON)
+  oXs_Out.currentData=&oXs_ads1115.adsCurrentData;
+#endif            
+#if defined(ADS_MEASURE) && defined(ADS_AIRSPEED_BASED_ON)
+  oXs_Out.airSpeedData=&oXs_ads1115.adsAirSpeedData;
+#endif            
+
+
 #endif
 
 #ifdef SAVE_TO_EEPROM
@@ -572,7 +599,7 @@ static uint32_t lastLoop500Millis ;
 #define BIT200MILLIS 4 ;
 #define BIT500MILLIS 8 ;
 */
-currentLoopMillis = millis() ;
+//currentLoopMillis = millis() ;
 /*
 if ( currentLoopMillis - lastLoop20Millis > 20 ) {
   lastLoop20Millis = currentLoopMillis ;
@@ -598,7 +625,7 @@ if ( currentLoopMillis - lastLoop500Millis > 500 ) {
 #ifdef DEBUG_BLINK_MAINLOOP
     blinkLed(1) ;
 #endif
-extern volatile uint8_t state ; 
+  //extern volatile uint8_t state ; 
   //Serial.println(state) ;
     // Check if a button has been pressed
 #ifdef PIN_PUSHBUTTON
@@ -723,6 +750,45 @@ void readSensors() {
     oXs_Gps.readGps() ; // Do not perform calculation if there is less than 2000 usec before MS5611 ADC is available =  (9000 - 2000)/2
 #endif             // End GPS_INSTALLED
 
+#ifdef ADS_MEASURE
+    if( oXs_ads1115.readSensor() ) { // return true when a new average is available; it means that the new value has to be stored/processed.
+       /*
+       uint8_t testx = ads_Last_Conv_Idx ;
+       switch  ( ads_Used_For[ads_Last_Conv_Idx] ) {
+        case ADS_VOLT_1 :
+          oXs_Voltage.voltageData.mVolt[0].value = ads_Conv[ads_Last_Conv_Idx] ;
+          oXs_Voltage.voltageData.mVolt[0].available = true;
+          break ;
+        case ADS_VOLT_2 :
+         oXs_Voltage.voltageData.mVolt[1].value = ads_Conv[ads_Last_Conv_Idx] ;
+         oXs_Voltage.voltageData.mVolt[1].available = true;
+          break ;
+        case ADS_VOLT_3 :
+          oXs_Voltage.voltageData.mVolt[2].value = ads_Conv[ads_Last_Conv_Idx] ;
+          oXs_Voltage.voltageData.mVolt[2].available = true;
+          break ;
+        case ADS_VOLT_4 :
+          oXs_Voltage.voltageData.mVolt[3].value = ads_Conv[ads_Last_Conv_Idx]  ;
+          oXs_Voltage.voltageData.mVolt[3].available = true;
+          break ;
+        case ADS_VOLT_5 :
+          oXs_Voltage.voltageData.mVolt[4].value = ads_Conv[ads_Last_Conv_Idx] ;
+          oXs_Voltage.voltageData.mVolt[4].available = true;
+          break ;
+        case ADS_VOLT_6 :
+          oXs_Voltage.voltageData.mVolt[5].value = ads_Conv[ads_Last_Conv_Idx] ;
+          oXs_Voltage.voltageData.mVolt[5].available = true;
+          break ;
+        case ADS_AIRSPEED :
+          break ;
+        case ADS_CURRENT :
+          break ;   
+      }
+      */
+    }
+#endif             // End GPS_INSTALLED
+
+
 #ifdef MEASURE_RPM
   if (millis() > ( lastRpmMillis + 200) ){  // allow transmission of RPM only once every 200 msec
         if (RpmSet == true) {               // rpm is set 
@@ -776,10 +842,20 @@ void calculateAllFields () {
                 }        
             }
             altitudeToKalman = (oXs_MS5611.varioData.rawAltitude - altitudeOffsetToKalman ) / 100 ; // convert from * 100cm to cm
-            kalman.Update((float) altitudeToKalman  , world_linear_acceleration_z ,  &zTrack, &vTrack);
+            kalman.Update((float) altitudeToKalman  , world_linear_acceleration_z ,  &zTrack, &vTrack);  // Altitude and acceleration are in cm
             vSpeedImu.value = vTrack ;
             vSpeedImu.available = true ;
             switchVTrackAvailable = true ;
+
+  //#define SEND_EXPECTED_ALT    // force a calculation of an expected altitude x seconds in the future
+  #ifdef SEND_EXPECTED_ALT
+            #define EXPECTED_AT_SEC 0.2        // number of sec used for the projection; can have decimals; NB: expected alt = Alt at time 0 + Vspeed at time 0 * seconds  + 0.5 * Accz at time 0 * seconds * seconds
+            test3.value = ( zTrack - oXs_MS5611.varioData.altOffset ) + ( vTrack *  EXPECTED_AT_SEC ) + ( 0.5 *  world_linear_acceleration_z * EXPECTED_AT_SEC * EXPECTED_AT_SEC ) ;
+            test3.available = true ; 
+  #endif
+
+
+
             
   //#define TEST_SEND_MPU
   #ifdef TEST_SEND_MPU                                                  ///////////////////////////// !!!!!!!!!!!!!!!!!!!!!! to be changed
@@ -860,32 +936,43 @@ void calculateAllFields () {
 #endif
 
 
-
-// here to be filled with other data
-
-
 // calculate glider ratio and average vertical speed (based on first vario)
 #if defined  (VARIO) && defined (GLIDER_RATIO_CALCULATED_AFTER_X_SEC) && GLIDER_RATIO_CALCULATED_AFTER_X_SEC >= 1
         calculateAverages();
 #endif        
 
-
-
-////////////////////////////////////////////////////this part is probably not correct !!!!!!!!!!!!!!!!!!!!!!!
-#if defined (VARIO) && ( defined (VARIO2) )
-//         averageVSpeed.available = false ;
+#if defined (VARIO) && ( defined (VARIO2) ) // fill test1 and test2 with Vspeed and relative Alt
+//#define VARIO2_FIELDS_IN_TEST12
+#ifdef VARIO2_FIELDS_IN_TEST12
+    test1.value = oXs_MS5611_2.varioData.climbRate.value ;
+    test1.available = oXs_MS5611_2.varioData.climbRate.available ;
+    test2.value = oXs_MS5611_2.varioData.relativeAlt.value ;
+    test2.available = oXs_MS5611_2.varioData.relativeAlt.available ;
 #endif
-#if defined (VARIO) &&  defined (USE_6050)
-//  switchVTrackAvailable = false ;
-#endif  
-#if defined (VARIO) &&  defined (USE_6050)
-//    test1.value = oXs_MS5611.varioData.climbRate.value ;
-//    test1.available = oXs_MS5611.varioData.climbRate.available ;
-//    test2.value = vSpeedImu.value ;
-//    test2.available = vSpeedImu.available ;
 #endif
 
+//  fill test1 and test2 with DTE and PPM_COMPENSATION
+#define DTE_IN_TEST1
+#define PPM_COMPENSATION_IN_TEST2
+#if defined(VARIO) && defined(AIRSPEED) 
+#ifdef DTE_IN_TEST1
+  test1.value = compensatedClimbRate.value ;
+  test1.available = compensatedClimbRate.available ; 
+#endif
+#if  defined(PPM_COMPENSATION_IN_TEST2) && defined(PIN_PPM)
+  static uint32_t lastPpmCompensationMillis ;
+  uint32_t PpmCompensationMillis = millis() ;
+  if ( ( PpmCompensationMillis - lastPpmCompensationMillis ) > 200 ) {
+    test2.value =  compensationPpmMapped ; 
+    test2.available = true ;
+    lastPpmCompensationMillis = PpmCompensationMillis ;
+  }
+#endif
+#endif 
+
 #if defined (VARIO) &&  defined (USE_6050)
+//#define SEND_YAWRATE_IN_TEST1
+#ifdef SEND_YAWRATE_IN_TEST1
 static int32_t  previousYaw ;
 static uint32_t previousYawRateMillis ;
  uint32_t currentMillis ;
@@ -908,7 +995,7 @@ static uint32_t previousYawRateMillis ;
 //    test2.value = vSpeedImu.value ;
 //    test2.available = vSpeedImu.available ;
 #endif
-
+#endif
 
 //#define DEBUG_CHANGE_IN_TEST12
 #if defined( DEBUG_CHANGE_IN_TEST12 )
@@ -921,6 +1008,54 @@ static uint32_t previousYawRateMillis ;
         test2.available = true ;
       }  
 #endif
+
+// calculate Temperature based on a voltage using a NTC
+// We use a NTC and a resistor with the schema
+// < Arduino Vcc > --[serie resistor]-- <Arduino analog pin>  --[NTC]-- <ground>     
+#define NTC_TEMP_IN_TEST1
+#define NTC_ON_VOLT_NR 6 // specify index of voltage being used for conversion to temperature (e.g. 6 means VOLT_6) 
+#define SERIESRESISTOR 4700 // resitance connected to Arduino Vcc (in Ohm)
+#define TERMISTORNOMINAL 100000 // nominal resistor of NTC (in Ohm)
+#define TEMPERATURENOMINAL 25 // nominal temperature of NTC (in degree Celcius)
+#define BCOEFFICIENT 3950 // B coefficient of NTC
+#if defined ( PIN_VOLTAGE ) && defined ( NTC_TEMP_IN_TEST1 )
+    if ( oXs_Voltage.voltageData.mVolt[NTC_ON_VOLT_NR - 1].available ) {  // when voltage is available, convert it to temperature
+        float media ;
+        // Convert the thermal stress value to resistance
+        // we reuse here the mVolt calculated by oXs. The config must be adapted in a such a way that this mVolt is equal to the raw value returned by the ADC * 1000 (for better accuracy)
+        // therefore, the mVoltPerStep calculated must be equal to 1000 and so :
+        // USE_INTERNAL_REFERENCE must be as comment (so with // in front off)
+        // USE_EXTERNAL_REFERENCE must be as comment (so with // in front off)
+        // REFERENCE_VOLTAGE must be as comment (so with // in front off)
+        // PIN_VOLTAGE must be defined and the analog pin used for NTC must be specified in one of the 6 index        
+        //  RESISTOR_TO_GROUND must be set on 0 (for the index being used)
+        //  OFFSET_VOLTAGE must (normally) be set on 0 (for the index being used)
+        //  SCALE_VOLTAGE  must be set on 204.6 (=1000 * 1023/5000) (for the index being used)
+        // the calculated temperature is filled in an oXs field named TEST_1
+        // So the config must also specify in which telemetry filed TEST_1 must be transmitted
+        // E.g for the Frsky protocol, this is done using this line in the config :     #define T1_SOURCE       TEST_1   
+
+        
+        media =  SERIESRESISTOR /  ( (1023000.0 / (float) oXs_Voltage.voltageData.mVolt[NTC_ON_VOLT_NR - 1].value ) - 1 ) ;
+        //Calculate temperature using the Beta Factor equation
+        float temperatura;
+        temperatura = media / TERMISTORNOMINAL;     // (R/Ro)
+        temperatura = log(temperatura); // ln(R/Ro)
+        temperatura /= BCOEFFICIENT;                   // 1/B * ln(R/Ro)
+        temperatura += 1.0 / (TEMPERATURENOMINAL + 273.15); // + (1/To)
+        temperatura = 1.0 / temperatura;                 // Invert the value
+        temperatura -= 273.15;                         // Convert it to Celsius
+        test1.value = temperatura ;
+        test1.available = true ;
+#define DEBUGNTC
+#if defined( DEBUG) && defined (DEBUGNTC)
+         Serial.print( "Temp= " ) ; Serial.println( test1.value );
+#endif
+              
+    }
+#endif
+
+
 
 
 //  test1.value = oXs_MS5611.varioData.absoluteAlt.value/10 ;
@@ -1029,6 +1164,64 @@ void calculateDte () {  // is calculated about every 2O ms each time that an alt
 
 
 //****************************** Calculate averages and glider ratio ********************************************
+#if defined (VARIO) && defined (GLIDER_RATIO_CALCULATED_AFTER_X_SEC ) && (GLIDER_RATIO_CALCULATED_AFTER_X_SEC >= 1 )  && defined ( PIN_PPM ) && defined (GLIDER_RATIO_ON_AT_PPM )
+void calculateAverages( ){
+        static int32_t altitudeAtT0 ; // in cm
+        static int32_t distanceSinceT0 ; // in cm
+//        static int32_t averageVspeedSinceT0 ; //in cm/sec
+        static int16_t aSpeedAtT0 ;
+//        static uint16_t secFromT0 ;  // in 1/10 sec
+        static uint32_t millisAtT0 ;
+        static unsigned long prevAverageAltMillis  ; // wait 5 sec before calculating those data ; // save when AverageAltitude has to be calculated
+        int32_t altitudeDifference ;
+        unsigned long currentGliderMillis ;
+        bool aSpeedWithinTolerance = true ;
+        static boolean previousGliderRatioPpmOn = false ;   
+        currentGliderMillis = millis() ;
+        if (  prevAverageAltMillis == 0 ) { 
+          prevAverageAltMillis =  currentGliderMillis + 5000  ; 
+          millisAtT0 = currentGliderMillis ;
+        }
+        if ( (uint16_t) (currentGliderMillis - prevAverageAltMillis) >   500 ) { // check on tolerance has to be done
+             if ( ( gliderRatioPpmOn) && (previousGliderRatioPpmOn) ) {
+              altitudeDifference = oXs_MS5611.varioData.absoluteAlt.value -altitudeAtT0  ; // in cm
+              secFromT0.value =  ( currentGliderMillis - millisAtT0 ) / 100 ;            // in 1/10 of sec
+              averageVspeedSinceT0.value = altitudeDifference * 10 / secFromT0.value  ;      // * 10 because secFromT0 is in 1/10 of sec
+#ifdef AIRSPEED
+                distanceSinceT0 += oXs_4525.airSpeedData.smoothAirSpeed / (1000 /  500) ;  // to adapt if delay is different.
+#endif                
+                if (  secFromT0.value >=  GLIDER_RATIO_CALCULATED_AFTER_X_SEC * 10 ) {         // *10 because secFromT0 is in 1/10 of sec 
+#ifdef AIRSPEED
+                    gliderRatio.value = distanceSinceT0  * -10 / altitudeDifference  ;        // when gliderRatio is > (50.0 *10) it it not realistic (*10 is done in order to add a decimal)
+                    if ( gliderRatio.value > 500) gliderRatio.value = 0 ;                                                   // 
+#endif                    
+                    averageVspeedSinceT0.value = altitudeDifference * 10 / secFromT0.value  ;      // * 10 because secFromT0 is in 1/10 of sec
+                }
+              
+            } else {
+              altitudeAtT0 = oXs_MS5611.varioData.absoluteAlt.value   ;
+              millisAtT0 = currentGliderMillis ;
+              secFromT0.value = 0 ;
+              averageVspeedSinceT0.value = 0 ; 
+#ifdef AIRSPEED
+                distanceSinceT0 = 0 ;
+                gliderRatio.value = 0 ;
+#endif                
+            }  
+
+            prevAverageAltMillis = currentGliderMillis  ; 
+            gliderRatio.available = true;
+            secFromT0.available = true ; 
+            averageVspeedSinceT0.available = true ;
+            previousGliderRatioPpmOn = gliderRatioPpmOn ; 
+        }  // end check on 500 ms
+}        // end Calculate averages
+
+
+
+
+
+#else
 #if defined  (VARIO) && defined (GLIDER_RATIO_CALCULATED_AFTER_X_SEC) && GLIDER_RATIO_CALCULATED_AFTER_X_SEC >= 1 
 #if defined (GLIDER_RATIO_CALCULATED_AFTER_X_SEC) && GLIDER_RATIO_CALCULATED_AFTER_X_SEC < 1
 #error  when defined, GLIDER_RATIO_CALCULATED_AFTER_X_SEC must be greater or equal to 1 (sec)
@@ -1046,7 +1239,7 @@ void calculateAverages( ){
         bool aSpeedWithinTolerance = true ;  
 
         if ( (uint16_t) (currentGliderMillis - prevAverageAltMillis) >   500 ) { // check on tolerance has to be done
-            altitudeDifference = oXs_MS5611.varioData.absoluteAlt.value -altitudeAtT0  ;
+            altitudeDifference = oXs_MS5611.varioData.absoluteAlt.value -altitudeAtT0  ; // in cm
             secFromT0.value =  ( currentGliderMillis - millisAtT0 ) / 100 ;            // in 1/10 of sec
 #ifdef DEBUG_GLIDER8RATIO
             serial.print((F("secFromT0: ")); serial.println( secFromT0.value ) ;
@@ -1092,7 +1285,7 @@ void calculateAverages( ){
         }
 }        
 #endif
-
+#endif // End of #if defined (VARIO) && defined (GLIDER_RATIO_BASED_ON_PPM )
 //********end calculate glider ratio************************************************************************************************
 
 
@@ -1298,10 +1491,10 @@ void LoadFromEEProm(){
 #endif //saveToEeprom
 
 
-/**********************************************************/
-/* ProcessPPMSignal => read PPM signal from receiver and  */
-/*   use its value to adjust sensitivity                  */
-/**********************************************************/
+/***************************************************************/
+/* ProcessPPMSignal => read PPM signal from receiver and       */
+/*   use its value to adjust sensitivity and other parameters  */
+/***************************************************************/
 #ifdef PIN_PPM
 volatile uint16_t time1 ;
 //uint16_t time3 ;
@@ -1338,7 +1531,7 @@ void ProcessPPMSignal(){
     if ( ( ( ppm.value - prevPpm) > 3 ) || (( prevPpm - ppm.value) > 3 )  )  { // handel ppm only if it changes by more than 3 
         setNewSequence( ) ;
     }  
-#else // so if Sequence is not used and so PPM is used for Vario sensitivity 
+#else // so if Sequence is not used and so PPM is used for Vario sensitivity , vario compensation , airspeed reset , glider ratio and/or vario source selection 
     if (ppm.value == prevPpm) {  // test if new value is equal to previous in order to avoid unstabel handling 
     
 #if defined ( VARIO_PRIMARY) && defined ( VARIO_SECONDARY)  && defined (VARIO ) && ( defined (VARIO2) || defined (AIRSPEED) || defined (USE_6050) )  && defined (PIN_PPM)
@@ -1371,6 +1564,14 @@ void ProcessPPMSignal(){
             oXs_4525.airSpeedData.airspeedReset = true ; // allow a recalculation of offset 4525
         }    
 #endif
+#if defined (GLIDER_RATIO_CALCULATED_AFTER_X_SEC ) && defined ( GLIDER_RATIO_ON_AT_PPM )
+         if ( (ppm.value >= (GLIDER_RATIO_ON_AT_PPM - 4)) && (ppm.value <= (GLIDER_RATIO_ON_AT_PPM + 4)) ) {
+          gliderRatioPpmOn = true ;
+        } else {
+            gliderRatioPpmOn = false ; 
+        } 
+#endif    
+    
     } // end ppm == prePpm
 #endif  // end of #ifdef SEQUENCE_OUTPUTS & #else
   }  // end ppm > 0
@@ -1569,7 +1770,7 @@ void OutputToSerial(){
   Serial.print( ( ((float)(int32_t)(oXs_Current.currentData.milliAmps.value))) );
   Serial.print("(");    
   Serial.print(F(" ;mAh="));  
-  Serial.print( oXs_Current.currentData.consumedMilliAmps);
+  Serial.print( oXs_Current.currentData.consumedMilliAmps.value);
 #endif // PIN_CURRENTSENSOR
 #ifdef HOTT
   Serial.println("H.");

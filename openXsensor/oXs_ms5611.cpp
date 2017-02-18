@@ -267,7 +267,7 @@ void OXS_MS5611::calculateVario() {
       altMillis = millis() ;
       if (altMillis > nextAltMillis){
         nextAltMillis = altMillis + 100 ;
-        varioData.absoluteAlt.value = altitude / 100 ; // altitude is in m *10000 and AbsoluteAlt must be in m * 100
+        varioData.absoluteAlt.value = altitude / 100 ; // altitude is in m *10000 and AbsoluteAlt must be in m * 100 (= cm)
         varioData.absoluteAlt.available=true ;  // Altitude is considered as available only after several loop in order to reduce number of transmission on Sport.
         varioData.sensitivity.available = true ;
         if (varioData.altOffset == 0) varioData.altOffset = varioData.absoluteAlt.value ;
