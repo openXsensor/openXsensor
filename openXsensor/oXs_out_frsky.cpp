@@ -233,6 +233,7 @@ void initMeasurement() {
 #if defined(PIN_VOLTAGE) && defined(VFAS_SOURCE) && ( VFAS_SOURCE == VOLT_1 || VFAS_SOURCE == VOLT_2 || VFAS_SOURCE == VOLT_3 || VFAS_SOURCE == VOLT_4 || VFAS_SOURCE == VOLT_5 || VFAS_SOURCE == VOLT_6 )
     p_measurements[5] = &vfas ;
 #elif defined(ADS_MEASURE) && defined(VFAS_SOURCE) && ( VFAS_SOURCE == ADS_VOLT_1 || VFAS_SOURCE == ADS_VOLT_2 || VFAS_SOURCE == ADS_VOLT_3 || VFAS_SOURCE == ADS_VOLT_4 )
+    p_measurements[5] = &vfas ;
 #else
     p_measurements[5] = &no_data ;
 #endif
