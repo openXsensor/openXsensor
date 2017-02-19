@@ -655,7 +655,7 @@ void OXS_OUT::SendFrame1(){
    
 // current
 #if defined(PIN_CURRENTSENSOR) 
-    SendValue( FRSKY_USERDATA_CURRENT ,  (int16_t) oXs_Current.currentData.milliAmps.value / 100 ) ;
+    SendValue( FRSKY_USERDATA_CURRENT ,  (int16_t) ( oXs_Current.currentData.milliAmps.value / 100 ) ) ;
 #endif
 
 // fuel                                     
@@ -1206,7 +1206,7 @@ void OXS_OUT::SendCellVoltage( uint32_t voltage) {
 //void OXS_OUT::SendGPSDist(uint16_t dist) {// ==> Field "Dist" in open9x
 //  SendValue(0x3C,uint16_t(dist)); //>> DIST
 //}
-
+/*
 // ************************************************************ //
 //  SendTemperature1/2 =>  tempc in 1/100th of degree celsius   //
 // Display Range in openTX: -3276,8..32768=-3276,8C..+3276,C    //
@@ -1217,6 +1217,7 @@ void OXS_OUT::SendTemperature1(int16_t tempc) {
 void OXS_OUT::SendTemperature2(int16_t tempc) {
   SendValue(FRSKY_USERDATA_TEMP2, tempc);
 }
+*/
 // ************************************* //
 // SendRPM => Send Rounds Per Minute     //
 // ************************************* //
@@ -1226,6 +1227,7 @@ void OXS_OUT::SendTemperature2(int16_t tempc) {
 //  SendValue(FRSKY_USERDATA_RPM, rpmValue);
 //}
 
+/*
 // ************************************* //
 // SendFuel => SendFuel Level            //
 // ************************************* //
@@ -1251,6 +1253,7 @@ void OXS_OUT::SendAlt(long altcm)
   SendValue(FRSKY_USERDATA_BARO_ALT_B, (int16_t)Meter);
   SendValue(FRSKY_USERDATA_BARO_ALT_A, Centimeter);
 }
+
 // **************************************************************** //
 // SendGPSAlt - send the a value to the GPS altitude field          //
 // parameter: altitude in cm between -3276800 and 3276799           //
@@ -1309,7 +1312,7 @@ void OXS_OUT::SendGPSSpeed(long speedknots)
 // *********************************************** //
 // SendCurrentMilliAmps => Send Current            //
 // current will be transmitted as 1/10th of A      //
-// Range: -32768..32767 => disp -327,6..3276,7     //
+// Range: -32768..32767 => disp -3276..3276     //
 // *********************************************** //
 void OXS_OUT::SendCurrentMilliAmps(int32_t milliamps) 
 {
@@ -1318,7 +1321,7 @@ void OXS_OUT::SendCurrentMilliAmps(int32_t milliamps)
 #endif 
   SendValue(FRSKY_USERDATA_CURRENT, (uint16_t)(milliamps/100));
 }
-
+*/
 //#endif // End of FRSKY_SPORT
 
 #endif // end HUB protocol --------------------------------------------------------------------------
