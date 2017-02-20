@@ -92,14 +92,14 @@
 //#define REFERENCE_VOLTAGE 4970    // set value in milliVolt; if commented, oXs will use or 1100 (if internal ref is used) or 5000 (if internal ref is not used) 
 
 // ***** 6.2 - Voltage parameters *****
-#define PIN_VOLTAGE         2  , 8     , 8   , 8    , 8   , 8               // set this line as comment if no one voltage have to be measured, set the value to 8 for the voltage(s) not to be measured.
+#define PIN_VOLTAGE         2  , 3     , 1   , 8    , 8   , 8               // set this line as comment if no one voltage have to be measured, set the value to 8 for the voltage(s) not to be measured.
 #define RESISTOR_TO_GROUND  36 , 20    , 30  , 19.8 , 50  , 0               // set value to 0 when no divider is used for a voltage, can contains decimals 
 #define RESISTOR_TO_VOLTAGE 670 , 100.1 , 200 , 39   , 500 , 0              // set value to 0 when no divider is used for a voltage, can contains decimals 
 #define OFFSET_VOLTAGE      0 , 0     , 0   , 0    , 0   , 0                // optionnal, can be negative, must be integer
 #define SCALE_VOLTAGE      0.985 , 1     ,  1  , 1.004, 1   , 204.6                // optionnal, can be negative, can have decimals
 
 // ***** 6.3 - Max number of Lipo cells to measure (and transmit to Tx) *****
-//#define NUMBEROFCELLS 3   // Put this line as comment or set value to 0 (zero) if you do not want to transmit cell voltages.
+#define NUMBEROFCELLS 3   // Put this line as comment or set value to 0 (zero) if you do not want to transmit cell voltages.
 
 // ***** 6.4 - Current parameters  *****
 //#define PIN_CURRENTSENSOR   3  // uncomment when Arduino pin is used to measure the voltage provided by a current sensor
@@ -138,6 +138,7 @@
 #define T2_SOURCE       ADS_VOLT_4                    //  select between TEST_1, TEST_2, TEST_3, , GLIDER_RATIO, SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , SENSITIVITY, PPM, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
 
 // ***** 9.2 - Hott data *****
+#define CELL_UNDERVOLTAGE_WARNING 3300            // Warning threshold in mV; 
 #define BATTERY_1_SOURCE          ADS_VOLT_1                 // select between VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
 #define BATTERY_2_SOURCE          ADS_VOLT_2                 // select between VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
 #define MAIN_BATTERY_SOURCE       ADS_VOLT_3                 // select between VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4

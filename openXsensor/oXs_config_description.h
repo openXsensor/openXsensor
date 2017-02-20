@@ -664,6 +664,10 @@ started by Rainer Schlosshan
 *         - Current (when Current sensor is present)
 *         - GPS (long, lat, speed, altitude , course, distance from home, direction from home, number of sat, type of fix) (when GPS sensor is present)
 *         - RPM (when RPM sensor is present)
+*      When you measure cell Voltages, you can get an alarm on Tx when lowest cell voltage is lower than a specified level.   
+*      To activate this alarm, uncomment next line and specify the voltage (in milliVolt ) that trigger the alarm
+*         //#define CELL_UNDERVOLTAGE_WARNING 3300            // Warning threshold in mV;
+*         
 *      On top of this, you can also specify how to fill telemetry fields temperature1 and temperature2 
 *      note : those 2 fields can only report a value from -20 up to 235; for PPM, a value of -100 will be displayed as 0 and +100 will be displayed as 200)      
 *      Put those line(s) as comment when no measurement has to be transmitted in those telemetry field(s)      
