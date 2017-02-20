@@ -5,7 +5,8 @@
 
 #ifdef DEBUG
 // ************************* Several parameters to help debugging
-//#define DEBUGSENDDATASTATUS
+//#define DEBUG_LOAD_SPORT
+//#define DEBUG_SPORT_RECEIVED
 //#define DEBUGSENDDATA
 //#define DEBUGSENDSENSITIVITY
 //#define DEBUGNEXTVALUETYPE
@@ -83,6 +84,11 @@ volatile bool sportAvailable = false ;
 //static uint8_t convertToHubId[15] = { FRSKY_HUB_ID } ; //// this array is used to convert an index inside fieldContainsData[][0] into the Hub field Id (or defaultfield) 
 //static uint8_t currentFieldToSend = 0 ; 
 extern volatile uint8_t state ;                  //!< Holds the state of the UART.
+
+
+#ifdef DEBUG_SPORT_RECEIVED
+  volatile uint8_t sportRcvCount ;
+#endif
 
 
 #ifdef DEBUG  
@@ -248,6 +254,8 @@ void initMeasurement() {
 // pointer to fuel                                    
 #if defined(FUEL_SOURCE) && defined(PIN_VOLTAGE) && ( FUEL_SOURCE == VOLT_1 || FUEL_SOURCE == VOLT_2 || FUEL_SOURCE == VOLT_3 || FUEL_SOURCE == VOLT_4 || FUEL_SOURCE == VOLT_5 || FUEL_SOURCE == VOLT_6 )
     p_measurements[7] =  &oXs_Voltage.voltageData.mVolt[FUEL_SOURCE - VOLT_1];
+#elif defined(FUEL_SOURCE) && defined(ADS_MEASURE) && ( FUEL_SOURCE == ADS_VOLT_1 || FUEL_SOURCE == ADS_VOLT_2 || FUEL_SOURCE == ADS_VOLT_3 || FUEL_SOURCE == ADS_VOLT_4 )
+    p_measurements[7] =  &ads_Conv[FUEL_SOURCE - ADS_VOLT_1]; 
 #else
     p_measurements[7] = &no_data ;
 #endif
@@ -255,6 +263,8 @@ void initMeasurement() {
 // pointer to A3                                    
 #if defined(A3_SOURCE) && defined(PIN_VOLTAGE) && ( A3_SOURCE == VOLT_1 || A3_SOURCE == VOLT_2 || A3_SOURCE == VOLT_3 || A3_SOURCE == VOLT_4 || A3_SOURCE == VOLT_5 || A3_SOURCE == VOLT_6 )
     p_measurements[8] =  &oXs_Voltage.voltageData.mVolt[A3_SOURCE - VOLT_1];
+#elif defined(A3_SOURCE) && defined(ADS_MEASURE) && ( A3_SOURCE == ADS_VOLT_1 || A3_SOURCE == ADS_VOLT_2 || A3_SOURCE == ADS_VOLT_3 || A3_SOURCE == ADS_VOLT_4 )
+    p_measurements[8] =  &ads_Conv[A3_SOURCE - ADS_VOLT_1];
 #else
     p_measurements[8] = &no_data ;
 #endif
@@ -262,6 +272,8 @@ void initMeasurement() {
 // pointer to A4                                    
 #if defined(A4_SOURCE) && defined(PIN_VOLTAGE) && ( A4_SOURCE == VOLT_1 || A4_SOURCE == VOLT_2 || A4_SOURCE == VOLT_3 || A4_SOURCE == VOLT_4 || A4_SOURCE == VOLT_5 || A4_SOURCE == VOLT_6 )
     p_measurements[9] =  &oXs_Voltage.voltageData.mVolt[A4_SOURCE - VOLT_1];
+#elif defined(A3_SOURCE) && defined(ADS_MEASURE) && ( A4_SOURCE == ADS_VOLT_1 || A4_SOURCE == ADS_VOLT_2 || A4_SOURCE == ADS_VOLT_3 || A4_SOURCE == ADS_VOLT_4 )
+    p_measurements[9] =  &ads_Conv[A4_SOURCE - ADS_VOLT_1];
 #else
     p_measurements[9] = &no_data ;
 #endif
@@ -328,6 +340,8 @@ void initMeasurement() {
    p_measurements[16] = &ppm ; 
 #elif defined(T1_SOURCE) && defined(PIN_VOLTAGE) && ( T1_SOURCE == VOLT_1 || T1_SOURCE == VOLT_2 || T1_SOURCE == VOLT_3 || T1_SOURCE == VOLT_4 || T1_SOURCE == VOLT_5 || T1_SOURCE == VOLT_6 )
    p_measurements[16] = &oXs_Voltage.voltageData.mVolt[T1_SOURCE - VOLT_1] ;
+#elif defined(T1_SOURCE) && defined(ADS_MEASURE) && ( T1_SOURCE == ADS_VOLT_1 || T1_SOURCE == ADS_VOLT_2 || T1_SOURCE == ADS_VOLT_3 || T1_SOURCE == ADS_VOLT_4 )
+    p_measurements[16] =  &ads_Conv[T1_SOURCE - ADS_VOLT_1];
 #else
    p_measurements[16] = &no_data ; // T1 
 #endif
@@ -351,6 +365,8 @@ void initMeasurement() {
    p_measurements[17] = &ppm ; 
 #elif defined(T2_SOURCE) && defined(PIN_VOLTAGE) && ( T2_SOURCE == VOLT_1 || T2_SOURCE == VOLT_2 || T2_SOURCE == VOLT_3 || T2_SOURCE == VOLT_4 || T2_SOURCE == VOLT_5 || T2_SOURCE == VOLT_6 )
    p_measurements[17] = &oXs_Voltage.voltageData.mVolt[T2_SOURCE - VOLT_1] ;
+#elif defined(T2_SOURCE) && defined(ADS_MEASURE) && ( T2_SOURCE == ADS_VOLT_1 || T2_SOURCE == ADS_VOLT_2 || T2_SOURCE == ADS_VOLT_3 || T2_SOURCE == ADS_VOLT_4 )
+    p_measurements[17] =  &ads_Conv[T2_SOURCE - ADS_VOLT_1];
 #else
    p_measurements[17] = &no_data ; // T2 
 #endif
@@ -379,6 +395,8 @@ void initMeasurement() {
    p_measurements[19] = &averageVspeedSinceT0 ; 
 #elif defined(ACCX_SOURCE) && defined(PIN_VOLTAGE) && ( ACCX_SOURCE == VOLT_1 || ACCX_SOURCE == VOLT_2 || ACCX_SOURCE == VOLT_3 || ACCX_SOURCE == VOLT_4 || ACCX_SOURCE == VOLT_5 || ACCX_SOURCE == VOLT_6 )
    p_measurements[19] = &oXs_Voltage.voltageData.mVolt[ACCX_SOURCE - VOLT_1] ;
+#elif defined(ACCX_SOURCE) && defined(ADS_MEASURE) && ( ACCX_SOURCE == ADS_VOLT_1 || ACCX_SOURCE == ADS_VOLT_2 || ACCX_SOURCE == ADS_VOLT_3 || ACCX_SOURCE == ADS_VOLT_4 )
+    p_measurements[19] =  &ads_Conv[ACCX_SOURCE - ADS_VOLT_1];
 #elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == PITCH) && defined(USE_6050)
    p_measurements[19] = &pitch ; // accX
 #elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == ROLL) && defined(USE_6050)
@@ -404,6 +422,8 @@ void initMeasurement() {
    p_measurements[20] = &averageVspeedSinceT0 ; 
 #elif defined(ACCY_SOURCE) && defined(PIN_VOLTAGE) && ( ACCY_SOURCE == VOLT_1 || ACCY_SOURCE == VOLT_2 || ACCY_SOURCE == VOLT_3 || ACCY_SOURCE == VOLT_4 || ACCY_SOURCE == VOLT_5 || ACCY_SOURCE == VOLT_6 )
    p_measurements[20] = &oXs_Voltage.voltageData.mVolt[ACCY_SOURCE - VOLT_1] ;
+#elif defined(ACCY_SOURCE) && defined(ADS_MEASURE) && ( ACCY_SOURCE == ADS_VOLT_1 || ACCY_SOURCE == ADS_VOLT_2 || ACCY_SOURCE == ADS_VOLT_3 || ACCY_SOURCE == ADS_VOLT_4 )
+    p_measurements[20] =  &ads_Conv[ACCY_SOURCE - ADS_VOLT_1];
 #elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == PITCH) && defined(USE_6050)
    p_measurements[20] = &pitch ; 
 #elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == ROLL) && defined(USE_6050)
@@ -429,6 +449,8 @@ void initMeasurement() {
    p_measurements[21] = &averageVspeedSinceT0 ; 
 #elif defined(ACCZ_SOURCE) && defined(PIN_VOLTAGE) && ( ACCZ_SOURCE == VOLT_1 || ACCZ_SOURCE == VOLT_2 || ACCZ_SOURCE == VOLT_3 || ACCZ_SOURCE == VOLT_4 || ACCZ_SOURCE == VOLT_5 || ACCZ_SOURCE == VOLT_6 )
    p_measurements[21] = &oXs_Voltage.voltageData.mVolt[ACCZ_SOURCE - VOLT_1] ;
+#elif defined(ACCZ_SOURCE) && defined(ADS_MEASURE) && ( ACCZ_SOURCE == ADS_VOLT_1 || ACCZ_SOURCE == ADS_VOLT_2 || ACCZ_SOURCE == ADS_VOLT_3 || ACCZ_SOURCE == ADS_VOLT_4 )
+    p_measurements[21] =  &ads_Conv[ACCZ_SOURCE - ADS_VOLT_1];
 #elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == PITCH) && defined(USE_6050)
    p_measurements[21] = &pitch ; // accX
 #elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == ROLL) && defined(USE_6050)
@@ -549,6 +571,11 @@ void OXS_OUT::sendSportData()
         }
       } // End for one sensorSeq 
     }   // End of if (frskystatus)
+#ifdef DEBUG_SPORT_RECEIVED
+                  Serial.print("RcvCnt "); Serial.println( sportRcvCount) ;
+#endif
+
+
 }
 
 #endif
@@ -662,6 +689,8 @@ void OXS_OUT::SendFrame1(){
 // fuel                                     
 #if defined(FUEL_SOURCE) && defined(PIN_VOLTAGE) && ( FUEL_SOURCE == VOLT_1 || FUEL_SOURCE == VOLT_2 || FUEL_SOURCE == VOLT_3 || FUEL_SOURCE == VOLT_4 || FUEL_SOURCE == VOLT_5 || FUEL_SOURCE == VOLT_6 )
     SendValue(FRSKY_USERDATA_FUEL,  (int16_t)  voltageData->mVolt[FUEL_SOURCE - VOLT_1].value ) ;
+#elif defined(VFAS_SOURCE) && defined(ADS_MEASURE) && ( (FUEL_SOURCE == ADS_VOLT_1) || (FUEL_SOURCE == ADS_VOLT_2) || (FUEL_SOURCE == ADS_VOLT_3) || (FUEL_SOURCE == ADS_VOLT_4)  )
+    SendValue( FRSKY_USERDATA_FUEL ,  (int16_t) (ads_Conv[FUEL_SOURCE - ADS_VOLT_1 ].value ) ) ; 
 #endif
    
 // RPM
@@ -686,7 +715,12 @@ void OXS_OUT::SendFrame1(){
     SendValue( FRSKY_USERDATA_TEMP1 , (int16_t) oXs_MS5611.varioData.sensitivity.value) ; 
 #elif defined(T1_SOURCE) && ( T1_SOURCE == PPM) && defined(PIN_PPM)
     SendValue( FRSKY_USERDATA_TEMP1 , (int16_t) ppm.value) ; 
+#elif defined(T1_SOURCE) && defined(PIN_VOLTAGE) &&  ( (T1_SOURCE == VOLT_1) || (T1_SOURCE == VOLT_2) || (T1_SOURCE == VOLT_3) || (T1_SOURCE == VOLT_4) || (T1_SOURCE == VOLT_5) || (T1_SOURCE == VOLT_6) )
+    SendValue( FRSKY_USERDATA_TEMP1 ,  (int16_t) (voltageData->mVolt[T1_SOURCE - VOLT_1 ].value ) ) ; 
+#elif defined(T1_SOURCE) && defined(ADS_MEASURE) &&  ( (T1_SOURCE == ADS_VOLT_1) || (T1_SOURCE == ADS_VOLT_2) || (T1_SOURCE == ADS_VOLT_3) || (T1_SOURCE == ADS_VOLT_4)  )
+    SendValue( FRSKY_USERDATA_TEMP1 ,  (int16_t) (ads_Conv[T1_SOURCE - ADS_VOLT_1 ].value ) ) ; 
 #endif
+
 
 // T2   
 #if defined(T2_SOURCE) && ( T2_SOURCE == TEST_1)
@@ -705,6 +739,10 @@ void OXS_OUT::SendFrame1(){
    SendValue( FRSKY_USERDATA_TEMP2 , (int16_t) oXs_MS5611.varioData.sensitivity.value) ; 
 #elif defined(T2_SOURCE) && ( T2_SOURCE == PPM) && defined(PIN_PPM)
     SendValue( FRSKY_USERDATA_TEMP2 , (int16_t) ppm.value) ; 
+#elif defined(T2_SOURCE) && defined(PIN_VOLTAGE) &&  ( (T2_SOURCE == VOLT_1) || (T2_SOURCE == VOLT_2) || (T2_SOURCE == VOLT_3) || (T2_SOURCE == VOLT_4) || (T2_SOURCE == VOLT_5) || (T2_SOURCE == VOLT_6) )
+    SendValue( FRSKY_USERDATA_TEMP2 ,  (int16_t) (voltageData->mVolt[T2_SOURCE - VOLT_1 ].value ) ) ; 
+#elif defined(T2_SOURCE) && defined(ADS_MEASURE) &&  ( (T2_SOURCE == ADS_VOLT_1) || (T2_SOURCE == ADS_VOLT_2) || (T2_SOURCE == ADS_VOLT_3) || (T2_SOURCE == ADS_VOLT_4)  )
+    SendValue( FRSKY_USERDATA_TEMP2 ,  (int16_t) (ads_Conv[T2_SOURCE - ADS_VOLT_1 ].value ) ) ;     
 #endif
    
 // airspeed                                        // not implemented in Hub protocol; to add in T1 or T2
@@ -731,6 +769,10 @@ void OXS_OUT::SendFrame1(){
    SendValue( FRSKY_USERDATA_ACC_X , (int16_t) roll.value) ;
 #elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == YAW) && defined(USE_6050)
    SendValue( FRSKY_USERDATA_ACC_X , (int16_t) yaw.value) ;        
+#elif defined(ACCX_SOURCE) && defined(PIN_VOLTAGE) &&  ( (ACCX_SOURCE == VOLT_1) || (ACCX_SOURCE == VOLT_2) || (ACCX_SOURCE == VOLT_3) || (ACCX_SOURCE == VOLT_4) || (ACCX_SOURCE == VOLT_5) || (ACCX_SOURCE == VOLT_6) )
+    SendValue( FRSKY_USERDATA_ACC_X ,  (int16_t) (voltageData->mVolt[ACCX_SOURCE - VOLT_1 ].value ) ) ; 
+#elif defined(ACCX_SOURCE) && defined(ADS_MEASURE) &&  ( (ACCX_SOURCE == ADS_VOLT_1) || (ACCX_SOURCE == ADS_VOLT_2) || (ACCX_SOURCE == ADS_VOLT_3) || (ACCX_SOURCE == ADS_VOLT_4)  )
+    SendValue( FRSKY_USERDATA_ACC_X ,  (int16_t) (ads_Conv[ACCX_SOURCE - ADS_VOLT_1 ].value ) ) ; 
 #endif
 
 // accY
@@ -752,6 +794,10 @@ void OXS_OUT::SendFrame1(){
    SendValue( FRSKY_USERDATA_ACC_Y , (int16_t) roll.value) ;
 #elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == YAW) && defined(USE_6050)
    SendValue( FRSKY_USERDATA_ACC_Y , (int16_t) yaw.value) ;        
+#elif defined(ACCY_SOURCE) && defined(PIN_VOLTAGE) &&  ( (ACCY_SOURCE == VOLT_1) || (ACCY_SOURCE == VOLT_2) || (ACCY_SOURCE == VOLT_3) || (ACCY_SOURCE == VOLT_4) || (ACCY_SOURCE == VOLT_5) || (ACCY_SOURCE == VOLT_6) )
+    SendValue( FRSKY_USERDATA_ACC_Y ,  (int16_t) (voltageData->mVolt[ACCY_SOURCE - VOLT_1 ].value ) ) ; 
+#elif defined(ACCY_SOURCE) && defined(ADS_MEASURE) &&  ( (ACCY_SOURCE == ADS_VOLT_1) || (ACCY_SOURCE == ADS_VOLT_2) || (ACCY_SOURCE == ADS_VOLT_3) || (ACCY_SOURCE == ADS_VOLT_4)  )
+    SendValue( FRSKY_USERDATA_ACC_Y ,  (int16_t) (ads_Conv[ACCY_SOURCE - ADS_VOLT_1 ].value ) ) ; 
 #endif
 
 // accZ
@@ -773,7 +819,10 @@ void OXS_OUT::SendFrame1(){
    SendValue( FRSKY_USERDATA_ACC_Z , (int16_t) roll.value) ;
 #elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == YAW) && defined(USE_6050)
    SendValue( FRSKY_USERDATA_ACC_Z , (int16_t) yaw.value) ;        
-
+#elif defined(ACCZ_SOURCE) && defined(PIN_VOLTAGE) &&  ( (ACCZ_SOURCE == VOLT_1) || (ACCZ_SOURCE == VOLT_2) || (ACCZ_SOURCE == VOLT_3) || (ACCZ_SOURCE == VOLT_4) || (ACCZ_SOURCE == VOLT_5) || (ACCZ_SOURCE == VOLT_6) )
+    SendValue( FRSKY_USERDATA_ACC_Z ,  (int16_t) (voltageData->mVolt[ACCZ_SOURCE - VOLT_1 ].value ) ) ; 
+#elif defined(ACCZ_SOURCE) && defined(ADS_MEASURE) &&  ( (ACCZ_SOURCE == ADS_VOLT_1) || (ACCZ_SOURCE == ADS_VOLT_2) || (ACCZ_SOURCE == ADS_VOLT_3) || (ACCZ_SOURCE == ADS_VOLT_4)  )
+    SendValue( FRSKY_USERDATA_ACC_Z ,  (int16_t) (ads_Conv[ACCZ_SOURCE - ADS_VOLT_1 ].value ) ) ; 
 #endif
 
   if( hubMaxData > 0 ) {
@@ -1499,6 +1548,9 @@ ISR(TIMER1_COMPA_vect)
                               case GPS_ID :
                                 sensorIsr = 3 ; break ;
                               case RPM_ID :
+#ifdef DEBUG_SPORT_RECEIVED
+                                sportRcvCount ++ ;
+#endif
                                 sensorIsr = 4 ; break ;
                               case ACC_ID :
                                 sensorIsr = 5 ; break ;
