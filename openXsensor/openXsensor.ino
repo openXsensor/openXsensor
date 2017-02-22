@@ -869,13 +869,13 @@ void calculateAllFields () {
 
 
             
-  //#define TEST_SEND_MPU
-  #ifdef TEST_SEND_MPU                                                  ///////////////////////////// !!!!!!!!!!!!!!!!!!!!!! to be changed
+  //#define SEND_LINEAR_ACC
+  #ifdef SEND_LINEAR_ACC                                                  ///////////////////////////// !!!!!!!!!!!!!!!!!!!!!! to be changed
             test1.value = linear_acceleration_x * 981 ; 
             test1.available = true ; 
             test2.value =  linear_acceleration_y * 981; 
             test2.available = true ; 
-            test3.value = world_linear_acceleration_z ; 
+            test3.value = linear_acceleration_Z * 981; 
             test3.available = true ; 
   #endif
 
