@@ -655,7 +655,7 @@ if ( currentLoopMillis - lastLoop500Millis > 500 ) {
     calculateAllFields(); 
 
     // prepare the telemetry data to be sent (nb: data are prepared but not sent)
-    oXs_Out.sendData(); 
+    if ( millis() > 1000 ) oXs_Out.sendData(); 
    
 // PPM Processing = Read the ppm Signal from receiver and process it 
 #ifdef PIN_PPM 
@@ -870,7 +870,7 @@ void calculateAllFields () {
 
             
   //#define SEND_LINEAR_ACC
-  #ifdef SEND_LINEAR_ACC                                                  ///////////////////////////// !!!!!!!!!!!!!!!!!!!!!! to be changed
+  #ifdef SEND_LINEAR_ACC                                                  
             test1.value = linear_acceleration_x * 981 ; 
             test1.available = true ; 
             test2.value =  linear_acceleration_y * 981; 
