@@ -290,7 +290,7 @@ extern volatile uint16_t RpmValue ;
 extern bool RpmAvailable ;
 #endif // MEASURE_RPM
 
-
+extern OXS_ADS1115 oXs_ads1115 ;
 
 
 

@@ -64,6 +64,7 @@
   extern uint8_t ads_Counter[4]  ;
   extern struct ONE_MEASUREMENT ads_Conv[4] ; //averaged conversion including offset and scale
   extern uint8_t ads_Last_Conv_Idx ;
+
   
 
 class OXS_ADS1115 {

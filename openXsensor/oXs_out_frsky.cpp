@@ -375,7 +375,9 @@ void initMeasurement() {
    
 // pointer to airspeed
 #if defined(AIRSPEED) 
-  p_measurements[18] = &oXs_4525.airSpeedData.airSpeed ; 
+  p_measurements[18] = &oXs_4525.airSpeedData.airSpeed ;
+#elif defined(ADS_MEASURE) && defined(ADS_AIRSPEED_BASED_ON)
+  p_measurements[18] = &oXs_ads1115.adsAirSpeedData.airSpeed ;
 #else
   p_measurements[18] = &no_data ; 
 #endif
@@ -586,7 +588,7 @@ void OXS_OUT::sendSportData()
 void OXS_OUT::sendHubData()  // for Hub protocol
 {
 #define FRAME2_EVERY_N_FRAME1 1 // n means that there is n frame1 after one frame2(gps)
-#define MSEC_PER_BYTE 6        // number of msec per byte to transmit; I expect that a value of 7 ms should work; probably it can even be reduced up to 6.
+#define MSEC_PER_BYTE 7        // number of msec per byte to transmit; I expect that a value of 7 ms should work; probably it can even be reduced up to 6.
   static uint32_t lastMsFrame1=0;
   static uint16_t lastFrameLength ;
   static uint32_t temp ;

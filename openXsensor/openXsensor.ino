@@ -83,7 +83,7 @@
  #error When defined, ADS_AIRSPEED_BASED_ON must be one of following values ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
 #endif
   
-#ifdef PIN_PPMADS_VOLT_1, ADS_VOLT_2,... ADS_VOLT_4
+#ifdef PIN_PPM
  #if PIN_PPM == 2
 	#define PPM_INTERRUPT			ON // define to use interrupt code in Aserial.cpp
 	#define PPM_INT_MASK			0x03
@@ -655,7 +655,7 @@ if ( currentLoopMillis - lastLoop500Millis > 500 ) {
     calculateAllFields(); 
 
     // prepare the telemetry data to be sent (nb: data are prepared but not sent)
-    if ( millis() > 1000 ) oXs_Out.sendData(); 
+    if ( millis() > 1500 ) oXs_Out.sendData(); 
    
 // PPM Processing = Read the ppm Signal from receiver and process it 
 #ifdef PIN_PPM 
@@ -764,39 +764,6 @@ void readSensors() {
 
 #ifdef ADS_MEASURE
     if( oXs_ads1115.readSensor() ) { // return true when a new average is available; it means that the new value has to be stored/processed.
-       /*
-       uint8_t testx = ads_Last_Conv_Idx ;
-       switch  ( ads_Used_For[ads_Last_Conv_Idx] ) {
-        case ADS_VOLT_1 :
-          oXs_Voltage.voltageData.mVolt[0].value = ads_Conv[ads_Last_Conv_Idx] ;
-          oXs_Voltage.voltageData.mVolt[0].available = true;
-          break ;
-        case ADS_VOLT_2 :
-         oXs_Voltage.voltageData.mVolt[1].value = ads_Conv[ads_Last_Conv_Idx] ;
-         oXs_Voltage.voltageData.mVolt[1].available = true;
-          break ;
-        case ADS_VOLT_3 :
-          oXs_Voltage.voltageData.mVolt[2].value = ads_Conv[ads_Last_Conv_Idx] ;
-          oXs_Voltage.voltageData.mVolt[2].available = true;
-          break ;
-        case ADS_VOLT_4 :
-          oXs_Voltage.voltageData.mVolt[3].value = ads_Conv[ads_Last_Conv_Idx]  ;
-          oXs_Voltage.voltageData.mVolt[3].available = true;
-          break ;
-        case ADS_VOLT_5 :
-          oXs_Voltage.voltageData.mVolt[4].value = ads_Conv[ads_Last_Conv_Idx] ;
-          oXs_Voltage.voltageData.mVolt[4].available = true;
-          break ;
-        case ADS_VOLT_6 :
-          oXs_Voltage.voltageData.mVolt[5].value = ads_Conv[ads_Last_Conv_Idx] ;
-          oXs_Voltage.voltageData.mVolt[5].available = true;
-          break ;
-        case ADS_AIRSPEED :
-          break ;
-        case ADS_CURRENT :
-          break ;   
-      }
-      */
     }
 #endif             // End GPS_INSTALLED
 
@@ -822,7 +789,7 @@ void readSensors() {
 // ********************************* Calculate all fields that could be sent
 void calculateAllFields () {
 
-// compensated Vpeed
+// compensated Vpeed based on MS4525
 #if defined(VARIO) && defined(AIRSPEED)
     if ( newVarioAvailable ) calculateDte() ; 
 #endif 
@@ -1567,15 +1534,20 @@ void ProcessPPMSignal(){
 #endif  // end else defined (VARIO) || defined (VARIO2) 
         
 
-#if defined (AIRSPEED)  // adjust compensation
+#if defined (AIRSPEED)  || defined ( ADS_AIRSPEED_BASED_ON )  // adjust compensation
         if ( (abs(ppm.value) >= (COMPENSATION_MIN_AT_PPM - 4)) && ( abs(ppm.value) <= (COMPENSATION_MAX_AT_PPM + 4)) ) {
             compensationPpmMapped =  map( constrain(abs(ppm.value), COMPENSATION_MIN_AT_PPM , COMPENSATION_MAX_AT_PPM ), COMPENSATION_MIN_AT_PPM , COMPENSATION_MAX_AT_PPM , COMPENSATION_PPM_MIN , COMPENSATION_PPM_MAX); // map value and change stepping to 10
             if (compensationPpmMapped == COMPENSATION_PPM_MIN ) compensationPpmMapped = 0 ; // force compensation to 0 when compensation = min
         }
         if ( ( ppm.value >= (AIRSPEED_RESET_AT_PPM - 4)) && ( ppm.value <= (AIRSPEED_RESET_AT_PPM + 4)) ) {
+#if defined (AIRSPEED)
             oXs_4525.airSpeedData.airspeedReset = true ; // allow a recalculation of offset 4525
+#else
+            oXs_ads1115.adsAirSpeedData.airspeedReset = true ; // allow a recalculation of offset mvxp7002 connected to ads1115
+#endif
         }    
 #endif
+
 #if defined (GLIDER_RATIO_CALCULATED_AFTER_X_SEC ) && defined ( GLIDER_RATIO_ON_AT_PPM )
          if ( (ppm.value >= (GLIDER_RATIO_ON_AT_PPM - 4)) && (ppm.value <= (GLIDER_RATIO_ON_AT_PPM + 4)) ) {
           gliderRatioPpmOn = true ;

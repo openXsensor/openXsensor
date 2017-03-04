@@ -535,7 +535,7 @@ started by Rainer Schlosshan
 *    It has 16 bits resolution, accurate internal voltage reference, a programmable gain amplifier and the ability to measure directly the voltage between 2 pins 
 *    See datatsheet of ads1115 for more details
 *    oXs can be connected to one of those device via I2C bus. It can then provide up to 4 voltage measurements named ADS_VOLT_1 ...ADS_VOLT_4
-*    oXs allows to convert one ads voltage measurement into current and consumption (when ads1115 isconnected to a current sensor) 
+*    oXs allows to convert one ads voltage measurement into current and consumption (when ads1115 is connected to a current sensor) 
 *    oXs also allows to convert one ads voltage measurement into airspeed and compensated vario (when ads1115 is connected to a differential baro sensor like the MPXV7002) 
 *          MPXV7002 sensor is a cheapier and easier to find alternative to the MS4525 sensor (but is less accurate)
 *    In order to use an ads1115 ADC, you must uncomment ACD_MEASURE and specify several sets of 4 parameters. 
