@@ -293,15 +293,15 @@ void OXS_ADS1115::ads_calculate_airspeed( int16_t ads_difPressureAdc ) {
   ads_airSpeedMillis = millis() ;
   if ( ads_airSpeedMillis  > ads_nextAirSpeedMillis){ // publish airspeed only once every xx ms
               ads_nextAirSpeedMillis = ads_airSpeedMillis + 200 ;
-              if ( ads_smoothAirSpeed >  0) {  // normally send only if positive and greater than 300 cm/sec , otherwise send 0 but for test we keep all values to check for drift  
+//              if ( ads_smoothAirSpeed >  0) {  // normally send only if positive and greater than 300 cm/sec , otherwise send 0 but for test we keep all values to check for drift  
 #ifdef AIRSPEED_IN_KMH  // uncomment this line if AIR speed has to be in knot instead of km/h
                   adsAirSpeedData.airSpeed.value = ads_smoothAirSpeed * 0.36 ; // from cm/sec to 1/10 km/h
 #else
                   adsAirSpeedData.airSpeed.value = ads_smoothAirSpeed * 0.1943844492 ; // from cm/sec to 1/10 knot/h
 #endif
-              } else {
-                  adsAirSpeedData.airSpeed.value = 0 ;
-              }    
+//              } else {
+//                  adsAirSpeedData.airSpeed.value = 0 ;
+//              }    
               adsAirSpeedData.airSpeed.available = true ; 
 // check if offset must be reset
               if (adsAirSpeedData.airspeedReset) { // adjust the offset if a reset command is received from Tx
