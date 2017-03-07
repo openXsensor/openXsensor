@@ -230,6 +230,8 @@ void OXS_ADS1115::ads_calculateCurrent(void) {
 
 
 #if defined(ADS_AIRSPEED_BASED_ON) and (ADS_AIRSPEED_BASED_ON >= ADS_VOLT1) and (ADS_AIRSPEED_BASED_ON <= ADS_VOLT_4) // this part is compiled only when required
+float ads_difPressureAdc_0 ;
+
 void OXS_ADS1115::ads_calculate_airspeed( int16_t ads_difPressureAdc ) {
   // convert ads_volt to pressure.
   static int32_t ads_pressure;
@@ -237,7 +239,7 @@ void OXS_ADS1115::ads_calculate_airspeed( int16_t ads_difPressureAdc ) {
   static float offset7002 ;
   static int16_t calibrateCount7002 ;
   static boolean calibrated7002 = false ;
-  static float ads_difPressureAdc_0 ;
+  
   static float ads_abs_deltaDifPressureAdc ;
   static float ads_smoothDifPressureAdc ;
   static float expoSmooth7002_adc_auto ;

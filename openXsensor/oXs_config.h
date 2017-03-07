@@ -34,7 +34,7 @@
 // --------- 4 - Vario settings ---------
 
 // ***** 4.1 - Connecting 1 or 2 barometric sensor(s)  *****
-//#define VARIO // set as comment if there is no vario
+#define VARIO // set as comment if there is no vario
 //#define SENSOR_IS_BMP180 // set as comment if first baro sensor is a BMP180 or BMP085 (instead of a MS5611)
 //#define SENSOR_IS_BMP280 // set as comment if first baro sensor is a BMP280 (instead of a MS5611)
 //#define VARIO2 // set as comment if there is no second vario

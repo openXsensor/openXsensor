@@ -161,7 +161,7 @@ struct ONE_MEASUREMENT mainVspeed ;
 bool newVarioAvailable2 ;
 #endif
 
-#if defined (VARIO) && defined ( AIRSPEED) 
+#if defined (VARIO) && ( defined ( AIRSPEED) || ( defined ( ADS_MEASURE ) && defined( ADS_AIRSPEED_BASED_ON ) ) )  
 struct ONE_MEASUREMENT compensatedClimbRate ;
 bool switchCompensatedClimbRateAvailable ;
 float rawCompensatedClimbRate ; 
@@ -205,6 +205,10 @@ boolean gliderRatioPpmOn = false ;
     int delayKalman[5] ;
   #endif
 #endif // end of USE_6050
+
+#if defined(ADS_AIRSPEED_BASED_ON) and (ADS_AIRSPEED_BASED_ON >= ADS_VOLT1) and (ADS_AIRSPEED_BASED_ON <= ADS_VOLT_4)
+  extern float ads_difPressureAdc_0 ;
+#endif
 
 uint16_t ppmus ; // duration of ppm in usec
 int prevPpm ; //^previous ppm
@@ -790,7 +794,7 @@ void readSensors() {
 void calculateAllFields () {
 
 // compensated Vpeed based on MS4525
-#if defined(VARIO) && defined(AIRSPEED)
+#if defined(VARIO) && ( defined ( AIRSPEED) || ( defined ( ADS_MEASURE ) && defined( ADS_AIRSPEED_BASED_ON ) ) ) 
     if ( newVarioAvailable ) calculateDte() ; 
 #endif 
 
@@ -1060,7 +1064,7 @@ bool checkFreeTime() { // return true if there is no vario or if the vario senso
 }  // ******************************* end of checkFreeTime *****************************
 
 // ********************************** Calculate dTE based on rawAltitude and differential pressure
-#if defined (VARIO) && defined ( AIRSPEED) 
+#if defined (VARIO) && ( defined ( AIRSPEED) || ( defined ( ADS_MEASURE ) && defined( ADS_AIRSPEED_BASED_ON ) ) ) 
 #define SMOOTHING_DTE_MIN SENSITIVITY_MIN
 #define SMOOTHING_DTE_MAX SENSITIVITY_MAX
 #define SMOOTHING_DTE_MIN_AT SENSITIVITY_MIN_AT
@@ -1075,7 +1079,8 @@ void calculateDte () {  // is calculated about every 2O ms each time that an alt
   static float rawCompensation ;
   static float totalEnergyLowPass ;
   static float totalEnergyHighPass ;
-  
+
+          // for 4525:
                //  difPressure (in PSI) = difPressureAdc * 0.0001525972 because 1 PSI = (8192 - 1638) = 6554 steps
                //  difPressure (Pa) =  difPressure (in PSI) * 6894.757f  = difPressureAdc * 6894.757 *  0.0001525972 = difPressureAdc * 1.0520
                // airspeed = sqr(2 * differential_pressure / air_density) ; air density = pressure  pa / (287.05 * (Temp celcius + 273.15))
@@ -1084,8 +1089,17 @@ void calculateDte () {  // is calculated about every 2O ms each time that an alt
                // compensation (m/sec) = airspeed * airspeed / 2 / 9.81 =
                //                      = 2 * 287.05 * difPressureAdc * 1.0520  * (temperature Celsius + 273.15) / pressure pa /2 /9.81 (m/sec) = 30.78252803 * difPressureAdc * Temp(kelv) / Press (Pa)
                // compensation (cm/sec) =  3078.252803 * difPressureAdc * Temp(kelv) / Press (Pa)
- 
+          // for 7002
+              // difPressure (Pa) = difPressureAdc * 0.9765625 because 2 kpa = 2048 steps ; so 1 step = 2000 / 2048 = 0.9765625
+              // compensation (m/sec) = airspeed * airspeed / 2 / 9.81 =
+              //                      = 2 * 287.05 * difPressureAdc * 0.9765625  * (temperature Celsius + 273.15) / pressure pa /2 /9.81 (m/sec) = 28.5751545 * difPressureAdc * Temp(kelv) / Press (Pa)
+              // compensation (cm/sec) =  2857.51545 * difPressureAdc * Temp(kelv) / Press (Pa)
+
+#if defined ( AIRSPEED) 
   rawCompensation = 3078.25 * oXs_4525.airSpeedData.difPressureAdc_zero * oXs_4525.airSpeedData.temperature4525  /  actualPressure    ; // 3078.25 = comp = 2 * 287.05 / 2 / 9.81 * 1.0520 * 100 * Temp / Pressure  
+#else
+    rawCompensation = 2857.52 * ads_difPressureAdc_0 * ( 293 )   /  actualPressure    ; // 3078.25 = comp = 2 * 287.05 / 2 / 9.81 * 1.0520 * 100 * Temp / Pressure ; 293 could be replaced by the temperature from mS5611  
+#endif    
   rawTotalEnergy = (oXs_MS5611.varioData.rawAltitude * 0.01) + rawCompensation * compensationPpmMapped * 0.0115; // 0.01 means 100% compensation but we add 15% because it seems that it is 15% undercompensated. 
   if (totalEnergyLowPass == 0) { 
     totalEnergyLowPass = totalEnergyHighPass = rawTotalEnergy ; 
