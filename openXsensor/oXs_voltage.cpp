@@ -1,7 +1,7 @@
 #include "oXs_voltage.h"
  
 #ifdef DEBUG
-#define DEBUGNEWVALUE
+//#define DEBUGNEWVALUE
 //#define DEBUGDELAY
 //#define DEBUGCELLCALCULATION
 //#define DEBUGLOWVOLTAGE

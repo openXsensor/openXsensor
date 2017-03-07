@@ -1,7 +1,7 @@
 // OpenXsensor https://github.com/openXsensor/
 // started by Rainer Schlosshan and maintained by Michel Strens
 
-// This is version : 8.0.3 (22 february 2017)
+// This is version : 8.0.4 (6 march 2017)
 
 //******************************************************************************************************************************************************* //
 //                                                                                                                                                        //
@@ -27,14 +27,14 @@
 #define PIN_SERIALTX      4    // The pin which transmits the serial data to the telemetry receiver, Usually pin 4 (otherwise pin 2)
 
 // --------- 3 - PPM settings ---------
-#define PIN_PPM           3       // default is 2 but my own device use 3
+//#define PIN_PPM           3       // default is 2 but my own device use 3
 #define PPM_MIN_100       980     // default 1500 - 512 ; // pulse width (usec) when TX sends a channel = -100
 #define PPM_PLUS_100      1990    // default 1500 + 512 ; // pulse width (usec) when TX sends a channel = +100
 
 // --------- 4 - Vario settings ---------
 
 // ***** 4.1 - Connecting 1 or 2 barometric sensor(s)  *****
-#define VARIO // set as comment if there is no vario
+//#define VARIO // set as comment if there is no vario
 //#define SENSOR_IS_BMP180 // set as comment if first baro sensor is a BMP180 or BMP085 (instead of a MS5611)
 //#define SENSOR_IS_BMP280 // set as comment if first baro sensor is a BMP280 (instead of a MS5611)
 //#define VARIO2 // set as comment if there is no second vario
@@ -92,7 +92,7 @@
 //#define REFERENCE_VOLTAGE 4970    // set value in milliVolt; if commented, oXs will use or 1100 (if internal ref is used) or 5000 (if internal ref is not used) 
 
 // ***** 6.2 - Voltage parameters *****
-#define PIN_VOLTAGE         2  , 3     , 1   , 8    , 8   , 8               // set this line as comment if no one voltage have to be measured, set the value to 8 for the voltage(s) not to be measured.
+//#define PIN_VOLTAGE         2  , 3     , 1   , 8    , 8   , 8               // set this line as comment if no one voltage have to be measured, set the value to 8 for the voltage(s) not to be measured.
 #define RESISTOR_TO_GROUND  36 , 20    , 30  , 19.8 , 50  , 0               // set value to 0 when no divider is used for a voltage, can contains decimals 
 #define RESISTOR_TO_VOLTAGE 670 , 100.1 , 200 , 39   , 500 , 0              // set value to 0 when no divider is used for a voltage, can contains decimals 
 #define OFFSET_VOLTAGE      0 , 0     , 0   , 0    , 0   , 0                // optionnal, can be negative, must be integer

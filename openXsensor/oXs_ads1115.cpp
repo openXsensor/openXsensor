@@ -4,10 +4,12 @@
   //#define DEBUGADS1115SCAN
   //#define DEBUGADS1115EACHREAD
   //#define DEBUGADS1115REQUESTCONV
-  #define DEBUGADS1115MVOLT
+  //#define DEBUGADS1115MVOLT
+  //#define DEBUGADSAIRSPEEDDATA 
 #endif
 
 //#define DEBUG_FORCE_ADS_VOLT_1_4_WITHOUT_ADS1115
+//#define DEBUG_AIRSPEED_WITH_DUMMY_ADS_DATA
 
 extern unsigned long micros( void ) ;
 extern unsigned long millis( void ) ;
@@ -242,7 +244,11 @@ void OXS_ADS1115::ads_calculate_airspeed( int16_t ads_difPressureAdc ) {
   static int32_t ads_smoothAirSpeed ; 
   uint32_t ads_airSpeedMillis ;
   static uint32_t ads_nextAirSpeedMillis ;
-   
+//#define DEBUG_AIRSPEED_WITH_DUMMY_ADS_DATA
+#ifdef DEBUG_AIRSPEED_WITH_DUMMY_ADS_DATA
+  static int16_t dummy_ads_value ; 
+  ads_difPressureAdc = ((millis() / 1000 ) % (100) ) * 300 ; 
+#endif 
   if ( calibrated7002 == false) {
        calibrateCount7002++ ;
        if (calibrateCount7002 == 256 ) { // after 256 reading , we can calculate the offset 
@@ -253,9 +259,9 @@ void OXS_ADS1115::ads_calculate_airspeed( int16_t ads_difPressureAdc ) {
        } // end calibration
   }  else { // sensor is calibrated
                     ads_difPressureAdc_0 = ( ads_difPressureAdc - offset7002 )  ;
-#define FILTERING7002_ADC_MIN        0.001   // 
-#define FILTERING7002_ADC_MAX        0.01 // 
-#define FILTERING7002_ADC_MIN_AT       10 // when abs(delta between ADC and current value) is less than MIN_AT , apply MIN  
+#define FILTERING7002_ADC_MIN        0.001 // 
+#define FILTERING7002_ADC_MAX        0.01  // 
+#define FILTERING7002_ADC_MIN_AT       10  // when abs(delta between ADC and current value) is less than MIN_AT , apply MIN  
 #define FILTERING7002_ADC_MAX_AT       100 // when abs(delta between ADC and current value) is more than MAX_AT , apply MAX (interpolation in between)
                     ads_abs_deltaDifPressureAdc =  abs(ads_difPressureAdc_0 - ads_smoothDifPressureAdc) ;
                     if (ads_abs_deltaDifPressureAdc <= FILTERING7002_ADC_MIN_AT) {
@@ -272,14 +278,14 @@ void OXS_ADS1115::ads_calculate_airspeed( int16_t ads_difPressureAdc ) {
                // air_mass_kg_per_m3 = pressure_in_pa / (287.05 * (Temp celcius + 273.15))
                // and differantial_pressure_Pa =  ((smoothDifPressureAdc  ) * 2048 / 32768) ;  // with 7002, 1 mvolt = 1 pa and ads1115 ADC gives 32768 when volt = 2048 mvolt; so 1 step ADC = 2048 / 32768
                 //2048 is used because we supposed that ads gain is set on 2048 ; MPXV7002 provides 1 mvolt per pa wit 5 volt Vcc; it is ratiometric so there should be some Vcc correction
-               // so airspeed m/sec =sqr( 2 * 287.05 *  2048 / 32768 * smoothDifPressureAdc * (temperature Celsius + 273.15) / pressure_in_pa 
+               // so airspeed m/sec =sqr( 2 * 287.05 *  2048 / 32768 * smoothDifPressureAdc * (temperature Celsius + 273.15) / pressure_in_pa )
                // rawAirSpeed cm/sec =  5,99 * 100 * sqrt( (float) abs(smoothDifPressureAdc) * temperature4525  /  actualPressure) ); // in cm/sec ; actual pressure must be in Pa (so 101325 about at sea level
                //                    =  32.32 * sqrt( (float) abs(smoothDifPressureAdc) ); // in cm/sec ; if pressure is standard = 101325 and temp = 15 C°)
                //                    =  10256 * sqrt( (float) abs(smoothDifPressureAdc) /  actualPressure) ); // in cm/sec ; temp is supposed to be 20 C°, pressure is in Pa
 #ifdef AIRSPEED_AT_SEA_LEVEL_AND_15C
                ads_smoothAirSpeed =  32.32 * sqrt( (float) ( abs(ads_smoothDifPressureAdc) ) ); // indicated airspeed is calculated at 15 Celsius and 101325 pascal
 #else               
-               ads_smoothAirSpeed =  10256 * sqrt( (float) ( abs(_ads_smoothDifPressureAdc)  /  actualPressure) ); // in cm/sec ; actual pressure must be in pa (so 101325 about at sea level)
+               ads_smoothAirSpeed =  10256.0 * sqrt( (float) ( abs(_ads_smoothDifPressureAdc)  /  (float) actualPressure) ); // in cm/sec ; actual pressure must be in pa (so 101325 about at sea level)
 #endif              
              if ( ads_smoothDifPressureAdc < 0 ) ads_smoothAirSpeed = - ads_smoothAirSpeed ; // apply the sign
       
@@ -302,6 +308,25 @@ void OXS_ADS1115::ads_calculate_airspeed( int16_t ads_difPressureAdc ) {
                     offset7002 =  offset7002  + ads_smoothDifPressureAdc ;
                     adsAirSpeedData.airspeedReset = false ; // avoid that offset is changed again and again if PPM do not send a command
               }
+
+#ifdef DEBUGADSAIRSPEEDDATA
+                  static bool firstRawData = true ;
+                  if ( firstRawData ) {
+                          printer->println(F("at,  difPressureAdc ,difPressADC_0 , ads_smoothDifPressureAdc , actualPressure , adsAirSpeedData.airSpeed ")) ;
+                        firstRawData = false ;
+                  } else {
+                        printer->print( ads_airSpeedMillis ); printer->print(F(" , "));
+                        printer->print( ads_difPressureAdc ); printer->print(F(" , "));
+                        printer->print( ads_difPressureAdc_0); printer->print(F(" , "));
+                        printer->print( ads_smoothDifPressureAdc ); printer->print(F(" , ")); 
+                        printer->print( actualPressure ); printer->print(F(" , ")); 
+                        printer->print( ads_smoothAirSpeed * 3.6 / 100 ); printer->print(F(" , "));
+                         
+                        printer->println(" ") ; 
+                  }       
+#endif
+
+
  
   } // end test on millis()
   
