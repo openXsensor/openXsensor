@@ -107,7 +107,7 @@ boolean OXS_ADS1115::readSensor() {  // return true when there is a new average 
       ads_requestNextConv() ;
       return true ; 
     }  
-#else    
+#else  // normal code = when DEBUG_FORCE_ADS_VOLT_1_4_WITHOUT_ADS1115 is not activated
     if( I2CErrorCodeAds1115 == 0 ) { // if there is no error on previous I2C request
       I2CErrorCodeAds1115 = I2c.write(ads_Addr , 0X0 ) ; // send the Address, 0 = conversion register (in order to be able to read the conversion register)
       if( I2CErrorCodeAds1115 == 0 ) { // if there is no error on previous I2C request
@@ -230,7 +230,8 @@ void OXS_ADS1115::ads_calculateCurrent(void) {
 
 
 #if defined(ADS_AIRSPEED_BASED_ON) and (ADS_AIRSPEED_BASED_ON >= ADS_VOLT1) and (ADS_AIRSPEED_BASED_ON <= ADS_VOLT_4) // this part is compiled only when required
-float ads_difPressureAdc_0 ;
+float ads_sumDifPressureAdc_0 ;
+uint8_t ads_cntDifPressureAdc_0 ;
 
 void OXS_ADS1115::ads_calculate_airspeed( int16_t ads_difPressureAdc ) {
   // convert ads_volt to pressure.
@@ -239,7 +240,7 @@ void OXS_ADS1115::ads_calculate_airspeed( int16_t ads_difPressureAdc ) {
   static float offset7002 ;
   static int16_t calibrateCount7002 ;
   static boolean calibrated7002 = false ;
-  
+  static float ads_difPressureAdc_0 ;
   static float ads_abs_deltaDifPressureAdc ;
   static float ads_smoothDifPressureAdc ;
   static float expoSmooth7002_adc_auto ;
@@ -261,6 +262,8 @@ void OXS_ADS1115::ads_calculate_airspeed( int16_t ads_difPressureAdc ) {
        } // end calibration
   }  else { // sensor is calibrated
                     ads_difPressureAdc_0 = ( ads_difPressureAdc - offset7002 )  ;
+                    ads_sumDifPressureAdc_0 += ads_difPressureAdc_0 ;
+                    ads_cntDifPressureAdc_0++ ;
 #define FILTERING7002_ADC_MIN        0.001 // 
 #define FILTERING7002_ADC_MAX        0.01  // 
 #define FILTERING7002_ADC_MIN_AT       10  // when abs(delta between ADC and current value) is less than MIN_AT , apply MIN  

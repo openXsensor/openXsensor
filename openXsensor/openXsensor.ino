@@ -207,7 +207,8 @@ boolean gliderRatioPpmOn = false ;
 #endif // end of USE_6050
 
 #if defined(ADS_AIRSPEED_BASED_ON) and (ADS_AIRSPEED_BASED_ON >= ADS_VOLT1) and (ADS_AIRSPEED_BASED_ON <= ADS_VOLT_4)
-  extern float ads_difPressureAdc_0 ;
+  extern float ads_sumDifPressureAdc_0 ;
+  extern uint8_t ads_cntDifPressureAdc_0 ;
 #endif
 
 uint16_t ppmus ; // duration of ppm in usec
@@ -1098,7 +1099,11 @@ void calculateDte () {  // is calculated about every 2O ms each time that an alt
 #if defined ( AIRSPEED) 
   rawCompensation = 3078.25 * oXs_4525.airSpeedData.difPressureAdc_zero * oXs_4525.airSpeedData.temperature4525  /  actualPressure    ; // 3078.25 = comp = 2 * 287.05 / 2 / 9.81 * 1.0520 * 100 * Temp / Pressure  
 #else
-    rawCompensation = 2857.52 * ads_difPressureAdc_0 * ( 293 )   /  actualPressure    ; // 3078.25 = comp = 2 * 287.05 / 2 / 9.81 * 1.0520 * 100 * Temp / Pressure ; 293 could be replaced by the temperature from mS5611  
+    if ( ads_cntDifPressureAdc_0 > 0 ) {
+        ads_sumDifPressureAdc_0 = ads_sumDifPressureAdc_0 / ads_cntDifPressureAdc_0 ; // we use the average of airspeed pressure when possible and we keep the average as first value for next loop
+        ads_cntDifPressureAdc_0 = 1 ;  // so cnt is reset to 1 and not to 0
+        rawCompensation = 2857.52 * ads_sumDifPressureAdc_0 * ( 293 )   /  actualPressure    ; // 3078.25 = comp = 2 * 287.05 / 2 / 9.81 * 1.0520 * 100 * Temp / Pressure ; 293 could be replaced by the temperature from mS5611  
+    }
 #endif    
   rawTotalEnergy = (oXs_MS5611.varioData.rawAltitude * 0.01) + rawCompensation * compensationPpmMapped * 0.0115; // 0.01 means 100% compensation but we add 15% because it seems that it is 15% undercompensated. 
   if (totalEnergyLowPass == 0) { 
