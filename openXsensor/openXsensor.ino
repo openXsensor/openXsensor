@@ -168,7 +168,7 @@ float rawCompensatedClimbRate ;
 
 #endif
 
-#if defined (VARIO) && ( defined (VARIO2) || defined ( AIRSPEED) || defined (USE_6050) )
+#if defined (VARIO) && ( defined (VARIO2) || ( defined ( AIRSPEED) || (defined (ADS_MEASURE) && defined (ADS_AIRSPEED_BASED_ON) ) ) || defined (USE_6050) )
 struct ONE_MEASUREMENT switchVSpeed ;
 #endif
 
@@ -491,7 +491,7 @@ void setup(){
   oXs_Out.currentData=&oXs_Current.currentData;
 #endif
 
-#if defined (VARIO) && defined ( AIRSPEED)
+#if defined (VARIO) &&  ( defined ( AIRSPEED) || (defined (ADS_MEASURE) && defined (ADS_AIRSPEED_BASED_ON) ) )
   compensatedClimbRate.available = false;
 //  compensatedClimbRate = 0;
 #endif
@@ -863,7 +863,7 @@ void calculateAllFields () {
 
 
 // calculate selected Vspeed based on ppm
-#if defined (VARIO) && ( defined (VARIO2) || defined (AIRSPEED) || defined (USE_6050) ) && defined (VARIO_SECONDARY ) && defined( VARIO_PRIMARY )  && defined (PIN_PPM)
+#if defined (VARIO) && ( defined (VARIO2) || defined (AIRSPEED) || defined (USE_6050 ) || (defined (ADS_MEASURE) && defined (ADS_AIRSPEED_BASED_ON)  ) ) && defined (VARIO_SECONDARY ) && defined( VARIO_PRIMARY )  && defined (PIN_PPM)
   if (( selectedVario == FIRST_BARO ) && ( newVarioAvailable ) )  {
       switchVSpeed.value = oXs_MS5611.varioData.climbRate.value ;
       switchVSpeed.available = true ;
@@ -878,7 +878,7 @@ void calculateAllFields () {
       switchVSpeed.available = true ;
   }
   #endif // end of VARIO2
-  #if  defined (AIRSPEED)
+  #if  defined (AIRSPEED) || ( defined (ADS_MEASURE) && defined (ADS_AIRSPEED_BASED_ON) )
   else if ( ( selectedVario == AIRSPEED_COMPENSATED ) && ( newVarioAvailable )) {
       switchVSpeed.value = compensatedClimbRate.value ;
       switchVSpeed.available = true ;  
@@ -888,14 +888,14 @@ void calculateAllFields () {
       switchCompensatedClimbRateAvailable = false ; // this is the normal process in order to avoid sending twice the same data.
    #endif  // end  defined (SWITCH_VARIO_GET_PRIO)   
   } 
-  #endif // end  defined (AIRSPEED) 
+  #endif // end  defined (AIRSPEED) || (defined (ADS_MEASURE) && defined (ADS_AIRSPEED_BASED_ON) )
   #if  defined (USE_6050)
   else if ( ( selectedVario == BARO_AND_IMU ) && ( switchVTrackAvailable )) {
       switchVSpeed.value = vSpeedImu.value ;
       switchVSpeed.available = true ;
   }
   #endif  // end USE_6050
-#endif // end  defined (VARIO) && ( defined (VARIO2) || defined (AIRSPEED) ) && defined (VARIO_SECONDARY ) && defined( VARIO_PRIMARY ) && defined (VARIO_SECONDARY) && defined (PIN_PPM)
+#endif // end  defined (VARIO) && ( defined (VARIO2) || defined (AIRSPEED) || defined (USE_6050 ) || (defined (ADS_MEASURE) && defined (ADS_AIRSPEED_BASED_ON) ) && defined (VARIO_SECONDARY ) && defined( VARIO_PRIMARY ) && defined (VARIO_SECONDARY) && defined (PIN_PPM)
 
 
 // mainVSpeed (calculated based on the setup in config)
@@ -908,13 +908,13 @@ void calculateAllFields () {
 #elif defined(VARIO) && defined(VARIO2) && (VSPEED_SOURCE == AVERAGE_FIRST_SECOND)
     mainVspeed.value = averageVSpeed.value ;
         mainVspeed.available = averageVSpeed.available ;
-#elif defined(VARIO) && defined(AIRSPEED) && (VSPEED_SOURCE == AIRSPEED_COMPENSATED)
+#elif defined(VARIO) && ( defined(AIRSPEED) || (defined (ADS_MEASURE) && defined (ADS_AIRSPEED_BASED_ON) ) )  && (VSPEED_SOURCE == AIRSPEED_COMPENSATED)
     mainVspeed.value = compensatedClimbRate.value ;
     mainVspeed.available = compensatedClimbRate.available ;
 #elif defined(VARIO) && defined(USE_6050) && (VSPEED_SOURCE == BARO_AND_IMU)
     mainVspeed.value = vSpeedImu.value ;
     mainVspeed.available = vSpeedImu.available ;
-#elif defined(VARIO) && ( defined (VARIO2) || defined (AIRSPEED) || defined (USE_6050) ) && defined (VARIO_SECONDARY ) && defined( VARIO_PRIMARY )  && defined (PIN_PPM)  && (VSPEED_SOURCE == PPM_SELECTION)
+#elif defined(VARIO) && ( defined (VARIO2) || defined (AIRSPEED) || defined (USE_6050) || (defined (ADS_MEASURE) && defined (ADS_AIRSPEED_BASED_ON) ) )&& defined (VARIO_SECONDARY ) && defined( VARIO_PRIMARY )  && defined (PIN_PPM)  && (VSPEED_SOURCE == PPM_SELECTION)
     mainVspeed.value = switchVSpeed.value   ;
     mainVspeed.available = switchVSpeed.available   ;
 #endif
@@ -938,7 +938,7 @@ void calculateAllFields () {
 //  fill test1 and test2 with DTE and PPM_COMPENSATION
 #define DTE_IN_TEST1
 #define PPM_COMPENSATION_IN_TEST2
-#if defined(VARIO) && defined(AIRSPEED) 
+#if defined(VARIO) && ( defined(AIRSPEED) || (defined (ADS_MEASURE) && defined (ADS_AIRSPEED_BASED_ON) ) )
 #ifdef DTE_IN_TEST1
   test1.value = compensatedClimbRate.value ;
   test1.available = compensatedClimbRate.available ; 
@@ -1096,9 +1096,9 @@ void calculateDte () {  // is calculated about every 2O ms each time that an alt
               //                      = 2 * 287.05 * difPressureAdc * 0.9765625  * (temperature Celsius + 273.15) / pressure pa /2 /9.81 (m/sec) = 28.5751545 * difPressureAdc * Temp(kelv) / Press (Pa)
               // compensation (cm/sec) =  2857.51545 * difPressureAdc * Temp(kelv) / Press (Pa)
 
-#if defined ( AIRSPEED) 
+#if defined ( AIRSPEED) // when 4525 is used
   rawCompensation = 3078.25 * oXs_4525.airSpeedData.difPressureAdc_zero * oXs_4525.airSpeedData.temperature4525  /  actualPressure    ; // 3078.25 = comp = 2 * 287.05 / 2 / 9.81 * 1.0520 * 100 * Temp / Pressure  
-#else
+#else // when 7002 is used
     if ( ads_cntDifPressureAdc_0 > 0 ) {
         ads_sumDifPressureAdc_0 = ads_sumDifPressureAdc_0 / ads_cntDifPressureAdc_0 ; // we use the average of airspeed pressure when possible and we keep the average as first value for next loop
         ads_cntDifPressureAdc_0 = 1 ;  // so cnt is reset to 1 and not to 0
@@ -1157,7 +1157,7 @@ void calculateDte () {  // is calculated about every 2O ms each time that an alt
 #endif    
    
 } // end calculateDte  
-#endif    // #if defined (VARIO) && defined ( AIRSPEED) 
+#endif    // #if defined (VARIO) ( defined ( AIRSPEED) || ( defined ( ADS_MEASURE ) && defined( ADS_AIRSPEED_BASED_ON ) ) )  
 // ***************************** end calculate Dte ***********************************************
 
 
@@ -1532,7 +1532,7 @@ void ProcessPPMSignal(){
 #else // so if Sequence is not used and so PPM is used for Vario sensitivity , vario compensation , airspeed reset , glider ratio and/or vario source selection 
     if (ppm.value == prevPpm) {  // test if new value is equal to previous in order to avoid unstabel handling 
     
-#if defined ( VARIO_PRIMARY) && defined ( VARIO_SECONDARY)  && defined (VARIO ) && ( defined (VARIO2) || defined (AIRSPEED) || defined (USE_6050) )  && defined (PIN_PPM)
+#if defined ( VARIO_PRIMARY) && defined ( VARIO_SECONDARY)  && defined (VARIO ) && ( defined (VARIO2) || ( defined ( AIRSPEED) || ( defined ( ADS_MEASURE ) && defined( ADS_AIRSPEED_BASED_ON ) ) )  || defined (USE_6050) )  && defined (PIN_PPM)
         if ( (ppm.value >= (SWITCH_VARIO_MIN_AT_PPM - 4)) && (ppm.value <= (SWITCH_VARIO_MAX_AT_PPM + 4)) ) {
           selectedVario = VARIO_PRIMARY ;
         } else if ( ( ppm.value <= (4 - SWITCH_VARIO_MIN_AT_PPM)) && (ppm.value >= (- 4 - SWITCH_VARIO_MAX_AT_PPM)) ) {
@@ -1553,15 +1553,15 @@ void ProcessPPMSignal(){
 #endif  // end else defined (VARIO) || defined (VARIO2) 
         
 
-#if defined (AIRSPEED)  || defined ( ADS_AIRSPEED_BASED_ON )  // adjust compensation
+#if ( defined ( AIRSPEED) || ( defined ( ADS_MEASURE ) && defined( ADS_AIRSPEED_BASED_ON ) ) )   // adjust compensation
         if ( (abs(ppm.value) >= (COMPENSATION_MIN_AT_PPM - 4)) && ( abs(ppm.value) <= (COMPENSATION_MAX_AT_PPM + 4)) ) {
             compensationPpmMapped =  map( constrain(abs(ppm.value), COMPENSATION_MIN_AT_PPM , COMPENSATION_MAX_AT_PPM ), COMPENSATION_MIN_AT_PPM , COMPENSATION_MAX_AT_PPM , COMPENSATION_PPM_MIN , COMPENSATION_PPM_MAX); // map value and change stepping to 10
             if (compensationPpmMapped == COMPENSATION_PPM_MIN ) compensationPpmMapped = 0 ; // force compensation to 0 when compensation = min
         }
         if ( ( ppm.value >= (AIRSPEED_RESET_AT_PPM - 4)) && ( ppm.value <= (AIRSPEED_RESET_AT_PPM + 4)) ) {
-#if defined (AIRSPEED)
+#if defined (AIRSPEED) // if 4525 is used
             oXs_4525.airSpeedData.airspeedReset = true ; // allow a recalculation of offset 4525
-#else
+#else  // when 7002 is used
             oXs_ads1115.adsAirSpeedData.airspeedReset = true ; // allow a recalculation of offset mvxp7002 connected to ads1115
 #endif
         }    
