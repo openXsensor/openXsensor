@@ -291,7 +291,7 @@ void OXS_ADS1115::ads_calculate_airspeed( int16_t ads_difPressureAdc ) {
 #ifdef AIRSPEED_AT_SEA_LEVEL_AND_15C
                ads_smoothAirSpeed =  32.32 * sqrt( (float) ( abs(ads_smoothDifPressureAdc) ) ); // indicated airspeed is calculated at 15 Celsius and 101325 pascal
 #else               
-               ads_smoothAirSpeed =  10256.0 * sqrt( (float) ( abs(_ads_smoothDifPressureAdc)  /  (float) actualPressure) ); // in cm/sec ; actual pressure must be in pa (so 101325 about at sea level)
+               ads_smoothAirSpeed =  10256.0 * sqrt( (float) ( abs(ads_smoothDifPressureAdc)  /  (float) actualPressure) ); // in cm/sec ; actual pressure must be in pa (so 101325 about at sea level)
 #endif              
              if ( ads_smoothDifPressureAdc < 0 ) ads_smoothAirSpeed = - ads_smoothAirSpeed ; // apply the sign
       

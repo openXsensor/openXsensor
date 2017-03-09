@@ -74,7 +74,7 @@
 #define GLIDER_RATIO_ON_AT_PPM -100      // Glider ratio is calculated when PPM has this value ; keep as comment when ppm is not used 
 // --------- 5 - Airspeed settings ---------
 //#define AIRSPEED    MS4525
-#define AIRSPEED_AT_SEA_LEVEL_AND_15C // if this line is commented, airspeed is calculated using baro pressure and temperature (so being "true" airspeed instead of normalised airspeed)      
+//#define AIRSPEED_AT_SEA_LEVEL_AND_15C // if this line is commented, airspeed is calculated using baro pressure and temperature (so being "true" airspeed instead of normalised airspeed)      
 //#define AIRSPEED_IN_KMH  // uncomment this line if airspeed has to be in km/h instead of knot/h ( except some old versions, openTx expects knot/h) 
 
 #define AIRSPEED_RESET_AT_PPM   100
