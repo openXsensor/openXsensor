@@ -272,7 +272,7 @@ void initMeasurement() {
 // pointer to A4                                    
 #if defined(A4_SOURCE) && defined(PIN_VOLTAGE) && ( A4_SOURCE == VOLT_1 || A4_SOURCE == VOLT_2 || A4_SOURCE == VOLT_3 || A4_SOURCE == VOLT_4 || A4_SOURCE == VOLT_5 || A4_SOURCE == VOLT_6 )
     p_measurements[9] =  &oXs_Voltage.voltageData.mVolt[A4_SOURCE - VOLT_1];
-#elif defined(A3_SOURCE) && defined(ADS_MEASURE) && ( A4_SOURCE == ADS_VOLT_1 || A4_SOURCE == ADS_VOLT_2 || A4_SOURCE == ADS_VOLT_3 || A4_SOURCE == ADS_VOLT_4 )
+#elif defined(A4_SOURCE) && defined(ADS_MEASURE) && ( A4_SOURCE == ADS_VOLT_1 || A4_SOURCE == ADS_VOLT_2 || A4_SOURCE == ADS_VOLT_3 || A4_SOURCE == ADS_VOLT_4 )
     p_measurements[9] =  &ads_Conv[A4_SOURCE - ADS_VOLT_1];
 #else
     p_measurements[9] = &no_data ;

@@ -276,7 +276,7 @@ void OXS_ADS1115::ads_calculate_airspeed( int16_t ads_difPressureAdc ) {
                     } else {
                        expoSmooth7002_adc_auto = FILTERING7002_ADC_MIN + ( FILTERING7002_ADC_MAX - FILTERING7002_ADC_MIN) * (ads_abs_deltaDifPressureAdc - FILTERING7002_ADC_MIN_AT) / (FILTERING7002_ADC_MAX_AT - FILTERING7002_ADC_MIN_AT) ;
                     }
-                    if ( ( ads_smoothDifPressureAdc <2 ) && ( ads_smoothDifPressureAdc > -2 ) ) expoSmooth7002_adc_auto *= 0.2 ; 
+                    if ( ( ads_smoothDifPressureAdc <=2 ) && ( ads_smoothDifPressureAdc >= -2 ) ) expoSmooth7002_adc_auto *= 0.2 ; 
                     ads_smoothDifPressureAdc += expoSmooth7002_adc_auto * ( ads_difPressureAdc_0 - ads_smoothDifPressureAdc ) ; // 
 
                // calculate airspeed based on pressure, altitude and temperature
