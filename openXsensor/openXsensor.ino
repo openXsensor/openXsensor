@@ -1094,7 +1094,7 @@ void calculateDte () {  // is calculated about every 2O ms each time that an alt
               // difPressure (Pa) = difPressureAdc * 0.061035156 because 2 kpa = 32768 steps ; so 1 step = 2000 / 32768 = 0.061035156
               // compensation (m/sec) = airspeed * airspeed / 2 / 9.81 =
               //                      = 2 * 287.05 * difPressureAdc * 0.061035156  * (temperature Celsius + 273.15) / pressure pa /2 /9.81 (m/sec) = 1.785947149 * difPressureAdc * Temp(kelv) / Press (Pa)
-              // compensation (cm/sec) = 1.785947149 * difPressureAdc * Temp(kelv) / Press (Pa)
+              // compensation (cm/sec) = 178.5947149 * difPressureAdc * Temp(kelv) / Press (Pa)
 
 #if defined ( AIRSPEED) // when 4525 is used
   rawCompensation = 3078.25 * oXs_4525.airSpeedData.difPressureAdc_zero * oXs_4525.airSpeedData.temperature4525  /  actualPressure    ; // 3078.25 = comp = 2 * 287.05 / 2 / 9.81 * 1.0520 * 100 * Temp / Pressure  
@@ -1102,7 +1102,7 @@ void calculateDte () {  // is calculated about every 2O ms each time that an alt
     if ( ads_cntDifPressureAdc_0 > 0 ) {
         ads_sumDifPressureAdc_0 = ads_sumDifPressureAdc_0 / ads_cntDifPressureAdc_0 ; // we use the average of airspeed pressure when possible and we keep the average as first value for next loop
         ads_cntDifPressureAdc_0 = 1 ;  // so cnt is reset to 1 and not to 0
-        rawCompensation = 1.785947149 * ads_sumDifPressureAdc_0 * ( 293 )   /  actualPressure    ; //  293 could be replaced by the temperature from mS5611  
+        rawCompensation = 178.5947149 * ads_sumDifPressureAdc_0 * ( 293 )   /  actualPressure    ; //  293 could be replaced by the temperature from mS5611  
     }
 #endif    
   rawTotalEnergy = (oXs_MS5611.varioData.rawAltitude * 0.01) + rawCompensation * compensationPpmMapped * 0.0115; // 0.01 means 100% compensation but we add 15% because it seems that it is 15% undercompensated. 
