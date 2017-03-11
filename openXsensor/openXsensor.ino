@@ -1095,6 +1095,18 @@ void calculateDte () {  // is calculated about every 2O ms each time that an alt
               // compensation (m/sec) = airspeed * airspeed / 2 / 9.81 =
               //                      = 2 * 287.05 * difPressureAdc * 0.061035156  * (temperature Celsius + 273.15) / pressure pa /2 /9.81 (m/sec) = 1.785947149 * difPressureAdc * Temp(kelv) / Press (Pa)
               // compensation (cm/sec) = 178.5947149 * difPressureAdc * Temp(kelv) / Press (Pa)
+#define DEBUG_DTE
+#if defined  ( DEBUG_DTE ) && ( defined ( ADS_MEASURE ) && defined( ADS_AIRSPEED_BASED_ON ) )
+                  static bool firstDteData = true ;
+                  if ( firstDteData ) {
+                          Serial.println(F("at , difPressADC_0 , cnt , rawAlt , rawComp , rawEnerg ")) ;
+                        firstDteData = false ;
+                  } 
+                  Serial.print( millis() ); Serial.print(F(" , "));
+                  Serial.print( ads_sumDifPressureAdc_0 ); Serial.print(F(" , "));
+                  Serial.print( ads_cntDifPressureAdc_0); Serial.print(F(" , "));
+#endif
+
 
 #if defined ( AIRSPEED) // when 4525 is used
   rawCompensation = 3078.25 * oXs_4525.airSpeedData.difPressureAdc_zero * oXs_4525.airSpeedData.temperature4525  /  actualPressure    ; // 3078.25 = comp = 2 * 287.05 / 2 / 9.81 * 1.0520 * 100 * Temp / Pressure  
@@ -1104,11 +1116,20 @@ void calculateDte () {  // is calculated about every 2O ms each time that an alt
         ads_cntDifPressureAdc_0 = 1 ;  // so cnt is reset to 1 and not to 0
         rawCompensation = 178.5947149 * ads_sumDifPressureAdc_0 * ( 293 )   /  actualPressure    ; //  293 could be replaced by the temperature from mS5611  
     }
-#endif    
+#endif   
   rawTotalEnergy = (oXs_MS5611.varioData.rawAltitude * 0.01) + rawCompensation * compensationPpmMapped * 0.0115; // 0.01 means 100% compensation but we add 15% because it seems that it is 15% undercompensated. 
   if (totalEnergyLowPass == 0) { 
     totalEnergyLowPass = totalEnergyHighPass = rawTotalEnergy ; 
   }
+#if defined  ( DEBUG_DTE ) && ( defined ( ADS_MEASURE ) && defined( ADS_AIRSPEED_BASED_ON ) )
+                  Serial.print( oXs_MS5611.varioData.rawAltitude * 0.01 ); Serial.print(F(" , ")); 
+                  Serial.print( rawCompensation ); Serial.print(F(" , ")); 
+                  Serial.print( rawTotalEnergy ); Serial.print(F(" , "));
+                 
+                  Serial.println(" ") ; 
+                         
+#endif
+
 //  test1.value = rawCompensation; 
 //  test1.available = true ; 
   
