@@ -41,7 +41,7 @@ float linear_acceleration_x;
 float linear_acceleration_y;
 float linear_acceleration_z;
 float world_linear_acceleration_z ;
-bool newImuAvailable;
+bool newImuAvailable = false ;
 
 /*
 // ***************************************

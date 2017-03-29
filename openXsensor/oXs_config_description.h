@@ -904,7 +904,7 @@ started by Rainer Schlosshan
 * This other type of vertical speed is available in the field "VERTICAL_SPEED_I". In Frsky protocol, it is possible to transmit it e.g. as Vspd.  
 * It is also possible to assign it in  "VARIO_PRIMARY" or "VARIO_SECONDARY"  and so to switch between 2 vario sources from the Tx (using a ppm channel) 
 * In order to get best results from IMU, it is required to calibrate the accelerometer offsets. To do so, please :
-*    - upload a version of oXs firmware whith the line #define DISPLAY_ACC_OFFSET is uncommented
+*    - upload a version of oXs firmware whith the line #define DISPLAY_ACC_OFFSET uncommented
 *    - let oXs runs while connected to the PC (via USB serial interface = FTDI)
 *    - open Arduino IDE terminal (press CTRL + SHIFT + M simultaniously)
 *    - take care to set the baud rate to 115200 (or 38400 if GPS is activated too)

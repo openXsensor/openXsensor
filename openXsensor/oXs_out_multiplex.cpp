@@ -502,7 +502,7 @@ ISR(TIMER1_COMPA_vect)
 
         case RECEIVE :  // Start bit has been received and we will read bits of data receiving, LSB first.     
               OCR1A += TICKS2WAITONEMULTIPLEX ;                    // Count one period after the falling edge is trigged.
-              uint8_t data ;                     // Use a temporary local storage (it save some bytes (and perhaps time)
+              uint8_t data ;                     // Use a temporary local storage (it saves some bytes (and perhaps time)
               data = SwUartRXBitCount ;
               if( data < 8 ) {                                     //If 8 bits are not yet read
                   SwUartRXBitCount = data + 1 ;
@@ -523,12 +523,12 @@ ISR(TIMER1_COMPA_vect)
                           TxMultiplexData[1] = pdata->mbData[SwUartRXData].response[1] ;
                           TxMultiplexData[2] = pdata->mbData[SwUartRXData].response[2] ;
                           if ( (TxMultiplexData[2] != (MB_NOVALUE>>8)) || (TxMultiplexData[1] != (MB_NOVALUE & 0xff)) ) pdata->mbData [ SwUartRXData ] . active = NOT_AVAILABLE ;      // this line could be set in comment if we want to send same data and not only when a new calculation is done
-                              state = TxPENDING ;
-                              OCR1A += ( DELAY_1600 - TICKS2WAITONEMULTIPLEX) ;      // 1.6ms gap before sending
-                          } else {                                                           // Status was not AVAILABLE, so there are no data ready to send
-                              state = WAITING ;
-                              OCR1A += DELAY_4000 ;   // 4mS gap before listening (take care that 4096 is the max we can wait because timer 1 is 16 bits and prescaler = 1)
-                          }
+                          state = TxPENDING ;
+                          OCR1A += ( DELAY_1600 - TICKS2WAITONEMULTIPLEX) ;      // 1.6ms gap before sending
+                      } else {                                                           // Status was not AVAILABLE, so there are no data ready to send
+                          state = WAITING ;
+                          OCR1A += DELAY_4000 ;   // 4mS gap before listening (take care that 4096 is the max we can wait because timer 1 is 16 bits and prescaler = 1)
+                      }
                    } // end receiving 1 byte
            } // End receiving  1 bit or 1 byte (8 bits)
         break ;

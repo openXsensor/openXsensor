@@ -19,18 +19,18 @@ extern void delay(unsigned long ms) ;
 // GPS data being read
 // **********************
 int32_t GPS_lon;               // longitude in degree with 7 decimals, (neg for S)
-bool    GPS_lonAvailable; 
+bool    GPS_lonAvailable = false ; 
 int32_t GPS_lat;               // latitude   in degree with 7 decimals, (neg for ?)
-bool    GPS_latAvailable;
+bool    GPS_latAvailable = false ;
 
 int32_t GPS_altitude;              // altitude in mm
-bool    GPS_altitudeAvailable;
+bool    GPS_altitudeAvailable = false ;
 uint16_t GPS_speed_3d;                 // speed in cm/s
-bool    GPS_speed_3dAvailable;
+bool    GPS_speed_3dAvailable = false;
 uint16_t GPS_speed_2d;                 // speed in cm/s
-bool    GPS_speed_2dAvailable ;
+bool    GPS_speed_2dAvailable = false ;
 uint32_t GPS_ground_course ;     // degrees with 5 decimals
-bool    GPS_ground_courseAvailable;
+bool    GPS_ground_courseAvailable = false ;
 
 uint8_t GPS_numSat;
 uint8_t GPS_fix_type;
@@ -56,7 +56,7 @@ int16_t GPS_bearing ;          // bearing from home in degrees
 #define LOCATION_SCALING_FACTOR 0.011131884502145034f
 #define DEG_TO_RAD_FOR_GPS 0.017453292519943295769236907684886f
 
-bool GPS_fix ; // true if gps data are available.
+bool GPS_fix = false ; // true if gps data are available.
 static uint8_t _msg_id; //used to identify the message type when reading the gps, is used also when buffer is parsed 
 
 // Receive buffer
@@ -179,7 +179,7 @@ bool OXS_GPS::gpsNewFrameUBLOX(uint8_t data) // handle one byte and if this byte
 
   static uint8_t _ck_a;// Packet checksum accumulators
   static uint8_t _ck_b;// Packet checksum accumulators
-  static bool _skip_packet;
+  static bool _skip_packet = false ;
   static uint8_t _step;
   static uint8_t _class;
   static uint16_t _payload_length;
@@ -275,11 +275,11 @@ bool OXS_GPS::gpsNewFrameUBLOX(uint8_t data) // handle one byte and if this byte
 bool OXS_GPS::UBLOX_parse_gps(void) // move the data from buffer to the different fields
 {
 // do we have new position information?
-static bool _new_position;
+static bool _new_position = false ;
 
 // do we have new speed information?
-static bool _new_speed;
-static bool next_fix;
+static bool _new_speed = false ;
+static bool next_fix = false ;
   
     switch (_msg_id) {
     case MSG_POSLLH:
