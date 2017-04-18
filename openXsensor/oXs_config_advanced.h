@@ -52,7 +52,7 @@
 #define FILL_TEST_3_WITH_FLOW_SENSOR_CONSUMPTION             // uncomment to activate this option
 
 // --------- 3 - PPM settings ---------
-#define PIN_PPM           3     // Uncomment this line in order to use a Rx channel to control oXs; default is 2 but my own device use 3
+//#define PIN_PPM           3     // Uncomment this line in order to use a Rx channel to control oXs; default is 2 but my own device use 3
 #define PPM_MIN_100       988     // default 1500 - 512 ; // pulse width (usec) when TX sends a channel = -100
 #define PPM_PLUS_100      2012    // default 1500 + 512 ; // pulse width (usec) when TX sends a channel = +100
 
@@ -148,7 +148,7 @@
 // --------- 7 - RPM (rotations per minute) settings ---------                      Is defined only in oXs_config_basic.h file
 
 // --------- 8 - Persistent memory settings ---------
-//#define SAVE_TO_EEPROM
+#define SAVE_TO_EEPROM
 //#define PIN_PUSHBUTTON    2   // default is 10 but my own device is 2
 
 // --------- 9 - GPS ------------------------------------------------------------------------------------------------
@@ -182,8 +182,8 @@
 #define    ZZMAG_CORRECTION  0.138038
 
 // --------- 11 - Flow sensor ---------
-#define A_FLOW_SENSOR_IS_CONNECTED      NO                    // select between YES , NO
-#define PULSES_PER_ML                    12.0                  // number of pulses per milli liter (depends on sensor); can have decimals
+#define A_FLOW_SENSOR_IS_CONNECTED      YES                    // select between YES , NO
+#define PULSES_PER_ML                    1   //12.0                  // number of pulses per milli liter (depends on sensor); can have decimals
 #define FLOW_SENSOR_RESET_AT_PPM         95                   // when absolute value of ppm is greater than this, flow counter is reset.
 
 

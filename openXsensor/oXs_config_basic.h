@@ -104,14 +104,14 @@
 // --------- 8 - Persistent memory settings ---------                              see oXs_config_advanced.h (normally not used)
 
 // --------- 9 - GPS ---------------                                       see oXs_config_advanced.h for additionnal parameters (normally no need to change them)
-#define A_GPS_IS_CONNECTED      YES                   // select between YES , NO
+#define A_GPS_IS_CONNECTED      NO                   // select between YES , NO
 
 // --------- 10 - IMU 6050 --- (accelerometer + gyro)  and HMC5883 (magnetometer) --  see oXs_config_advanced.h for additionnal parameters e.g. about calibration
 // ***** 10.1 - IMU 6050 *****
-#define A_MPU6050_IS_CONNECTED      YES               // select between YES , NO
+#define A_MPU6050_IS_CONNECTED      NO               // select between YES , NO
 
 // ***** 10.2 - HMC5883 *****
-#define CALCULATE_YAW_WITH_HMC5883   YES             // select between YES , NO ; YES requires that A_MPU6050_IS_CONNECTED is YES here above
+#define CALCULATE_YAW_WITH_HMC5883   NO             // select between YES , NO ; YES requires that A_MPU6050_IS_CONNECTED is YES here above
 
 // --------- 11 - Flow sensor ---------------                                       see oXs_config_advanced.h 
 

@@ -818,6 +818,11 @@ void readSensors() {
         lastRpmMillis = millis() ;
   }      
 #endif
+
+#if defined ( A_FLOW_SENSOR_IS_CONNECTED ) && ( A_FLOW_SENSOR_IS_CONNECTED == YES)  
+    processFlowMeterCnt () ;
+#endif 
+
  
 }                  // ************** end of readSensors ********************************************
 
@@ -1419,20 +1424,23 @@ void Reset10SecButtonPress()
 /****************************************/
 void SaveToEEProm(){
   static int adr = 0;
-
+  uint32_t savedFlow ;
 #define ADR_MAX 1  // to adapt if thee are more data to save.   
 #ifdef DEBUG
-  Serial.print(F("SAving to EEProm:"));    
+  Serial.print(F("Saving to EEProm:"));    
   Serial.println(adr);    
 #endif
 
 #ifdef PIN_CURRENTSENSOR
   if ( adr == 0 ) EEPROM_writeAnything( 0 , oXs_Current.currentData.consumedMilliAmps);
 #endif
-#if defined ( A_FLOW_SENSOR_IS_CONNECTED )
-  #if ( A_FLOW_SENSOR_IS_CONNECTED == YES) 
-    if ( adr == 1) EEPROM_writeAnything( 1 , currentFlowCounter );
-  #endif  
+#if defined ( A_FLOW_SENSOR_IS_CONNECTED ) && ( A_FLOW_SENSOR_IS_CONNECTED == YES) 
+    if ( adr == 1) {
+      cli() ;
+      savedFlow = flowMeterCnt ;
+      sei() ; 
+      EEPROM_writeAnything( 1 , savedFlow ); 
+    }
 #endif
   adr++;
   if(adr > ADR_MAX) adr=0;
@@ -1443,13 +1451,20 @@ void SaveToEEProm(){
 /******************************************/
 void LoadFromEEProm(){
   // Load the last saved value
-  Serial.println(F("Restored from EEProm:"));
+  uint32_t savedFlow ;
 #ifdef PIN_CURRENTSENSOR
   EEPROM_readAnything(0, oXs_Current.currentData.consumedMilliAmps);
+  #ifdef DEBUG
+    Serial.println(F("Restored consumed mA"));
+  #endif  
 #endif
-#if defined ( A_FLOW_SENSOR_IS_CONNECTED )
-  #if ( A_FLOW_SENSOR_IS_CONNECTED == YES ) 
-    EEPROM_readAnything(1, currentFlowCounter );
+#if defined ( A_FLOW_SENSOR_IS_CONNECTED ) && ( A_FLOW_SENSOR_IS_CONNECTED == YES ) 
+    EEPROM_readAnything(1, savedFlow  );
+    cli() ;
+    flowMeterCnt = savedFlow  ;
+    sei() ;
+  #ifdef DEBUG  
+    Serial.println(F("Restored consumed fuel"));
   #endif  
 #endif
 }
@@ -1640,16 +1655,22 @@ void ReadPPM() {
 
 #if defined ( A_FLOW_SENSOR_IS_CONNECTED )
   #if ( A_FLOW_SENSOR_IS_CONNECTED == YES)  // flowMeterCnt is updated by interrupt PCINT0 
-void processFlowMeterCnt () {    // get the flowmeter counter once per 30 second, convert it in mili liter 
+void processFlowMeterCnt () {    // get the flowmeter counter once per 50 seconds, convert it in mili liter and activate the flaf saying a new value is available
+                                 // save the result in eeprom is done in main loop for all data to be saved
   static uint32_t prevFlowMillis ;
   uint32_t currentFlowMillis = millis() ;
-  if ( currentFlowMillis > prevFlowMillis + 30000 ) {
+  if ( currentFlowMillis > prevFlowMillis + 500 ) {
     prevFlowMillis = currentFlowMillis ;
     cli() ;  // avoid interrupt to ensure that counter is consistent
     currentFlowCounter  =  flowMeterCnt ; 
     sei() ;  // allow interrupt again
-    currentFlowCounter = ((float) currentFlowCounter ) / ( PULSES_PER_ML * 2)  ;  // *2 because counter is increase by all change (rise and fall)
-    // save the result in eeprom is done in main loop for all data to be saved 
+    currentFlowCounter = ((float) currentFlowCounter ) / ( PULSES_PER_ML * 2)  ;  // *2 because counter is increase by all change (rise and fall)                                                  
+    newFlowSensorValue = true ;
+#define DEBUG_FOLW_SENSOR
+#if defined ( DEBUG) && defined (DEBUG_FOLW_SENSOR)
+    Serial.print("flow: " ); Serial.println( currentFlowCounter ) ;
+#endif
+  
   } 
 }      // end processFlowMeterCnt
 
