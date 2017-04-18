@@ -1,7 +1,8 @@
 #ifndef KALMAN_FILTER_H_
 #define KALMAN_FILTER_H_
 
-#include "oXs_config.h"
+#include "oXs_config_basic.h"
+#include "oXs_config_advanced.h"
 #ifdef DEBUG
 //  #define DEBUG_KALMAN_TIME     // this print (in openXsensor.ino) the time to calculate kalman filter.
 #endif

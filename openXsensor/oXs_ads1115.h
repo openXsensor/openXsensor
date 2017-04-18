@@ -2,7 +2,8 @@
 #define OXS_ADS1115_h
 
 #include <Arduino.h>
-#include "oXs_config.h"
+#include "oXs_config_basic.h"
+#include "oXs_config_advanced.h"
 #include "I2C.h"
 #include "oXs_curr.h"
 #include "oXs_4525.h"

@@ -1,7 +1,8 @@
 #ifndef OXS_OUT_JETI_h
 #define OXS_OUT_JETI_h
 
-#include "oXs_config.h"
+#include "oXs_config_basic.h"
+#include "oXs_config_advanced.h"
 #include "oXs_ms5611.h" // we need the variodata struct
 #include "oXs_4525.h" // we need the airspeeddata struct
 #include "oXs_curr.h" // we need the currentdata struct

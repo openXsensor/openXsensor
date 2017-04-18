@@ -248,6 +248,32 @@ void OXS_VOLTAGE::voltageNrIncrease() {
         }
 #endif // Enf of Frsky protocols
 #endif // ( NUMBEROFCELLS ) && (NUMBEROFCELLS > 0)
+
+#if defined  ( FIRST_NTC_ON_VOLT_NR ) && defined ( LAST_NTC_ON_VOLT_NR ) && ( FIRST_NTC_ON_VOLT_NR <= 6 ) && ( LAST_NTC_ON_VOLT_NR <= 6) &&  ( FIRST_NTC_ON_VOLT_NR >= 1 ) && ( LAST_NTC_ON_VOLT_NR >= 1 ) && ( FIRST_NTC_ON_VOLT_NR <= LAST_NTC_ON_VOLT_NR )
+        uint8_t numberOfNtc = LAST_NTC_ON_VOLT_NR - FIRST_NTC_ON_VOLT_NR + 1;
+        uint8_t minNtcIdx ;
+        uint8_t maxNtcIdx ;
+        int32_t minTemp = 99999999 ;
+        int32_t maxTemp = 0 ;
+        
+       for ( uint8_t iNtc = FIRST_NTC_ON_VOLT_NR - 1 ; iNtc <= LAST_NTC_ON_VOLT_NR - 1 ; iNtc++ ) {
+          convertNtcVoltToTemp( voltageData.mVolt[iNtc].value ) ;
+          if (voltageData.mVolt[iNtc].value < minTemp ) {
+            minTemp = voltageData.mVolt[iNtc].value ;
+            minNtcIdx = iNtc + 1 ; 
+          }
+          if (voltageData.mVolt[iNtc].value > maxTemp ) {
+            maxTemp = voltageData.mVolt[iNtc].value ;
+            maxNtcIdx = iNtc + 1 ;
+          }
+        }  // end for   
+        if ( numberOfNtc  > 2) {
+          voltageData.mVolt[FIRST_NTC_ON_VOLT_NR - 1].value =  minTemp ;
+          voltageData.mVolt[FIRST_NTC_ON_VOLT_NR ].value =  maxNtcIdx ;
+          voltageData.mVolt[LAST_NTC_ON_VOLT_NR - 1].value =  maxTemp ; 
+        }        
+#endif  // end of NTC calculations
+
         cnt=0;
         lastVoltMillis = millis() ;
 #ifdef SEQUENCE_OUTPUTS
@@ -328,5 +354,39 @@ uint32_t OXS_VOLTAGE::calculateCell(int32_t V0 , int32_t V1 , int32_t V2 , uint8
   return (cell_2 << 20) | (cell_1 << 8) | ( ( (int32_t) voltageData.maxNumberOfCells )<<4 ) | (int32_t) cellId ;
 }
 #endif // end calculateCell
+
+
+#if defined ( PIN_VOLTAGE ) && defined ( FIRST_NTC_ON_VOLT_NR )
+void  OXS_VOLTAGE::convertNtcVoltToTemp (int32_t &voltage ) {     //Calculate temperature using the Beta Factor equation
+        // Convert the thermal stress value to resistance
+        // we reuse here the mVolt calculated by oXs. The config must be adapted in a such a way that this mVolt is equal to the raw value returned by the ADC * 1000 (for better accuracy)
+        // therefore, the mVoltPerStep calculated must be equal to 1000 and so :
+        // USE_INTERNAL_REFERENCE must be as comment (so with // in front off)
+        // USE_EXTERNAL_REFERENCE must be as comment (so with // in front off)
+        // REFERENCE_VOLTAGE must be as comment (so with // in front off)
+        // PIN_VOLTAGE must be defined and the analog pin used for NTC must be specified in one of the 6 index        
+        //  RESISTOR_TO_GROUND must be set on 0 (for the index being used)
+        //  OFFSET_VOLTAGE must (normally) be set on 0 (for the index being used)
+        //  SCALE_VOLTAGE  must be set on 204.6 (=1000 * 1023/5000) (for the index being used)
+        // The calculated temperature is filled back in the voltage field
+        // If there are more than 2 NTC, voltage from FIRST_NTC is filled with the lowest temp, voltage from LAST_NTC is filled with highest temp and voltage from FIRST_NTC+1 is filled with the index of the highest temp
+        
+        float media =  SERIE_RESISTOR /  ( (1023000.0 / voltage ) - 1 ) ;
+        float temperatura = media / TERMISTOR_NOMINAL;     // (R/Ro)
+        temperatura = log(temperatura); // ln(R/Ro)
+        temperatura /= B_COEFFICIENT;                   // 1/B * ln(R/Ro)
+        temperatura += 1.0 / (TEMPERATURE_NOMINAL + 273.15); // + (1/To)
+        temperatura = 1.0 / temperatura;                 // Invert the value
+        temperatura -= 273.15;                         // Convert it to Celsius
+        voltage = temperatura ;
+//#define DEBUGNTC
+#if defined( DEBUG) && defined (DEBUGNTC)
+         Serial.print( "Temp= " ) ; Serial.println( voltage );
+#endif
+              
+    }  // end convertNtcVoltToTemp 
+#endif
+
+
 
 #endif // end of PIN_VOLTAGE

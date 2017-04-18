@@ -177,10 +177,12 @@ void init()
 #endif
 
 #ifdef MEASURE_RPM
-	DDRB &= ~0x01 ;	// Pin is input
+	DDRB &= ~0x01 ;	// Pin PB0 is input in order to allow PCINT0
 	PORTB |= 1 ; 		// With pullup
 	sbi( TIMSK1, ICIE1 ) ; // allow change interrupt 
 #endif // MEASURE_RPM
+
+
 	sei();  //allow interrupt in general
 
 // timer2 (used by analoWrite to generate PWM

@@ -2,7 +2,8 @@
 #define OXS_GPS_h
 
 #include <Arduino.h>
-#include "oXs_config.h"
+#include "oXs_config_basic.h"
+#include "oXs_config_advanced.h"
 
 
 

@@ -119,7 +119,7 @@ void OXS_OUT::setup() {
     initHubUart( ) ;
     sportAvailable = false ;    // force the HUB protocol
 #else                           // we will detect automatically if SPORT is available     
-                                      // Activate pin change interupt on Tx pin
+                                      // Activate pin change interupt 2 on Tx pin
 #if PIN_SERIALTX == 4
     PCMSK2 |= 0x10 ;			            // IO4 (PD4) on Arduini mini
 #elif PIN_SERIALTX == 2
@@ -1739,8 +1739,7 @@ void initSportUart(  )           //*************** initialise UART pour SPORT
 //  note  initSoftwareUart( void ) must be called in advance.
 //
 // This is the pin change interrupt for port D
-// This assumes it is the only pin change interrupt
-// on this port
+// This assumes it is the only pin change interrupt on port D
 //#ifdef FRSKY_SPORT
 ISR(PCINT2_vect)
 {
