@@ -6,11 +6,11 @@
 // ************************* Several parameters to help debugging
 //#define DEBUGSETNEWDATA
 //#define DEBUGFORMATONEVALUE
-#define DEBUGJETIFRAME
+//#define DEBUGJETIFRAME
 #endif
 //#define DEBUG_FORCE_VARIODATA  // this is used to force oXs to send a fixed dummy value for Vspeed and Alt in order to test if an issue result of bmp180 or from Multiplex / Jeti protocol.
-
-
+#define DEBUG_SERIAL_RX          // this is used to generate pulses when oXs decodes a byte sent by the receiver
+#define DEBUGASERIAL             // this is used to generate pulses when oXs send a byte 
 
 extern unsigned long micros( void ) ;
 extern unsigned long millis( void ) ;
@@ -25,6 +25,8 @@ uint8_t numberOfFields ; // number of fields to transmit (from 1 ... 15)
 uint8_t volatile jetiData[63] = { 0x7E, 0x9F, 0x40 , 0x11 , 0xA4 ,  0xAD , 0x04, 0x00 };  // 64 = 29 bytes for data + 34 bytes for text ; buffer where Jeti frame is prepared , 7E = header, 1F = X frame, 40 = means data (and not txt) + length in 6 bits - to be filled-, A400 0001 = device id ; 00  = fixed value
 uint8_t volatile jetiMaxData ;   // max number of bytes prepared in the buffer to be sent
 volatile uint8_t state ;                  //!< Holds the state of the software UART.
+volatile uint8_t oneByteReceived ;           // Keep a flag that is true when a byte has been received
+volatile uint8_t lastByteReceived ;           // Keep the last byte received
 uint8_t  countOfFieldsChecked  ; //   
 
 uint32_t jetiLong ;
@@ -35,6 +37,8 @@ static volatile uint8_t SwUartTXBit8 ; // the bit 8 has to be 0 for the fist byt
 static volatile uint8_t SwUartTXBitParity ; // keep the number of 1 in the data beeing sent because jeti protocol uses ODD parity 
 static volatile unsigned char SwUartTXBitCount ; //!< TX bit counter.
 static volatile uint8_t SwUartRXData ;           //!< Storage for received bits.
+static volatile uint8_t SwUartRXBit9 ;           //!< Storage for received bit 9.
+static volatile uint8_t  SwUartRXBitParity ;     //!< Storage for received parity bit.
 static volatile uint8_t SwUartRXBitCount ;       //!< RX bit counter.
 static volatile uint8_t TxCount ;
 
@@ -64,11 +68,11 @@ void OXS_OUT::setup() {
     TRXDDR &= ~( 1 << PIN_SERIALTX ) ;       // PIN is input, tri-stated.
     TRXPORT |= ( 1 << PIN_SERIALTX ) ;      //  Pull up activated.
 
-  // Activate pin change interupt on Tx pin  ?? This is probably not required for Jeti if we only send data
+  // Activate pin change interrupt on Tx pin  
 #if PIN_SERIALTX == 4
-//    PCMSK2 |= 0x10 ;			// IO4 (PD4) on Arduini mini
+    PCMSK2 |= 0x10 ;			              // IO4 (PD4) on Arduini mini
 #elif PIN_SERIALTX == 2
-//    PCMSK2 |= 0x04 ;                    // IO2 (PD2) on Arduini mini
+    PCMSK2 |= 0x04 ;                    // IO2 (PD2) on Arduini mini
 #else
     #error "This PIN is not supported"
 #endif
@@ -77,10 +81,17 @@ void OXS_OUT::setup() {
 
     state = IDLE ;     // Internal State Variable
 
-#if DEBUGASERIAL
-    DDRC = 0x01 ;   // PC0 as o/p debug = pin A0 !!!!
+#ifdef DEBUGASERIAL
+    DDRC = 0x01 ;   // PC0 as o/p debug = pin A0 !!!! is here put as output 
     PORTC = 0 ; 
 #endif
+
+#ifdef DEBUG_SERIAL_RX
+    DDRC = 0x01 ;   // PC0 as o/p debug = pin A0 !!!! is here put as output 
+    PORTC = 0 ; 
+#endif
+
+
 
     initJetiListOfFields() ;
   
@@ -618,7 +629,7 @@ void OXS_OUT::sendData()    // this part could be modified in order to put more 
                             // the buffer must contain a header (already filled with fixed data), then DATA or TEXT part , then a CRC, a separator (0xFE), 2 * 16 char of text and a trailer (0xFF)
                             // the TEXT part contains or the name of the device or the name and unit of each field
 {
-  uint32_t temp ;
+//  uint32_t temp ;
 //  static uint32_t lastMsJetiDataFrame ;
 //  static uint32_t lastMsJetiTextFrame ;
 //  uint8_t jetiFrameReadyToSend;
@@ -654,11 +665,16 @@ void OXS_OUT::sendData()    // this part could be modified in order to put more 
         for(c=2; c<jetiMaxData ; c++) crc = updateJetiCrc (jetiData[c], crc);  // calculate crc starting from position 2 from the buffer
         jetiData[jetiMaxData++] = crc ;                                        // store crc in buffer
 //after filling data or text, we fill the buffer with the 2 lines for the display box (this seems to be mandatory by the protocol)        
-        jetiData[jetiMaxData++] = 0xFE ;                                       // fill the 2 lines for the display box (with 0xFE and 0xFF as delimiters)  
+        jetiData[jetiMaxData++] = 0xFE ;                                       // fill the 2 lines for the display box (with 0xFE and 0xFF as delimiters)         uint8_t carToSend = 0x41 ;
+#if defined ( A_FLOW_SENSOR_IS_CONNECTED ) && ( A_FLOW_SENSOR_IS_CONNECTED == YES)
+        if (lastReceivedByte <> prevReceivedByte ) processReceivedCmd( lastReceivedByte ) ;
+        fillTxBuffer() ;
+#else
         for ( uint8_t i_jetiBoxText = 0 ; i_jetiBoxText < 16 ; i_jetiBoxText++ ) {
-           jetiData[jetiMaxData++] = 0x2E ;  // 0x2E = "."                     // here it is a dummy text; it could be changed later on.
-           jetiData[jetiMaxData++] = 0x2D ;  // 0x2D = "-"
+            jetiData[jetiMaxData++] = 0x2E  ;                // here it is a dummy text; it could be changed later on.
+            jetiData[jetiMaxData++] = 0x2D  ;
         }
+#endif        
         jetiData[jetiMaxData++] = 0xFF ;
 #ifdef DEBUGJETIFRAME                                                          // print the jeti buffer on 4 lines
         //printer->print(F("01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F 10 11 12 13 14 15 16 17 18 19 1A 1B 1C 1E 1F 20 21 22 23 24 25 26 27 "));
@@ -691,6 +707,87 @@ void OXS_OUT::sendData()    // this part could be modified in order to put more 
 }
 
 
+void processReceivedCmd( uint8_t cmd ) {
+  prvReceivedByte = cmd ;
+  switch ( cmd ) {
+    case DOWN :
+      jetiMenu++ ;
+      if (jetiMenu > JETI_MENU_MAX) jetiMenu = 0 ;
+      break ;
+    case LEFT_RIGHT
+      if ( jetiMenu == JETIRESET ) consumedML = 0 ;
+      break ;
+    case LEFT
+      upDown(0) ;
+      break ;
+    case RIGHT
+      upDown(-1) ;
+      break ;        
+  }  // end switch
+}  // end processReceivedCmd
+
+void upDown ( int8_t upOrDown ) {  
+  int16_t temp ;
+  if ( jetiMenu == JETI_TANK_CAPACITY) {
+    temp += tankCapacity +  (50 *  upOrDown );
+    tankCapacity = constrain( temp , 0 , 3000 ) ;
+  }
+  else if ( ( jetiMenu >= JETI_CAL_FLOW_1) &&  (jetiMenu <= JETI_CAL_FLOW_4) ) {
+    temp = flowParam[jetiMenu - JETI_CAL_FLOW_1] * 5 * upOrDown ;
+    flowParam[jetiMenu - JETI_CAL_FLOW_1]= constrain( temp , 30 , 800 ) ;
+  }
+  else if ( ( jetiMenu >= JETI_CORR_FLOW_1) &&  (jetiMenu <= JETI_CORR_FLOW_4) ) {
+    temp = flowParam[jetiMenu - JETI_CAL_FLOW_1 ] * upOrDown ;
+    flowParam[jetiMenu - JETI_CAL_FLOW_1]= constrain( temp , -100 , +100 ) ;
+  }
+} // end upDown
+ 
+void fillTxBuffer( void ){
+      if (jetiMenu < JETI_CAL_FLOW_1 ) {
+        memcpy_p ( jetiData[jetiMaxData] , jetiText[jetiMenu] , 32 ) ;  // copy the text from a table (in flash memory) to the buffer
+        switch ( jetiMenu ) {
+        case JETI_DATA :
+          itoc( currentFlow , jetiMaxData + 10 ) ; 
+          itoc( consumedML , jetiMaxData + 28 ) ;
+          break ;
+        case JETI_TANK_RESET :
+          itoc(  int16_t ( ( (float) (tankCapacity - consumedML) ) * 100.0 /  tankCapacity ), jetiMaxData + 10 ) ; 
+          break ;
+        case JETI_TANK_CAPACITY :
+          itoc( tankCapacity , jetiMaxData + 10 ) ; 
+          break ;
+        } // end switch
+      } else if ( jetiMenu < JETI_CORR_FLOW_1 ) {
+          memcpy_p( jetiData[jetiMaxData] , jetiText[JETI_CAL_FLOW_1] , 32 ) ;  // copy the text from a table (in flash memory) to the buffer
+          itoc( jetiMenu - JETI_CAL_FLOW_1 + 1 , jetiMaxData + 8 ) ;
+          itoc( flowParam[jetiMenu - JETI_CAL_FLOW_1 ] , jetiMaxData + 20 ) ;
+      } else {
+          memcpy_p( jetiData[jetiMaxData] , jetiText[JETI_CAL_FLOW_1 + 1] , 32 ) ;  // copy the text from a table (in flash memory) to the buffer
+          itoc( jetiMenu - JETI_CORR_FLOW_1 + 1 , jetiMaxData + 8 ) ;
+          itoc( flowParam[jetiMenu - JETI_CAL_FLOW_1 ] , jetiMaxData + 20 ) ;  
+      }
+      jetiMaxData += 32 ;
+}  // end fillTxBuffer
+
+void itoc ( int16_t n , uint8_t posLastDigit ) {
+   uint8_t i ;
+   uint8_t sign = 0 ;
+  if (  n < 0 )  // record sign
+  {
+    n = -n;          // make n positive
+    sign = 1 ; 
+  }
+  i = 0;
+  do
+  {       // generate digits in reverse order
+    jetiData[posLastDigit--] = n % 10 + '0';   // get next digit
+  } while ((n /= 10) > 0) ;     // delete it
+  if (sign == 1 )
+  {
+    jetiData[posLastDigit] = '-';
+  }
+}  // end itoc
+
 //---------------------------------- Here the code to handle the UART  
 #ifdef DEBUG
 //#define DEBUGSETNEWDATA
@@ -707,7 +804,7 @@ ISR(TIMER1_COMPA_vect)
   switch (state)
   {
       case TRANSMIT :   // startbit has been sent, it is time to output now 8 bits and 1 stop bit
-#if DEBUGASERIAL
+#ifdef DEBUGASERIAL
           PORTC |= 1 ;
 #endif
           if( SwUartTXBitCount < 8 ) {            // If not 8 bits have been sent
@@ -739,7 +836,7 @@ ISR(TIMER1_COMPA_vect)
           }
           SwUartTXBitCount += 1 ;               // increment TX bit counter.
           OCR1A += TICKS2WAITONEJETI  ;  // Count 2 period into the future. (Jeti uses 2 stop bits)
-#if DEBUGASERIAL
+#ifdef DEBUGASERIAL
         PORTC &= ~1 ;
 #endif
           break ;
@@ -765,6 +862,8 @@ ISR(TIMER1_COMPA_vect)
               OCR1A += DELAY_2000;    // 2mS gap before listening (so before going to IDLE)
               TRXDDR &= ~( 1 << PIN_SERIALTX ) ;            // PIN become input during the WAIT time (it will become output when a new frame will be sent)
               TRXPORT |= ( 1 << PIN_SERIALTX ) ;           // PIN is pull up because it could be that the Rx send a byte (half duplex)
+              CLEAR_PIN_CHANGE_INTERRUPT( ) ;              // clear pin change interrupt 2 (on port D) used by Rx and Tx (arduino pin 2 or pin 4)
+              ENABLE_PIN_CHANGE_INTERRUPT( )  ;            // enable pin change interrupt 2 (because Jeti Rx could send a byte that we want to read)
         }
         break ;
 
@@ -774,7 +873,8 @@ ISR(TIMER1_COMPA_vect)
            } else {
             state = IDLE ;                           // Go back to idle.
             DISABLE_TIMER_INTERRUPT() ;    // Stop the timer interrupt. We will wait that the main loop ask for sending a frame and reactivate the interrupt 
-           
+            DISABLE_TIMERB_INTERRUPT() ;         // Stop the timer COMPB interrupts because the RX can't send a keyboard key anymore
+            DISABLE_PIN_CHANGE_INTERRUPT()  ;     // disable pin change interrupt 2 (on port d) because we do not have to wait anymore for a byte sent by Tx 
            }
            break ;
 
@@ -790,6 +890,80 @@ ISR(TIMER1_COMPA_vect)
 } // End of ISR
 
 
+// ! \brief  External interrupt service routine.  ********************
+//  Interrupt on Pin Change to detect change on level on Jeti signal (= could be a start bit)
+//
+// The falling edge in the beginning of the start
+//  bit will trig this interrupt. The stateReceive will
+//  be changed to RECEIVE, and the timer interrupt B
+//  will be set to trig one and a half bit period
+//  from the falling edge. At that instant the
+//  code should sample the first data bit.
+//
+//  note  initSoftwareUart( void ) must be called in advance.
+//
+// This is the pin change interrupt for port D
+// This assumes it is the only pin change interrupt on port D
+ISR(PCINT2_vect)
+{
+  if ( ! (TRXPIN & ( 1 << PIN_SERIALTX ) )) {     // if Pin is low = start bit (inverted)
+    DISABLE_PIN_CHANGE_INTERRUPT()  ;     // pin change interrupt disabled (it will be reactivated when a frame has been sent
+//PORTC &= ~2 ;
+
+    DISABLE_TIMERB_INTERRUPT() ;       // Disable timer to change its registers. (normally not needed because TimerB interrupt is not active)
+    OCR1B = TCNT1 + TICKS2WAITONE_HALFJETI - INTERRUPT_EXEC_CYCL - INTERRUPT_EARLY_BIAS ; // Count one and a half period into the future.
+#ifdef DEBUG_SERIAL_RX
+    PORTC |= 1 ;
+#endif
+    SwUartRXBitCount = 0 ;            // Clear received bit counter.
+    SwUartRXData = 0 ;                // Reset the byte that will contains the byte being read
+    CLEAR_TIMERB_INTERRUPT() ;         // Clear interrupt bits
+    ENABLE_TIMERB_INTERRUPT() ;        // Enable timerB interrupt on again
+  }
+}
+
+
+ISR(TIMER1_COMPB_vect)       // interrupt on COMPB is used to receive data (keyboard jetibox) from Rx while COMPA is still used to wait some delay between 2 frames
+{
+
+          OCR1B += TICKS2WAITONEJETI ;                    // Count one period after the falling edge is trigged.
+          uint8_t data ;        // Use a temporary local storage
+          data = SwUartRXBitCount ;
+          if( data < 8 ) {                         // If 8 bits are not yet read
+                        SwUartRXBitCount = data + 1 ;
+                        data = SwUartRXData ;
+                        data >>= 1 ;                         // Shift due to receiving LSB first.
+                        if( GET_RX_PIN( ) ) {
+                            data |= 0x80 ;                    // If a logical 1 is read, let the data mirror this.
+                        }
+                        SwUartRXData = data ;
+          } else if ( data == 8 ) {                           // we got 8 bits, so now we get the bit 9
+                        SwUartRXBitCount = data + 1 ;
+                        SwUartRXBit9 = GET_RX_PIN( ) ;
+          } else {                                        //Done receiving =  8 bits are in SwUartRXData and 9th bit in SwUartRXBit9 is ready 
+#ifdef DEBUG_SERIAL_RX
+                        PORTC &= ~1 ;
+#endif        
+
+                        SwUartRXBitParity = GET_RX_PIN( ) ;
+  //                      if ( ( ( SwUartRXData & 0X0F ) == 0 ) && ( SwUartRXBit9 == 0) ) {      // check that last 4 bits are 0 and that bit 9 = 0; in fact we could also check the parity bit
+                            oneByteReceived = true ;                                       // Keep a flag that is true when a byte has been received
+                            lastByteReceived  = SwUartRXData ;                             // Keep the last byte received
+  //                      }
+                        DISABLE_TIMERB_INTERRUPT() ;         // Stop the timer COMPB interrupts.
+#ifdef DEBUG_SERIAL_RX
+                        PORTC |= 1 ;
+#endif
+
+          }
+
+
+} // end ISR TIMER1_COMPB_vect
+
+// in ISR TIMER1_COMP_vect, when a frame has been totaly sent, interrupt on pin change must be cleared and enabled. TODO (to uncomment)
+//                          when state become IDLE (end of 20 or 30 ms) after sending a frame, interrupt on COMPB must be disabled TODO (to uncomment)
+// in pin change interrupt, pin change interrupt must be disabled and SwUartRxBitCount must be reset to 0 and COMPB must be cleared and enabled ;
+// in SEND data, before filling the frame we should check if a byte has been received (oneByteReceived = true) and oneByteReceived should be set on false. TODO (to add)
 
 
 // -------------------------End of Jeti protocol--------------------------------------------------------------------------------------

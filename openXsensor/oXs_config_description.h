@@ -699,13 +699,12 @@ See OpenXsensor https://github.com/openXsensor/
 *          In this expample, it means that you expect to measure 3 temperatures based on NTC connected to the pins used for VOLT_3, VOLT_4 and VOLT_5
 *          note: if you use only one NTC, you must specify the same value for FIRST_NTC_ON_VOLT_NR and for LAST_NTC_ON_VOLT_NR
 *                if you do not use NTC, keep this line as comment
-*        SERIER_ESISTOR       specify the resitance (in Ohm)  connected between Arduino Vcc and NTC (and analog pin)
-*        TERMISTOR_NOMINAL     specify the nominal resistor of NTC (in Ohm) (e.g. 100000)  
-*        TEMPERATURE_NOMINAL   specify the nominal temperature of NTC (in degree Celcius) (e.g. 25)
-*        B_COEFFICIENT         specify B coefficient of NTC (e.g. 3950)
-*          Those last 3 parameters depend on the thermistor being used; they are normally specified in the datasheet of the NTC 
-*          For best result, select a SERIERESISTOR that is nearly equal to the NTC resistor at the temperature that you expect to measure.
-*          The values below seems to be ok for the cheap NTC 3950 thermistor available on aliexpress (for 3 D printer)
+*        SERIE_RESISTOR       specify the resitance (in Ohm)  connected between Arduino Vcc and NTC (and analog pin); select a value nearly equal to the resistance of NTC in the range of temperature you expect best accuracy 
+*        Next 3 parameters are specific to the NTC you use. Values between brackets are nominal value for a cheap NTC available on aliexpress.com with 100k ohm at 25°C and a Beta coefficient of 3950 for range 25/50
+*        STEINHART_A          (e.g. 7.00111E-4 )   
+*        STEINHART_B          (e.g. 2.1644E-4 )
+*        STEINHART_C          (e.g. 1.0619E-07 )
+*        If you do not know those 3 parameters, you can caluclate them measuring the NTC resistance at 3 different temperatures. Use then e.g. the formula given on wikipedia for thermistor
 *     When you use 1 or 2 NTC, the temperature(s) will be registered in VOLT_X and VOLT_Y where X is the value of FIRST_NTC_ON_VOLT_NR and Y the value of LAST_NTC_ON_VOLT_NR
 *     If you use more than 2 NTC, oXS will register in :
 *         VOLT_X the lowest temperature 
@@ -716,9 +715,9 @@ See OpenXsensor https://github.com/openXsensor/
 //#define FIRST_NTC_ON_VOLT_NR 5 // uncomment this line when thermistor are used; specify index of first voltage being used for conversion to temperature (e.g. 5 means VOLT_5)
 #define LAST_NTC_ON_VOLT_NR 6 // specify index of last voltage being used for conversion to temperature (e.g. 6 means VOLT_6)
 #define SERIE_RESISTOR 4700 // resitance connected to Arduino Vcc (in Ohm)
-#define TERMISTOR_NOMINAL 100000 // nominal resistor of NTC (in Ohm)
-#define TEMPERATURE_NOMINAL 25 // nominal temperature of NTC (in degree Celcius)
-#define B_COEFFICIENT 3950 // B coefficient of NTC
+#define STEINHART_A 7.00111E-4   
+#define STEINHART_B 2.1644E-4
+#define STEINHART_C 1.0619E-07
 
 
 
@@ -978,9 +977,9 @@ See OpenXsensor https://github.com/openXsensor/
 
 //#define GENERATE_MAG_CALIBRATION_DATA   // uncomment this line when HMC5883 calibration has to be performed. Set back as comment once calibration parameters have been introduced 
 
-#define    XMAG_OFFSET 2.4683     // must be an integer
-#define    YMAG_OFFSET -1.3694     // must be an integer
-#define    ZMAG_OFFSET 138.9683     // must be an integer
+#define    XMAG_OFFSET 2     // must be an integer
+#define    YMAG_OFFSET -1     // must be an integer
+#define    ZMAG_OFFSET 139     // must be an integer
 #define    XXMAG_CORRECTION  0.122082   // can have decimals
 #define    XYMAG_CORRECTION  -0.00204026
 #define    XZMAG_CORRECTION  0.00377534 

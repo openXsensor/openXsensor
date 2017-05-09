@@ -6,6 +6,7 @@
 #ifdef DEBUG
 // ************************* Several parameters to help debugging
 //#define DEBUG_LOAD_SPORT
+//#define DEBUG_STATE 
 //#define DEBUG_SPORT_RECEIVED
 //#define DEBUGSENDDATA
 //#define DEBUGSENDSENSITIVITY
@@ -45,6 +46,12 @@ extern void delay(unsigned long ms) ;
 
 //used only by Sport protocol
 extern uint8_t  volatile  sportData[7] ;
+uint8_t  volatile TxData[8] ;
+uint8_t  volatile TxDataIdx ;
+uint8_t rxStuff ;
+extern uint8_t LastRx ;
+static volatile uint8_t prevLastRx ;           // just for testing
+
 uint8_t volatile sportDataLock ;
 extern uint8_t volatile sendStatus ;
 #if defined(VFAS_SOURCE) 
@@ -87,7 +94,7 @@ extern volatile uint8_t state ;                  //!< Holds the state of the UAR
 
 
 #ifdef DEBUG_SPORT_RECEIVED
-  volatile uint8_t sportRcvCount ;
+  volatile uint16_t sportRcvCount ;
 #endif
 
 
@@ -468,6 +475,11 @@ void initMeasurement() {
 
 void OXS_OUT::sendSportData()
 {  
+#ifdef DEBUG_STATE
+                  Serial.print("State "); Serial.print(state,HEX) ; Serial.print(" LastRx "); Serial.print(LastRx,HEX) ; Serial.print(" prevLastRx "); Serial.print(prevLastRx,HEX) ;
+                  Serial.print(" sensorIsr "); Serial.println(sensorIsr,HEX) ; 
+#endif
+                                                                          
                                                                           // first we calculate fields that are used only by SPORT
 #if defined(VFAS_SOURCE)
   #if defined(PIN_VOLTAGE) &&  ( (VFAS_SOURCE == VOLT_1) || (VFAS_SOURCE == VOLT_2) || (VFAS_SOURCE == VOLT_3) || (VFAS_SOURCE == VOLT_4) || (VFAS_SOURCE == VOLT_5) || (VFAS_SOURCE == VOLT_6) )
@@ -1405,7 +1417,7 @@ uint8_t sensorId ;
 //! \brief  Timer1 interrupt service routine. *************** interrupt between 2 bits (handled by timer1)
 //
 //  Timer1 will ensure that bits are written and read at the correct instants in time.
-//  The state variable will ensure context switching between transmit and recieve.
+//  The state variable will ensure context switching between transmit and receive.
 //  If state should be something else, the variable is set to IDLE. IDLE is regarded as a safe state/mode.
 
 //For Frsky only
@@ -1440,8 +1452,8 @@ ISR(TIMER1_COMPA_vect)
 #endif
           if( SwUartTXBitCount < 8 )
           {
-            if( SwUartTXData & 0x01 )
-            {           // If the LSB of the TX buffer is 1:
+            if( SwUartTXData & 0x01 ) // If the LSB of the TX buffer is 1:
+            {           
               CLEAR_TX_PIN() ;                    // Send a logic 1 on the TX_PIN.
             }
             else
@@ -1531,6 +1543,10 @@ ISR(TIMER1_COMPA_vect)
 #ifdef DEBUGASERIAL
                         PORTC &= ~1 ;
 #endif
+#ifdef DEBUG_SPORT_RECEIVED
+                                sportRcvCount ++ ;
+#endif
+
                         if ( LastRx == 0x7E ) {
                             switch (SwUartRXData ) {
 
@@ -1540,6 +1556,8 @@ ISR(TIMER1_COMPA_vect)
 #define  GPS_ID          DATA_ID_GPS
 #define  RPM_ID          DATA_ID_RPM
 #define  ACC_ID          DATA_ID_ACC
+#define  TX_ID           DATA_ID_TX          // this ID is used when TX sent data to RX with a LUA script ; it requires that LUA uses the same parameters 
+#define SENSOR_ISR_FOR_TX_ID 0XF0          // this value says that we already received a byte == TX_ID
 
                               case VARIO_ID :
                                 sensorIsr = 0 ; break ;
@@ -1550,14 +1568,14 @@ ISR(TIMER1_COMPA_vect)
                               case GPS_ID :
                                 sensorIsr = 3 ; break ;
                               case RPM_ID :
-#ifdef DEBUG_SPORT_RECEIVED
-                                sportRcvCount ++ ;
-#endif
                                 sensorIsr = 4 ; break ;
                               case ACC_ID :
                                 sensorIsr = 5 ; break ;
+                              case TX_ID :
+                                TxDataIdx = 0 ; // reset the counter used to register all bytes received from Tx
+                                sensorIsr = SENSOR_ISR_FOR_TX_ID ; break ;  // this value says that an ID related to a frame sent by Tx has been received; take care that it is perhaps just a pulling from RX without Tx frame. 
                               default : 
-                                sensorIsr = 255 ;  
+                                sensorIsr = 128 ;  
                             }
                             if ( ( sensorIsr < 6 ) && ( ( frskyStatus & ( 1 << sensorIsr )) == 0 ) ) {    // If this sensor ID is supported by oXs and oXs has prepared data to reply data in dataValue[] for this sensorSeq    
                                      // if ( sportDataLock == 0 ) {
@@ -1571,20 +1589,39 @@ ISR(TIMER1_COMPA_vect)
                                           state = TxPENDING ;
                                           OCR1A += ( DELAY_400 - TICKS2WAITONESPORT) ;    // 400 uS gap before sending (remove 1 tick time because it was already added before
                                       //}
-                            } else  { // No data are loaded (so there is no data yet available)
+                            } else if ( sensorIsr == SENSOR_ISR_FOR_TX_ID )  {       // we received an ID that could be used by TX to send data to the sensor; so we have to continue reading bytes
+                                  state = IDLE ;                      // Go back to idle
+                            } else  { // No data are loaded (so there is no data yet available or oXs does not have to reply to this ID)
                                   state = WAITING ;       // Wait for idle time
                                   OCR1A += DELAY_3500 ;   // 3.5mS gap before listening
                             } 
-                        }    // received 1 byte and was equal to 0x7E
-                        else // So previous code is not equal to x7E 
-                        {
+                        }    // end receive 1 byte and previous was equal to 0x7E
+                        else if ( SwUartRXData == 0x7E) {      // reset sensorIsr when 0X7E is received (stop receiving data from Tx) and listen to next byte
+                            sensorIsr = 128 ;                  // reset sensorIsr when 0X7E is received (stop receiving data from Tx)
+                            rxStuff = 0;                       // and reset the stuff flag
+                            state =  IDLE ;                      // Go back to idle.
+                        } else if ((sensorIsr == SENSOR_ISR_FOR_TX_ID) && (TxDataIdx < 8) ){                  // we receive one byte that is not 0x7E. We check if it follow a sequence 0X7E and the Tx_ID which means it is sent by Tx to oXs
+                                                                                                              // Note: if all bytes have been received, then TxDataIdx = 8 and we do not store the data anymore
+                            if (SwUartRXData == 0x7D)                 // byte stuffing indicator
+                              rxStuff = 1;                      // set the flag and discard byte
+                            else if (rxStuff == 0)
+                               TxData[TxDataIdx++] = SwUartRXData ;                         // we save the received byte in a buffer
+                            else {
+                               TxData[TxDataIdx++] = SwUartRXData | 0x20 ;                         // we save the received byte in a buffer taking into account the stuff bit 
+                               rxStuff = 0;                    // and reset the flag
+                            }                                                              
+                            state = IDLE ;                      // Go back to idle.
+                        } else { 
+                            state = IDLE ;                      // Go back to idle.
+                        }        // end of test on receiving one byte
+                        LastRx = SwUartRXData ;                 // save the current byte
+                        if (state == IDLE ) {                    // when Go back to idle.
                             DISABLE_TIMER_INTERRUPT() ;         // Stop the timer interrupts.
-                            state = IDLE ;                                  // Go back to idle.
-                            PCIFR = ( 1<<PCIF2 ) ;        // clear pending interrupt
-                            PCICR |= ( 1<<PCIE2 ) ;       // pin change interrupt enabled
+                            PCIFR = ( 1<<PCIF2 ) ;              // clear pending interrupt
+                            PCICR |= ( 1<<PCIE2 ) ;             // pin change interrupt enabled (so we can receive another byte)
                         }
-                        LastRx = SwUartRXData ;
-                     } // End receiving  1 bit or 1 byte (8 bits)
+                        
+                    } // End receiving  1 bit or 1 byte (8 bits)
            }
            break ;
   
@@ -1707,7 +1744,7 @@ void initSportUart(  )           //*************** initialise UART pour SPORT
   // External interrupt
   
 #if PIN_SERIALTX == 4
-    PCMSK2 |= 0x10 ;      // IO4 (PD4) on Arduini mini
+    PCMSK2 |= 0x10 ;                    // IO4 (PD4) on Arduini mini
 #elif PIN_SERIALTX == 2
     PCMSK2 |= 0x04 ;                    // IO2 (PD2) on Arduini mini
 #else
@@ -1743,7 +1780,7 @@ void initSportUart(  )           //*************** initialise UART pour SPORT
 //#ifdef FRSKY_SPORT
 ISR(PCINT2_vect)
 {
-  if ( TRXPIN & ( 1 << PIN_SERIALTX ) ) {     // Pin is high = start bit (inverted)
+  if ( TRXPIN & ( 1 << PIN_SERIALTX ) ) {     // if Pin is high = start bit (inverted)
     DISABLE_PIN_CHANGE_INTERRUPT()  ;     // pin change interrupt disabled
 //PORTC &= ~2 ;
     state = RECEIVE ;                 // Change state

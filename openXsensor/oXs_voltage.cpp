@@ -5,6 +5,7 @@
 //#define DEBUGDELAY
 //#define DEBUGCELLCALCULATION
 //#define DEBUGLOWVOLTAGE
+//#define DEBUGNTC
 #endif
 
 #ifdef PIN_VOLTAGE
@@ -370,16 +371,26 @@ void  OXS_VOLTAGE::convertNtcVoltToTemp (int32_t &voltage ) {     //Calculate te
         //  SCALE_VOLTAGE  must be set on 204.6 (=1000 * 1023/5000) (for the index being used)
         // The calculated temperature is filled back in the voltage field
         // If there are more than 2 NTC, voltage from FIRST_NTC is filled with the lowest temp, voltage from LAST_NTC is filled with highest temp and voltage from FIRST_NTC+1 is filled with the index of the highest temp
+#if defined( DEBUG) && defined (DEBUGNTC)
+         Serial.print( "Voltage= " ) ; Serial.print( voltage );
+#endif
         
         float media =  SERIE_RESISTOR /  ( (1023000.0 / voltage ) - 1 ) ;
+/*        
         float temperatura = media / TERMISTOR_NOMINAL;     // (R/Ro)
         temperatura = log(temperatura); // ln(R/Ro)
         temperatura /= B_COEFFICIENT;                   // 1/B * ln(R/Ro)
         temperatura += 1.0 / (TEMPERATURE_NOMINAL + 273.15); // + (1/To)
-        temperatura = 1.0 / temperatura;                 // Invert the value
-        temperatura -= 273.15;                         // Convert it to Celsius
+        temperatura = 1.0 / temperatura ;                 // Invert the value
+        temperatura -= 273.15 ;                         // Convert it to Celsius
         voltage = temperatura ;
-//#define DEBUGNTC
+*/                
+        // T = 1/(A + B* ln(R) + C * ln(R) *ln(R) *ln(R)) 
+        float steinhart = log(media) ;
+        steinhart = 1 / ( STEINHART_A + STEINHART_B * steinhart + STEINHART_C * steinhart * steinhart * steinhart) ;
+        steinhart -= 273.15 ;
+        voltage = steinhart ;    
+
 #if defined( DEBUG) && defined (DEBUGNTC)
          Serial.print( "Temp= " ) ; Serial.println( voltage );
 #endif

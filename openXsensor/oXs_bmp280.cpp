@@ -48,9 +48,9 @@ void OXS_BMP280::setup() {
 //  nextAverageAltMillis =  nextAltMillis ;  // in msec ; save when AverageAltitude has to be calculated
 //  nextAverageAltMillis =  nextAltMillis ; 
 
-#ifdef ALT_TEMP_COMPENSATION
-  alt_temp_compensation = ALT_TEMP_COMPENSATION ;
-#endif
+//#ifdef ALT_TEMP_COMPENSATION
+//  alt_temp_compensation = ALT_TEMP_COMPENSATION ;
+//#endif
 
   
 #ifdef DEBUG

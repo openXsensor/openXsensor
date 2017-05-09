@@ -22,7 +22,7 @@ Driver v. 5.1 library in order to reduce the size of flash memory.
 
 #ifdef DEBUG 
   #ifndef GENERATE_MAG_CALIBRATION_DATA
-    #define DEBUG_HMC5883
+//    #define DEBUG_HMC5883
   #endif
 #endif
 

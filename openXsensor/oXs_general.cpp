@@ -130,7 +130,7 @@ void init()
   // Timer1
   TIMSK1 &= ~( 1<< OCIE1A ) ; // Disable interupt on timer 1 for compA
   TCCR1A = 0x00 ;    //Init.
-  TCCR1B = 0xC1 ;    // I/p noise cancel, rising edge, Clock/1
+  TCCR1B = 0xC1 ;    // I/p noise cancel, rising edge, Clock/1 (so running at same speed as CPU)
 
   //  initialise le ADC converter
 #if defined(ADCSRA) 
