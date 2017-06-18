@@ -88,6 +88,9 @@ struct t_mbAllData {
 #define ALTIMETER_MAX     40
 #define GPS_LONG          41
 #define GPS_LAT           42
+#define FLOW_ACTUAL       43
+#define FLOW_REMAIN       44
+#define FLOW_PERCENT      45
 // to do : add alt min, alt max ,  rpm max? , current max (not sure that it is neaded because it can be calculated on TX side
 // End of list of type of available measurements
 

@@ -71,8 +71,6 @@ extern uint8_t volatile sendStatus ;
     extern bool GPS_fix ;
 #endif
 
-
-
 extern struct ONE_MEASUREMENT sport_rpm ;
 
 //used only by Hub protocol
@@ -191,7 +189,7 @@ uint8_t currFieldIdx[6] = { 0 , 2, 5 , 10 , 15 , 19 } ;                         
 const uint8_t fieldMinIdx[7]  = { 0 , 2, 5 , 10 , 15 , 19 , 22 } ;                     // per sensor, say the first field index ; there is one entry more in the array to know the last index
 const uint8_t fieldId[22] = { 0x10 , 0x11 , 0x30 , 0x30 , 0x30 , 0x21 , 0x20 , 0x60 ,0x90, 0x91 , 0x80, 0x80 , 0x82 , 0x83 , 0x84 , 0x50 , 0x40 , 0x41 , 0xA0 , 0x70 , 0x71 , 0x72 } ; //fieldID to send to Tx (to shift 4 bits to left
 struct ONE_MEASUREMENT * p_measurements[22] ;      // array of 22 pointers (each pointer point to a structure containing a byte saying if a value is available and to the value.
-// There are 20 possible fields to transmit in SPORT
+// There are 20 possible fields to transmit in SPORT                                                                                                                            
 // They are grouped per sensor ID
 // Sensor 0 start from index = 0 and contains Alt + Vspeed
 // Sensor 1 start from index = 2 and contains Cell_1_2 , Cell_3_4 and Cell_5_6

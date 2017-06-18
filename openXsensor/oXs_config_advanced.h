@@ -26,7 +26,7 @@
 #define         DATA_ID_GPS    0x83  //          3 used for GPS data
 #define         DATA_ID_RPM    0xE4  //          4 used for rpm, T1, T2, airspeed
 #define         DATA_ID_ACC    0x67  //          7 used for Acc X, Y, Z
-#define         DATA_ID_TX     0x48  //          8 used to read data sent by Tx in order to ajust some oXs parameters
+#define         DATA_ID_TX     0x0D  //           used to read data sent by Tx in order to adjust some oXs parameters (flow sensor or ppm)
 // --------- 2 - Data to transmit ---------                   
 // ***** 2.1 - Frsky data *****                              see oXs_config_basic.h file
 // ***** 2.2 - Hott data *****                               see oXs_config_basic.h file
@@ -49,12 +49,13 @@
 
 //#define FILL_TEST1_WITH_HEADING_FROM_MAGNETOMETER              // uncomment to activate this option
 
-//#define FILL_TEST_3_WITH_FLOW_SENSOR_CONSUMPTION             // uncomment to activate this option
+//#define FILL_TEST_1_2_3_WITH_FLOW_SENSOR_CONSUMPTION             // uncomment to activate this option
 
 // --------- 3 - PPM settings ---------
 //#define PIN_PPM           3     // Uncomment this line in order to use a Rx channel to control oXs; default is 2 but my own device use 3
 #define PPM_MIN_100       988     // default 1500 - 512 ; // pulse width (usec) when TX sends a channel = -100
 #define PPM_PLUS_100      2012    // default 1500 + 512 ; // pulse width (usec) when TX sends a channel = +100
+#define PPM_VIA_SPORT             // this allows to send ppm data over SPORT protocol (only for Tx with openTx running LUA script.
 
 // --------- 4 - Vario settings ---------    Type of baro is defined in oXs_config_basic.h file
 
@@ -64,7 +65,7 @@
 // ***** 4.2 - Type of Vspeed to transmit  *****             Is defined only in oXs_config_basic.h file                       
 
 // ***** 4.3 - Sensitivity predefined by program *****
-#define SENSITIVITY_MIN 50
+#define SENSITIVITY_MIN 20          // normal value for MS5611; for BMP, it is probably better to use a lower value like 20
 #define SENSITIVITY_MAX 300
 #define SENSITIVITY_MIN_AT 100
 #define SENSITIVITY_MAX_AT 1000
@@ -116,15 +117,15 @@
 //#define REFERENCE_VOLTAGE 4970    // set value in milliVolt; if commented, oXs will use or 1100 (if internal ref is used) or 5000 (if internal ref is not used) 
 
 // ***** 6.2 - Voltage parameters *****
-#define OFFSET_VOLTAGE      200   , 0     , 500    , 0    , 0   , 0                // optionnal, can be negative, must be integer, in principe in mv
+#define OFFSET_VOLTAGE      0   , 0     , 0    , 0    , 0   , 0                // optionnal, can be negative, must be integer, in principe in mv
 #define SCALE_VOLTAGE       1.0 , 1.0   , 204.6  , 204.6  , 1.0 , 1.0              // optionnal, can be negative, can have decimals
 
 // ***** 6.3 - Max number of Lipo cells to measure (and transmit to Tx) *****      Is defined only in oXs_config_basic.h file
 
 // ***** 6.4 - Convert voltage to temperature (° Celcius) *****     
-#define FIRST_NTC_ON_VOLT_NR 3 // uncomment this line when thermistor are used; specify index of first voltage being used for conversion to temperature (e.g. 5 means VOLT_5)
-#define LAST_NTC_ON_VOLT_NR 4 // specify index of last voltage being used for conversion to temperature (e.g. 6 means VOLT_6)
-#define SERIE_RESISTOR 4700 // resitance connected to Arduino Vcc (in Ohm)
+#define FIRST_NTC_ON_VOLT_NR 3   // uncomment this line when thermistor are used; specify index of first voltage being used for conversion to temperature (e.g. 5 means VOLT_5)
+#define LAST_NTC_ON_VOLT_NR 3    // specify index of last voltage being used for conversion to temperature (e.g. 6 means VOLT_6)
+#define SERIE_RESISTOR 4700      // resistance connected to Arduino Vcc (in Ohm)
 #define STEINHART_A 7.00111E-4   // these parameters are specific to the NTC being used.
 #define STEINHART_B 2.1644E-4
 #define STEINHART_C 1.0619E-07
@@ -152,7 +153,6 @@
 // --------- 7 - RPM (rotations per minute) settings ---------                      Is defined only in oXs_config_basic.h file
 
 // --------- 8 - Persistent memory settings ---------
-#define SAVE_TO_EEPROM
 //#define PIN_PUSHBUTTON    2   // default is 10 but my own device is 2
 
 // --------- 9 - GPS ------------------------------------------------------------------------------------------------
@@ -187,9 +187,9 @@
 
 // --------- 11 - Flow sensor ---------
 #define PULSES_PER_ML                    10.0                 // number of pulses per milli liter (depends on sensor); can have decimals
-#define FLOW_SENSOR_RESET_AT_PPM         95                   // when absolute value of ppm is greater than this, flow counter is reset.
-#define INIT_FLOW_PARAM  15 , 100 , 500 , 700 , 0 , 0, 0, 0   // define at 4 levels of flow (in mliter/min) 4 correction parameters (in %; e.g. 20, 10, 10, 20) at 4 levels of flow (in mliter/min); flow levels have to be sorted from low to high
 #define TANK_CAPACITY                    1000                 // tank capacity in ml
+#define INIT_FLOW_PARAM  30 , 100 , 500 , 700 , 0 , 0, 0, 0   // define at 4 levels of flow (in mliter/min) (e.g. 30, 100, 500, 700) 4 correction parameters (in %; e.g. 20, 10, -5, 15); flow levels have to be sorted from low to high
+#define FLOW_SENSOR_RESET_AT_PPM         95                   // when absolute value of ppm is greater than this, flow counter is reset.
 
 // --------- 20 - Sequencer ---------
 //#define SEQUENCE_OUTPUTS 0b100000  
@@ -254,6 +254,22 @@ struct ONE_MEASUREMENT {
 
 #define SECONDS_SINCE_T0        32
 #define AVERAGE_VSPEED_SINCE_TO 33 
+
+/***************************************************************************************/
+/* oXs code used by Flow sensor                                                        */ 
+/***************************************************************************************/
+#define TX_FIELD_FLOW_1     0
+#define TX_FIELD_FLOW_2     1
+#define TX_FIELD_FLOW_3     2
+#define TX_FIELD_FLOW_4     3
+#define TX_FIELD_FLOW_CORR_1    4
+#define TX_FIELD_FLOW_CORR_2    5
+#define TX_FIELD_FLOW_CORR_3    6
+#define TX_FIELD_FLOW_CORR_4    7
+#define TX_FIELD_TANK_CAPACITY  8
+#define TX_FIELD_RESET_FUEL     9
+#define TX_FIELD_PPM          0x10
+
 
 #ifdef DEBUG
 //#include "HardwareSerial.h"

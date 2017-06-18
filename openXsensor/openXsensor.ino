@@ -20,7 +20,7 @@
   #include "oXs_hmc5883.h"
 #endif
   
-#ifdef SAVE_TO_EEPROM
+#if defined (SAVE_TO_EEPROM ) and ( SAVE_TO_EEPROM == YES ) 
   #include <EEPROM.h>
   #include "EEPROMAnything.h"
 #endif
@@ -139,10 +139,10 @@ extern unsigned long millis( void ) ;
 //#define DEBUGFORCEPPM
 //#define DEBUG_VARIO_TIME
 //#define DEBUG_VOLTAGE_TIME
-#define DEBUG_READ_SPORT
-#define DEBUG_FLOW_SENSOR
+//#define DEBUG_READ_SPORT
+//#define DEBUG_FLOW_SENSOR
 #endif
-#define PPM_VIA_SPORT
+
 
 // ************ declare some functions being used ***************
 int freeRam () ;
@@ -160,6 +160,7 @@ bool checkFreeTime() ;
 void setNewSequence() ;
 void checkSequence() ;
 void blinkLed( uint8_t blinkType ) ;
+void checkFlowParam() ;
 
 // *********** declare some variables *****************************
 #ifdef VARIO
@@ -234,13 +235,15 @@ struct ONE_MEASUREMENT ppm ; // duration of pulse in range -100 / + 100 ; can ex
   volatile uint16_t flowMeterCnt ;            // counter of pin change connected to the flow sensor (increased in the interrupt. reset every X sec when flow is processed)
   float currentFlow  ;                     // count the consumed ml/min during the last x sec
   float consumedML   ;                     // total of consumed ml since the last reset (or restart if reset is not activated); can be saved in EEPROM
-  boolean newFlowSensorValue ;                // true when a new counter is available
+  struct ONE_MEASUREMENT actualFlow ;             // in ml/min
+  struct ONE_MEASUREMENT remainingFuelML ;         // in ml
+  struct ONE_MEASUREMENT fuelPercent ;             // in % of tank capacity
+  boolean newFlowAvailable = false ;
   int16_t flowParam[8] =  { INIT_FLOW_PARAM } ;                      // table that contains the parameters to correct the ml/pulse depending on the flow ; can be loaded by SPORT in EEPROM; can also be defined in a parameter 
-  uint8_t residuelFuel  ;                      // percentage of residual fuel
   uint16_t tankCapacity =  TANK_CAPACITY ;     // capacity of fuel tank
-  uint16_t consumedMLPrev   ;                 //Last value saved in eeprom
-  uint16_t tankCapacityPrev ;                 //Last value saved in eeprom
-  int16_t flowParamPrev[8]  ;                 //Last value saved in eeprom
+  uint16_t consumedMLEeprom   ;                 //Last value saved in eeprom
+  uint16_t tankCapacityEeprom ;                 //Last value saved in eeprom
+  int16_t flowParamEeprom[8]  ;                 //Last value saved in eeprom
 #endif
 
 
@@ -554,7 +557,7 @@ void setup(){
 
 #endif
 
-#ifdef SAVE_TO_EEPROM
+#if defined (SAVE_TO_EEPROM ) and ( SAVE_TO_EEPROM == YES )
   LoadFromEEProm();
 #endif
 
@@ -755,9 +758,9 @@ if ( currentLoopMillis - lastLoop500Millis > 500 ) {
 #endif  // SEQUENCE_OUTPUTS
 
 // Save Persistant Data To EEProm every 10 seconds
-#ifdef SAVE_TO_EEPROM
+#if defined (SAVE_TO_EEPROM ) and ( SAVE_TO_EEPROM == YES )
   static unsigned long LastEEPromMs=millis();
-  if (millis()>LastEEPromMs+10000){ 
+  if (millis() > LastEEPromMs+10000){ 
     LastEEPromMs=millis();
     SaveToEEProm();
   }
@@ -838,14 +841,13 @@ void readSensors() {
 #endif 
 
 
-#if defined ( PPM_VIA_SPORT ) && defined (PROTOCOL ) && ( ( PROTOCOL == FRSKY_SPORT ) || ( PROTOCOL == FRSKY_SPORT_HUB ) ) // if it is allowed to read SPORT
+#if ( defined ( PPM_VIA_SPORT ) || ( defined ( A_FLOW_SENSOR_IS_CONNECTED ) && ( A_FLOW_SENSOR_IS_CONNECTED == YES) ) ) && defined (PROTOCOL ) && ( ( PROTOCOL == FRSKY_SPORT ) || ( PROTOCOL == FRSKY_SPORT_HUB ) ) // if it is allowed to read SPORT
     cli() ;
     if ( TxDataIdx == 8 ) {
       TxDataIdx++ ; // Increase the number of data in order to avoid to read twice
-      uint16_t txField = ( TxData[3] << 8 ) + TxData[2] ;                                                      // id of the field being received
-      uint32_t txValue = ( ( ( ( (TxData[7] << 8) + TxData[6] ) << 8 ) + TxData[5] ) << 8 ) + TxData[4] ;  // value of the field being received
+      uint16_t txField = ( TxData[2] << 8 ) + TxData[1] ;                                                      // id of the field being received
+      uint32_t txValue = ( ( ( ( (TxData[6] << 8) + TxData[5] ) << 8 ) + TxData[4] ) << 8 ) + TxData[3] ;      // value of the field being received
       sei() ;
-      processTxCmd(txField , txValue ) ; 
 #ifdef DEBUG_READ_SPORT
       Serial.print("At: ") ; Serial.print(millis()) ;
       Serial.print(" "); Serial.print(TxData[0], HEX);  
@@ -858,8 +860,21 @@ void readSensors() {
       Serial.print(" "); Serial.print(TxData[7], HEX);
       Serial.println(" ");    
 #endif      
+#if  ( defined ( A_FLOW_SENSOR_IS_CONNECTED ) && ( A_FLOW_SENSOR_IS_CONNECTED == YES) )
+      if (  txField <= TX_FIELD_FLOW_CORR_4)  {  // save values for flow meter parameter in memory
+        flowParam[txField] = txValue ;
+      } else if (  txField ==  TX_FIELD_TANK_CAPACITY) {  // save values for capacity in memory
+        tankCapacity = txValue ;                          // note: values will be saved in eeprom in EEPROM function
+      } else if (  txField ==  TX_FIELD_RESET_FUEL ) {
+        consumedML = 0 ;                                  // reset consumption                                               
+      }
+#endif
+#if  defined ( PPM_VIA_SPORT )      
+      if ( txField == TX_FIELD_PPM )  {                   // use the value for ppm // TODO
+      }   
+#endif
     } else {
-      sei() ;
+      sei() ;      
     }
 #endif
  
@@ -1080,12 +1095,14 @@ static uint32_t previousYawRateMillis ;
 #endif
 
 
-//#define FILL_TEST_3_WITH_FLOW_SENSOR_CONSUMPTION
-#if defined ( A_FLOW_SENSOR_IS_CONNECTED ) && ( A_FLOW_SENSOR_IS_CONNECTED == YES)&& defined (FILL_TEST_3_WITH_FLOW_SENSOR_CONSUMPTION)
-  if( newFlowSensorValue ) {
-    newFlowSensorValue = false ;
-    test3.value = consumedML ; 
-    test3.available = true ;
+
+#if defined ( A_FLOW_SENSOR_IS_CONNECTED ) && ( A_FLOW_SENSOR_IS_CONNECTED == YES)&& defined (FILL_TEST_1_2_3_WITH_FLOW_SENSOR_CONSUMPTION)
+  if( newFlowAvailable ) {
+    test1.value = actualFlow.value ; 
+    test2.value = remainingFuelML.value ; 
+    test3.value = fuelPercent.value ; 
+    test1.available = test2.available = test3.available = true ;
+    newFlowAvailable = false ;
   }  
 #endif
 
@@ -1457,14 +1474,12 @@ void Reset10SecButtonPress()
 
 
 
-#ifdef SAVE_TO_EEPROM
+#if defined (SAVE_TO_EEPROM ) and ( SAVE_TO_EEPROM == YES )
 /****************************************/
 /* SaveToEEProm => save persistant Data */
 /****************************************/
 void SaveToEEProm(){
   static uint8_t caseWriteEeprom = 0;
-  uint32_t uint32ToEeprom ;
-  int32_t int32ToEeprom ;
 #define CASE_MAX_EEPROM 2  // to adapt if thee are more data to save.   
 #ifdef DEBUG
   Serial.print(F("Saving to EEProm:"));    
@@ -1478,22 +1493,20 @@ void SaveToEEProm(){
 #endif
 #if defined ( A_FLOW_SENSOR_IS_CONNECTED ) && ( A_FLOW_SENSOR_IS_CONNECTED == YES) 
   case ( 1 ) : 
-    if ( ((uint16_t) consumedML) != consumedMLPrev ) {                            // write in EEPROM only if there is a change
-      consumedMLPrev = consumedML ; 
-      uint32ToEeprom = consumedMLPrev ; 
-      EEPROM_writeAnything( 1 , uint32ToEeprom );
+    if ( ((uint16_t) consumedML) != consumedMLEeprom ) {                            // write in EEPROM only if there is a change
+      consumedMLEeprom = consumedML ;  
+      EEPROM_writeAnything( 4 , consumedMLEeprom );
     }   
     break;  
   case ( 2 ) : 
-    if ( tankCapacity != tankCapacityPrev ) {                            // write in EEPROM only if there is a change
-      tankCapacityPrev = tankCapacity ; 
-      EEPROM_writeAnything( 2 , (uint32_t ) tankCapacityPrev ); 
+    if ( tankCapacity != tankCapacityEeprom ) {                            // write in EEPROM only if there is a change
+      tankCapacityEeprom = tankCapacity ; 
+      EEPROM_writeAnything( 8 , tankCapacityEeprom ); 
     }
     for (uint8_t idxWrite = 0 ; idxWrite < 8 ; idxWrite++ ) { 
-      if ( flowParam[idxWrite] != flowParamPrev[idxWrite] ) {
-        flowParamPrev[idxWrite] = flowParam[idxWrite] ;
-        int32ToEeprom =  flowParam[idxWrite] ;
-        EEPROM_writeAnything( 3 + idxWrite , int32ToEeprom ); 
+      if ( flowParam[idxWrite] != flowParamEeprom[idxWrite] ) {
+        flowParamEeprom[idxWrite] = flowParam[idxWrite] ;
+        EEPROM_writeAnything( 12 + (idxWrite * 4 ) , flowParamEeprom[idxWrite] ); 
       }
     }
     break;  
@@ -1508,31 +1521,34 @@ void SaveToEEProm(){
 /******************************************/
 void LoadFromEEProm(){
   // Load the last saved value
-  uint32_t readFromEeprom ;
-  int32_t readIntFromEeprom ;
 #ifdef PIN_CURRENTSENSOR
-  EEPROM_readAnything(0, oXs_Current.currentData.consumedMilliAmps);
+  EEPROM_readAnything( 0 , oXs_Current.currentData.consumedMilliAmps);
   #ifdef DEBUG
     Serial.println(F("Restored consumed mA"));
   #endif  
 #endif
 #if defined ( A_FLOW_SENSOR_IS_CONNECTED ) && ( A_FLOW_SENSOR_IS_CONNECTED == YES ) 
-    EEPROM_readAnything(1, readFromEeprom  );
-    consumedML = readFromEeprom  ;                // note : consumedMl is not a uint32_t so it is easier to use a temporary field 
-    EEPROM_readAnything(2, readFromEeprom  );
-    if (readFromEeprom > 0 ) { 
-      tankCapacity = readFromEeprom ;
+    EEPROM_readAnything(4, consumedMLEeprom  ) + 4 ;
+    consumedML = consumedMLEeprom  ; 
+    EEPROM_readAnything( 8, tankCapacityEeprom  );
+    tankCapacity = tankCapacityEeprom ;
+    for (uint8_t idxRead = 0 ; idxRead < 8 ; idxRead++ ) {
+        EEPROM_readAnything( 12 + ( idxRead * 4) , flowParamEeprom[idxRead] );
+        flowParam[idxRead] = flowParamEeprom[idxRead] ;
     }
-    else {
-      tankCapacity = 1000 ; // fill a dummy value to avoid division by zero
-    }
-    for (int idxRead = 0 ; idxRead < 8 ; idxRead++ ) {
-      EEPROM_readAnything(3 + idxRead, readIntFromEeprom  );
-      flowParam[idxRead] = readIntFromEeprom ;
-      flowParamPrev[idxRead] = flowParam[idxRead] ;
-    }
+    checkFlowParam() ;
   #ifdef DEBUG  
-    Serial.println(F("Restored consumed fuel"));
+    Serial.print(F("Restored consumed= ")); Serial.print(consumedMLEeprom) ; Serial.print(F("  Tank=")) ; Serial.print(tankCapacityEeprom) ; Serial.print(F(" Param=")) ;
+    for (uint8_t idxRead = 0 ; idxRead < 8 ; idxRead++ ) {
+      Serial.print(flowParamEeprom[idxRead]) ; Serial.print(" ") ;  
+    }
+   Serial.println(" ");
+   
+   Serial.print(F("          consumed= ")); Serial.print(consumedML) ; Serial.print(F("  Tank=")) ; Serial.print(tankCapacity) ; Serial.print(F(" Param=")) ;
+    for (uint8_t idxRead = 0 ; idxRead < 8 ; idxRead++ ) {
+      Serial.print(flowParam[idxRead]) ; Serial.print(" ") ;  
+    }
+   Serial.println(" ");
   #endif  
 #endif
 }
@@ -1715,23 +1731,26 @@ void ReadPPM() {
   #if ( A_FLOW_SENSOR_IS_CONNECTED == YES)  // flowMeterCnt is updated by interrupt PCINT0 
 
 
-#define TX_FIELD_FLOW_1     0
-#define TX_FIELD_FLOW_2     1
-#define TX_FIELD_FLOW_3     2
-#define TX_FIELD_FLOW_4     3
-#define TX_FIELD_FLOW_CORR_1    4
-#define TX_FIELD_FLOW_CORR_2    5
-#define TX_FIELD_FLOW_CORR_3    6
-#define TX_FIELD_FLOW_CORR_4    7
-#define TX_FIELD_TANK_CAPACITY  8
-#define TX_FIELD_PPM          0x10
 
 float mapFlowCorr( uint8_t idx) {                             // calculate correction factor depending on current flow
   uint8_t flowCorrIdx = idx + TX_FIELD_FLOW_CORR_1 ;
   return ( flowParam[flowCorrIdx ] + ( currentFlow - flowParam[idx]) / (flowParam[idx + 1] - flowParam[idx]) * (flowParam[flowCorrIdx + 1] - flowParam[flowCorrIdx ] ) ) ;
 }
   
-void processFlowMeterCnt () {    // get the flowmeter counter once per 50 seconds, convert it in mili liter and activate the flaf saying a new value is available
+void checkFlowParam() {
+  if ( (tankCapacity % 50) != 0) tankCapacity = ( tankCapacity / 50 ) * 50 ; // set tank capacity in steps of 50 ml
+  tankCapacity = constrain( tankCapacity , 100 , 3000 ) ;
+  for (uint8_t i = 0; i < 4 ; i++) {
+      if ( ( flowParam[i] % 5) != 0 ) flowParam[i] = ( flowParam[i] / 5 ) * 5 ;
+      flowParam[i] = constrain( flowParam[i] , 30 , 800 + (5 * i)) ;
+      flowParam[ i+ 4] = constrain( flowParam[i+4] , -100 , +100 ) ;
+  }
+  for (uint8_t i= 1 ; i < 4 ; i++) {
+      if ( flowParam[i] <= flowParam[i - 1] )  flowParam[i] = flowParam[i - 1] + 5 ;
+  }
+}
+
+void processFlowMeterCnt () {    // get the flowmeter counter once per X seconds, convert it in mili liter and activate the flag saying a new value is available
                                  // save the result in eeprom is done in main loop for all data to be saved in EEPROM
 #define FLOW_DELAY 2000                                   // calculates once per 2 sec
   float flowCorr ;
@@ -1758,13 +1777,17 @@ void processFlowMeterCnt () {    // get the flowmeter counter once per 50 second
       flowCorr = flowParam[TX_FIELD_FLOW_CORR_4] ;
     }  
     currentFlow = ((float) currentFlow ) * ( 100.0 + flowCorr) * 0.01   ; // 0.01 because flowCorr is in %)  
+    actualFlow.value = currentFlow ;
+    actualFlow.available= true ;
     consumedML += currentFlow  * FLOW_DELAY / 60000.0 ; 
     if ( consumedML > tankCapacity ) consumedML = tankCapacity ;
-    residuelFuel =  ( tankCapacity - consumedML ) * 100 / tankCapacity ; // in percent
-    newFlowSensorValue = true ;
-
+    remainingFuelML.value = tankCapacity - consumedML ;
+    remainingFuelML.available= true ;
+    fuelPercent.value =  remainingFuelML.value * 100 / tankCapacity ; // in percent
+    fuelPercent.available= true ;
+    newFlowAvailable = true ;   // this is use to fill TEST_1, 2, 3 to avoid conflict with JETI protocol which uses 3 individual flags 
 #if defined ( DEBUG) && defined (DEBUG_FLOW_SENSOR)
-    Serial.print( prevFlowMillis ) ;
+    Serial.print(" At " ); Serial.print( prevFlowMillis ) ;
     //Serial.print("flcnt " ); Serial.print( flowMeterCntCopy ) ;
     //Serial.print(" corr " ); Serial.print( flowCorr ) ;
     Serial.print(" ml/min " ); Serial.print( currentFlow ) ;
@@ -1779,14 +1802,6 @@ ISR(PCINT0_vect, )  {       // a pin change interrupt occurs on the pin being co
   flowMeterCnt++ ;            // we increase the counter of pin change.
 }
 
-void processTxCmd(uint16_t txField , uint32_t txValue ) {
-  if (  txField <= TX_FIELD_FLOW_CORR_4)  {  // save values for flow meter parameter in memory
-     flowParam[txField] = txValue ;
-  } else if (  txField ==  TX_FIELD_TANK_CAPACITY) {  // save values for capacity in memory
-    tankCapacity = txValue ;
-  }
-                                                     // note: values will be saved in eeprom in EEPROM function
-}
 
   #endif
 #endif // end A_FLOW_SENSOR_IS_CONNECTED 

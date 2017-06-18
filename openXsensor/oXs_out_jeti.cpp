@@ -1,5 +1,6 @@
 // File for Jeti
 #include "oXs_out_jeti.h"
+#include <avr/pgmspace.h>
 #if defined(PROTOCOL) &&  (PROTOCOL == JETI) 
 
 #ifdef DEBUG
@@ -9,8 +10,8 @@
 //#define DEBUGJETIFRAME
 #endif
 //#define DEBUG_FORCE_VARIODATA  // this is used to force oXs to send a fixed dummy value for Vspeed and Alt in order to test if an issue result of bmp180 or from Multiplex / Jeti protocol.
-#define DEBUG_SERIAL_RX          // this is used to generate pulses when oXs decodes a byte sent by the receiver
-#define DEBUGASERIAL             // this is used to generate pulses when oXs send a byte 
+//#define DEBUG_SERIAL_RX          // this is used to generate pulses when oXs decodes a byte sent by the receiver
+//#define DEBUGASERIAL             // this is used to generate pulses when oXs send a byte 
 
 extern unsigned long micros( void ) ;
 extern unsigned long millis( void ) ;
@@ -27,6 +28,7 @@ uint8_t volatile jetiMaxData ;   // max number of bytes prepared in the buffer t
 volatile uint8_t state ;                  //!< Holds the state of the software UART.
 volatile uint8_t oneByteReceived ;           // Keep a flag that is true when a byte has been received
 volatile uint8_t lastByteReceived ;           // Keep the last byte received
+uint8_t prevByteReceived ;
 uint8_t  countOfFieldsChecked  ; //   
 
 uint32_t jetiLong ;
@@ -47,6 +49,52 @@ volatile uint8_t debugUartRx ;
 volatile uint8_t ppmInterrupted ; // This flag is activated at the end of handling interrupt on Timer 1 Compare A if during this interrupt handling an interrupt on pin change (INT0 or INT1) occurs
                          // in this case, ppm will be wrong and has to be discarded       
 uint8_t  nbWaitingDelay ;
+
+uint8_t jetiMenu ;
+
+//#if defined ( A_FLOW_SENSOR_IS_CONNECTED ) && ( A_FLOW_SENSOR_IS_CONNECTED == YES)  // we will use interrupt PCINT0 
+  extern volatile uint16_t flowMeterCnt ;            // counter of pin change connected to the flow sensor (increased in the interrupt. reset every X sec when flow is processed)
+  extern float currentFlow  ;                     // count the consumed ml/min during the last x sec
+  extern float consumedML   ;                     // total of consumed ml since the last reset (or restart if reset is not activated); can be saved in EEPROM
+  extern struct ONE_MEASUREMENT actualFlow ;             // in ml/min
+  extern struct ONE_MEASUREMENT remainingFuelML ;         // in ml
+  extern struct ONE_MEASUREMENT fuelPercent ;             // in % of tank capacity
+  extern int16_t flowParam[8]  ;                      // table that contains the parameters to correct the ml/pulse depending on the flow ; can be loaded by SPORT in EEPROM; can also be defined in a parameter 
+  extern uint8_t residuelFuel  ;                      // percentage of residual fuel
+  extern uint16_t tankCapacity  ;     // capacity of fuel tank
+  extern uint16_t consumedMLPrev   ;                 //Last value saved in eeprom
+  extern uint16_t tankCapacityPrev ;                 //Last value saved in eeprom
+  extern int16_t flowParamPrev[8]  ;                 //Last value saved in eeprom
+  void processReceivedCmd( uint8_t cmd ) ;
+  void upDown ( int8_t upOrDown ) ;
+  void fillTxBuffer( void ) ;
+  void itoc ( int16_t n , uint8_t posLastDigit ) ;
+
+  extern void checkFlowParam() ;
+  
+//#endif
+#define UP          0xD0
+#define DOWN        0xB0
+#define RIGHT       0xE0
+#define LEFT        0x70
+#define LEFT_RIGHT  0x60
+#define JETI_MENU_MAX 10 // number of items in jeti menu starting with 0
+
+#define JETI_DATA            0
+#define JETI_TANK_RESET     1
+#define JETI_TANK_CAPACITY  2
+#define JETI_CAL_FLOW_1     3
+#define JETI_CAL_FLOW_2     4
+#define JETI_CAL_FLOW_3     5
+#define JETI_CAL_FLOW_4     6
+#define JETI_CORR_FLOW_1    7 
+#define JETI_CORR_FLOW_2    8
+#define JETI_CORR_FLOW_3    9 
+#define JETI_CORR_FLOW_4    10 
+
+//                                      "0123456789ABCDE-0123456789ABCDE-0123456789ABCDE-0123456789ABCDE-0123456789ABCDE-0123456789ABCDE-0123456789ABCDE-0123456789ABCDE-0123456789ABCDE-0123456789ABCDE-
+uint8_t const jetiText[161] PROGMEM = { "Flow      ml/minRemain        mlReset fuel      <=+=>          %Tank capacity   <= =>         mlCalib. Flow 1   <= =>     ml/minCalib. Corr 1   <= =>          %"}; 
+
 
 #ifdef DEBUG  
 OXS_OUT::OXS_OUT(uint8_t pinTx,HardwareSerial &print)
@@ -153,6 +201,11 @@ void OXS_OUT::initJetiListOfFields() {  // fill an array with the list of fields
     listOfFields[listOfFieldsIdx++] = GPS_LONG ;
     listOfFields[listOfFieldsIdx++] = GPS_LAT ;
 #endif                           // end GPS_INSTALLED
+#if defined ( A_FLOW_SENSOR_IS_CONNECTED ) && ( A_FLOW_SENSOR_IS_CONNECTED == YES)
+    listOfFields[listOfFieldsIdx++] = FLOW_ACTUAL ;
+    listOfFields[listOfFieldsIdx++] = FLOW_REMAIN ;
+    listOfFields[listOfFieldsIdx++] = FLOW_PERCENT ;
+#endif                          // end FLOW_SENSOR_IS_CONNECTED
   numberOfFields = listOfFieldsIdx - 1 ;
   listOfFieldsIdx = 1 ; 
 }
@@ -367,7 +420,26 @@ boolean OXS_OUT::retrieveFieldIfAvailable(uint8_t fieldId , int32_t * fieldValue
          * dataType = JETI_GPS ;
          break ;                          
 #endif                           // end GPS_INSTALLED
-   
+#if defined ( A_FLOW_SENSOR_IS_CONNECTED ) && ( A_FLOW_SENSOR_IS_CONNECTED == YES)
+      case FLOW_ACTUAL :
+        if( ! actualFlow.available ) return 0 ;
+          * fieldValue  = actualFlow.value  ;                    
+          * dataType = JETI14_0D ;
+          actualFlow.available = false ;  //reset the last bit to avoid sending twice the same value
+          break ;
+      case FLOW_REMAIN :
+        if( ! remainingFuelML.available ) return 0 ;
+          * fieldValue  = remainingFuelML.value ;                         
+          * dataType = JETI14_0D ;
+          remainingFuelML.available = false ;  
+          break ;
+      case FLOW_PERCENT :
+        if( ! fuelPercent.available ) return 0 ;
+          * fieldValue  = fuelPercent.value  ;                         
+          * dataType = JETI14_0D ;
+          fuelPercent.available = false ;  
+          break ;      
+#endif                           // A_FLOW_SENSOR_IS_CONNECTED
    } // end of switch
    return 1 ;
 }
@@ -584,7 +656,7 @@ void OXS_OUT::fillJetiBufferWithText() {
          mergeLabelUnit( textIdx, "Current", "Amp"  ) ;
          break ;
       case MILLIAH :
-         mergeLabelUnit( textIdx, "Consumprion", "AmpH"  ) ;
+         mergeLabelUnit( textIdx, "Consumption", "AmpH"  ) ;
          break ;
 #endif
 
@@ -618,7 +690,17 @@ void OXS_OUT::fillJetiBufferWithText() {
 //        break ;
 
 #endif                           // end GPS_INSTALLED
- 
+#if defined ( A_FLOW_SENSOR_IS_CONNECTED ) && ( A_FLOW_SENSOR_IS_CONNECTED == YES)
+      case FLOW_ACTUAL :
+          mergeLabelUnit( textIdx, "Consumption", "ml/min"  ) ;
+          break ;
+      case FLOW_REMAIN :
+          mergeLabelUnit( textIdx, "Remain", "ml"  ) ;
+          break ;
+      case FLOW_PERCENT :
+          mergeLabelUnit( textIdx, "Fuel", "%"  ) ;
+          break ;      
+#endif                           // A_FLOW_SENSOR_IS_CONNECTED 
   } // end switch
     
         jetiData[2] =  ( jetiMaxData - 2 ) ; // update number of bytes that will be in buffer (including crc); keep flag in bit 6/7 to zero because it is text and not data
@@ -667,9 +749,12 @@ void OXS_OUT::sendData()    // this part could be modified in order to put more 
 //after filling data or text, we fill the buffer with the 2 lines for the display box (this seems to be mandatory by the protocol)        
         jetiData[jetiMaxData++] = 0xFE ;                                       // fill the 2 lines for the display box (with 0xFE and 0xFF as delimiters)         uint8_t carToSend = 0x41 ;
 #if defined ( A_FLOW_SENSOR_IS_CONNECTED ) && ( A_FLOW_SENSOR_IS_CONNECTED == YES)
-        if (lastReceivedByte <> prevReceivedByte ) processReceivedCmd( lastReceivedByte ) ;
+        if (lastByteReceived != prevByteReceived ) { 
+          prevByteReceived = lastByteReceived ;
+          processReceivedCmd( lastByteReceived ) ;
+        }
         fillTxBuffer() ;
-#else
+#else                                                        // when a flow sensor is not connected, we send always a dummy text
         for ( uint8_t i_jetiBoxText = 0 ; i_jetiBoxText < 16 ; i_jetiBoxText++ ) {
             jetiData[jetiMaxData++] = 0x2E  ;                // here it is a dummy text; it could be changed later on.
             jetiData[jetiMaxData++] = 0x2D  ;
@@ -681,13 +766,15 @@ void OXS_OUT::sendData()    // this part could be modified in order to put more 
         //printer->print(F("28 29 2A 2B 2C 2D 2E 2F 30 31 32 33 34 35 36 37 38 39 3A 3B 3C 3D 3E 3F 40 "));
         //printer->println(F("41 42 43 44 45 46 47 48 49 4A 4B 4C 4D 4E 4F 50 51 52 53 54 55 56 57 58 59 "));
         //for (int i = 0 ; i<jetiMaxData ; i++ )  // to display the full buffer
+        /*
         for (int i = 8 ; i<= 13 ; i++ )           // to display only the first 2 bytes data
         {
            if ( jetiData[i]< 0x10 ) printer->print("0") ;
            printer->print(jetiData[i],HEX); printer->print(" ");
         }
         printer->println("");
-        /*
+        */
+        
         for (int i = 0 ; i<jetiMaxData ; i++ )
         {
            if ( jetiData[i] >= 0x20 && jetiData[i] <= 0x7F) {
@@ -699,7 +786,7 @@ void OXS_OUT::sendData()    // this part could be modified in order to put more 
            }
         }
         printer->println(""); printer->println("");                 
-        */
+        
 #endif        
         startJetiTransmit() ;
 //    }
@@ -708,63 +795,68 @@ void OXS_OUT::sendData()    // this part could be modified in order to put more 
 
 
 void processReceivedCmd( uint8_t cmd ) {
-  prvReceivedByte = cmd ;
   switch ( cmd ) {
     case DOWN :
       jetiMenu++ ;
       if (jetiMenu > JETI_MENU_MAX) jetiMenu = 0 ;
       break ;
-    case LEFT_RIGHT
-      if ( jetiMenu == JETIRESET ) consumedML = 0 ;
+    case UP :
+      jetiMenu-- ;
+      if (jetiMenu > JETI_MENU_MAX) jetiMenu = JETI_MENU_MAX ;
       break ;
-    case LEFT
-      upDown(0) ;
+    case LEFT_RIGHT :
+      if ( jetiMenu == JETI_TANK_RESET ) consumedML = 0 ;
       break ;
-    case RIGHT
+    case LEFT :
+      upDown(1) ;
+      break ;
+    case RIGHT :
       upDown(-1) ;
       break ;        
   }  // end switch
 }  // end processReceivedCmd
 
-void upDown ( int8_t upOrDown ) {  
-  int16_t temp ;
+void upDown ( int8_t upOrDown ) { 
   if ( jetiMenu == JETI_TANK_CAPACITY) {
-    temp += tankCapacity +  (50 *  upOrDown );
-    tankCapacity = constrain( temp , 0 , 3000 ) ;
+    tankCapacity +=  (50 *  upOrDown );
   }
   else if ( ( jetiMenu >= JETI_CAL_FLOW_1) &&  (jetiMenu <= JETI_CAL_FLOW_4) ) {
-    temp = flowParam[jetiMenu - JETI_CAL_FLOW_1] * 5 * upOrDown ;
-    flowParam[jetiMenu - JETI_CAL_FLOW_1]= constrain( temp , 30 , 800 ) ;
+    flowParam[jetiMenu - JETI_CAL_FLOW_1]+= (5 * upOrDown) ;
   }
   else if ( ( jetiMenu >= JETI_CORR_FLOW_1) &&  (jetiMenu <= JETI_CORR_FLOW_4) ) {
-    temp = flowParam[jetiMenu - JETI_CAL_FLOW_1 ] * upOrDown ;
-    flowParam[jetiMenu - JETI_CAL_FLOW_1]= constrain( temp , -100 , +100 ) ;
+    flowParam[jetiMenu - JETI_CAL_FLOW_1 ] +=  upOrDown ;
   }
+  checkFlowParam() ;  // check that new values are valid and consistent (is defined in openXsensor.ino)
 } // end upDown
- 
+
+void memcpy_p (uint8_t posDes , uint8_t posSrc ) {
+  for (uint8_t i = 0 ; i<32 ; i++) {
+     jetiData[posDes++] = pgm_read_byte_near( jetiText + posSrc++ ) ;
+  }
+}
 void fillTxBuffer( void ){
       if (jetiMenu < JETI_CAL_FLOW_1 ) {
-        memcpy_p ( jetiData[jetiMaxData] , jetiText[jetiMenu] , 32 ) ;  // copy the text from a table (in flash memory) to the buffer
+        memcpy_p (  jetiMaxData , jetiMenu * 32 ) ;  // copy the text from a table (in flash memory) to the buffer
         switch ( jetiMenu ) {
         case JETI_DATA :
-          itoc( currentFlow , jetiMaxData + 10 ) ; 
-          itoc( consumedML , jetiMaxData + 28 ) ;
+          itoc( (int16_t) actualFlow.value , jetiMaxData + 8 ) ;
+          itoc( (int16_t) remainingFuelML.value , jetiMaxData + 16 + 12 ) ;
           break ;
         case JETI_TANK_RESET :
-          itoc(  int16_t ( ( (float) (tankCapacity - consumedML) ) * 100.0 /  tankCapacity ), jetiMaxData + 10 ) ; 
+          itoc(  (int16_t)  fuelPercent.value , jetiMaxData + 16 + 13 ) ; 
           break ;
         case JETI_TANK_CAPACITY :
-          itoc( tankCapacity , jetiMaxData + 10 ) ; 
+          itoc( tankCapacity , jetiMaxData + 16 + 12 ) ; 
           break ;
         } // end switch
       } else if ( jetiMenu < JETI_CORR_FLOW_1 ) {
-          memcpy_p( jetiData[jetiMaxData] , jetiText[JETI_CAL_FLOW_1] , 32 ) ;  // copy the text from a table (in flash memory) to the buffer
-          itoc( jetiMenu - JETI_CAL_FLOW_1 + 1 , jetiMaxData + 8 ) ;
-          itoc( flowParam[jetiMenu - JETI_CAL_FLOW_1 ] , jetiMaxData + 20 ) ;
+          memcpy_p( jetiMaxData , 32 * JETI_CAL_FLOW_1 ) ;  // copy the text from a table (in flash memory) to the buffer
+          itoc( jetiMenu - JETI_CAL_FLOW_1 + 1 , jetiMaxData + 12 ) ;
+          itoc( flowParam[jetiMenu - JETI_CAL_FLOW_1 ] , jetiMaxData + 16 + 8 ) ;
       } else {
-          memcpy_p( jetiData[jetiMaxData] , jetiText[JETI_CAL_FLOW_1 + 1] , 32 ) ;  // copy the text from a table (in flash memory) to the buffer
-          itoc( jetiMenu - JETI_CORR_FLOW_1 + 1 , jetiMaxData + 8 ) ;
-          itoc( flowParam[jetiMenu - JETI_CAL_FLOW_1 ] , jetiMaxData + 20 ) ;  
+          memcpy_p( jetiMaxData  ,  32 * (JETI_CAL_FLOW_1 + 1) ) ;  // copy the text from a table (in flash memory) to the buffer
+          itoc( jetiMenu - JETI_CORR_FLOW_1 + 1 , jetiMaxData + 12 ) ;
+          itoc( flowParam[jetiMenu - JETI_CAL_FLOW_1 ] , jetiMaxData + 16 + 13 ) ;  
       }
       jetiMaxData += 32 ;
 }  // end fillTxBuffer

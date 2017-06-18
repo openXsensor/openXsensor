@@ -39,7 +39,8 @@ See OpenXsensor https://github.com/openXsensor/
 *  8 - Persistent memory settings (optional)
 *  9 - GPS (optional)
 *  10 - IMU 6050 (accelerometer/gyro sensor) (optionnal) and HMC5883 (magnetometer)
-*  11 - Sequencer  (ON/OFF) for some digital outputs (E.g. for a light controller)
+*  11 - Flow sensor 
+*  20 - Sequencer  (ON/OFF) for some digital outputs (E.g. for a light controller)
 *  xx - Reserved for developer
 *
 * Note : Active parameters are normally on a line beginning by "#define", followed by the name of the parameter and most of the time a value.
@@ -679,7 +680,7 @@ See OpenXsensor https://github.com/openXsensor/
 *     
 *     Still this kind of component is not foreseen to measure high temperature (e.g. higher than 150 °C).
 *     You can then use thermistors (= NTC). 
-*     The drawback of NTC is that the generated voltageis not proportional to the temperature and it requires some extra calculations.
+*     The drawback of NTC is that the generated voltage is not proportional to the temperature and it requires some extra calculations.
 *     oXs let you use one or several NTC (e.g. one per cylinder) in order to measure high temperature(s).
 *     For each NTC, you have to add a resistor in serie accordingly to this schema 
 *           < Arduino Vcc > --[serie resistor]-- <Arduino analog pin>  --[NTC]-- <ground>
@@ -847,19 +848,19 @@ See OpenXsensor https://github.com/openXsensor/
 
 **** 8 - Persistent memory settings ************************************************************************************
 *      Optional Feature.
-*      If persistent memory is activated, current consumption and fuel consumption will be stored in EEProm every 20 seconds.
+*      If persistent memory is activated, current consumption and fuel consumption (+ flow parameters) will be stored in EEProm every 30 seconds.
 *      This value will be restored every power-up.
 *      So, you will get ongoing consumption even if the you turn off the model between flights.
-*      Please note that some Tx like with openTx let you manage this on Tx side.
-*      If you want to save those data, you have to uncomment the line "#define SAVE_TO_EEPROM"
-*      It is possible to reset:  
-*       - the current consumption to zero pressing on a push button connected to OXS.
+*      If you want to save those data, you have to say YES in the line "#define SAVE_TO_EEPROM"
+*      
+*      It is also possible to reset:  
+*       - the current and fuel consumption to zero pressing on a push button connected to OXS.
 *         Therefore a DIGITAL Arduino pin has to be connected to a push button, the other pin of the push button being connected to Gnd (ground).
 *         In order to use this feature, you must specify the DIGITAL Arduino pin being used.
 *               Default: 10 ; other digital pin can be used; Do not use a pin that is already used for another purpose.
 *       - the fuel consumption to zero from TX using a chanel on TX connected to Aduino using PPM feature (see section 3 PPM and 11 flow sensor )         
 ************************************************************************************************************************
-//#define SAVE_TO_EEPROM
+#define SAVE_TO_EEPROM    NO
 #define PIN_PUSHBUTTON    10   
 
 **** 9 - GPS (optionnal)  *********************************************************************************************
@@ -992,32 +993,66 @@ See OpenXsensor https://github.com/openXsensor/
 
 ****** 11 - Flow sensor ******************
 * If you use a fuel engine, you can connect a liquid flow meter to oXs
-* This sensor generates a pulse each time some milli liter are going trough the sensor 
-* oXs can count the number of pulses and convert it in consumed milli liter.
-* It is recommended to use following type of flow meter because it is quite accurate even when flow is low
+* This sensor generates a pulse each time some milli liters are going trough the sensor 
+* oXs can count the number of pulses and calculates 3 data : the current consumed milli liter / min and, taking care of tank capacity, the remaining fuel in ml and in %.
+* It is recommended to use following type of flow meter because it is probably more accurate than other when flow is low
 * http://www.conrad.be/ce/nl/product/155374/BIO-TECH-eK-FCH-M-Doorstroomsensor-1-stuks-Voedingsspanning-bereik-5-24-VDC-Meetbereik-08-0015-lmin-l-x;jsessionid=EED7B26A7F28BA3F20F0060807E20FD1.ASTPCEN22?ref=searchDetail
 * It is foreseen to measure from 0.015 up to 0.8 ml/min.
 * The output signal of the flow meter sensor has to be connected to arduino pin 9 (and the other 2 pins to 5 volt VCC and to Ground).
 * There are other cheap flow sensor on ebay or aliexpress but I expect that there are not accurate enough when flow is low.
 * 
 * To activate such a flow sensor, you have to: 
-*   - assign YES to the define A_FLOW_SENSOR_IS_CONNECTED
+*   - assign YES to the define A_FLOW_SENSOR_IS_CONNECTED (in oXs_config_basic.h file)
 *   - specify in PULSES_PER_ML the number of pulses generated by the sensor when 1 milli liter of liquid flows trough it
+*   - specify in TANK_CAPACITY the maximum capacity in milli liter
+*   - specify 8 values used to calibrate your sensor in INIT_FLOW_PARAM
+*         Those parameters are used in order to take care that the number of pulses generated by the sensor when 1 milli liter of liquid flows trough it varies with the flow it self.
+*         For 4 flow values (the first 4 parameters) , oXs allows you to define a correction (in %) in the last 4 parameters.  
+*         The process to calibrate the sensor should be as follow : 
+*              Set last 4 parameters to 0 (so 0% correction)
+*              Run you engine at 4 different speeds (from very low, to some medium and finally to high speed) for a few minutes. 
+*              For each run, 
+*                - note the remaining fuel (in ml) reported by oXs at start (e.g. 1200) and at end (e.g. 1090)of the run 
+*                - measure the real remaining fuel (in ml) in the tank at start (e.g. 1500) and at end (e.g. 1380)of the run 
+*                - note the enlapsed time (in min) between start and end of the run (e.g. 2 min).  
+*                - compare the consumed ml (difference between remaining fuel at start and at end) reported by oXs and in the reality (e.g. reported = 1200 - 1090 = 110ml; real = 1500 - 1380= 120ml) 
+*                - calculate the correction factor to apply (e.g. (120 - 110) / 110 = 9%) ; note correction could be negative)
+*                - calculate the flow where this correction applies (= consumed ml reported by oXs / enlapsed time = 110 ml / 2 min = 55 ml/min) 
+*              Fill the first 4 parameters with the calculated flows (e.g. 55) and the last 4 parameters with the correction percentage (e.g. 9). 
+*              Take care that the first 4 parameters have to be in ascending order (so from low speed to high speed).
+*         Note: when oXs calculates the consumption, it will apply linear interpolation for the related range of values.
 *
-* Please note that the current fuel consumption can be saved every 10 sec in a non volatile memory (so it is saved when power goes off and reloaded from memory when power comes up again ). 
-*   To activate this option, you have to uncomment the line #define SAVE_TO_EEPROM in section 8
-* When this option is activated, it is important to be able to reset the value when tank is filled. 
-* A reset of the fuel consuption can be requested from the TX. This requires to activate the oXs PPM option (see section 3) and to connect a Rx channel to oXs.
-*   Reset will occur when absolute value of PPM signal exceed the value specified in FLOW_SENSOR_RESET_AT_PPM (section 11)
+*   If you move an oXs device from one plane to another, you will probably have to modify the values set in TANK_CAPACITY and/or INIT_FLOW_PARAM.  
+*   This requires to upload a new firmware in your oXs except if you are using JETI protocol or SPORT protocol with openTx 2.2.x (or above). 
+*   For JETI protocol, you can just enter the JETIBOX dialog box, press DOWN key to go to the item to modify and press "<" or ">" to increase/decrease the value. 
+*       Do not forget to activate the SAVE_TO_EEPROM option in section 8 in order to save the parameters and reuse them at next power on. 
+*   For SPORT protocol, you must run a mixer LUA script. In the screen customs script, you can enter script name and the parameter (tank capacity or the 8 parameters)
+*   NOte: the parameters saved in the eeprom or loaded by a LUA script take over the parameters defined in the config.
+*
+* Please note that the fuel consumption can be saved every 30 sec in a non volatile memory.
+* To activate this option, you have to say YES in the line #define SAVE_TO_EEPROM from section 8
+* If this option is activated, when oXs start at power on, it start counting from the last remaining fuel when power goes off. 
+* Otherwise, oXs reset the fuel consumption and assumes a 100% tank.
+* 
+* A reset of the fuel consumption can be requested from the TX. This is really needed when SAVE_TO_EEPROM is activated
+* This can be done in several ways depending also on the protocol being used:
+* For all protocols, it can be requested using a PPM signal
+*    This requires to activate the oXs PPM option (see section 3) and to connect a Rx channel to oXs.
+*    Reset will occur when absolute value of PPM signal exceed the value specified in FLOW_SENSOR_RESET_AT_PPM (section 11)
+* Furthermore:
+*  -for JETI protocol it can be requested from the JETIBOX pressing simultanously the "<" and the ">" keys when the JETIBOX dislay the remaining fuel in percentage 
+*  - for the FRSKY SPORT protocol, since openTX version 2.2.x it is possible to activate a LUA function script that will send a reset command to oXs
 *  
-* To transmit the fuel consumption you have to ask oXs: 
-*   - to fill the internal data TEST3. This requires to uncomment  line #define FILL_TEST_3_WITH_FLOW_SENSOR_CONSUMPTION  (in section 2.5 )
-*   - to specify in which telemetry field TEST_3 is sent (see section 2.1/2.4)
+* For JETI protocols, oXs transmits automatically the current flow, the remaining fuel in ml and in % 
+* For other protocols, you have to ask oXs to transmit the data; so you have : 
+*   - to uncomment the line #define FILL_TEST_1_2_3_WITH_FLOW_SENSOR_CONSUMPTION  (in section 2.5 )
+*   - to specify in which telemetry fields, TEST_1 (current flow in ml/min), TEST_2 (remaining fuel in ml) and TEST_3 (remaining fuel in %) are sent (see section 2.1/2.4)
 **************************************************************************************************************************************
 #define A_FLOW_SENSOR_IS_CONNECTED      NO                    // select between YES , NO
-#define PULSES_PER_ML                    12.0                  // number of pulses per milli liter (depends on sensor); can have decimals
+#define PULSES_PER_ML                    10.0                 // number of pulses per milli liter (depends on sensor); can have decimals
+#define TANK_CAPACITY                    1000                 // tank capacity in ml
+#define INIT_FLOW_PARAM  30 , 100 , 500 , 700 , 20 , 10, -5, 15   // define at 4 levels of flow (in mliter/min) (e.g. 30, 100, 500, 700) 4 correction parameters (in %; e.g. 20, 10, -5, 15); flow levels have to be sorted from low to high
 #define FLOW_SENSOR_RESET_AT_PPM         95                   // when absolute value of ppm is greater than this, flow counter is reset.
-
 
 ****** 20 - Sequencer (ON/OFF) for several digital outputs **************************************************************************************
 * oXs allows you to control (HIGH/LOW) up to 6 digitals Arduino outputs in different sequences.
