@@ -20,21 +20,21 @@
 #define OXS_CONFIG_BASIC_h
 
 // --------- 1 - Telemetry protocol ---------  
-#define PROTOCOL  JETI // select between FRSKY_SPORT , FRSKY_HUB , FRSKY_SPORT_HUB , MULTIPLEX , HOTT, JETI
+#define PROTOCOL  FRSKY_SPORT_HUB // select between FRSKY_SPORT , FRSKY_HUB , FRSKY_SPORT_HUB , MULTIPLEX , HOTT, JETI
 
 // ***** 1.1 - Pin connected to Rx ************                              See oXs_config_advanced.h (normally no need to change it) (default is arduino pin 4 connected to RX) 
 // ***** 1.2 - SPORT_SENSOR_ID (used only for Frsky Sport protocol)  *****   See oXs_config_advanced.h (normally no need to change it) 
 
 // --------- 2 - Data to transmit ---------   uncomment the lines below if you want to transmit some extra oXs measurement into some telemetry fields
 // ***** 2.1 - Frsky data *****                
-#define VFAS_SOURCE   VOLT_1                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4 
+//#define VFAS_SOURCE   VOLT_1                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4 
 //#define FUEL_SOURCE   ADS_VOLT_1                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
 //#define A3_SOURCE     ADS_VOLT_1                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
 //#define A4_SOURCE     ADS_VOLT_3                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
-#define ACCX_SOURCE     TEST_1                   //  select between TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, PITCH, ROLL , YAW, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4 
-#define ACCY_SOURCE     TEST_2                 //  select between TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, PITCH, ROLL , YAW, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
-#define ACCZ_SOURCE     TEST_3                 //  select between TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, PITCH, ROLL , YAW, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
-#define T1_SOURCE       VOLT_3                   //  select between TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , SENSITIVITY, PPM, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
+//#define ACCX_SOURCE     TEST_1                   //  select between TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, PITCH, ROLL , YAW, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4 
+//#define ACCY_SOURCE     TEST_2                 //  select between TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, PITCH, ROLL , YAW, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
+//#define ACCZ_SOURCE     TEST_3                 //  select between TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, PITCH, ROLL , YAW, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
+//#define T1_SOURCE       VOLT_3                   //  select between TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , SENSITIVITY, PPM, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
 //#define T2_SOURCE       ADS_VOLT_4                    //  select between TEST_1, TEST_2, TEST_3, , GLIDER_RATIO, SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , SENSITIVITY, PPM, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
 
 // ***** 2.2 - Hott data *****
@@ -78,7 +78,7 @@
 // ***** 4.7 - Analog vertical speed *****                                           see oXs_config_advanced.h (change if you want to activate it)
 // ***** 4.8  - Calculating glider ratio, average sink/climb rate **************     see oXs_config_advanced.h (change if you want to get those measurement)
 // --------- 5 - Airspeed settings ---------                                         see oXs_config_advanced.h for additionnal parameters (normally no need to change them)
-#define AIRSPEED_SENSOR_USE       NO_AIRSPEED       // select between NO_AIRSPEED , MS4525 , MPXV7002
+#define AIRSPEED_SENSOR_USE       MPXV7002       // select between NO_AIRSPEED , MS4525 , MPXV7002
 
 // --------- 6 - Voltages & Current sensor settings ---------
 
@@ -102,7 +102,7 @@
 #define CALCULATE_RPM     NO                                               // select between YES , NO       
 
 // --------- 8 - Persistent memory settings ---------                              see also oXs_config_advanced.h 
-#define SAVE_TO_EEPROM     YES
+#define SAVE_TO_EEPROM     NO
 
 // --------- 9 - GPS ---------------                                       see oXs_config_advanced.h for additionnal parameters (normally no need to change them)
 #define A_GPS_IS_CONNECTED      NO                 // select between YES , NO
@@ -115,7 +115,7 @@
 #define CALCULATE_YAW_WITH_HMC5883   NO             // select between YES , NO ; YES requires that A_MPU6050_IS_CONNECTED is YES here above
 
 // --------- 11 - Flow sensor ---------------                                       if YES, see also oXs_config_advanced.h 
-#define A_FLOW_SENSOR_IS_CONNECTED      YES                    // select between YES , NO
+#define A_FLOW_SENSOR_IS_CONNECTED      NO                   // select between YES , NO
 
 // --------- 20 - Sequencer ---------                                       see oXs_config_advanced.h (only when oXs has to generate signals in sequence)
 

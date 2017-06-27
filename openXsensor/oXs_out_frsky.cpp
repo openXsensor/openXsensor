@@ -40,6 +40,10 @@ extern OXS_VOLTAGE oXs_Voltage ;
 extern OXS_CURRENT oXs_Current ;
 extern OXS_4525 oXs_4525 ;
 
+#if  defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON)
+extern  CURRENTDATA adsCurrentData ;
+#endif
+
 extern unsigned long micros( void ) ;
 extern unsigned long millis( void ) ;
 extern void delay(unsigned long ms) ;
@@ -58,7 +62,7 @@ extern uint8_t volatile sendStatus ;
   struct ONE_MEASUREMENT vfas ; 
 #endif
 
-#if defined(PIN_CURRENTSENSOR) 
+#if ( defined(PIN_CURRENTSENSOR) ) || ( defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON)) 
     struct ONE_MEASUREMENT sport_currentData ;
 #endif
 
@@ -250,7 +254,7 @@ void initMeasurement() {
 #endif
    
 // pointer to current
-#if defined(PIN_CURRENTSENSOR) 
+#if ( defined(PIN_CURRENTSENSOR) ) || ( defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON)) 
     p_measurements[6] = &sport_currentData ;
 #else
     p_measurements[6] = &no_data ;
@@ -501,10 +505,16 @@ void OXS_OUT::sendSportData()
   #endif
 #endif
 
-#if defined(PIN_CURRENTSENSOR) 
+#if defined(PIN_CURRENTSENSOR)  
     if ( oXs_Current.currentData.milliAmps.available) {
       oXs_Current.currentData.milliAmps.available = false ; 
       sport_currentData.value = oXs_Current.currentData.milliAmps.value  / 100 ;
+      sport_currentData.available = true ;
+    }  
+#elif defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON)
+    if ( oXs_ads1115.adsCurrentData.milliAmps.available ) {
+      oXs_ads1115.adsCurrentData.milliAmps.available = false ;
+      sport_currentData.value = oXs_ads1115.adsCurrentData.milliAmps.value  / 100 ;
       sport_currentData.available = true ;
     }  
 #endif
@@ -696,6 +706,8 @@ void OXS_OUT::SendFrame1(){
 // current
 #if defined(PIN_CURRENTSENSOR) 
     SendValue( FRSKY_USERDATA_CURRENT ,  (int16_t) ( oXs_Current.currentData.milliAmps.value / 100 ) ) ;
+#elif defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON)
+    SendValue( FRSKY_USERDATA_CURRENT ,  (int16_t) ( oXs_ads1115.adsCurrentData.milliAmps.value / 100 ) ) ;
 #endif
 
 // fuel                                     
