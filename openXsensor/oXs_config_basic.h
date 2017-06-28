@@ -20,7 +20,7 @@
 #define OXS_CONFIG_BASIC_h
 
 // --------- 1 - Telemetry protocol ---------  
-#define PROTOCOL  FRSKY_SPORT_HUB // select between FRSKY_SPORT , FRSKY_HUB , FRSKY_SPORT_HUB , MULTIPLEX , HOTT, JETI
+#define PROTOCOL  JETI  // select between FRSKY_SPORT , FRSKY_HUB , FRSKY_SPORT_HUB , MULTIPLEX , HOTT, JETI
 
 // ***** 1.1 - Pin connected to Rx ************                              See oXs_config_advanced.h (normally no need to change it) (default is arduino pin 4 connected to RX) 
 // ***** 1.2 - SPORT_SENSOR_ID (used only for Frsky Sport protocol)  *****   See oXs_config_advanced.h (normally no need to change it) 
@@ -58,7 +58,8 @@
                         // 3 , ALTIMETER , 1 , 1 , 0 , -16384 , 16383 , \
 
 // ***** 2.4 - Jeti data *****
-//#define VOLTAGE_SOURCE   VOLT_1                     // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
+#define VOLTAGE_SOURCE   VOLT_1                     // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
+#define TEMPERATURE_SOURCE NTC                   // select between MS5611 and NTC
 
 // ***** 2.5 - How to fill TEST_1, TEST_2, TEST_3  ******     see oXs_config_advanced.h (required only when some measurements have to be filled in TEST_1, TEST_2 or TEST_3
 
@@ -66,7 +67,7 @@
 
 // --------- 4 - Vario settings ---------
 // ***** 4.1 - Connecting 1 or 2 barometric sensor(s)  *****
-#define FIRST_BARO_SENSOR_USE     NO_BARO        // select between NO_BARO , MS5611, GY86 , BMP085 , BMP180 , BMP280  
+#define FIRST_BARO_SENSOR_USE     MS5611        // select between NO_BARO , MS5611, GY86 , BMP085 , BMP180 , BMP280  
 
 // ***** 4.2 - Type of Vspeed to transmit  *****                                    
 #define VSPEED_SOURCE  FIRST_BARO     // select between FIRST_BARO, SECOND_BARO , AVERAGE_FIRST_SECOND, AIRSPEED_COMPENSATED , BARO_AND_IMU or PPM_SELECTION
@@ -85,7 +86,7 @@
 // ***** 6.1 - Voltage Reference to measure voltages and current *****              see oXs_config_advanced.h when voltage reference is not Vcc and 5 volt
 
 // ***** 6.2 - Voltage parameters *****                                             see oXs_config_advanced.h for additionnal parameters (scale , offset)
-//#define PIN_VOLTAGE         2  , 8     , 0   , 8    , 8   , 8               // set this line as comment if no one voltage has to be measured, set the value to 8 for the voltage(s) not to be measured.
+#define PIN_VOLTAGE         2  , 8     , 0   , 8    , 8   , 8               // set this line as comment if no one voltage has to be measured, set the value to 8 for the voltage(s) not to be measured.
 #define RESISTOR_TO_GROUND  359 , 20    , 0  , 0 , 0  , 0               // set value to 0 when no divider is used for a voltage; can contains decimals 
 #define RESISTOR_TO_VOLTAGE 1178 , 100.1 , 0 , 39   , 500 , 0              // set value to 0 when no divider is used for a voltage; can contains decimals 
 

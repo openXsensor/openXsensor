@@ -206,6 +206,9 @@ void OXS_OUT::initJetiListOfFields() {  // fill an array with the list of fields
     listOfFields[listOfFieldsIdx++] = FLOW_REMAIN ;
     listOfFields[listOfFieldsIdx++] = FLOW_PERCENT ;
 #endif                          // end FLOW_SENSOR_IS_CONNECTED
+#if defined (TEMPERATURE_SOURCE) && ( defined (VARIO) && ( TEMPERATURE_SOURCE == MS5611 ) )  
+    listOfFields[listOfFieldsIdx++] = TEMPERATURE ;
+#endif
   numberOfFields = listOfFieldsIdx - 1 ;
   listOfFieldsIdx = 1 ; 
 }
@@ -440,6 +443,11 @@ boolean OXS_OUT::retrieveFieldIfAvailable(uint8_t fieldId , int32_t * fieldValue
           fuelPercent.available = false ;  
           break ;      
 #endif                           // A_FLOW_SENSOR_IS_CONNECTED
+#if defined (TEMPERATURE_SOURCE) && ( defined (VARIO) && ( TEMPERATURE_SOURCE == MS5611 ) )    
+    case TEMPERATURE :
+        * fieldValue  = varioData->temperature/10  ;                         
+        * dataType = JETI14_0D ;
+#endif
    } // end of switch
    return 1 ;
 }
@@ -620,6 +628,39 @@ void OXS_OUT::fillJetiBufferWithText() {
 
 #endif  // NUMBEROFCELLS > 0 
 
+#if defined ( TEMPERATURE_SOURCE ) && ( TEMPERATURE_SOURCE == NTC )
+#if defined(PIN_VOLTAGE) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_1 )
+      case VOLT_1 :  
+         mergeLabelUnit( textIdx, "Temperature", "°C"  ) ;
+         break ;
+#endif
+#if defined(PIN_VOLTAGE) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_2 )
+      case VOLT_2 :  
+         mergeLabelUnit( textIdx, "Temperature", "°C"  ) ;
+          break ;
+#endif
+#if defined(PIN_VOLTAGE) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_3 )
+      case VOLT_3 :  
+         mergeLabelUnit( textIdx, "Temperature", "°C"  ) ;
+          break ;
+#endif
+#if defined(PIN_VOLTAGE) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_4 )
+      case VOLT_4 :  
+         mergeLabelUnit( textIdx, "Temperature", "°C"  ) ;
+          break ;
+#endif
+#if defined(PIN_VOLTAGE) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_5 )
+      case VOLT_5 :  
+         mergeLabelUnit( textIdx, "Temperature", "°C"  ) ;
+          break ;
+#endif
+#if defined(PIN_VOLTAGE) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_6 )
+      case VOLT_6 :  
+         mergeLabelUnit( textIdx, "Temperature", "°C"  ) ;
+          break ;
+#endif
+
+#else
 #if defined(PIN_VOLTAGE) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_1 )
       case VOLT_1 :  
          mergeLabelUnit( textIdx, "Voltage 1", "Volt"  ) ;
@@ -650,6 +691,7 @@ void OXS_OUT::fillJetiBufferWithText() {
          mergeLabelUnit( textIdx, "Voltage 6", "Volt"  ) ;
           break ;
 #endif
+#endif // end defined ( TEMPERATURE_SOURCE ) && ( TEMPERATURE_SOURCE == NTC )
 
 #if defined (PIN_CURRENTSENSOR)
       case CURRENTMA :
@@ -701,6 +743,11 @@ void OXS_OUT::fillJetiBufferWithText() {
           mergeLabelUnit( textIdx, "Fuel", "%"  ) ;
           break ;      
 #endif                           // A_FLOW_SENSOR_IS_CONNECTED 
+#if defined (TEMPERATURE_SOURCE) && ( defined (VARIO) && ( TEMPERATURE_SOURCE == MS5611 ) )  
+      case TEMPERATURE :
+          mergeLabelUnit( textIdx, "Temperature", "°C"  ) ;
+          break ;
+#endif
   } // end switch
     
         jetiData[2] =  ( jetiMaxData - 2 ) ; // update number of bytes that will be in buffer (including crc); keep flag in bit 6/7 to zero because it is text and not data

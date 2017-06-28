@@ -1106,7 +1106,6 @@ static uint32_t previousYawRateMillis ;
   }  
 #endif
 
-
 //  test1.value = oXs_MS5611.varioData.absoluteAlt.value/10 ;
 //  test1.available = true ;
 

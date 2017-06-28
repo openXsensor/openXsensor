@@ -223,9 +223,12 @@ See OpenXsensor https://github.com/openXsensor/
 *         - Cell voltages including min and total (when NUMBER_OF_CELLS > 0) 
 *         - Current and consumption (when Current sensor is present)
 *         - GPS (long, lat, speed, altitude , course, distance and direction from home) (when GPS sensor is present)
-*      On top of this, you can also specify to send one of the 6 voltage (if voltage is measured)
+*      On top of this, you can also specify to send : 
+*         - one of the 6 voltages (if voltage is measured); tip when a NTC is used to measure a temperature, define the VOLTAGE_SOURCE too (see also section about NTC)
+*         - a temperature : you can select between the temeperature provided by the MS5611 sensor or by a NTC
 *      Other fields could be added on request later on.
 //#define VOLTAGE_SOURCE   VOLT_1                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
+//#define TEMPERATURE_SOURCE MS5611               // select between MS5611 and NTC 
                                 
 ****** 2.5 - How to fill TEST_1, TEST_2, TEST_3  ******    
 *   oXs can calculate more measurements than foreseen by the protocols.

@@ -123,8 +123,8 @@
 // ***** 6.3 - Max number of Lipo cells to measure (and transmit to Tx) *****      Is defined only in oXs_config_basic.h file
 
 // ***** 6.4 - Convert voltage to temperature (° Celcius) *****     
-#define FIRST_NTC_ON_VOLT_NR 3   // uncomment this line when thermistor are used; specify index of first voltage being used for conversion to temperature (e.g. 5 means VOLT_5)
-#define LAST_NTC_ON_VOLT_NR 3    // specify index of last voltage being used for conversion to temperature (e.g. 6 means VOLT_6)
+#define FIRST_NTC_ON_VOLT_NR 1   // uncomment this line when thermistor are used; specify index of first voltage being used for conversion to temperature (e.g. 5 means VOLT_5)
+#define LAST_NTC_ON_VOLT_NR 1    // specify index of last voltage being used for conversion to temperature (e.g. 6 means VOLT_6)
 #define SERIE_RESISTOR 4700      // resistance connected to Arduino Vcc (in Ohm)
 #define STEINHART_A 7.00111E-4   // these parameters are specific to the NTC being used.
 #define STEINHART_B 2.1644E-4
@@ -142,7 +142,7 @@
 #define RESISTOR_TO_CURRENT_SENSOR      39     // put as comment or set to 0 if no divider is used
 
 // ***** 6.6 - Ads1115 parameters  *****
-#define ADS_MEASURE A0_TO_GND ,  ADS_OFF , ADS_OFF , ADS_OFF // uncomment when ADS1115 is used; select 4 values between A0_TO_A1, A0_TO_A3, A1_TO_A3, A2_TO_A3, A0_TO_GND, A1_TO_GND, A2_TO_GND, A3_TO_GND, ADS_OFF
+//#define ADS_MEASURE A0_TO_GND ,  ADS_OFF , ADS_OFF , ADS_OFF // uncomment when ADS1115 is used; select 4 values between A0_TO_A1, A0_TO_A3, A1_TO_A3, A2_TO_A3, A0_TO_GND, A1_TO_GND, A2_TO_GND, A3_TO_GND, ADS_OFF
 #define ADS_FULL_SCALE_VOLT  MV2048, MV4096, MV6144, MV4096 //  select between MV6144 MV4096 MV2048 MV1024 MV512 MV256
 #define ADS_OFFSET 0, 0 , 0 , 0 // must be an integer (positive or negative)
 #define ADS_SCALE 1, 1, 1, 1 // can be a float
@@ -251,6 +251,7 @@ struct ONE_MEASUREMENT {
 #define NO  1
 #define YES 2
 
+#define NTC 20
 
 #define SECONDS_SINCE_T0        32
 #define AVERAGE_VSPEED_SINCE_TO 33 
