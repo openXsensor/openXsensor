@@ -55,7 +55,8 @@
 //#define PIN_PPM           3     // Uncomment this line in order to use a Rx channel to control oXs; default is 2 but my own device use 3
 #define PPM_MIN_100       988     // default 1500 - 512 ; // pulse width (usec) when TX sends a channel = -100
 #define PPM_PLUS_100      2012    // default 1500 + 512 ; // pulse width (usec) when TX sends a channel = +100
-#define PPM_VIA_SPORT             // this allows to send ppm data over SPORT protocol (only for Tx with openTx running LUA script.
+
+#define PPM_VIA_SPORT             // uncomment this line to get ppm data over SPORT protocol instead of from a PWM channel (it requires a Tx with openTx running LUA script)
 
 // --------- 4 - Vario settings ---------    Type of baro is defined in oXs_config_basic.h file
 
@@ -123,7 +124,7 @@
 // ***** 6.3 - Max number of Lipo cells to measure (and transmit to Tx) *****      Is defined only in oXs_config_basic.h file
 
 // ***** 6.4 - Convert voltage to temperature (° Celcius) *****     
-#define FIRST_NTC_ON_VOLT_NR 1   // uncomment this line when thermistor are used; specify index of first voltage being used for conversion to temperature (e.g. 5 means VOLT_5)
+//#define FIRST_NTC_ON_VOLT_NR 1   // uncomment this line when thermistor are used; specify index of first voltage being used for conversion to temperature (e.g. 5 means VOLT_5)
 #define LAST_NTC_ON_VOLT_NR 1    // specify index of last voltage being used for conversion to temperature (e.g. 6 means VOLT_6)
 #define SERIE_RESISTOR 4700      // resistance connected to Arduino Vcc (in Ohm)
 #define STEINHART_A 7.00111E-4   // these parameters are specific to the NTC being used.
@@ -257,7 +258,7 @@ struct ONE_MEASUREMENT {
 #define AVERAGE_VSPEED_SINCE_TO 33 
 
 /***************************************************************************************/
-/* oXs code used by Flow sensor                                                        */ 
+/* oXs code used by Flow sensor and for SPORT Lua scripts                                                        */ 
 /***************************************************************************************/
 #define TX_FIELD_FLOW_1     0
 #define TX_FIELD_FLOW_2     1

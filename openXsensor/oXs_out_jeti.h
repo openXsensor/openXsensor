@@ -303,6 +303,8 @@ extern int16_t GPS_bearing ;
 #define LOCKED         2
 #define AVAILABLE      3
 
+// Jeti protocol is 9 bits, 2 stops bits, odd parity, 9600-9800 bauds
+
 
 #endif // End of JETI
 #endif // OXS_OUT_JETI_h

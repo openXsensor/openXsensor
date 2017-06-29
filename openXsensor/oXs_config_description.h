@@ -258,7 +258,8 @@ See OpenXsensor https://github.com/openXsensor/
 
 
 **** 3 - PPM settings **************************************************************************************************
-*   OXS can (optionally) read a PPM Signal coming from Tx.
+*   oXs can (optionally) change some oXs parameters and/or reset some oXs data based on actions taken on the TX.
+*   For all protocol, this can be achieved using a Rx channel in order to get data from the Tx.
 *   This allows, from the TX:
 *      - to change the vario sensitivity using a pot or a switch on TX.
 *      - to switch between uncompensated and compensated vario (when using 2 baro sensors one being connected to a TEK probe)
@@ -282,10 +283,26 @@ See OpenXsensor https://github.com/openXsensor/
 *   To do so, ensure that you transmit the OXS measurement field "PPM" to the TX (e.g. as T1).
 *   Note the values on TX (e.g. in field T1) when the TX send respectively -100 and +100 on the PPM channel (use a switch or a pot).
 *   Fill in those values in those parameters and reload your program in the Arduino.
+*   
+*   If you use Sport protocol (for Frsky X receiver) with openTx 2.2 (or above) you can send the "PPM" value without having to wire oXs to a Rx channel.
+*   OpenTx 2.2 alllows to run LUA scripts that will send a value from TX to oXs over the SPORT connection
+*   To activate this option, you have to :
+*     - uncomment the line #define PPM_VIA_SPORT
+*     - let you Tx run a LUA script that will send over SPORT the same digital value that, otherwise, would be sent over a Rx channel. (so a value between -100 and 100)
+*       This lua script must use a command like 
+*            local ret = sportTelemetryPush( 0x0D , 0x10 , 0x0010 , -52 )
+*       where     
+*          - 0xOD : is the device ID being used (defined in oXs_config_advanced.h)
+*          - 0x10 : is a dummy value (not used)
+*          - 0x0010 : is the code id being used to identify that it concerns a "ppm" value
+*          - -52 : is the value of the ppm to transmit (-52 is just an example; it must be adapt with the value to transmit) 
 ************************************************************************************************************************
 #define PIN_PPM             2 
 #define PPM_MIN_100       988   
-#define PPM_PLUS_100      2012   
+#define PPM_PLUS_100      2012  
+
+
+#define PPM_VIA_SPORT             // uncomment this line to get ppm data over SPORT protocol instead of from a PWM channel (it requires a Tx with openTx running LUA script)
 
 **** 4 - Vario settings ************************************************************************************************
 *

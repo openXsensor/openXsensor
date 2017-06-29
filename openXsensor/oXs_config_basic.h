@@ -59,7 +59,7 @@
 
 // ***** 2.4 - Jeti data *****
 #define VOLTAGE_SOURCE   VOLT_1                     // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
-#define TEMPERATURE_SOURCE NTC                   // select between MS5611 and NTC
+#define TEMPERATURE_SOURCE MS5611                   // select between MS5611 and NTC
 
 // ***** 2.5 - How to fill TEST_1, TEST_2, TEST_3  ******     see oXs_config_advanced.h (required only when some measurements have to be filled in TEST_1, TEST_2 or TEST_3
 
@@ -79,7 +79,7 @@
 // ***** 4.7 - Analog vertical speed *****                                           see oXs_config_advanced.h (change if you want to activate it)
 // ***** 4.8  - Calculating glider ratio, average sink/climb rate **************     see oXs_config_advanced.h (change if you want to get those measurement)
 // --------- 5 - Airspeed settings ---------                                         see oXs_config_advanced.h for additionnal parameters (normally no need to change them)
-#define AIRSPEED_SENSOR_USE       MPXV7002       // select between NO_AIRSPEED , MS4525 , MPXV7002
+#define AIRSPEED_SENSOR_USE       NO_AIRSPEED       // select between NO_AIRSPEED , MS4525 , MPXV7002
 
 // --------- 6 - Voltages & Current sensor settings ---------
 

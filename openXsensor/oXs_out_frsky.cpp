@@ -1566,7 +1566,7 @@ ISR(TIMER1_COMPA_vect)
 #define  GPS_ID          DATA_ID_GPS
 #define  RPM_ID          DATA_ID_RPM
 #define  ACC_ID          DATA_ID_ACC
-#define  TX_ID           DATA_ID_TX          // this ID is used when TX sent data to RX with a LUA script ; it requires that LUA uses the same parameters 
+#define  TX_ID           DATA_ID_TX          // this ID is used when TX sent data to RX with a LUA script ; it requires that LUA script uses the same parameters 
 #define SENSOR_ISR_FOR_TX_ID 0XF0          // this value says that we already received a byte == TX_ID
 
                               case VARIO_ID :
@@ -1611,7 +1611,7 @@ ISR(TIMER1_COMPA_vect)
                             rxStuff = 0;                       // and reset the stuff flag
                             state =  IDLE ;                      // Go back to idle.
                         } else if ((sensorIsr == SENSOR_ISR_FOR_TX_ID) && (TxDataIdx < 8) ){                  // we receive one byte that is not 0x7E. We check if it follow a sequence 0X7E and the Tx_ID which means it is sent by Tx to oXs
-                                                                                                              // Note: if all bytes have been received, then TxDataIdx = 8 and we do not store the data anymore
+                                                                                                              // Note: if all bytes have been received, then TxDataIdx = 8 and we do not store the data anymore; test on TxDataIdx = 8 is done in .ino file
                             if (SwUartRXData == 0x7D)                 // byte stuffing indicator
                               rxStuff = 1;                      // set the flag and discard byte
                             else if (rxStuff == 0)

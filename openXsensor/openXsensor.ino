@@ -871,6 +871,8 @@ void readSensors() {
 #endif
 #if  defined ( PPM_VIA_SPORT )      
       if ( txField == TX_FIELD_PPM )  {                   // use the value for ppm // TODO
+          ppm.value =  txValue ;
+          ppm.available = true ;
       }   
 #endif
     } else {
@@ -1558,10 +1560,10 @@ void LoadFromEEProm(){
 /* ProcessPPMSignal => read PPM signal from receiver and       */
 /*   use its value to adjust sensitivity and other parameters  */
 /***************************************************************/
-#ifdef PIN_PPM
+#if defined ( PIN_PPM ) || (  defined ( PPM_VIA_SPORT ) && ( PROTOCOL  == FRSKY_SPORT ) )
 volatile uint16_t time1 ;
 void ProcessPPMSignal(){
-  ReadPPM(); // set ppmus to 0 if ppm is not available or has not been colletect X time, other fill ppmus with the (max) pulse duration in usec 
+  ReadPPM(); // set ppmus to 0 if ppm is not available or has not been collected X time, other fill ppmus with the (max) pulse duration in usec 
 #ifdef DEBUGFORCEPPM
 //for debuging ppm without having a connection to ppm; force ppm to a value
   ppmus = ( PPM_MIN_100 + PPM_PLUS_100) / 2 ; // force a ppm equal to 0 (neutral)
