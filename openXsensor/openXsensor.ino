@@ -870,7 +870,7 @@ void readSensors() {
       }
 #endif
 #if  defined ( PPM_VIA_SPORT )      
-      if ( txField == TX_FIELD_PPM )  {                   // use the value for ppm // TODO
+      if ( txField == TX_FIELD_PPM )  {                   // use the value for ppm 
           ppm.value =  txValue ;
           ppm.available = true ;
       }   
@@ -1563,6 +1563,7 @@ void LoadFromEEProm(){
 #if defined ( PIN_PPM ) || (  defined ( PPM_VIA_SPORT ) && ( PROTOCOL  == FRSKY_SPORT ) )
 volatile uint16_t time1 ;
 void ProcessPPMSignal(){
+#if defined ( PIN_PPM )  // when ppm is read from a rx channel
   ReadPPM(); // set ppmus to 0 if ppm is not available or has not been collected X time, other fill ppmus with the (max) pulse duration in usec 
 #ifdef DEBUGFORCEPPM
 //for debuging ppm without having a connection to ppm; force ppm to a value
@@ -1574,7 +1575,11 @@ void ProcessPPMSignal(){
 #ifdef DEBUGPPMVALUE
        Serial.print(micros()); Serial.print(F("="));  Serial.println(ppm.value);
 #endif
-      
+  } 
+#else   // so when done via SPORT (defined ( PPM_VIA_SPORT ) && ( PROTOCOL  == FRSKY_SPORT ))
+        // ppm.value and .available are filled in readSensor()
+#endif  
+  if  (ppm.available ) {  
 #ifdef DEBUGPPM
     static uint16_t ppmCount ;
     if ( (((int) ppm.value) - ((int ) prevPpm) > 3 ) || (((int) prevPpm) - ((int ) ppm.value) > 3 )  )  {
@@ -1644,7 +1649,7 @@ void ProcessPPMSignal(){
     
     } // end ppm == prePpm
 #endif  // end of #ifdef SEQUENCE_OUTPUTS & #else
-  }  // end ppm > 0
+  }  // end if  (ppm.available ) 
   prevPpm = ppm.value ;
 }  // end processPPMSignal
 

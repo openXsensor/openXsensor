@@ -56,7 +56,7 @@
 #define PPM_MIN_100       988     // default 1500 - 512 ; // pulse width (usec) when TX sends a channel = -100
 #define PPM_PLUS_100      2012    // default 1500 + 512 ; // pulse width (usec) when TX sends a channel = +100
 
-#define PPM_VIA_SPORT             // uncomment this line to get ppm data over SPORT protocol instead of from a PWM channel (it requires a Tx with openTx running LUA script)
+//#define PPM_VIA_SPORT             // uncomment this line to get ppm data over SPORT protocol instead of from a PWM channel (it requires a Tx with openTx running LUA script)
 
 // --------- 4 - Vario settings ---------    Type of baro is defined in oXs_config_basic.h file
 

@@ -296,6 +296,7 @@ See OpenXsensor https://github.com/openXsensor/
 *          - 0x10 : is a dummy value (not used)
 *          - 0x0010 : is the code id being used to identify that it concerns a "ppm" value
 *          - -52 : is the value of the ppm to transmit (-52 is just an example; it must be adapt with the value to transmit) 
+*      You can find an example of lua script to be used in this package (in folder "lua scripts"). Name is oxsppm.lua and it must be installed in the folder SCRIPTS/FUNCTIONS of the SD card.    
 ************************************************************************************************************************
 #define PIN_PPM             2 
 #define PPM_MIN_100       988   
@@ -1046,7 +1047,13 @@ See OpenXsensor https://github.com/openXsensor/
 *   This requires to upload a new firmware in your oXs except if you are using JETI protocol or SPORT protocol with openTx 2.2.x (or above). 
 *   For JETI protocol, you can just enter the JETIBOX dialog box, press DOWN key to go to the item to modify and press "<" or ">" to increase/decrease the value. 
 *       Do not forget to activate the SAVE_TO_EEPROM option in section 8 in order to save the parameters and reuse them at next power on. 
-*   For SPORT protocol, you must run a mixer LUA script. In the screen customs script, you can enter script name and the parameter (tank capacity or the 8 parameters)
+*   For SPORT protocol, you must run some LUA scripts. In this package (in the folder "lua scripts"), you can find 3 lua scripts to be installed in the folder SCRIPTS/FUNCTIONS of the SD card:
+*        - one (rstful.lua) to reset the consumed fuel to 0 (to be used when tank is filled) 
+*        - one (tank.lua) to define the max capaicity of the tank (prior to run the script, the tank capacity has to be entered in GVAR9 for fase 9
+*                The value in GVAR9 is the number of 50 ml in the thank. It means e.g. that for a thank of 1000 ml, GVAR9 must be set to 20 (=1000 / 50 )
+*        - one (calful.lua) to define the 8 (4 X 2) calibration parameters (pior to run the script, the parameters have to be entered in GVAR9 (for fase 0 to 8)
+*            The first 4 values are the flow in ml/min (min = 30, max  = 800) ; the values must be in ascending order
+*            The last 4 values are the correction in percent to apply (min = -100, max = 100) for each flow 
 *   NOte: the parameters saved in the eeprom or loaded by a LUA script take over the parameters defined in the config.
 *
 * Please note that the fuel consumption can be saved every 30 sec in a non volatile memory.
