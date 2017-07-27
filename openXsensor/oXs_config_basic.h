@@ -38,10 +38,10 @@
 //#define T2_SOURCE       ADS_VOLT_4                    //  select between TEST_1, TEST_2, TEST_3, , GLIDER_RATIO, SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , SENSITIVITY, PPM, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
 
 // ***** 2.2 - Hott data *****
-#define CELL_UNDERVOLTAGE_WARNING 3300            // Warning threshold in mV; 
-#define BATTERY_1_SOURCE          ADS_VOLT_1                 // select between VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
-#define BATTERY_2_SOURCE          ADS_VOLT_2                 // select between VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
-#define MAIN_BATTERY_SOURCE       ADS_VOLT_3                 // select between VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
+//#define CELL_UNDERVOLTAGE_WARNING 3300            // Warning threshold in mV; 
+//#define BATTERY_1_SOURCE          ADS_VOLT_1                 // select between VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
+//#define BATTERY_2_SOURCE          ADS_VOLT_2                 // select between VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
+//#define MAIN_BATTERY_SOURCE       ADS_VOLT_3                 // select between VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
 //#define TEMPERATURE_1_SOURCE      TEST_1          //  select between TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SENSITIVITY , PPM
 //#define TEMPERATURE_2_SOURCE      PPM             //  select between TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SENSITIVITY, PPM
 
@@ -49,9 +49,9 @@
 #define SETUP_MULTIPLEX_DATA_TO_SEND    \
                         3 , REL_ALTIMETER , 1 , 1 , 0 , -16384 , 16383 , \
                         4 , VERTICAL_SPEED , 1 , 1 , 0, -500 , 500  , \
-                        5 , ALTIMETER_MAX , 1 , 1 , 0 , -16384 , 16383 ,\
-                        6 , CURRENTMA , 1 , 1, 0 , -16384 , 16383 ,\
-                        7 , MILLIAH  , 1 , 1, 0 , -16384 , 16383
+                        5 , ALTIMETER_MAX , 1 , 1 , 0 , -16384 , 16383 
+                        // 6 , CURRENTMA , 1 , 1, 0 , -16384 , 16383 ,\
+                        // 7 , MILLIAH  , 1 , 1, 0 , -16384 , 16383
                         // 7 , CELL_TOT , 1 , 1 , 0 , -16384 , 16383 , \
                         // 4 , VOLT_4 , 1 , 1 , 0 , -16384 , 16383 , \
                         // 9 , PPM , 1 , 1 , 0 , -16384 , 16383 

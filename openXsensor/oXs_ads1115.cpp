@@ -196,7 +196,7 @@ void OXS_ADS1115::ads_requestNextConv(void) {
 
 #if defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON) // this part is compiled only when the config ask for current
 void OXS_ADS1115::ads_calculateCurrent(void) {
-    static float floatConsumedMilliAmps = 0 ; // in mA
+    
     static int32_t sumCurrent = 0 ;
     static uint16_t cnt ;
     static uint32_t milliTmp ;

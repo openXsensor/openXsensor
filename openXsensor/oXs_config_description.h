@@ -1020,7 +1020,7 @@ See OpenXsensor https://github.com/openXsensor/
 * http://www.conrad.be/ce/nl/product/155374/BIO-TECH-eK-FCH-M-Doorstroomsensor-1-stuks-Voedingsspanning-bereik-5-24-VDC-Meetbereik-08-0015-lmin-l-x;jsessionid=EED7B26A7F28BA3F20F0060807E20FD1.ASTPCEN22?ref=searchDetail
 * It is foreseen to measure from 0.015 up to 0.8 ml/min.
 * The output signal of the flow meter sensor has to be connected to arduino pin 9 (and the other 2 pins to 5 volt VCC and to Ground).
-* There are other cheap flow sensor on ebay or aliexpress but I expect that there are not accurate enough when flow is low.
+* There are other cheap flow sensors on ebay or aliexpress but I expect that there are not accurate enough when flow is low.
 * 
 * To activate such a flow sensor, you have to: 
 *   - assign YES to the define A_FLOW_SENSOR_IS_CONNECTED (in oXs_config_basic.h file)
@@ -1074,6 +1074,7 @@ See OpenXsensor https://github.com/openXsensor/
 * For other protocols, you have to ask oXs to transmit the data; so you have : 
 *   - to uncomment the line #define FILL_TEST_1_2_3_WITH_FLOW_SENSOR_CONSUMPTION  (in section 2.5 )
 *   - to specify in which telemetry fields, TEST_1 (current flow in ml/min), TEST_2 (remaining fuel in ml) and TEST_3 (remaining fuel in %) are sent (see section 2.1/2.4)
+*       Please note that if you transmit TEST_1... TEST_3 in AccX...AccZ in FRSKY protocol, the values are divided by 100 by openTx. You can get the original values back if you set up a scale = 255 on Tx side in the telemetry fields
 **************************************************************************************************************************************
 #define A_FLOW_SENSOR_IS_CONNECTED      NO                    // select between YES , NO
 #define PULSES_PER_ML                    10.0                 // number of pulses per milli liter (depends on sensor); can have decimals

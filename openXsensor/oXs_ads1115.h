@@ -83,6 +83,7 @@ public:
   void ads_calculate_airspeed( int16_t ads_difPressureADC ) ;
 #if defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON)
   struct CURRENTDATA adsCurrentData ;
+  float floatConsumedMilliAmps ; // in mA
 #endif
 #if defined(ADS_MEASURE) && defined(ADS_AIRSPEED_BASED_ON)
   struct AIRSPEEDDATA adsAirSpeedData ;

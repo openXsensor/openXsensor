@@ -12,6 +12,8 @@ struct CURRENTDATA {
   //bool consumedMilliAmpsAvailable;
 };
 
+
+
 class OXS_CURRENT {
 public:
 #ifdef DEBUG  
