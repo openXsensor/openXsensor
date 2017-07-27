@@ -2,7 +2,8 @@
 #define OXS_ADS1115_h
 
 #include <Arduino.h>
-#include "oXs_config.h"
+#include "oXs_config_basic.h"
+#include "oXs_config_advanced.h"
 #include "I2C.h"
 #include "oXs_curr.h"
 #include "oXs_4525.h"
@@ -82,6 +83,7 @@ public:
   void ads_calculate_airspeed( int16_t ads_difPressureADC ) ;
 #if defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON)
   struct CURRENTDATA adsCurrentData ;
+  float floatConsumedMilliAmps ; // in mA
 #endif
 #if defined(ADS_MEASURE) && defined(ADS_AIRSPEED_BASED_ON)
   struct AIRSPEEDDATA adsAirSpeedData ;

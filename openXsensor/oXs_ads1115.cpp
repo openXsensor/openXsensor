@@ -104,9 +104,9 @@ boolean OXS_ADS1115::readSensor() {  // return true when there is a new average 
       printer->print(F(" val=")); printer->print(ads_Conv[ads_CurrentIdx].value);
       printer->println(" ");
 #endif
-      ads_requestNextConv() ;
-      return true ; 
-    }  
+             ads_requestNextConv() ;
+             return true ; 
+            }  
 #else  // normal code = when DEBUG_FORCE_ADS_VOLT_1_4_WITHOUT_ADS1115 is not activated
     if( I2CErrorCodeAds1115 == 0 ) { // if there is no error on previous I2C request
       I2CErrorCodeAds1115 = I2c.write(ads_Addr , 0X0 ) ; // send the Address, 0 = conversion register (in order to be able to read the conversion register)
@@ -196,7 +196,7 @@ void OXS_ADS1115::ads_requestNextConv(void) {
 
 #if defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON) // this part is compiled only when the config ask for current
 void OXS_ADS1115::ads_calculateCurrent(void) {
-    static float floatConsumedMilliAmps = 0 ; // in mA
+    
     static int32_t sumCurrent = 0 ;
     static uint16_t cnt ;
     static uint32_t milliTmp ;
@@ -210,7 +210,7 @@ void OXS_ADS1115::ads_calculateCurrent(void) {
       adsCurrentData.milliAmps.available = true ;
       sumCurrent = 0;
       cnt = 0;
-      floatConsumedMilliAmps += ((float) adsCurrentData.milliAmps.value) * (milliTmp - lastCurrentMillis ) / 3600.0 /1000.0 ;   // Mike , is this ok when millis() overrun????
+      floatConsumedMilliAmps += ((float) adsCurrentData.milliAmps.value) * (milliTmp - lastCurrentMillis ) / 3600.0 /1000.0 ;   
       adsCurrentData.consumedMilliAmps.value = (int32_t) floatConsumedMilliAmps ;
       adsCurrentData.consumedMilliAmps.available = true ;
       lastCurrentMillis =  milliTmp ;

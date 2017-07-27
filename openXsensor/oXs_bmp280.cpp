@@ -1,7 +1,7 @@
 #include "oXs_bmp280.h"
 
 #ifdef DEBUG
-//#define DEBUGI2CMS5611
+//#define DEBUGI2CBMP280
 //#define DEBUGDATA
 //#define DEBUGVARIOI2C
 #endif
@@ -22,7 +22,7 @@ OXS_BMP280::OXS_BMP280(void)
 {
   // constructor
   //_addr=addr;
-#define I2C_BMP280_ADR 0x77 ; 
+#define I2C_BMP280_ADR 0x76 ; 
   _addr = I2C_BMP280_ADR ;
   varioData.SensorState = 0 ;
 #ifdef DEBUG  
@@ -48,9 +48,9 @@ void OXS_BMP280::setup() {
 //  nextAverageAltMillis =  nextAltMillis ;  // in msec ; save when AverageAltitude has to be calculated
 //  nextAverageAltMillis =  nextAltMillis ; 
 
-#ifdef ALT_TEMP_COMPENSATION
-  alt_temp_compensation = ALT_TEMP_COMPENSATION ;
-#endif
+//#ifdef ALT_TEMP_COMPENSATION
+//  alt_temp_compensation = ALT_TEMP_COMPENSATION ;
+//#endif
 
   
 #ifdef DEBUG

@@ -130,7 +130,7 @@ void init()
   // Timer1
   TIMSK1 &= ~( 1<< OCIE1A ) ; // Disable interupt on timer 1 for compA
   TCCR1A = 0x00 ;    //Init.
-  TCCR1B = 0xC1 ;    // I/p noise cancel, rising edge, Clock/1
+  TCCR1B = 0xC1 ;    // I/p noise cancel, rising edge, Clock/1 (so running at same speed as CPU)
 
   //  initialise le ADC converter
 #if defined(ADCSRA) 
@@ -177,10 +177,12 @@ void init()
 #endif
 
 #ifdef MEASURE_RPM
-	DDRB &= ~0x01 ;	// Pin is input
+	DDRB &= ~0x01 ;	// Pin PB0 is input in order to allow PCINT0
 	PORTB |= 1 ; 		// With pullup
 	sbi( TIMSK1, ICIE1 ) ; // allow change interrupt 
 #endif // MEASURE_RPM
+
+
 	sei();  //allow interrupt in general
 
 // timer2 (used by analoWrite to generate PWM

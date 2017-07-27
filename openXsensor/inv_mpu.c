@@ -1249,7 +1249,7 @@ void mpu_enable_pwm_mgnt() {
   i2c_writeByte( GYRO_REG_pwr_mgmt_1, INV_CLK_PLL ) ;  // define the clock to be used
   i2c_writeByte( GYRO_REG_pwr_mgmt_2, 0 ) ; // 
   delay(50);
-  i2c_writeByte( GYRO_REG_int_pin_cfg,BIT_ACTL) ;       // set interrupt active low is reg 0x37
+  i2c_writeByte( GYRO_REG_int_pin_cfg,BIT_ACTL | BIT_BYPASS_EN ) ;       // in reg 0x37 ,set interrupt active low and allow to let MPU bypass I2C to HMC5883 ( requires also I2C_MST-EN bit = 0 in reg 6A and SLEEP = 0 in PWR_MNGT_1 )
 //  chip_cfg.sensors = (INV_XYZ_GYRO | INV_XYZ_ACCEL ) ;
 }
 /**

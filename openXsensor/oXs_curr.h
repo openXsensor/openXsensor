@@ -2,7 +2,8 @@
 #define OXS_CURRENT_h
 
 #include <Arduino.h>
-#include "oXs_config.h"
+#include "oXs_config_basic.h"
+#include "oXs_config_advanced.h"
 
 struct CURRENTDATA {
   struct ONE_MEASUREMENT milliAmps;       // in mA
@@ -10,6 +11,8 @@ struct CURRENTDATA {
   //int32_t consumedMilliAmps; // in mA
   //bool consumedMilliAmpsAvailable;
 };
+
+
 
 class OXS_CURRENT {
 public:

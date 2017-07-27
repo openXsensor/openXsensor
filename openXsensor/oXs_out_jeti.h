@@ -1,7 +1,8 @@
 #ifndef OXS_OUT_JETI_h
 #define OXS_OUT_JETI_h
 
-#include "oXs_config.h"
+#include "oXs_config_basic.h"
+#include "oXs_config_advanced.h"
 #include "oXs_ms5611.h" // we need the variodata struct
 #include "oXs_4525.h" // we need the airspeeddata struct
 #include "oXs_curr.h" // we need the currentdata struct
@@ -87,6 +88,10 @@ struct t_mbAllData {
 #define ALTIMETER_MAX     40
 #define GPS_LONG          41
 #define GPS_LAT           42
+#define FLOW_ACTUAL       43
+#define FLOW_REMAIN       44
+#define FLOW_PERCENT      45
+#define TEMPERATURE       46
 // to do : add alt min, alt max ,  rpm max? , current max (not sure that it is neaded because it can be calculated on TX side
 // End of list of type of available measurements
 
@@ -297,6 +302,8 @@ extern int16_t GPS_bearing ;
 #define NOT_AVAILABLE  1
 #define LOCKED         2
 #define AVAILABLE      3
+
+// Jeti protocol is 9 bits, 2 stops bits, odd parity, 9600-9800 bauds
 
 
 #endif // End of JETI

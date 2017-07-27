@@ -166,9 +166,9 @@ float calibrated_quaternion_offset[4] = { 0.0, 0.0, 0.0, 0.0 };
 ****************************************/
 //float temp_centigrade = 0.0;  // Gyro/Accel die temperature
 float ypr[3] = { 0, 0, 0 };
-struct ONE_MEASUREMENT yaw ;
-struct ONE_MEASUREMENT pitch ;
-struct ONE_MEASUREMENT roll ;
+struct ONE_MEASUREMENT yaw ; // in 1/10 of degree
+struct ONE_MEASUREMENT pitch ; // in 1/10 of degree
+struct ONE_MEASUREMENT roll ; // in 1/10 of degree
 //long curr_mpu_temp;
 unsigned long sensor_timestamp;
 

@@ -2,7 +2,8 @@
 #define OXS_VOLTAGE_h
 
 #include "Arduino.h"
-#include "oXs_config.h"
+#include "oXs_config_basic.h"
+#include "oXs_config_advanced.h"
 
 struct VOLTAGEDATA {
 //  bool available;    // to remove afterward
@@ -47,6 +48,7 @@ class OXS_VOLTAGE {
 	void setupVoltage( void );
 	void readSensor();
 	void resetValues();
+  void convertNtcVoltToTemp (int32_t &voltage ) ;
     
   private:
 #ifdef DEBUG  

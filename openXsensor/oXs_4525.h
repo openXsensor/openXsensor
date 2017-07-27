@@ -2,7 +2,8 @@
 #define OXS_4525_h
 
 #include <Arduino.h>
-#include "oXs_config.h"
+#include "oXs_config_basic.h"
+#include "oXs_config_advanced.h"
 #include "I2C.h"
 
 //#define CALCULATEINTEGER
