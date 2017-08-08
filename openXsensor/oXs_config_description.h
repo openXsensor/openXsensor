@@ -131,8 +131,8 @@ See OpenXsensor https://github.com/openXsensor/
 *       #define BATTERY_1_SOURCE          VOLT_4                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
 *       #define BATTERY_2_SOURCE          VOLT_2                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
 *       #define MAIN_BATTERY_SOURCE       VOLT_5                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
-*       #define TEMPERATURE_1_SOURCE      TEST_1          //  select between TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SENSITIVITY , PPM
-*       #define TEMPERATURE_2_SOURCE      SENSITIVITY          //  select between TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SENSITIVITY , PPM
+*       #define TEMPERATURE_1_SOURCE      TEST_1          //  select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6 , TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SENSITIVITY , PPM
+*       #define TEMPERATURE_2_SOURCE      SENSITIVITY          //  select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6 , TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SENSITIVITY , PPM
 
 **** 2.3 Multiplex  ************************************************************************************ 
 *      For Multiplex protocol, you have to define which OXS measurements are sent to Tx and on which lines they appear on the Tx telemetry panels.

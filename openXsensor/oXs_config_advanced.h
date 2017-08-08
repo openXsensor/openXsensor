@@ -162,7 +162,7 @@
 
 // --------- 10 - IMU 6050 --- (accelerometer + gyro) and HMC5883 (magnetometer) --------------------------------------
 // ***** 10.1 - IMU 6050 *****
-//#define PIN_INT_6050 2   // Interrupt from 6050 has to be connected to Arduino pin 2 or pin 3 (do not use here the same pin as PPM)
+#define PIN_INT_6050 2   // Interrupt from 6050 has to be connected to Arduino pin 2 or pin 3 (do not use here the same pin as PPM)
 
 //#define DISPLAY_ACC_OFFSET // used ONLY in order to display the acceleration offset on pc terminal; KEEP AS COMMENT once offsets have been setup 
 
