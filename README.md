@@ -27,7 +27,7 @@ It is compatible with :
 	* Possibility to change vario sensitivity and/or to switch between 2 vertical speeds from TX while flying
   * Air Speed
     * Uses normally a 4525DO-DS5AI001DP sensor
-	* Alternative: ADS1115 + MPXV7002DP (not yet tested)
+	* Alternative: ADS1115 + MPXV7002DP
 	* Can also be used by oXs to compensate vertical speed measurements (dTE)
   * GPS
     * Can be connected to a GPS (NEO6/NEO7/NEO8) and transmit collected data
