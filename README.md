@@ -45,13 +45,14 @@ It is compatible with :
   * Current sensor
     * Max Amp depends on the sensor being used (e.g. ACS712, ACS754, ACS758) 
 	* Can calculate the consumed current
+  * Flow sensor (provides actual flow, remaining tank capacity in ml and %)	
   * Can use any sensor outputting voltage
     * Conversion from Volt to other units (e.g. to degree for temperature sensor)
 	* Can be associate with termistor
   * Can calculate glider ratio to improve glider setup while flying
   * Can generate several sequences of signal (e.g. for light sequencer)
   
-Note: Setup is done editing manually the file oXs_config.h
+Note: Setup is done editing manually the files oXs_config_basic.h and (in some cases oXs_config_advanced.h)
 	  All details about the requirements and the way to configure oXs are given in the file oXs_config_description.h
 	  Some explanations are given in wiki (but are not 100% up to date). It is safe to higtly recommended to read oXs_config_description.h 
 
