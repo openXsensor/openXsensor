@@ -368,7 +368,7 @@ Ecrit par par Rainer Schlosshan traduction Thierry ZINK
 *
 *     Le réglage utilise 4 parametres:
 *         SENSITIVITY_MIN_AT_PPM = quand l’émetteur envoi cette valeur sur la sortie PPM, le paramètre SENSITIVITY_MIN (voir section 4.2) vas être remplacé par la valeur du paramètre SENSITIVITY_PPM_MIN;  Une valeur typique peux être 10.
-*         SENSITIVITY_MAX_AT_PPM  = quand l’émetteur envoi cette valeur sur la sortie PPM, le paramètre SENSITIVITY_MIN (voir section 4.2) vas être remplacé par la valeur du paramètre SENSITIVITY_PPM_MAX;  Une valeur typique peux être 40.
+*         SENSITIVITY_MAX_AT_PPM = quand l’émetteur envoi cette valeur sur la sortie PPM, le paramètre SENSITIVITY_MIN (voir section 4.2) vas être remplacé par la valeur du paramètre SENSITIVITY_PPM_MAX;  Une valeur typique peux être 40.
 *              Le paramètre SENSIVITY_PPM_MIN+MAX définie la plage dans laquelle vous aller pouvoir ajuster la sensibilité:
 *         SENSITIVITY_PPM_MIN     =  valeur minimume pour le parametre SENSITIVITY_MIN qui peu lui être asigné par PPM; Une valeur typique peux être 20.
 *         SENSITIVITY_PPM_MAX     =  valeur maximum pour le parameter SENSITIVITY_MIN qui peu lui être asigné par PPM; Une valeur typique peux être 100.
@@ -415,59 +415,59 @@ Ecrit par par Rainer Schlosshan traduction Thierry ZINK
 ************************************************************************************************************************
 * 4.6 - changement entre different type de calcul de vitesse vertical (optionel) **************************************************************
 *     Quand vous utiliser deuc capteur barometrique ou un capteur barometrique et un capteur de vitesse pitot (4525D0 - voir section 5) ou un cpateur barometrique et un IMU, OXS peux calculer different vitesse vertical (ou dTE).
-*     When the PPM option is implemented, OXS allows to select from TX which value (Vspeed from first or second baro sensor or compensated by airspeed, ...) has to be sent as vertical speed and so will control the vario tone. 
-*     This allows switching between e.g. compensated and uncompensated vario.
-*     Even if OXS can calculate up to 5 vertical speeds ( FIRST_BARO, SECOND_BARO , AVERAGE_FIRST_SECOND, AIRSPEED_COMPENSATED , BARO_AND_IMU ), it is only possible to switch between 2 predefined vertical speeds.
-*     To enable this feature, additional parameters are required:
-*       1) Specify what are respectively the primary and the secondary vertical speeds using the lines:
+*     Quand l'option PMM est activé, OXS autorise quelle calcul (vitesse vertical du premier ou second capteur ou compensé par le pitot, etc...) doit être envoyer pour le vario.
+*     Ceci permet de changer entre vario compenser et non compenser.
+*     Bien que OXS puisse calculer jusqu'à type 5 vitesse vertical ( FIRST_BARO, SECOND_BARO , AVERAGE_FIRST_SECOND, AIRSPEED_COMPENSATED , BARO_AND_IMU ), il est uniquement possible de changer entre 2 vitesse vertical.
+*     Pour activé cette option, plusieur parametre sont nécésaire,
+*       1) Specifier quelle calcul de vitesse vertical sera le primaire et lequel sera le secondraire en utilisant les ligne ci-dessous:
 *                  #define VARIO_PRIMARY       XXXXXXX  
 *                  #define VARIO_SECONDARY     YYYYYYY
-*                 where XXXXXX and YYYYYY are each one values selected between FIRST_BARO, SECOND_BARO , AVERAGE_FIRST_SECOND, AIRSPEED_COMPENSATED , BARO_AND_IMU 
-*       2) Specify a range of PPM value that OXS has to check in order to send or the primary or the secondary vertical speed using the lines:
+*                 Ou XXXXXX et YYYYYY est un valeur selectionné dans la liste suivante: FIRST_BARO, SECOND_BARO , AVERAGE_FIRST_SECOND, AIRSPEED_COMPENSATED , BARO_AND_IMU 
+*       2) Specifé une plage de valeur PPM que OXS doit verifié pour envoyer la vitesse vertical primaire ou secondair en utilisant les lignes ci-dessous.
 *                 #define SWITCH_VARIO_MIN_AT_PPM 10 
 *                 #define SWITCH_VARIO_MAX_AT_PPM 90 
-*             When the ABSOLUTE value of PPM is between SWITCH_VARIO_MIN_AT_PPM (typical value = 10) and SWITCH_VARIO_MAX_AT_PPM (typical value = 90),
-*              - OXS will switch to the primary vertical speed IF  PPM is POSITIVE
-*              - OXS will switch to the secondary vertical speed IF  PPM is NEGATIVE
-*            Note: when the absolute value of PPM is outside this range, OXS will not switch from vertical speed and keep the current one.
-*                  This principle allows to use a switch on TX simultaneously with a pot in order to control sensitivity or compensation.
-*                  Switching from positive to negative can be achieved on openTx with a mixer using MULTIPLY by -100%.
-*                  Sending a PPM value outside this range allows to instruct OXS to apply another order (e.g. reset the airspeed offset) without switching the vertical speed.
-*       3) Specify in section 4.2 that the source for vertical speed is "PPM_SELECTION"             
+*             Quans la valeur absolue entre le parametre SWITCH_VARIO_MIN_AT_PPM (valeur typique = 10) et le parametre SWITCH_VARIO_MAX_AT_PPM (valeur typique = 90),
+*              - OXS vas switcher sur la vitesser vertical primaire si le resultat est positif
+*              - OXS vas switcher sur la vitesser vertical secondaire si le resultat est négatif
+*            Note: Quqnd la valeur absolue the PPM est hors de la plage de valeur, OXS ne vas pas changer de type de calcul de vitesse vertical et rester avec la valeur actuelle.
+*                  Ce principe permet d'utilisé un interupteur en même temps qu'un potentiometre pour controlé la sensibilité.
+*                  Le passage de positif a négatife sur openTx peu être réaliser a l'aide d'un mixage "MULTIPLY by -100%".
+*                  l'envoie d'une vlauer PPM au de cette plage de valeur permet une autre fonction (exemple le reste de offset de la vitesse aire) sans changer le calcul de la vitesse vertical.
+*       3) sepecifié dans la section 4.2 que la selection de la source de vitesse vertical est "PPM_SELECTION"             
 ****************************************************************************************************************************
-#define VARIO_PRIMARY       AIRSPEED_COMPENSATED  // select between FIRST_BARO, SECOND_BARO , AVERAGE_FIRST_SECOND, AIRSPEED_COMPENSATED , BARO_AND_IMU
-#define VARIO_SECONDARY     FIRST_BARO            // select between FIRST_BARO, SECOND_BARO , AVERAGE_FIRST_SECOND, AIRSPEED_COMPENSATED , BARO_AND_IMU
+#define VARIO_PRIMARY       AIRSPEED_COMPENSATED  // selectionné une valeur parmi: FIRST_BARO, SECOND_BARO , AVERAGE_FIRST_SECOND, AIRSPEED_COMPENSATED , BARO_AND_IMU
+#define VARIO_SECONDARY     FIRST_BARO            // selectionné une valeur parmi: FIRST_BARO, SECOND_BARO , AVERAGE_FIRST_SECOND, AIRSPEED_COMPENSATED , BARO_AND_IMU
 #define SWITCH_VARIO_MIN_AT_PPM 10
 #define SWITCH_VARIO_MAX_AT_PPM 90
-
-* 4.7 - Analog vertical speed (optional) ***********************************************************************************
-*     OXS can also deliver the vertical speed (from sensor 1 only) as an analog signal that has to be connected to A1 or A2 on FrSky receiver:
-*     This can be useful if you have a receiver that has no digital communication pin (or if it is already used by another sensor)
-*     Additional Hardware (1 resistor + 1 capacitor) is required! Read the WiKi if you want to use this.
-*     To activate this:
-*     - uncomment the 3 following parameters
-*     - define in PIN_ANALOG_VSPEED the Arduino DIGITAL pin being used (see below)
-*         Default 3; The pin can only be 3 or 11 because it has to use timer 2.
-*     - set the min and max limits for the vertical speed (in meter/sec)
-*        - ANALOG_VSPEED_MIN value or lower will apply 0 Volt to the receiver
-*        - ANALOG_VSPEED_MAX  value or higher will apply 3.2 Volt to the receiver
+*************************************************************************************************************************
+* 4.7 - vitesse vertical analogique (optional) ***********************************************************************************
+*     OXS peux aussi donné la vitesse vertical (uniquement du depuis le capteur 1) sous forme de signal analogique uniquement sur les sortie A1 ou A2 sur le recpteur FrSky:
+*     Ceci peu etre util si votre recepteur ne possède pas de communication digital (ou si celle ci est déjà utilisé par un autre capteur)
+*     Des composent suplementaire (1 resitance et 1 condensateur) sont nécésaire! Lire le Wiki si vous voulez utilisé cette option.
+*     Pour activé cette option:
+*     - dé commenté les trois prametres suivant
+*     - definir dans le peramètre PIN_ANALOG_VSPEED la sortie Arduino DIGITAL qui vas être utilisé (voir ci-dessous)
+*         Par defaut 3; les PIN utilisé ne peuvent etre que les PIN 3 et 11 car la fonction Arduino timer 2 doit être utilisé. (la fonction timer 2 bloc certaine PIN et force a utilisé d'autre)
+*     - definir le limite min et max de la vitesse vertical (en meter/sec)
+*        - ANALOG_VSPEED_MIN Valeur inferieur ou égale vas envoyer 0Volt au recepteur
+*        - ANALOG_VSPEED_MAX Valeur supérieur ou égale vas envoyer 3.2Volt au recepteur
 *************************************************************************************************************************
 #define PIN_ANALOG_VSPEED   3
 #define ANALOG_VSPEED_MIN -3
 #define ANALOG_VSPEED_MAX  3
-
-* 4.8  - Calculating glider ratio, average sink/climb rate ***************************************************************
-*     oXs can calculate and transmit glider ratio and average sink/climb rate when airspeed and vspeed stay within some tolerances for more than X seconds (e.g 5 or 10 sec)
-*     The calculated values are :
-*        - enlapsed time used to calculate glider ratio and average sink/climb rate
-*        - averaged sink/climb rate  ( = difference of altitude / enlapsed time )
-*        - glider ratio (= distance / difference of altitude) (in fact = airspeed * enlapsed time / difference of altitude )
-*     Glider ratio is a parameter that can be use e.g. to fine tune the setup of the glider. It makes only sense if the speeds are quite regular.
-*     So oXs calculates only when:      
-*         - the airspeed does not change by more than a defined % (compared to the beginning of the enlapsed time). This % can be defined by the user in SPEED_TOLERANCE.
-*         - the vertical speed stays withing a range of value defined by the user in VSPEED_MIN_TOLERANCE  and VSPEED_MAX_TOLERANCE
-*     Every 0.5 sec, oXs checks if the current measurements are within the tolerance. 
-*     If oXs is out of tolerance, it resets all calculations using the last (=current) measurements as new references. Glider ratio and average sink/climb are set to 0 
+*************************************************************************************************************************
+* 4.8  - Calcul des performances du planeur, calcul moyen des tôt de monter/descente, calcul moyen de l’altitude gagner/perdu ***************************************************************
+*     OXS peux calculer et envoyer le calcul moyen des tôt de monté/descente quand la vitesse air et la vitesse vertical rest stable dans une certaine tolerence plus de X seconde (exemple entre 5 à 10 sec)
+*     Les valeur calculé sont:
+*        - temps écoulé pour calculé les performances du planeur et le calcul moyen des tôt de monté/descente.
+*        - moyen des tôt de monté/descente  ( = difference d'altitude / temps écoulé )
+*        - performances planeur (= distance / difference d'altitude) (en faite = vitesse aire * temps écoulé / difference d'altitude )
+*     le parametre de performace planeur est un permètre qui permet par exemple d'affiner les réglages du planeur. Cela a de sens que si la vitesse est aproximativement regulière.
+*     OXS effectue ces calcul uniquement quand:
+*         - si la vitesse air ne change pas d'un certain pourcentage(compré a la vitesse au début du temps écoulé). Ce pourcentage peux être défini par l'utilisateur dans le paramètre SPEED_TOLERANCE.
+*         - Si la vitesse vertical reste dans un certain pourcentage defini par l'utilisateur dans les parameters VSPEED_MIN_TOLERANCE et VSPEED_MAX_TOLERANCE
+*     Toutes les 0.5sec, OXS véréfi que les mesure instantané reste dans les tolérences défini. 
+*     Si les mesures, effectué par OXS, sont hors des tolérence defini, il arrete le calcul en cour, et reprent avec les nouvelles valeur mesuré. PErformance planeur et moyenne des tôt de monté/descente sont remise a 0.
 *     If oXs is within tolerance since more than a user defined enlapsed time (defined by GLIDER_RATIO_CALCULATED_AFTER_X_SEC), it performs the calculations
 *     Note: in this version of oXs, if you want to sent the calculated field you have to fill the data to transmit section using following code
 *         - TEST1 for enlapsed time (in 1/10 of sec) 
@@ -482,8 +482,6 @@ Ecrit par par Rainer Schlosshan traduction Thierry ZINK
 #define SPEED_TOLERANCE              5                      // in % of speed
 #define VSPEED_MIN_TOLERANCE -200                           // out of tolerance when Vspeed is lower than this value (cm/sec)
 #define VSPEED_MAX_TOLERANCE  -10                           // out of tolerance when Vspeed is upper than this value (cm/sec)
-
-
 ************************************************************************************************************************
 * Note : it is not required to comment the sensitivity, hysteresis, OutputClimbRateMin/Max, ... parameters when a vario,
 *        is not used (those parameters are just discarded)
