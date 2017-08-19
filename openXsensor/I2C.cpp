@@ -85,13 +85,15 @@ void I2C::begin()
   #if defined(__AVR_ATmega168__) || defined(__AVR_ATmega8__) || defined(__AVR_ATmega328P__)
     // activate internal pull-ups for twi
     // as per note from atmega8 manual pg167
-    sbi(PORTC, 4);
-    sbi(PORTC, 5);
+    // with modules like GY-63 there is no need for pull-up because the module have already pull-up resistor
+    // it is safier not to activate internal pull-up when Arduino is running 5 volt and external sensors are running 3.3 volt
+//    sbi(PORTC, 4);
+//    sbi(PORTC, 5);
   #else
     // activate internal pull-ups for twi
     // as per note from atmega128 manual pg204
-    sbi(PORTD, 0);
-    sbi(PORTD, 1);
+//    sbi(PORTD, 0);
+//    sbi(PORTD, 1);
   #endif
   // initialize twi prescaler and bit rate
   cbi(TWSR, TWPS0);
