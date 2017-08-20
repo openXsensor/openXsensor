@@ -52,6 +52,8 @@ uint8_t  nbWaitingDelay ;
 
 uint8_t jetiMenu ;
 
+char degreeChar[2] ;
+
 //#if defined ( A_FLOW_SENSOR_IS_CONNECTED ) && ( A_FLOW_SENSOR_IS_CONNECTED == YES)  // we will use interrupt PCINT0 
   extern volatile uint16_t flowMeterCnt ;            // counter of pin change connected to the flow sensor (increased in the interrupt. reset every X sec when flow is processed)
   extern float currentFlow  ;                     // count the consumed ml/min during the last x sec
@@ -139,8 +141,8 @@ void OXS_OUT::setup() {
     PORTC = 0 ; 
 #endif
 
-
-
+    degreeChar[0] = 0xB0 ; // for the symbol °, fill with 0xB0 followed by 0x00 as showed in jetiprotocol example and in datasheet (code A02 for european set of char))
+    degreeChar[1] = 0x00 ;
     initJetiListOfFields() ;
   
 #ifdef DEBUG
@@ -515,7 +517,8 @@ boolean OXS_OUT::tryToAddFieldToJetiBuffer (void) { // return true if a field ha
 void OXS_OUT::addFieldToJetiBuffer(int32_t fieldValue , uint8_t dataType ) {  // dataType has 1 high bits = 0 ,
                                                                      // then 2 bits to say precision (0= 0 digits, ... 2 = 2 digits) and 1 bit = 0
                                                                      // then 4 bits to say the type in Jeti codification     
-    uint8_t codifJeti = dataType & 0x0F ;
+    uint8_t codifJeti ;
+    codifJeti = dataType & 0x0F ;
     switch (codifJeti) {
     case JETI_30 :
       jetiData[jetiMaxData++] = (listOfFieldsIdx << 4) | ( codifJeti ) ; // first 4 bits are the field identifiers ( 1...15) and the last 4 bits the type of data)
@@ -534,6 +537,13 @@ void OXS_OUT::addFieldToJetiBuffer(int32_t fieldValue , uint8_t dataType ) {  //
       jetiData[jetiMaxData++] = (listOfFieldsIdx << 4) | ( codifJeti) ; // first 4 bits are the field identifiers ( 1...15) and the last 4 bits the type of data)
       jetiData[jetiMaxData++] = fieldValue & 0xFF ;
       jetiData[jetiMaxData++] = ( ( fieldValue >> 8 ) & 0x1F ) | ((fieldValue < 0) ? 0x80 :0x00 )  ; 
+      break ;
+    case JETI_GPS :
+      jetiData[jetiMaxData++] = (listOfFieldsIdx << 4) | ( codifJeti ) ; // first 4 bits are the field identifiers ( 1...15) and the last 4 bits the type of data)
+      jetiData[jetiMaxData++] = fieldValue & 0xFF ;
+      jetiData[jetiMaxData++] = ( fieldValue >> 8 ) & 0xFF ;
+      jetiData[jetiMaxData++] = ( fieldValue >> 16 ) & 0xFF ;
+      jetiData[jetiMaxData++] = ( ( fieldValue >> 24 ) & 0xFF )   ; 
       break ;
 
     
@@ -741,7 +751,7 @@ void OXS_OUT::fillJetiBufferWithText() {
         mergeLabelUnit( textIdx, "Gps Bearing", "°"  ) ;
         break ;
       case GPS_LONG :                                          // Still to be added 
-        mergeLabelUnit( textIdx, "Gps Long", "°"  ) ;
+        mergeLabelUnit( textIdx, "Gps Long", degreeChar  ) ;
         break ;
       case GPS_LAT :                                           // Still to be added
         mergeLabelUnit( textIdx, "Gps Lat", "°"  ) ;

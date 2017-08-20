@@ -1,7 +1,7 @@
 // OpenXsensor https://github.com/openXsensor/
 // started by Rainer Schlosshan and maintained by Michel Strens
 
-// This is version : 8.2.1 (19 august 2017)
+// This is version : 8.2.2 (20 august 2017)
 
 //******************************************************************************************************************************************************* //
 //                                                                                                                                                        //
@@ -106,7 +106,7 @@
 #define SAVE_TO_EEPROM     NO
 
 // --------- 9 - GPS ---------------                                       see oXs_config_advanced.h for additionnal parameters (normally no need to change them)
-#define A_GPS_IS_CONNECTED      NO                 // select between YES , NO
+#define A_GPS_IS_CONNECTED      YES                 // select between YES , NO
 
 // --------- 10 - IMU 6050 --- (accelerometer + gyro)  and HMC5883 (magnetometer) --  see oXs_config_advanced.h for additionnal parameters e.g. about calibration
 // ***** 10.1 - IMU 6050 *****
