@@ -511,13 +511,13 @@ Ecrit par par Rainer Schlosshan traduction Thierry ZINK
 * OXS permet de recalibrer le capteur depuis l émetteur via la fonction PPM (voir section 3).
 * Le parametre AIRSPEED_RESET_AT_PPM défini la valeur que doit envoyé l émetteur pour forcé la recalibration du capteur.
 * La valeur par défaut est 100.
-* The easiest is to configure a TX mixer that will generate a pulse of e.g. 1 sec with this value (e.g. 100).
-* Please note that the request for recalibration should be send only when the airspeed (on the probe) is really zero otherwise it would generate wrong measurements.
+* Le plus simple est de configuré une impulsion sur l'émmeteur par exemple de 1 seconde avec cette valeur.
+* /!\ Note que lors de la recalibration doit etre envoyer uniquement quand la vitesse air est vraiment nul sinon cela génère de fausse mesure.
 *
-* oXs can calculate 2 types of airspeed:
-*  - the first one is an airspeed based on air density at 15 Celcius degree and 1013 hPa (normalised sea level). It is a normalised airspeed (indicated airspeed) as normally used on aircraft.
-*    So e.g. the stall speed does not change with altitude
-*  - the second one take into account the pressure (provided by a baro sensor) and the initial airspeed sensor temperature in order to calculate a "true" airspeed (to be compared with a GPS speed when wind is null)  
+* OXS peux calculer deux type de vitesse air:
+*  - la première est une vitesse air baseer sur la denciter de l'air à 15°C et 11325 hPa (au niveau de la mer). C'est la vitessse air utiliser dans l'aeronautique.
+*    Exemple la vitesse de decrochage ne varie pas avec l'altitude
+*  - La second tien compte la pression (fourni par le capteur barométrique) et la temperature initial du capteur afin de calculer a "vrai" vitesse air and the initial airspeed sensor temperature in order to calculate a "true" airspeed (to be compared with a GPS speed when wind is null)  
 * The normalised airspeed is calculated when line #define AIRSPEED_AT_SEA_LEVEL_AND_15C is uncommented. To get the "true" airspeed, put this line as comment
 * 
 * oXs can send the airspeed in (1/10) of knot/h or in (1/10) km/h. For openTx, you normally must use the knot/h option (only some old 2.1.x versions requires km/h option).
