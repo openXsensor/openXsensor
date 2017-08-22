@@ -47,8 +47,7 @@ Ecrit par par Rainer Schlosshan traduction Thierry ZINK
 * Note: Les paramètres activé commence par  "#define",  suivi du nom du paramètre et dans la majorité des cas d’une valeur pour ce paramètre
 *        Pour activé ou désactivé les paramètres il faut supprimer ou ajouté les "//" qui précède "#define" Example “// #define ParameterToto Bonjour“ le ParametreToto ne sera pas pris en compte car pour Arduino c’est considérer comme un commentaire. 
 ************************************************************************************************************************
-
-
+comment
 
 **** 1 - Choix du protocole de télémétrie **********************************************************************
 * Actuellement oXs supports 4 protocoles de télémétrie: Multiplex , Frsky, Jeti and Hott (=Graupner)
@@ -123,7 +122,7 @@ Ecrit par par Rainer Schlosshan traduction Thierry ZINK
 *         - GPS (long, lat, vitesse, altitude , course) (quand un GPS est connecté)
 *         - RPM (hz) (quand un capteur de vitesse de rotation est connecté)
 *      Lorsque vous mesurez des tensions de bateries, une alarme peux etre regler pour indiqué les tensions inférieur a un niveau reglé.   
-*      Pour activé cette alarme, dé commenter la ligne ci-dessous (en milliVolt) pour regler le seuille d'alarme
+*      Pour activé cette alarme, décommenter la ligne ci-dessous (en milliVolt) pour regler le seuille d'alarme
 *         //#define CELL_UNDERVOLTAGE_WARNING 3300            // Attention c'est en mV;
 *         
 *      Vous pouvez aussi selectioné comment les valeurs temperature1 et temperature2 seront remplie 
@@ -236,17 +235,17 @@ Ecrit par par Rainer Schlosshan traduction Thierry ZINK
 *   - Première étape, décidé quelle mesure vonts remplir les champs TEST_1, TEST_2, TEST_3 (dans la section 2.5)
 *   - Second étape, decidé dans quelle parametre de télémetry ces mesure seront envoyer (dans la section 2.1 to 2.4)
 *   Pour choisir cooment ces paramètre TEST_1, TEST_2, TEST_3 doivent être remplie décomenter un ou plusieur ligne ci-dessous.
-*   Si vous dé commenté plusieur ligne, prenez garde a ne pas utilisé plusieur fois le même parametre.
+*   Si vous décommenter plusieur ligne, prenez garde a ne pas utilisé plusieur fois le même parametre.
 **************************************************************************************************************************   
-//#define FILL_TEST_3_WITH_EXPECTED_ALT                        	// Dé commenté cette ligne si OXS doit calculer une altitude souhaité basé sur l'altitude actuel, Vitesse vertical et acceleration verticale
-//#define EXPECTED_ALT_AT_SEC 0.2                               // temps (en sec) pour l'altitude souhaité (Cette ligne doit etre dé commenter si la précedente est dé commenté)
-//#define FILL_TEST_1_2_3_WITH_LINEAR_ACC                     	// Dé commenté cette ligne si OXS doit replire les parametres TEST_1, TEST_2, TEST_3 avec l'acceleration lineaire
-//#define FILL_TEST_1_2_WITH_VSPEED_AND_ALT_FROM_SECOND_VARIO  	// Dé commenté pour activé cette option
-//#define FILL_TEST_1_WITH_DTE                                 	// Dé commenté pour activé cette option
-//#define FILL_TEST_2_WITH_PPM_AIRSPEED_COMPENSATION           	// Dé commenté pour activé cette option
-//#define FILL_TEST_1_WITH_YAWRATE                             	// Dé commenté pour activé cette option
-//#define FILL_TEST1_WITH_HEADING_FROM_MAGNETOMETER             // Dé commenté pour activé cette option
-//#define FILL_TEST_3_WITH_FLOW_SENSOR_CONSUMPTION             	// Dé commenté pour activé cette option
+//#define FILL_TEST_3_WITH_EXPECTED_ALT                        	// décommenter cette ligne si OXS doit calculer une altitude souhaité basé sur l'altitude actuel, Vitesse vertical et acceleration verticale
+//#define EXPECTED_ALT_AT_SEC 0.2                               // temps (en sec) pour l'altitude souhaité (Cette ligne doit etre décommenter si la précedente est décommenter)
+//#define FILL_TEST_1_2_3_WITH_LINEAR_ACC                     	// décommenter cette ligne si OXS doit replire les parametres TEST_1, TEST_2, TEST_3 avec l'acceleration lineaire
+//#define FILL_TEST_1_2_WITH_VSPEED_AND_ALT_FROM_SECOND_VARIO  	// décommenter pour activé cette option
+//#define FILL_TEST_1_WITH_DTE                                 	// décommenter pour activé cette option
+//#define FILL_TEST_2_WITH_PPM_AIRSPEED_COMPENSATION           	// décommenter pour activé cette option
+//#define FILL_TEST_1_WITH_YAWRATE                             	// décommenter pour activé cette option
+//#define FILL_TEST1_WITH_HEADING_FROM_MAGNETOMETER             // décommenter pour activé cette option
+//#define FILL_TEST_3_WITH_FLOW_SENSOR_CONSUMPTION             	// décommenter pour activé cette option
 ************************************************************************************************************************
 
 
@@ -262,7 +261,7 @@ Ecrit par par Rainer Schlosshan traduction Thierry ZINK
 *   Ces différentes fonctions demandent des mixages dans l’émetteur et certaine configuration dans le fichier oXs-config.h (voir ci-dessous).
 *
 *   Si vous voulez ces fonctions vous devez;
-*      - vous devez dé commenter (en suppriment les // devant la ligne) les 3 lignes suivantes
+*      - vous devez décommenter (en suppriment les // devant la ligne) les 3 lignes suivantes
 *      - Spécifié à la ligne PIN_PPM, la PIN Arduino qui sera connecté à la sortie servo du récepteur
 *            Par défaut: 2 ; vous pouvez aussi connecter la PIN 3 pour lire le signal PPM.
 *            Fait bien attention d’utiliser la pine sélectionné (2 ou 3) uniquement pour le signal PPM.
@@ -281,7 +280,7 @@ Ecrit par par Rainer Schlosshan traduction Thierry ZINK
 *   Si vous utilisé le protocol FRSKY SPORT (uniquement pour récepteur X) avec openTX 2.2(ou dessus) vous pouvez envoyer le signale PPM sans avoir a connecté une sortie servo du récèpteur.
 *   OpenTx 2.2 vous permet de lancé un script LUA qui vous permet d'envoyer des valeur depuis votre émeteur vers OXS
 *   Pour activé cette option vous devez:
-*     - dé commenté la ligne #define PPM_VIA_SPORT
+*     - décommenter la ligne #define PPM_VIA_SPORT
 *     - lancer le script LUA qui vous perment d'envoyer via le protocol SPORT le même type de valeur qu une voie due recepteur. (cette valeur est comprise entre -100 and 100)
 *       Ce script LUA doit utilisé une commande comme ceci: 
 *            local ret = sportTelemetryPush( 0x0D , 0x10 , 0x0010 , -52 )
@@ -295,7 +294,7 @@ Ecrit par par Rainer Schlosshan traduction Thierry ZINK
 #define PIN_PPM             2 
 #define PPM_MIN_100       988   
 #define PPM_PLUS_100      2012   
-#define PPM_VIA_SPORT             // dé commenté cette ligne pour recevoir un signal PPM par le protocol SPORT a la place d'une sortie servo du récepteur (Cela nécésite un émeteur equiper d'openTX et contenant le script en LUA)
+#define PPM_VIA_SPORT             // décommenter cette ligne pour recevoir un signal PPM par le protocol SPORT a la place d'une sortie servo du récepteur (Cela nécésite un émeteur equiper d'openTX et contenant le script en LUA)
 ************************************************************************************************************************
 
 
@@ -343,7 +342,7 @@ Ecrit par par Rainer Schlosshan traduction Thierry ZINK
 *     la sensibilité peux être régler par programmation et/ou par l’émetteur.
 *     
 *     Si vous voulez une réponse très rapide du vario la meilleur solution est d’utilisé un capteur MPU6050 (accéléromètre/gyroscope) en complément du capteur barométrique (voir ci-dessous).
-*     Note: Quand le vario est utilisé (#define VARIO dé commenter), vous avez a spécifié (dans la section 9) comment la vitesse vertical est calculer.
+*     Note: Quand le vario est utilisé (#define VARIO décommenter), vous avez a spécifié (dans la section 9) comment la vitesse vertical est calculer.
 *
 *     Le réglage de la sensibilité utilise 4 paramètres:
 *        SENSIVITY_MIN = Cette sensibilité est la sensibilité basic du vario.
@@ -446,7 +445,7 @@ Ecrit par par Rainer Schlosshan traduction Thierry ZINK
 *     Ceci peu etre util si votre recepteur ne possède pas de communication digital (ou si celle ci est déjà utilisé par un autre capteur)
 *     Des composent suplementaire (1 resitance et 1 condensateur) sont nécésaire! Lire le Wiki si vous voulez utilisé cette option.
 *     Pour activé cette option:
-*     - dé commenté les trois prametres suivant
+*     - décommenter les trois prametres suivant
 *     - definir dans le peramètre PIN_ANALOG_VSPEED la sortie Arduino DIGITAL qui vas être utilisé (voir ci-dessous)
 *         Par defaut 3; les PIN utilisé ne peuvent etre que les PIN 3 et 11 car la fonction Arduino timer 2 doit être utilisé. (la fonction timer 2 bloc certaine PIN et force a utilisé d'autre)
 *     - definir le limite min et max de la vitesse vertical (en meter/sec)
@@ -476,7 +475,7 @@ Ecrit par par Rainer Schlosshan traduction Thierry ZINK
 *         - TEST3 pour la finesse du planeur (en 1/10 d'unité)
 *     Le calcul de finesse du planeur nécésite au tube de pitot et un vario;
 *     Moyenne du tot de monté/descente peux etre calculer sans sonde de pitot( mais la  correction par la vitesse ne pourat pas ce faire)
-*     Afin d'activer la fonction vous devez decomenté et remplire les quatres lignes suivante.
+*     Afin d'activer la fonction vous devez décommenter et remplire les quatres lignes suivante.
 *     Pour désactivé la fonction il vous suffit de commenté la ligne suivante: GLIDER_RATIO_CALCULATED_AFTER_X_SEC
 *************************************************************************************************************************
 #define GLIDER_RATIO_CALCULATED_AFTER_X_SEC       10        // Temps écoulé pour effectué le calculer et le transmetre(en sec)
@@ -515,30 +514,30 @@ Ecrit par par Rainer Schlosshan traduction Thierry ZINK
 * /!\ Note que lors de la recalibration doit etre envoyer uniquement quand la vitesse air est vraiment nul sinon cela génère de fausse mesure.
 *
 * OXS peux calculer deux type de vitesse air:
-*  - la première est une vitesse air baseer sur la denciter de l'air à 15°C et 11325 hPa (au niveau de la mer). C'est la vitessse air utiliser dans l'aeronautique.
+*  - la première est une vitesse air baser sur la densiter de l'air à 15°C et 11325 hPa (au niveau de la mer). C'est la vitessse air est celle utiliser dans l'aeronautique.
 *    Exemple la vitesse de decrochage ne varie pas avec l'altitude
-*  - La second tien compte la pression (fourni par le capteur barométrique) et la temperature initial du capteur afin de calculer a "vrai" vitesse air and the initial airspeed sensor temperature in order to calculate a "true" airspeed (to be compared with a GPS speed when wind is null)  
-* The normalised airspeed is calculated when line #define AIRSPEED_AT_SEA_LEVEL_AND_15C is uncommented. To get the "true" airspeed, put this line as comment
+*  - La second tien compte la pression (fourni par le capteur barométrique) et la tèmperature interne du capteur afin de calculer a "vrai" vitesse (a comparer avec la vitesse GPS par vent nul).
+* La vitesse air normaliser est calculer quand la ligne #define AIRSPEED_AT_SEA_LEVEL_AND_15C est décommenter. Pour avoir la vrai vitesse aire, metter cette ligne en commentaire.
 * 
-* oXs can send the airspeed in (1/10) of knot/h or in (1/10) km/h. For openTx, you normally must use the knot/h option (only some old 2.1.x versions requires km/h option).
-* To activate the km/h option, activate this line #define AIRSPEED_IN_KMH
-* Put this line as comment to activate the knot/h option
+* oXs peux envoyer la vitesse air en (1/10) de knot/h ou en (1/10) km/h. Pour OpenTx, vous dever utilisé l'option knot/h (selement certaine vielle version on besoin de l'option km/h).
+* Pour activé l'option km/h, il faut décommenter cette ligne #define AIRSPEED_IN_KMH
+* Sinon meter cette ligne en commentaire pour activer l'option knot/h.
 *
-* oXs can also use the airspeed measurements in order to calculate a compensated vario named PRANDTL_DTE (=delta total energy).
-* See the web for more informations about dTE (= electronically compensated vario).
-* The principle is to try to detect only true air movement by neutralising the up and down resulting from elevator changes.
-* Normally, dTE has to be transmitted as Vspeed (vertical speed = defaultfield) because OpenTX does not yet support a specific field for it.
+* oXs peux aussi utiliser la mesure de vitesse air pour calculer le varimetre compenser appeller PRANDTL_DTE (=delta total energy).
+* Aller voir sur le web pour plus d'information a propos dTE (= electronically compensated vario).
+* Le proincip)e est d'essayer de detectè uniquement les vrai assencdance  en neutralisant les effait de la gouverne de profondeur.
+* Normalement, DTE doit être transmis par le parametre vitesse vertival (vitesse verticale = Valeur par défaut) car OpenTX ne supporte pas encore un champ spécifique pour celui-ci.
 *
-* When the option PPM is implemented, it is also possible to adjust the compensation factor between 2 values.
-* This requires to uncomment 4 parameters:
-*     COMPENSATION_MIN_AT_PPM  specify the PPM value in order to set the compensation to the value specified by COMPENSATION_PPM_MIN; default = 60.
-*     COMPENSATION_MAX_AT_PPM  specify the PPM value in order to set the compensation to the value specified by COMPENSATION_PPM_MAX; default = 90.
-*     COMPENSATION_PPM_MIN     minimum compensation; in % ; default 80 
-*     COMPENSATION_PPM_MAX     maximum compensation; in % ; default 120
+* Lorsque l'option PPM est implémentée, il est également possible d'ajuster le facteur de compensation entre 2 valeurs.
+* Cela nécessite de décommenter 4 paramètres:
+*     COMPENSATION_MIN_AT_PPM  Spécifiez la valeur PPM afin de définir la compensation à la valeur spécifiée par COMPENSATION_PPM_MIN; Défaut = 60
+*     COMPENSATION_MAX_AT_PPM  Spécifiez la valeur PPM afin de définir la compensation à la valeur spécifiée par COMPENSATION_PPM_MAX; Défaut = 90
+*     COMPENSATION_PPM_MIN     Compensation minimale; en % ; Par défaut 80
+*     COMPENSATION_PPM_MAX     120 Compensation maximal; en % ; Par défaut 120
 ************************************************************************************************************************
 #define AIRSPEED_SENSOR_USE  MS4525
-#define AIRSPEED_AT_SEA_LEVEL_AND_15C // if this line is commented, airspeed is calculated using baro pressure and temperature (so being "true" airspeed instead of normalised airspeed)      
-//#define AIRSPEED_IN_KMH  // uncomment this line if airspeed has to be in km/h instead of knot/h ( except some old versions, openTx expects knot/h) 
+#define AIRSPEED_AT_SEA_LEVEL_AND_15C 	// Si cette ligne est commentée, la vitesse est calculée à l'aide de la pression et de la température du baro (donc une vitesse "vraie" au lieu de la vitesse normale).      
+//#define AIRSPEED_IN_KMH  				// Décommentez cette ligne si la vitesse doit être en km / h au lieu de nœud / h (sauf certaines anciennes versions, OpenTx s'attend à nœud / h) 
 
 #define AIRSPEED_RESET_AT_PPM   100
 
@@ -546,32 +545,35 @@ Ecrit par par Rainer Schlosshan traduction Thierry ZINK
 #define COMPENSATION_MAX_AT_PPM 90
 #define COMPENSATION_PPM_MIN  80
 #define COMPENSATION_PPM_MAX 120
+************************************************************************************************************************
 
 
-**** 6 - Voltage measurements and current sensor settings (optional) ***************************************************
+
+
+**** 6 - Réglage capteur de tension et de courant (optionnel) ***************************************************
 *
-* 6.1 - Voltage Reference to measure voltages and current **************************************************************
-*     Current and Voltages can be measured in (1023) steps or from VCC , or from an 1.1 internal reference or from an external reference.
-*     If VCC is very stable, it is probably more accurate and easier to measure current and voltages based on VCC (so in 1023 steps from VCC).
-*     Still this requires that the voltage applied on Arduino "RAW" pin is regulated or at least always more than 5.5 volt (in order to let the Arduino board voltage regulates it at 5 volt).
-*     If voltage on "Raw" pin is less than 5.5 volt and changes (e.g. due to servo consumption or low battery) then current and voltage measurements will become wrong.
-*     If VCC can't be very stable (e.g. Arduino is powered via RX by a 4.8 NiMh) and you need only the voltages (no need for the current measurement), then it is possible to measure based on the Arduino 1.1 internal voltage reference.
-*     If you need current measurement too, using internal voltage is not "the" solution because current sensor needs stable voltage too.
-*     Take care that voltage dividers (see below) must be setup in order that Arduino analog pin voltage do not exceed VCC or 1.1 volt or the external voltage depending on the option you choose.
-*     - Uncomment the "#define USE_INTERNAL_REFERENCE" to activate the 1.1 internal voltage reference (otherwise, measurements will be based on VCC).
-*     - Uncomment the "#define USE_EXTERNAL_REFERENCE" to activate the external voltage reference (otherwise, measurements will be based on VCC).
-*        Note: in order to use an external reference, you have to use add a voltage reference device to your Arduino. This is quite difficult on Arduino pro mimi because the AREF pin is not available on the pin headers
-*     - In order to get best measurements, you can setup the voltage reference being used with line #define REFERENCE_VOLTAGE.
-*       Value must be defined in millivolt (e.g. 5100 for 5.1 Volt) and may not contains decimals;
-*       If ommitted, oXs will automatically apply 1100 (when USE_INTERNAL_REFERENCE is defined) and 5000 (othewise)
-*       When external reference is used, REFERENCE_VOLTAGE must be specified
+* 6.1 - Tension de référence pour mesure des tensions et des courants **************************************************************
+*     Le courant et les tensions peuvent être mesurés en (1023)pas ou à partir de VCC, ou à partir d'une référence interne 1.1 ou d'une référence externe.
+*     Si VCC est très stable, il est probablement plus précis et plus facile de mesurer le courant et les tensions basées sur VCC (donc en 1023 pas de VCC).
+*     Pourtant, cela exige que la tension appliquée sur la broche "RAW" d'Arduino soit régulée ou au moins toujours supérieure à 5,5 volts (afin de laisser la tension de la carte Arduino la réguler à 5 volts)
+*     Si la tension sur la broche "Raw" est inférieure à 5,5 volts et change (par exemple en raison de la consommation d'asservissement ou de la batterie faible), les mesures de courant et de tension seront fausses.
+*     Si VCC ne peut être très stable (par exemple, Arduino est alimenté par le RX sous 4.8 Volt NiMh) et vous n'avez besoin que des tensions (pas besoin des mesures de courant), il est possible de mesurer en fonction de la référence de tension interne Arduino (1.1 volt).
+*     Si vous avez besoin également d'une mesure de courant, l'utilisation de la tension interne (1.1 volt) n'est pas la solution, car le capteur de courant a besoin d'une tension stable aussi.
+*     Veillez à ce que les diviseurs de tension (voir ci-dessous) soient configurés pour que la tension de la broche analogique Arduino ne dépasse pas VCC ou 1,1 volt ou la tension externe en fonction de l'option que vous choisissez.
+*     - Décommentez la "#define USE_INTERNAL_REFERENCE" pour activer la référence à la tension interne 1.1 volt (sinon, les mesures seront basées sur VCC).
+*     - Décommentez la "#define USE_EXTERNAL_REFERENCE" pour activer la référence de tension externe (sinon, les mesures seront basées sur VCC).
+*        Note: pour utiliser une référence de tension externe, vous devez utiliser un périphérique de référence de tension à votre Arduino. Ceci est assez difficile car Arduino pro mini la PIN AREF n'est pas disponible.
+*     - Pour obtenir les meilleures mesures, vous pouvez configurer la référence de tension en utilisant la ligne #define REFERENCE_VOLTAGE.
+*       La valeur doit être définie en millivolt (par exemple 5100 pour 5,1 volts) et ne pas pas contenir de décimales;
+*       Si omise, les OXS appliquera automatiquement 1100 (lorsque USE_INTERNAL_REFERENCE est défini) et 5000 dans les autre cas
+*       Lorsqu'une référence externe est utilisée, REFERENCE_VOLTAGE doit être spécifié
 ************************************************************************************************************************
 //#define USE_INTERNAL_REFERENCE
-//#define USE_EXTERNAL_REFERENCE  // uncomment this line if you use an external reference instead of Vcc
+//#define USE_EXTERNAL_REFERENCE  //Décommentez cette ligne si vous utilisez une référence externe au lieu de Vcc
 #define REFERENCE_VOLTAGE 5000
-
-* 6.2 - Voltages parameters *******************************************************************************************
-*     oXs can measure up to 6 input voltages (please note that depending on manufacturer, some Arduino pro mini have less analog pins available)
+************************************************************************************************************************
+* 6.2 - Paramètres des tensions *******************************************************************************************
+*     OXS peut mesurer jusqu'à 6 tensions d'entrée (veuillez noter que selon le fabricant, certains Arduino pro mini ont moins de broches analogiques disponibles).
 *     In order to measure voltages, you :
 *       - must specify the Analog pins (A0 to A7) connected to a battery (e.g. a multicell lipo) or to a sensor (e.g. a temperature sensor convert the temperature in a voltage that can be measured)
 *       - must specify the values of resistors being used for the voltage dividers (see below)
