@@ -1,10 +1,10 @@
-##OpenXsensor New Home
+## OpenXsensor New Home
 _from may 2015_
 
 ![OXS logo](https://github.com/openXsensor/openXsensor/wiki/images/OXS_Logo.png)
 
 
-###Introduction
+### Introduction
 
 OpenXsensor is the evolution of [OpenXvario](https://code.google.com/p/openxvario/) and extends it to multi-sensing applications.
 
@@ -18,7 +18,7 @@ It is compatible with :
   * The Graupner receivers (Hott protocol)
   * The Jeti receivers (EX protocol only)
 
-###Functionalities provided at your choice :
+### Functionalities provided at your choice :
 
   * Altimeter / Variometer
     * Uses normally a MS5611 sensor (GY-63 or GY-86 module)
