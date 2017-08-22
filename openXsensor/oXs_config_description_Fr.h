@@ -538,9 +538,7 @@ comment
 #define AIRSPEED_SENSOR_USE  MS4525
 #define AIRSPEED_AT_SEA_LEVEL_AND_15C 	// Si cette ligne est commentée, la vitesse est calculée à l'aide de la pression et de la température du baro (donc une vitesse "vraie" au lieu de la vitesse normale).      
 //#define AIRSPEED_IN_KMH  				// Décommentez cette ligne si la vitesse doit être en km / h au lieu de nœud / h (sauf certaines anciennes versions, OpenTx s'attend à nœud / h) 
-
 #define AIRSPEED_RESET_AT_PPM   100
-
 #define COMPENSATION_MIN_AT_PPM 60
 #define COMPENSATION_MAX_AT_PPM 90
 #define COMPENSATION_PPM_MIN  80
@@ -574,30 +572,30 @@ comment
 ************************************************************************************************************************
 * 6.2 - Paramètres des tensions *******************************************************************************************
 *     OXS peut mesurer jusqu'à 6 tensions d'entrée (veuillez noter que selon le fabricant, certains Arduino pro mini ont moins de broches analogiques disponibles).
-*     In order to measure voltages, you :
-*       - must specify the Analog pins (A0 to A7) connected to a battery (e.g. a multicell lipo) or to a sensor (e.g. a temperature sensor convert the temperature in a voltage that can be measured)
-*       - must specify the values of resistors being used for the voltage dividers (see below)
-*       - can specify offset and/or scaling to apply
+*     Pour mesurer les tensions, vous:
+*       - Devez spécifier les broches analogiques (A0 à A7) connectées à une batterie (par exemple un lipo multicellulaire) ou à un capteur analogique (par exemple, un capteur de température transforme la température en une tension qui peut être mesurée)
+*       - Devez spécifier les valeurs des résistances utilisées pour les pont séparateurs de tension (voir ci-dessous)
+*       - Pouvez spécifier un décalage et/ou une mise à l'échelle à être appliquer
 * 
-*     Note : one analog pin can also be used to measure a current using a current sensor; the set up for a current sensor is described in section 6.4 (see below);
-*          Do not use the same analog pin to measure a voltage and a current.
-*     Take care : do NOT use pins A4 and A5 if you use a vario or an airspeed (those pins are reserved for the barometric and pressure sensors).
+*     Note : Une broche analogique peut également être utilisée pour mesurer un courant à l'aide d'un capteur de courant; La configuration d'un capteur de courant est décrite dans la section 6.4 (voir ci-dessous);
+*          N'utilisez pas la même broche analogique pour mesurer une tension et un courant.
+*     /!\ Attention: ne pas utiliser les broches A4 et A5 si vous utilisez un vario ou un capteur de vitesse (ces broches sont réservées aux capteurs barométriques et de pression).
 *     
-*    The pins being used to measure some voltages are defined in line #define PIN_VOLTAGE. It is better to put this line as comment (having "//" in front) if no one voltage has to be measured.  
-*     When used, this line must contains 6 values (separated by comma); the first value is used to measure VOLT1, the second VOLT2, ...up to VOLT6 
-*     Each value must be a number from 0 up to 7 (0 means A0 = analog 0, 1 means A1, ...7 means A7) or the value "8" (when a voltage does not have to be measured).
-*     Note: the same alalog pin values can be used in several voltages (e.g. for VOLT1 and VOLT6).
+*    Les broches utilisées pour mesurer certaines tensions sont définies dans la ligne #define PIN_VOLTAGE. Il est préférable de mettre cette ligne en tant que commentaire (ayant "//" à l'avant) si aucune tension ne doit être mesurée.
+*     Lorsqu'il est utilisé, cette ligne doit contenir 6 valeurs (séparées par des virgules); La première valeur est utilisée pour mesurer VOLT1, le deuxième VOLT2, ... jusqu'à VOLT6
+*     Chaque valeur doit être un nombre de 0 à 7 (0 signifie A0 = analogique 0, 1 signifie A1, ... 7 signifie A7) ou la valeur "8" (quand une tension ne doit pas être mesurée)
+*     Note: les mêmes valeurs de broches analogiques peuvent être utilisées dans plusieurs tensions (par exemple pour VOLT1 et VOLT6).
 *     
-*     Note: If lipo voltage to be measured, it MUST start from VOLT1 for 1s, VOLT2 for 2s....., other voltages may be measured but need to be after number of cells to be measured
-*         and the cel number MUST be specified in "numberofcells" (see next section)
-*         The Ax pin number can be at random depending on which pin is connected for each cell.
+*     Note: Si la tension d'un LiPo doit être mesurée, elle DOIT commencer à partir de VOLT1 pour 1s, VOLT2 pour 2s ....., d'autres tensions peuvent être mesurées mais doivent être après le nombre de cellules à mesurer
+*         Et le nombre d'ellement LiPo DOIT être spécifié dans "numberofcells" (voir la section suivante)
+*         Le numéro de broche Ax peut être au hasard selon la broche connectée pour chaque cellule
 *         
-*  !! Take care that the voltage applied to Arduino pin may not exceed Vcc (normally 5 volt) or 1.1 volt (if internal reference voltage is used).
-*     It can be that you have to use voltage divider in order to reduce the voltage applied on Arduino pin compared to the voltage you want to measure.
-*     For each voltage to scale down, proceed as follow:
-*      - make a divider with 2 resistors 
+*  /!\ Veillez à ce que la tension appliquée à la broche Arduino ne dépasse pas Vcc (normalement 5 volts) ou 1,1 volt (si la tension de référence interne est utilisée).
+*     Il se peut que vous devez utiliser le diviseur de tension afin de réduire la tension appliquée sur la broche Arduino par rapport à la tension que vous souhaitez mesurer.
+*     Pour chaque tension à abbaiser au borne Ax de OXS, procédez comme suit:
+*      - Faire un diviseur avec 2 résistances
 *
-*                 ------>  End point  = connect to the device to measure (battery, Current sensor, ...) 
+*                 ------>  Point final = connexion à l'appareil à mesurer (batterie, capteur de courant, ...) 
 *                 |
 *               __|__   
 *              |     |
@@ -605,184 +603,198 @@ comment
 *              |     |              
 *              |_____|          
 *                 |
-*                 |------> mid point = connect to Arduino pin A0,A1,A2,A3, A6 or A7
+*                 |------> Point milieu = connecter à la broche Arduino A0, A1, A2, A3, A6 ou A7
 *               __|__   
 *              |     |
 *              |     |   R1 (Resistor_To_Ground)          
 *              |     |              
 *              |_____|          
 *                 |
-*                 ------>  connect to Ground
-*        Note: a capacitor (e.g. 100nf) could be added too between ground and Arduino Analog pin in order to get more stable values.
-*         
-*      - R1 and R2 are chosen to make sure that voltage apply to Arduino is quiet close to ( but never exceed) VCC or 1.1 volt depending on your choice regarding the current & voltage measurement (see here above)
-*      - Volt on Arduino pin = VCC (or 1.1 volt) = "max voltage to measure from this sensor" * R1 / (R1 + R2)
-*      - R1 could be 10 kOhm; so R2 = R1 * ( ( "max voltage to measure from this sensor"  / VCC [or 1.1 depending on the reference] ) - 1 )
-*         e.g. using 1.1 internal voltage reference and in order to measure max 6 volt with R1 = 10000, then R2 = 10000 * (( 6 / 1.1 ) - 1) = 45545 Ohm; best rounded up to high available value e.g 47000 ohm
+*                 ------>  Connecté à Ground
 *
-*    The resistors used in voltage dividers have to be specified in lines #define RESISTOR_TO_GROUND and #define RESISTOR_TO_VOLTAGE.
-*    Eeach line, must contains 6 values (one for each voltage); each value represent the resistance in Ohm or kOhm but use the same unit for both lines. 
-*    If no divider is used for some voltage, set both resistors to 0 (zero)
-*    If no divider at all is used, lines can be commented (adding "//" in front)
+*        Note: Un condensateur (par exemple 100nf) pourrait également être ajouté entre le ground et le point milieux afin d'obtenir des valeurs plus stables
+*         
+*      - R1 et R2 sont choisis pour s'assurer que la tension s'applique à Arduino est proche de (mais ne dépasse jamais) VCC ou 1.1 volt selon votre choix en ce qui concerne la mesure de courant et de tension (voir ci-dessus)
+*      - Volt sur Arduino pin = VCC (ou 1.1 volt) = "tension maximale à mesurer à partir de ce capteur" * R1 / (R1 + R2)
+*      - R1 pourrait être de 10 kOhm; Donc R2 = R1 * (("tension maximale à mesurer à partir de ce capteur" / VCC [ou 1.1 volt selon la référence]) - 1)
+*         par exemple. En utilisant 1.1 volt comme référence de tension on peux mesurer max 6 volts avec R1 = 10000, alors R2 = 10000 * ((6 / 1.1) - 1) = 45545 Ohm; Mieux vos arrondi à la valeur haut disponible en valeur de resitance, par exemple 47000 ohm
+*
+*    Les résistances utilisées dans les diviseurs de tension doivent être spécifiées dans les lignes #define RESISTOR_TO_GROUND et #define RESISTOR_TO_VOLTAGE.
+*    Chaque ligne, doit contenir 6 valeurs (une pour chaque tension); Chaque valeur représente la résistance en Ohm ou kOhm mais utilisé la même unité pour les deux lignes. 
+*    Si aucun diviseur n'est utilisé pour une certaine tension, réglez les deux résistances sur 0 (zéro)
+*    Si aucun diviseur n'est utilisé, les lignes peuvent être commentées (en ajoutant "//" à l'avant)
 *     
-*     In order to get best voltage measurements, oXs can be calibrated. This optional process allows to compensate tolerances on resistors and on Arduino ADC (analog to digital converter).
-*     To calibrate each voltage measurement proceed as follow in order to find the best values to be set up in lines #define OFFSET_VOLTAGE  and #define SCALE_VOLTAGE
-*      - set parameters in oXs_config.h  
-*            - letting  OFFSET_VOLTAGE = 0 and SCALE_VOLTAGE = 1 (so adding no compensation)
-*            - selecting a field to transmit the desired voltage (e.g. T1 for VOLT3) and fill the line  "#define SETUP_DATA_TO_SEND" accordingly 
-*      - load the program in Arduino 
-*      - apply several different voltages on End point (not exceeding the max voltage allowed based on R1 and R2)
-*      - for each applied voltage, measure the applied voltage with a voltmeter and read the value received on telemetry panel on Tx  
-*      - set the values in excel (or on a graphic) and calculate the best values OFFSET_VOLTAGE and SCALE_VOLTAGE (using a linear regression)
-*     If this seems too complex, just use 2 voltages as different as possible (but in the range of the normal values you want to measure)
-*     and apply calculation based on following example:        .
-*      I expect voltage to be normally between 4 volt and 6 volt, so I apply 2 voltages close to those values to End point
-*        - for first voltage, voltmeter gives 3510 millivolt and telemetry gives 3622
-*        - for second voltage, voltmeter gives 5900 millivolt and telemetry gives 6013
-*      Then SCALE_VOLTAGE = (5900-3510) / (6013-3622) = 0.99958
-*      and OFFSET_VOLTAGE = -3510 + (3622 * 0.99958 ) = 110
-*  Note: You can apply the same principle if you are measuring something else than a voltage.
-*         E.g. You can calibrate a temperature sensor and set the calibration parameter in order to get degree on the TX display.
+*     Afin d'obtenir les meilleures mesures de tension, l'OXS peuvent être calibrés. Ce processus facultatif permet de compenser les tolérances sur les résistances et sur Arduino ADC (convertisseur analogique / numérique).
+*     Pour étalonner chaque mesure de tension, procédez comme suit afin de trouver les meilleures valeurs à configurer dans les lignes #define OFFSET_VOLTAGE et #define SCALE_VOLTAGE
+*      - Reglé les paramètres dans oXs_config.h
+*            - Laisser OFFSET_VOLTAGE = 0 et SCALE_VOLTAGE = 1 (ce reglage ajout aucune compensation)
+*            - Sélectionner un champ pour transmettre la tension souhaitée (par exemple T1 pour VOLT3) et remplir la ligne "#define SETUP_DATA_TO_SEND" en conséquence
+*      - Charger le programme dans Arduino
+*      - Appliquer plusieurs tensions différentes sur le point final ( /!\ ne dépassé pas la tension maximale autorisée en fonction de R1 et R2)
+*      - Pour chaque tension appliquée, mesurer la tension appliquée avec un voltmètre et lire la valeur reçue sur le panneau de télémétrie sur l'émetteur
+*      - mettre ces valeurs dans excel (ou sur un graphique) et calculez les meilleures valeurs OFFSET_VOLTAGE et SCALE_VOLTAGE (à l'aide d'une régression linéaire)
+*     Si cela semble trop complexe, utilisez simplement 2 tensions aussi différentes que possible (mais dans la gamme des valeurs normales que vous souhaitez mesurer)
+*     Et appliquer un calcul basé sur l'exemple suivant:       .
+*      Je m'attends à ce que la tension soit normalement entre 4 volts et 6 volts, donc j'applique 2 tensions proches de ces valeurs au point final
+*        - Pour la première tension, le voltmètre donne 3510 millivolt et la télémétrie donne 3622
+*        - Pour la deuxième tension, le voltmètre donne 5900 millivolt et la télémétrie donne 6013
+*      Alors SCALE_VOLTAGE = (5900-3510) / (6013-3622) = 0.99958
+*      et OFFSET_VOLTAGE = -3510 + (3622 * 0.99958 ) = 110
+*  Note: Vous pouvez appliquer le même principe si vous mesurez autre chose qu'une tension.
+*         Par exemple. Vous pouvez calibrer un capteur de température et régler le paramètre d'étalonnage afin d'obtenir un degré sur l'affichage de l'émetteur.
 *     
-*     Line #define OFFSET_VOLTAGE  and #define SCALE_VOLTAGE are optional (can be put as comment adding "//" in front)
-*     If defined, each line must contains 6 values. Use 0 (for offset) and 1 (for scale) if no calibration is done for some voltage.
+*     Les lignes #define OFFSET_VOLTAGE et #define SCALE_VOLTAGE sont facultatifs (elle peuvent être mis en commentaire ajoutant "//" à l'avant))
+*     Si elle est définie, chaque ligne doit contenir 6 valeurs. Utilisez 0 (pour le décalage => OFFSET) et 1 (pour l'échelle => SCALE) si aucun étalonnage n'est effectué pour une certaine tension.
 *     
 ************************************************************************************************************************
                            VOLT1  VOLT2  VOLT3  VOLT4  VOLT5  VOLT6 
 #define PIN_VOLTAGE         2    , 0    , 2   ,  3 ,     8 ,    8             
-#define RESISTOR_TO_GROUND 12   , 20 ,   30 ,   40 ,    50 ,   60           // set value to 0 when no divider is used for one of this voltage
-#define RESISTOR_TO_VOLTAGE 50, 100.1 , 200,   300 ,   500 ,  600           // set value to 0 when no divider is used for one of this voltage
-#define OFFSET_VOLTAGE      0 ,    0 ,    0 ,    0 ,     0 ,    0           // can be negative, must be integer
-#define SCALE_VOLTAGE       1 ,    1 ,    1 ,    1 ,     1 ,    1           // can be negative, can have decimals
-
-
-* 6.3 - Max number of Lipo cell to measure  (and transmit to Tx) ***********************************************************
-*     The different voltages measured under 6.3 are all related to the ground.
-*     oXs can use some of them to calculate the voltage of some lipo cells.
-*     Define here the max number of cell voltages of a lipo you want to transmit; value can be 0 (no cells),1,2,3,4,5,6.
-*     If a value greater than 1 is defined, then the OXS will calculate the voltage of each cell based on the difference between 2 successive voltages starting from Voltage1.
-*     The total voltage of all cells will be calculated on TX side summing all cell voltages again.
-*     TX will display the total voltage in a telemetry field named "Cells".
-*     TX will also identify the cell with the lowest voltage and display it in a field named "Cell".
-*     TX has also a special screen where all voltages will be displayed (see Taranis manual).
-*     E.g. if number of cells = 3, 
-*           voltage on cell 1 will be voltage measured on the first pin defined in PIN_Voltage
-*           voltage on cell 2 will be the difference between voltages measure on second pin and first pin (so VOLT2 - VOLT1)
-*           voltage on cell 3 will be the difference between voltages measure on third pin and second pin (so VOLT3 - VOLT2)
+#define RESISTOR_TO_GROUND 12   , 20 ,   30 ,   40 ,    50 ,   60           // Définissez la valeur à 0 lorsqu'aucun diviseur n'est utilisé pour une de ces tensions
+#define RESISTOR_TO_VOLTAGE 50, 100.1 , 200,   300 ,   500 ,  600           // Définissez la valeur à 0 lorsqu'aucun diviseur n'est utilisé pour une de ces tensions
+#define OFFSET_VOLTAGE      0 ,    0 ,    0 ,    0 ,     0 ,    0           // Peut être négatif, doit être un nombre entier
+#define SCALE_VOLTAGE       1 ,    1 ,    1 ,    1 ,     1 ,    1           // Peut être négatif, peut avoir des décimale
+************************************************************************************************************************
+* 6.3 - Maximum de cellule LiPo mesurer (et envoyer a l’émetteur) ***********************************************************
+*     Les différentes tensions mesurées dans ce paragraphe sont toute referencé a ground.
+*     OXS peuvent utiliser certains d'entre eux pour calculer la tension de certaines cellules lipo.
+*     Définissez ici le nombre maximal de tension par celule d'un lipo que vous souhaitez transmettre; La valeur peut être 0 (sans cellules), 1,2,3,4,5,6
+*     Si une valeur supérieure à 1 est définie, l'OXS calculera la tension de chaque cellule en fonction de la différence entre 2 tensions successives à partir de la tension1.
+*     La tension totale de toutes les cellules sera calculée sur le côté emmetteur, en additionnant toutes les tensions de chaque cellule
+*     L'emmeteur affichera la tension totale dans un champ de télémétrie nommé "Cells".
+*     L'emmeteur identifiera également la cellule avec la tension la plus basse et l'affichera dans un champ nommé "Cell".
+*     L'emmeteur à également un écran spécial où toutes les tensions s'affichent (voir le manuel Taranis).
+*     Par exemple. Si nombre de cellules = 3, 
+*           La tension sur la cellule 1 sera la tension mesurée sur la première broche définie dans PIN_Voltage
+*           La tension sur la cellule 2 sera la différence entre la mesure des tensions sur la deuxième broche et la première broche (donc VOLT2 - VOLT1)
+*           La tension sur la cellule 3 sera la différence entre la mesure des tensions sur la troisième broche et la deuxième broche (donc VOLT3 - VOLT2)
 *           etc.
-*     When transmitting cell voltages, you may NOT FORGET to configure the PIN_VOLTAGE, RESISTOR_TO_GROUND, RESISTOR_TO_VOLTAGE (and optionaly the calibration parameters too) .
-*     The pins MUST start and sequenced from VOLT1,2,3,4.. for 1s, 2s,....
-*     Pins voltage in excess may be used in order to transmit other voltages (e.g. from a temperature sensor)
-*     E.g. if NUMBEROFCELLS = 3, First pin (in the list of 6) must be connected to cell 1 (via a voltage divider calculated for about 4.5 volt
-*                                Second pin must be connected to cell 2 (via a voltage divider calculated for about 9 volt
-*                                Third pin  must be connected to cell 3 (via a voltage divider calculated for about 13 volt
-*                                Other pins may still be used for other data (temperature, current, ...)
-*     Notes: You must use voltage dividers to scale down the voltages on each pin of the lipo balance plug
-*            If you use the 1.1 internal reference, you can set all R1 = 10 kOhm. Then R2 could best be
-*                   33 kOhm for Voltage1, 68 kOhm for Voltage2, 120 kOhm for Voltage3 and 150 kOhm for voltage4
-*            Please note that the more cells you have the more inaccurate the measurements become specially if you do not calibrate the voltages.
-*            Probably, it make no sense to measure more that 3 or 4 cells individually
-*            If you don't want to transmit cell voltage, set value to 0 (zero) or comment the line.
-*            This parameter defines the max number of cells you expect to transmit. 
-*            If OXS is connected to a lipo having less cells, OXS will automatically reduce the number of cells which still let the TX calculate the total voltage and the lowest cell voltage 
+*     Lors de la transmission de tensions de la cellule, vous ne devez pas oublier de configurer PIN_VOLTAGE, RESISTOR_TO_GROUND, RESISTOR_TO_VOLTAGE (et optionnellement les paramètres d'étalonnage).
+*     Les broches DOIVENT commencer et séquencer de VOLT1,2,3,4 .. pour 1s, 2s, ..
+*     Les PIN non utilisées peuvent être utilisées pour transmettre d'autres tensions (par exemple: un capteur de température)
+*     Par exemple. Si NUMBEROFCELLS = 3, la première broche (dans la liste de 6) doit être connectée à la cellule 1 (via un diviseur de tension calculé pour environ 4,5 volts
+*                                La deuxième broche doit être connectée à la cellule 2 (via un diviseur de tension calculé pour environ 9 volts
+*                                La troisième broche doit être connectée à la cellule 3 (via un diviseur de tension calculé pour environ 13 volts
+*                                D'autres broches peuvent encore être utilisées pour d'autres données (température, courant, ...)
+*     Remarques: Vous devez utiliser des diviseurs de tension pour réduire les tensions sur chaque broche de la boucle d'équilibrage lipo
+*            Si vous utilisez la référence interne 1.1, vous pouvez définir tout R1 = 10 kOhm. Alors R2 pourrait être le mieux
+*                   33 kOhm pour la tension1, 68 kOhm pour la tension2, 120 kOhm pour la tension 3 et 150 kOhm pour la tension4
+*            Veuillez noter que plus vous disposez de cellules, plus les mesures sont imprécises si vous ne calibrez pas les tensions.
+*            Probablement, il n'est pas logique de mesurer plus que 3 ou 4 cellules individuellement.
+*            Si vous ne souhaitez pas transmettre la tension de la cellule, réglez la valeur sur 0 (zéro) ou commentez la ligne.
+*            Ce paramètre définit le nombre maximal de cellules que vous attendez à transmettre.
+*            Si OXS est connecté à un lipo ayant moins de cellules que defini, OXS réduira automatiquement le nombre de cellules qui laissent toujours le émmetteur calculer la tension totale et la tension de cellule la plus basse 
 ************************************************************************************************************************
 #define NUMBEROFCELLS    3 
-
-// 6.4 - Convert voltage to temperature (° Celcius) ********************************************************************     
-*     In order to measure a temperature it is possible to use special electronic component (like lm35) that generates a voltage proportional to the teperature.
-*     In this case, you can just connect the output of this component to an arduino analog pin and configure oXs in section 6.2 in order to measure the voltage.
-*     Adding an offset and a scaling (see section 6.2) accordingly with the characteristic of you component, oXs can directly calculate the temperature in the defined measurement Voltage. 
-*     You can then ask oXs to transmit this voltage to the desired telemetry field (e.g. T1) filling a set up as explained in section 2.
+************************************************************************************************************************
+// 6.4 - Conversion de tension en température (° Celcius)  ********************************************************************     
+*     Pour mesurer une température, il est possible d'utiliser un composant électronique spécial (comme lm35) qui génère une tension proportionnelle à la teperature
+*     Dans ce cas, vous pouvez simplement connecter la sortie de ce composant à une broche analogique arduino et configurer OXS comme décrit dans la section 6.2 afin de mesurer la tension
+*     En ajoutant un décalage "OFFSET" et une mise à l'échelle "SCALE" (voir la section 6.2) en fonction de la caractéristique de votre composant, OXS peut calculer directement la température dans la tension de mesure définie. 
+*     Vous pouvez ensuite demander à OXS de transmettre cette tension au champ de télémétrie souhaité (par exemple, T1) en remplissant la configuration comme expliqué dans la section 2.
 *     
-*     Still this kind of component is not foreseen to measure high temperature (e.g. higher than 150 °C).
-*     You can then use thermistors (= NTC). 
-*     The drawback of NTC is that the generated voltage is not proportional to the temperature and it requires some extra calculations.
-*     oXs let you use one or several NTC (e.g. one per cylinder) in order to measure high temperature(s).
-*     For each NTC, you have to add a resistor in serie accordingly to this schema 
-*           < Arduino Vcc > --[serie resistor]-- <Arduino analog pin>  --[NTC]-- <ground>
-*     If you use several NTC, all NTC and resistors have to be identical and they have to be connected to Arduino analog pin that are consecutive (as defined in PIN_VOLTAGE)
+*     Ce type de composant n'est pas prévu pour mesurer une température élevée (par exemple supérieure à 150 ° C)
+*     Vous pouvez alors utiliser des thermistances (= NTC). 
+*     L'inconvénient des NTC est que la tension générée n'est pas proportionnelle à la température et nécessite des calculs supplémentaires.
+*     OXS vous permettent d'utiliser un ou plusieurs NTC (par exemple un par cylindre) afin de mesurer de haute température(s).
+*     Pour chaque NTC, vous devez ajouter une résistance en série suivant le schéma ci dessous:
+*
+*                 ------>  < Arduino Vcc > 
+*                 |
+*               __|__   
+*              |     |
+*              |     |   [serie resistor]        
+*              |     |              
+*              |_____|          
+*                 |
+*                 |------> <Arduino analog pin>
+*               __|__   
+*              |     |
+*              |     |   [NTC]          
+*              |     |              
+*              |_____|          
+*                 |
+*                 ------>  <ground>
+*
+*     Si vous utilisez plusieurs NTC, tous les NTC et les résistances doivent être identiques et doivent être connectés à une broche analogique Arduino consécutive (telle que définie dans PIN_VOLTAGE)
 *     
-*     oXs reuses the mVolt calculated by oXs. The config must be adapted in a such a way that this mVolt is equal to the raw value returned by the ADC * 1000 (for better accuracy)
-*     Therefore, in section 6.1 and 6.2 ,
-*          USE_INTERNAL_REFERENCE must be as comment (so with // in front off)
-*          USE_EXTERNAL_REFERENCE must be as comment (so with // in front off)
-*          REFERENCE_VOLTAGE must be as comment (so with // in front off)
-*          RESISTOR_TO_GROUND must be set on 0 (for the index being used)
-*          OFFSET_VOLTAGE must (normally) be set on 0 (for the index being used)
-*          SCALE_VOLTAGE  must be set on 204.6 (=1000 * 1023/5000) (for the index being used)     
-*     Then you have to define some parameters in section 6.4     
-*        FIRST_NTC_ON_VOLT_NR specify index of first voltage being used for conversion to temperature (e.g. 3 means VOLT_3) (so it is not the code of analog pin; this one is define in section 6.2)
-*        LAST_NTC_ON_VOLT_NR  specify index of last voltage being used for conversion to temperature (e.g. 5 means VOLT_5)
-*          In this expample, it means that you expect to measure 3 temperatures based on NTC connected to the pins used for VOLT_3, VOLT_4 and VOLT_5
-*          note: if you use only one NTC, you must specify the same value for FIRST_NTC_ON_VOLT_NR and for LAST_NTC_ON_VOLT_NR
-*                if you do not use NTC, keep this line as comment
-*        SERIE_RESISTOR       specify the resitance (in Ohm)  connected between Arduino Vcc and NTC (and analog pin); select a value nearly equal to the resistance of NTC in the range of temperature you expect best accuracy 
-*        Next 3 parameters are specific to the NTC you use. Values between brackets are nominal value for a cheap NTC available on aliexpress.com with 100k ohm at 25°C and a Beta coefficient of 3950 for range 25/50
+*     OXS réutilise le mVolt calculé par OXS. La configuration doit être adaptée de telle sorte que ce mVolt soit égal à la valeur brute renvoyée par l'ADC * 1000 (pour une meilleure précision)
+*     Par conséquent, aux sections 6.1 et 6.2,
+*          USE_INTERNAL_REFERENCE doit être commentée (donc avec // en avant)
+*          USE_EXTERNAL_REFERENCE doit être commentée (donc avec // en avant)
+*          REFERENCE_VOLTAGE doit être commentée (donc avec // en avant)
+*          RESISTOR_TO_GROUND doit être mis à 0 (pour l'index utilisé)
+*          OFFSET_VOLTAGE doit (normalement) doit être mis à 0 (pour l'index utilisé)
+*          SCALE_VOLTAGE doit être configuré sur 204.6 (= 1000 * 1023/5000) (pour l'index utilisé)     
+*     Ensuite, vous devez définir certains paramètres dans la section 6.4    
+*        FIRST_NTC_ON_VOLT_NR spécifie l'indice de la première tension utilisée pour la conversion en température (par exemple, 3 signifie VOLT_3) (donc ce n'est pas le code de la broche analogique, celui-ci est défini dans la section 6.2)
+*        LAST_NTC_ON_VOLT_NR spécifie l'indice de la dernière tension utilisée pour la conversion en température (par exemple, 5 signifie VOLT_5)
+*          Dans cet exemple, cela signifie que vous prévoyez de mesurer 3 températures basées sur NTC connectées aux broches utilisées pour VOLT_3, VOLT_4 et VOLT_5
+*          Note: si vous utilisez un seul NTC, vous devez spécifier la même valeur pour FIRST_NTC_ON_VOLT_NR et pour LAST_NTC_ON_VOLT_NR
+*                Si vous n'utilisez pas NTC, conservez cette ligne en tant que commentaire
+*        SERIE_RESISTOR spécifie le resitance (en Ohm) connecté entre Arduino Vcc et NTC (et la broche analogique); Sélectionnez une valeur presque égale à la résistance de NTC dans la gamme de température que vous attendez la meilleure précision 
+*        Les 3 paramètres suivants sont spécifiques au NTC que vous utilisez. Les valeurs entre parenthèses sont la valeur nominale pour un NTC bon marché disponible sur aliexpress.com avec 100k ohms à 25 ° C et un coefficient bêta de 3950 pour la gamme 25/50.
 *        STEINHART_A          (e.g. 7.00111E-4 )   
 *        STEINHART_B          (e.g. 2.1644E-4 )
 *        STEINHART_C          (e.g. 1.0619E-07 )
-*        If you do not know those 3 parameters, you can caluclate them measuring the NTC resistance at 3 different temperatures. Use then e.g. the formula given on wikipedia for thermistor
-*     When you use 1 or 2 NTC, the temperature(s) will be registered in VOLT_X and VOLT_Y where X is the value of FIRST_NTC_ON_VOLT_NR and Y the value of LAST_NTC_ON_VOLT_NR
-*     If you use more than 2 NTC, oXS will register in :
-*         VOLT_X the lowest temperature 
-*         VOLT_X+1 the index of the highest temperature (1 being the index of the first NTC) 
-*         VOLT_Y the highest temperature
-*     You can then define how to transmit those data in section 2
+*        Si vous ne connaissez pas ces 3 paramètres, vous pouvez les calculer en mesurant la résistance NTC à 3 températures différentes. Utiliser, par exemple, La formule donnée sur wikipedia pour la thermistance
+*     Lorsque vous utilisez 1 ou 2 NTC, la température (s) sera enregistrée dans VOLT_X et VOLT_Y où X est la valeur de FIRST_NTC_ON_VOLT_NR et Y la valeur de LAST_NTC_ON_VOLT_NR
+*     Si vous utilisez plus de 2 NTC, OXS s'inscrit dans:
+*         VOLT_X la température la plus basse
+*         VOLT_X + 1 l'indice de la température la plus élevée (1 étant l'indice du premier NTC) 
+*         VOLT_Y la température la plus élevée
+*     Vous pouvez alors définir comment transmettre ces données dans la section 2
 ************************************************************************************************************************
-//#define FIRST_NTC_ON_VOLT_NR 5 // uncomment this line when thermistor are used; specify index of first voltage being used for conversion to temperature (e.g. 5 means VOLT_5)
-#define LAST_NTC_ON_VOLT_NR 6 // specify index of last voltage being used for conversion to temperature (e.g. 6 means VOLT_6)
-#define SERIE_RESISTOR 4700 // resitance connected to Arduino Vcc (in Ohm)
+//#define FIRST_NTC_ON_VOLT_NR 5 	// Décommentez cette ligne lorsque la thermistance est utilisée; Spécifiez l'indice de la première tension utilisée pour la conversion en température (par exemple, 5 signifie VOLT_5)
+#define LAST_NTC_ON_VOLT_NR 6 		// Spécifiez l'indice de la dernière tension utilisée pour la conversion en température (par exemple 6 signifie VOLT_6)
+#define SERIE_RESISTOR 4700 		// Resitance connectée à Arduino Vcc (en Ohm)
 #define STEINHART_A 7.00111E-4   
 #define STEINHART_B 2.1644E-4
 #define STEINHART_C 1.0619E-07
-
-
-
-
-* 6.5 - Current sensor  parameters   **************************************************************************************
-*     It is possible to measure a current (and current consumption) if a current sensor is connected.
-*     Connecting a current sensor is an optional feature.
-*     It requires some additional hardware. It can be an IC like ACS712 (for 5, 20, 30 amp) or ACS758 (for 50, 100, 150, 200 amp).
-*     Most sensors can read bidirectional currents but ACS758 has "U" types that read only unidirectional current (providing then an higher sensitivity).
-*     Those current sensors are quite cheap (see e.g. ebay) and return a voltage that depends on the current. This voltage is measured by OXS via an analog pin.
-*     The Pin value to enter in the oXs_config.h is a number from 0 up to 7 (0 means A0, 1 means A1, ...7 means A7).
-*     If a current sensor is used, do not to use a pin that is already used by a voltage.
-*  !! Take care that the voltage applied to Arduino pin may not exceed Vcc (normally 5 volt) or 1.1 volt (if internal reference voltage is used).
-*     It can be that you have to use a voltage divider in order to reduce the voltage applied on Arduino pin.
-*     See explanation above (6.2) about voltage divider.
-*     Take care : do NOT use pins A4 and A5 if you use a vario or an airspeed (those pins are reserved for the barometric and pressure sensors).
-* Note: The current sensor is normally powered by the 5 volt VCC from OXS (same as the vario sensor).
-*       There are bidirectional sensor and unidirectional sensor.
-*       For bidirectional, output is normally equal to VCC/2 when current = 0 Amp and, for unidirectional, output is normally 0,6 volt at 0 Amp.
-*       If OXS is connected to a battery giving less than 5.2 volt, the supply voltage for the current sensor will vary with the OXS supply voltage.
-*       Therefore VCC/2 ( = O amp) will varies with VCC.
-*       This is an issue if the Arduino ADC is configured to use the 1.1 volt internal reference.
-*       So, in this case it is better to configure the ADC in order to use VCC as reference for conversion.
-*       In order to use a current sensor, you have to uncomment the line //#define PIN_CURRENTSENSOR and specify the Arduino pin connected to the current sensor. 
-*       You must also define 2 parameters depending of the type of sensor being use; those parameters are given in the datasheet of the sensor).
-*         - MVOLT_AT_ZERO_AMP  =  milliVolt generated by the sensor when current is 0 Amp: normal value is :
-*                                       - for a bidirectional sensor  : Vcc from current sensor / 2 (so = 2500 if sensor is connected to Arduino Vcc and Arduino Vcc is 5 Volt).
-*                                       - 600 for unidirectional sensor 
-*         - MVOLT_PER_AMP       =  milliVolt per Amp. The value depend on the sensitivity of the sensor (e.g. an ACS712ELCTR-30A-T has a sensitivity of 66 mvolt/A, a ACS758LCB-050U has a sensitivity of 60 mv/Amp)
+************************************************************************************************************************
+* 6.5 - Paramètre des capteurs de mesure de courant.   *****************************************************************
+*     Il est possible de mesurer un courant (et une consommation de courant) si un capteur de courant est connecté.
+*     La connexion d'un capteur de courant est une optionel.
+*     Il nécessite un matériel supplémentaire. Il peut s'agir d'un IC comme ACS712 (pour 5, 20, 30 ampères) ou ACS758 (pour 50, 100, 150, 200 ampères).
+*     La plupart des capteurs peuvent lire des courants bidirectionnels, mais ACS758 qui est de types "U" ne peut lire que un courant unidirectionnel (fournissant alors une sensibilité plus élevée).
+*     Ces capteurs de courant sont assez bon marché (voir par exemple ebay) et renvoyer une tension qui dépend du courant. Cette tension est mesurée par OXS via une broche analogique.
+*     La valeur de la PIN à remplir dans oXs_config.h est un nombre de 0 à 7 (0 signifie A0, 1 signifie A1, ... 7 signifie A7).
+*     Si un capteur de courant est utilisé, ne pas utiliser une broche déjà utilisée par une tension.
+* /!\ Veillez à ce que la tension appliquée à la broche Arduino ne dépasse pas Vcc (normalement 5 volts) ou 1,1 volt (si la tension de référence interne est utilisée)
+*     Il se peut que vous devez utiliser un diviseur de tension afin de réduire la tension appliquée sur la broche Arduino.
+*     Voir l'explication ci-dessus (paragraphe 6.2) sur le diviseur de tension.
+*     Attention: ne pas utiliser les broches A4 et A5 si vous utilisez un vario ou un capteur de vitesse (ces broches sont réservées aux capteurs barométriques et de pression).
+* Remarque: Le capteur de courant est normalement alimenté par le VCC 5 volts d'OXS (identique au capteur barométriques).
+*       Il existe un capteur bidirectionnel et un capteur unidirectionnel.
+*       Pour les capteur bidirectionnel, la sortie est normalement égale à VCC / 2 lorsque le courant = 0 Amp et, pour unidirectionnel, la sortie est normalement de 0,6 volt à 0 Amp.
+*       Si OXS est connecté à une batterie qui ne dépasse pas 5,2 volts, la tension d'alimentation du capteur de courant varie avec la tension d'alimentation OXS.
+*       Par conséquent, VCC / 2 (= O amp) varie avec VCC.
+*       Ceci est un problème si l'Arduino ADC est configuré pour utiliser la référence interne de 1.1 volts.
+*       Donc, dans ce cas, il est préférable de configurer l'ADC afin d'utiliser VCC comme référence pour la conversion.
+*       Pour utiliser un capteur de courant, vous devez décommenter la ligne //#define PIN_CURRENTSENSOR et spécifier la broche Arduino connectée au capteur actuel. 
+*       Vous devez également définir 2 paramètres en fonction du type de capteur utilisé; Ces paramètres sont donnés dans la fiche technique du capteur).
+*         - MVOLT_AT_ZERO_AMP  =  MilliVolt généré par le capteur lorsque le courant est 0 Amp: la valeur normale est:
+*                                       - Pour un capteur bidirectionnel: Vcc du capteur de courant / 2 (donc = 2500 si le capteur est connecté à Arduino Vcc et Arduino Vcc est de 5 Volt).
+*                                       - 600 pour capteur unidirectionnel 
+*         - MVOLT_PER_AMP       = MilliVolt par Amp. La valeur dépend de la sensibilité du capteur (par exemple, un ACS712ELCTR-30A-T a une sensibilité de 66 mvolt/Amp, un ACS758LCB-050U a une sensibilité de 60 mvolt/Amp)
 *        
-*        If you use the 1.1 internal reference to measure voltagse and current, you must also use a voltage divider in order to scale down the voltage produced by the current sensor.
-*        See the section 6.2 above about voltage divider. The principle are just the same but the names of the 2 paraameters are:
+*        Si vous utilisez la référence interne 1.1 volt pour mesurer le voltage et le courant, vous devez également utiliser un diviseur de tension pour réduire la tension produite par le capteur actuel.
+*        Voir la section 6.2 ci-dessus sur le diviseur de tension. Le principe est tout simplement le même, mais les noms des 2 paraamètres sont:
 *          - RESISTOR_TO_GROUND_FOR_CURRENT
 *          - RESISTOR_TO_CURRENT_SENSOR 
-*  Note: those parameters are automatically discarded when PIN-CURRENTSENSOR is not defined (= set as comment).
-*  Note: When current sensor is used, oXs can also calculate and transmit current consumption (milliAh) and Fuel (in % going down from 100% to 0%).
-*        If you want the last one, then use a setup like "Fuel , MILLIAH , -100 , 4000 ,0" in "data to transmit section" (and replace 4000 by the capacity - in milliAmph - of your battery) (see below).
-*        Still, with Tx using openTx or Ersky9x software, it is better to let the Tx calculates those values by it self based on the current. 
-*               This ensure that values are consistent; it allows to reset the values on Tx side; it allows to change the value of the battery capacity on Tx side (so without having to reload another set up in Arduino oXs).    
-*               E.g on Ersky9x, in Telemetry menu set up "current source"  set "FAS"; in "mAh Alarm", set the mah you want for alarm to sound and select warning sound/voice, 
-*               ie 70% of 2200 mAh lipo, use 1540. then the FUEL percentage will start from 100% count down to 0% when 1540 is consumed.
+*  Remarque: ces paramètres sont automatiquement pas prit en compte lorsque PIN-CURRENTSENSOR n'est pas défini (= configuré comme commentaire)
+*  Remarque: Lorsque le capteur de courant est utilisé, OXS peut également calculer et transmettre la consommation de courant (milliAh) et le carburant (en% descendant de 100% à 0%).
+*        Si vous voulez ce dernier, utilisez une configuration comme "Fuel , MILLIAH , -100 , 4000 ,0" dans la section "données à transmettre" (et remplacez 4000 par la capacité - en milliAmph - de votre batterie) (voir ci-dessous) .
+*        Toujours, avecles émetteur utilisant le logiciel OpenTx ou Ersky9x, il est préférable de laisser l'emmeteur calculer ces valeurs par elle-même en fonction du courant.
+*               Cela garantit que les valeurs sont cohérentes; Il permet de réinitialiser les valeurs du côté emmeteur; Il permet de changer la valeur de la capacité de la batterie du côté de emmeteur (donc sans devoir recharger une autre configuration OXS dans Arduino).
+*               Par exemple. Sur Ersky9x, dans le menu de télémétrie configuré "courant source" défini "FAS"; Dans «Alarme mAh», réglez le mah que vous désirez pour que l'alarme sonne et sélectionnez le son d'avertissement / la voix,
+*               C'est-à-dire 70% de 2200 mAh lipo, utilisez 1540. alors le pourcentage de FUEL commencera de 100% à 10% en compte jusqu'à 0% lorsque 1540 sont consommés.
 ************************************************************************************************************************
-//#define PIN_CURRENTSENSOR      2
-#define MVOLT_AT_ZERO_AMP        600
-#define MVOLT_PER_AMP            60
+//#define PIN_CURRENTSENSOR      		2
+#define MVOLT_AT_ZERO_AMP        		600
+#define MVOLT_PER_AMP            		60
 #define RESISTOR_TO_GROUND_FOR_CURRENT  10
 #define RESISTOR_TO_CURRENT_SENSOR      40
-
+************************************************************************************************************************
 ***** 6.6 - Ads1115 parameters  *************************************************************************************
 *    It is possible to connect an external ADC of the type ads1115. 
 *    This device is very cheap (about 2 $) and can provide more accuracy than internal Arduino ADC
