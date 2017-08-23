@@ -2,8 +2,8 @@
 *************************************************************************************
 *                                  Information importante:
 *  Ne pas modifier ce fichier a mois de vouloir y a jouter vos propre commentaire.
-*  Ce fichier a pour but de fournir des explications pour le fichier oXs_config.h.
-*  La configuration doit être faite dans le fichier oXs_config.h
+*  Ce fichier a pour but de fournir des explications pour le fichier OXS_config.h.
+*  La configuration doit être faite dans le fichier OXS_config.h
 *************************************************************************************
 
 Voir le github OpenXsensor https://github.com/openXsensor/
@@ -12,7 +12,7 @@ Ecrit par par Rainer Schlosshan traduction Thierry ZINK
 ************************************************************************************************************************
 ************************************* description général de toute les options *****************************************
 ************************************************************************************************************************
-*  le fichier oXs_config.h permet aux utilisateurs de configurer différentes options. Voici la liste des différentes options.
+*  le fichier OXS_config.h permet aux utilisateurs de configurer différentes options. Voici la liste des différentes options.
 *  
 *  1 - Choix du protocole de télémétrie
 *    1.1 - Sélection de la sortie vers le récepteur
@@ -50,22 +50,22 @@ Ecrit par par Rainer Schlosshan traduction Thierry ZINK
 comment
 
 **** 1 - Choix du protocole de télémétrie **********************************************************************
-* Actuellement oXs supports 4 protocoles de télémétrie: Multiplex , Frsky, Jeti and Hott (=Graupner)
+* Actuellement OXS supports 4 protocoles de télémétrie: Multiplex , Frsky, Jeti and Hott (=Graupner)
 * Un et uniquement un protocole peut-être sélection; Exemple si vous active le protocole Multiplex, les protocoles Frsky, Jeti et Hott sont désactivé (et vice et versa) 
 * FrSky utilise 2 protocoles différents :
 *       - SPORT utilisé par les récepteurs de la série X (comme le X8R ou X6R)
 *       - HUB utilisé par les récepteurs de la série D (comme le D4R-II)
-*      oXs peut supporter les deux protocoles FrSky en même temps (en utilisant l’option FRSKY_SPORT_HUB). oXs peut automatiquement détecter le type de récepteur auquel il est connecté
-*      Si vous utilisez cette option vous n’aurez pas besoin de reprogrammer votre oXs si vous passez d’un récepteur série X à série D.
+*      OXS peut supporter les deux protocoles FrSky en même temps (en utilisant l’option FRSKY_SPORT_HUB). OXS peut automatiquement détecter le type de récepteur auquel il est connecté
+*      Si vous utilisez cette option vous n’aurez pas besoin de reprogrammer votre OXS si vous passez d’un récepteur série X à série D.
 *      l’auto détection ne semble pas marcher a 100% et demande plus de mémoire…
-*      Dans le cas de l’auto détection ne fonctionne pas ou si vous avez besoin de plus de mémoire (car vous utilisé beaucoup de capteur connecté à votre oXs), vous pouvez forcer sur le protocole FRSKY spécifique que vous utilisez
-*  Pour sélectionné le protocole utilise par oXs remplir la ligne #define PROTOCOL avec le nom du protocole sélectionné avec l’une des valeurs suivante: FRSKY_SPORT , FRSKY_HUB , FRSKY_SPORT_HUB , MULTIPLEX , HOTT; JETI
+*      Dans le cas de l’auto détection ne fonctionne pas ou si vous avez besoin de plus de mémoire (car vous utilisé beaucoup de capteur connecté à votre OXS), vous pouvez forcer sur le protocole FRSKY spécifique que vous utilisez
+*  Pour sélectionné le protocole utilise par OXS remplir la ligne #define PROTOCOL avec le nom du protocole sélectionné avec l’une des valeurs suivante: FRSKY_SPORT , FRSKY_HUB , FRSKY_SPORT_HUB , MULTIPLEX , HOTT; JETI
 ************************************************************************************************************************
 #define PROTOCOL FRSKY_SPORT    // select between FRSKY_SPORT , FRSKY_HUB , FRSKY_SPORT_HUB , MULTIPLEX , HOTT, JETI
 
 
 *  1.1 - Sélection de la sortie vers le récepteur ***********************************************************************************************
-*   oXs doit être connecté a récepteur afin de transmettre les informations.
+*   OXS doit être connecté a récepteur afin de transmettre les informations.
 *   Pour cela, une sortie DIGITAL de l’arduino doit être connectée au récepteur.
 *   Vous devez spécifier la PIN arduino utilisé pour cette fonction.
 *   Valeur par défaut: 4 ; Les valeurs autorisées sont 2 ou 4 mais faite attention de ne pas utiliser la même PIN pour 2 fonction. 
@@ -75,22 +75,22 @@ comment
 *  1.2 ****** SPORT_SENSOR_ID (utilisé unique pour le protocol FrSky Sport) **********************    
 *  
 *      Pour le protocole SPORT, il peut y avoir plusieurs capteur connecté sur le même bus  mais chaque capteur doit avoir un identifiant « SPORT_SENSOR_ID » diffèrent.
-*           Pour le protocole SPORT, oXs peu utilisé jusqu’à 6 identifiant. Les 6 SPORT_SENSOR_ID utilisé par oXs sont :    
+*           Pour le protocole SPORT, OXS peu utilisé jusqu’à 6 identifiant. Les 6 SPORT_SENSOR_ID utilisé par OXS sont :    
 *               DATA_ID_VARIO  	0x00  	// = sensor 0 utilisé pour altitude et la vitesse vertical
 *               DATA_ID_FLVSS  	0xA1 	//		    1 utilisé pour la mesure de élément de baterie
 *               DATA_ID_FAS		0x22  	//         	2 utilisé pour vfas, courant et carburant
 *               DATA_ID_GPS		0x83  	//          3 utilisé pour les données GPS
 *               DATA_ID_RPM		0xE4  	//          4 utilisé pour les rpm, T1, T2, et la sonde de pitot
 *               DATA_ID_ACC		0x67  	//          7 utilisé poue Acceleration sur X, Y, Z
-*               Si besoin (par exemple pour connecter 2 oXs envoyant deux donné identique), vous pouvez changer les valeur de SPORT_SENSOR_ID mais vous devez uniquement selectioner des adresse parmie les valeur suivante:
+*               Si besoin (par exemple pour connecter 2 OXS envoyant deux donné identique), vous pouvez changer les valeur de SPORT_SENSOR_ID mais vous devez uniquement selectioner des adresse parmie les valeur suivante:
 *                  0x00,0xA1,0x22,0x83,0xE4,0x45,0xC6,0x67,0x48,0xE9,0x6A,0xCB,0xAC,0x0D,0x8E,0x2F,0xD0,0x71,0xF2,0x53,0x34,0x95,0x16,0xB7,0x98,0x39,0xBA,0x1B
-*               les valeurs du paramétre SPORT_SENSOR_ID sont défini dans le fichier oXs_config_advanced.h (section 1.1)
+*               les valeurs du paramétre SPORT_SENSOR_ID sont défini dans le fichier OXS_config_advanced.h (section 1.1)
 ************************************************************************************************************************
 
 
 
 **** 2 - Data to transmit **********************************************************************************************
-*   selon les paramètres selection dans le fichié config.h (et les capteur connecté à oXs), oXs peux calculer plusieurs messures 
+*   selon les paramètres selection dans le fichié config.h (et les capteur connecté à OXS), OXS peux calculer plusieurs messures 
 *   Pour le protocole Multiplex, vous devez spécifier quelle mesures doit être renvoyer a l'emmeteur (et sur quelle ligne de l'ecran de l'émmeteur il doit etre afficher) (voir ci dessous) 
 *   Pour les protocoles SPORT, HUB, JETI et HOTT, les mesure sont automatique transmise dans le champs adapté et certain protocol autorise envoyer certain mesure en reutilisant certain champs.
 *   Une de mesure effectuer est la "Vitesse vertical principale".
@@ -258,7 +258,7 @@ comment
 *      - de changer entre un vario compenser et non compenser (quand on utilisant 2 capteurs barométrique avec un connecté sur une sonde TEK)
 *      - de réinitialiser le capteur de vitesse (quand la valeur décale avec la température)
 *      - de changer le facteur de compensation du vario (quand le vario compensé utilise le capteur de vitesse) en utilisant un potentiomètre ou un interrupteur de l’émetteur.
-*   Ces différentes fonctions demandent des mixages dans l’émetteur et certaine configuration dans le fichier oXs-config.h (voir ci-dessous).
+*   Ces différentes fonctions demandent des mixages dans l’émetteur et certaine configuration dans le fichier OXS-config.h (voir ci-dessous).
 *
 *   Si vous voulez ces fonctions vous devez;
 *      - vous devez décommenter (en suppriment les // devant la ligne) les 3 lignes suivantes
@@ -270,7 +270,7 @@ comment
 *              La valeur par défaut est 988.
 *      - spécifié a la ligne PPM_PLUS_100 la largeur d’impulsion (en micro seconde) quand la voie envoie la valeur “logique” = +100.
 *              La valeur par défaut est 2012.
-*   Les deux dernières valeurs sont utilisées afin de calibrer oXs avec l’émetteur quand la fonction PPM est utilisée
+*   Les deux dernières valeurs sont utilisées afin de calibrer OXS avec l’émetteur quand la fonction PPM est utilisée
 *   Il est probable que si vous utilisez les valeurs par défaut cela fonctionne.
 *   Il est plus sûr pour le bon fonctionnement de calibrer ces paramètres (uniquement si vous utilisé la fonction PPM).
 *   /!\ TRADUCTION A REVOIR :To do so, ensure that you transmit the OXS measurement field "PPM" to the TX (e.g. as T1).
@@ -285,11 +285,11 @@ comment
 *       Ce script LUA doit utilisé une commande comme ceci: 
 *            local ret = sportTelemetryPush( 0x0D , 0x10 , 0x0010 , -52 )
 *       ou    
-*          - 0xOD : est le numero d'identification utilisé (defini dans les fichier oXs_config_advanced.h)
+*          - 0xOD : est le numero d'identification utilisé (defini dans les fichier OXS_config_advanced.h)
 *          - 0x10 : est une valuer non utilisé
 *          - 0x0010 : est le code utiliser pour identifier qui s'agit d'une valeur PPM
 *          - -52 : est la valeur PPM transmise (-52 est juste un exemple; elle doit etre adapter selon la valeur que on veux transmetre) 
-*      vous pouvez trouvé un exemple de script LUA dans ce package (dans le dossier "lua scripts"). le nom du fichié est Name is oxsppm.lua et doit etre instaler dans le répertoire SCRIPTS/FUNCTIONS de la carte SD.
+*      vous pouvez trouvé un exemple de script LUA dans ce package (dans le dossier "lua scripts"). le nom du fichié est Name is OXSppm.lua et doit etre instaler dans le répertoire SCRIPTS/FUNCTIONS de la carte SD.
 ************************************************************************************************************************
 #define PIN_PPM             2 
 #define PPM_MIN_100       988   
@@ -310,7 +310,7 @@ comment
 *     Chaque capteur peut calculer l’altitude absolue ou relative (en mètre avec 1 décimal) et la vitesse verticale (en mètre/seconde avec 2 décimal)
 *     Un second capteur peur être utile associé à une sonde TEK et si l’option PPM est active, il est possible de sélectionner depuis l’émetteur le capteur qui vas générer le sont du vario.
 *     Ceci permet de basculer entre un vario compensé pneumatique ou un vario non compensé.
-*     Quand on utilise deux capteur barométrique, oXs peux transmettre une valeur moyen de vitesse vertical des deux capteurs. Ceci ne semble pas très utile.
+*     Quand on utilise deux capteur barométrique, OXS peux transmettre une valeur moyen de vitesse vertical des deux capteurs. Ceci ne semble pas très utile.
 *     Vous devez specifier quelle type de capteur est utiliser pour le premier vario avec la ligne #define FIRST_BARO_SENSOR_USE     MS5611         
 *        La valeur a renseigner doit etre une valeur de la liste suivante: NO_BARO , MS5611, GY86 , BMP085 , BMP180 , BMP280  
 *     Vous devez spécifier quelle type de capteur est utiliser pour le second vario avec la ligne #define SECOND_BARO_SENSOR_USE     NO_BARO         
@@ -334,7 +334,7 @@ comment
 #define VSPEED_SOURCE  FIRST_BARO     // select between FIRST_BARO, SECOND_BARO , AVERAGE_FIRST_SECOND, AIRSPEED_COMPENSATED , BARO_AND_IMU or PPM_SELECTION
 ***********************************************************************************************************************
 * 4.3 - Définition de la sensibilité par programmation *****************************
-*     Quand un vario est utilisé, oXs peux prendre certain paramètres en compte pour ajuster la sensibilité 
+*     Quand un vario est utilisé, OXS peux prendre certain paramètres en compte pour ajuster la sensibilité 
 *     La sensibilité peux être régler entre les valeurs:
 *         - 20 (réglage conservatif, temps de réaction = plusieurs second)                   
 *         - 150 (rapide mais beaucoup d’erreur, temps de réaction = bien inferieur a la second)       
@@ -347,13 +347,13 @@ comment
 *     Le réglage de la sensibilité utilise 4 paramètres:
 *        SENSIVITY_MIN = Cette sensibilité est la sensibilité basic du vario.
 *                        Ce paramètres est donc le paramètres principale du control de sensibilité du vario.
-*                        Cette valeur est utilisé par oXs quand la différence entre la valeur de la Vitesse vertical actuel (calculer toute les 20 ms) et la précédente valeur de la vitesse vertical est inferieur a la valeur définit par SENSITIVITY_MIN_AT ; la valeur typique est 40.
+*                        Cette valeur est utilisé par OXS quand la différence entre la valeur de la Vitesse vertical actuel (calculer toute les 20 ms) et la précédente valeur de la vitesse vertical est inferieur a la valeur définit par SENSITIVITY_MIN_AT ; la valeur typique est 40.
 *        SENSIVITY_MAX = c’est la sensibilité maximal utiliser quand la vitesse vertical change très rapidement. 
-*                        Cette valeur est utilisé par oXs quand la différence entre la valeur de la Vitesse vertical actuel et la précédente valeur de la vitesse vertical est supérieur a la valeur définit par SENSITIVITY_MAX_AT ; la valeur typique est 300.
+*                        Cette valeur est utilisé par OXS quand la différence entre la valeur de la Vitesse vertical actuel et la précédente valeur de la vitesse vertical est supérieur a la valeur définit par SENSITIVITY_MAX_AT ; la valeur typique est 300.
 *        SENSITIVITY_MIN_AT = définie jusqu’à quelle valeur de SENSITIVITY_MIN est applicable (voir ci-dessus) (cm/s); la valeur typique est 100 (cm/s).
 *        SENSITIVITY_MAX_AT = définie jusqu’à quelle valeur de SENSITIVITY_MAX est applicable (voir ci-dessus) (cm/s); la valeur typique est 1000 (cm/s).
 *           La sensibilité du vario est une interpolation automatique entre SENSITIVITY_MIN et SENSITIVITY_MAX.
-*     Ces paramètres permettent à oXs d’avoir un temps de réaction rapide quand la vitesse verticale change rapidement et d’avoir un vario silencieux dans des condition calme.
+*     Ces paramètres permettent à OXS d’avoir un temps de réaction rapide quand la vitesse verticale change rapidement et d’avoir un vario silencieux dans des condition calme.
 *     Note: SENSITIVITY_MAX peut-être égale au paramètre SENSITIVITY_MIN si aucun adaptation automatique est désiré en cas de changement rapide. 
 ************************************************************************************************************************
 #define SENSITIVITY_MIN 50
@@ -363,8 +363,8 @@ comment
 ************************************************************************************************************************
 * 4.4 - Sensitivity adjusted from the TX *******************************************************************************
 *     la sensibilité peux être ajusté depuis l’émetteur grâce a un interrupteur ou un potentiomètre et quelque mixage sur un sorti servo du récepteur.    
-*     Pour utilizer cette option, une sortie servo doit etre connecter à oXs (voir « Définition du retour émetteur » dans la section 3)
-*     Quand oXs reçoit un signal de l’émetteur, la valeur SENSIVITY_MIN définie dans la section 4.3 est supprimer et remplacer par la valeur calculer basée sur la valeur défini dans cette section et le signal PPM de l’émetteur.
+*     Pour utilizer cette option, une sortie servo doit etre connecter à OXS (voir « Définition du retour émetteur » dans la section 3)
+*     Quand OXS reçoit un signal de l’émetteur, la valeur SENSIVITY_MIN définie dans la section 4.3 est supprimer et remplacer par la valeur calculer basée sur la valeur défini dans cette section et le signal PPM de l’émetteur.
 *
 *     Le réglage utilise 4 parametres:
 *         SENSITIVITY_MIN_AT_PPM = quand l’émetteur envoi cette valeur sur la sortie PPM, le paramètre SENSITIVITY_MIN (voir section 4.2) vas être remplacé par la valeur du paramètre SENSITIVITY_PPM_MIN;  Une valeur typique peux être 10.
@@ -469,7 +469,7 @@ comment
 *     Toutes les 0.5sec, OXS véréfi que les mesure instantané reste dans les tolérences défini. 
 *     Si les mesures, effectué par OXS, sont hors des tolérence defini, il arrete le calcul en cour, et reprent avec les nouvelles valeur mesuré. PErformance planeur et moyenne des tôt de monté/descente sont remise a 0.
 *     Si OXS calcul une valeur dans le toleranc defini par l'utilisateur dans le temps écoulé (defini par le paramètre GLIDER_RATIO_CALCULATED_AFTER_X_SEC), il procèdera au calcul
-*     Note: Dans cette version de oXs, si vous voulez envoyé les parameters calculé, vous devez definir d'envoyer les paramètres de la facon suivante:
+*     Note: Dans cette version de OXS, si vous voulez envoyé les parameters calculé, vous devez definir d'envoyer les paramètres de la facon suivante:
 *         - TEST1 pour le temps écoulé (en 1/10 de sec) 
 *         - TEST2 pour la vitesse vertical moyen (en cm/sec comme al vitesse vertical)
 *         - TEST3 pour la finesse du planeur (en 1/10 d'unité)
@@ -519,11 +519,11 @@ comment
 *  - La second tien compte la pression (fourni par le capteur barométrique) et la tèmperature interne du capteur afin de calculer a "vrai" vitesse (a comparer avec la vitesse GPS par vent nul).
 * La vitesse air normaliser est calculer quand la ligne #define AIRSPEED_AT_SEA_LEVEL_AND_15C est décommenter. Pour avoir la vrai vitesse aire, metter cette ligne en commentaire.
 * 
-* oXs peux envoyer la vitesse air en (1/10) de knot/h ou en (1/10) km/h. Pour OpenTx, vous dever utilisé l'option knot/h (selement certaine vielle version on besoin de l'option km/h).
+* OXS peux envoyer la vitesse air en (1/10) de knot/h ou en (1/10) km/h. Pour OpenTx, vous dever utilisé l'option knot/h (selement certaine vielle version on besoin de l'option km/h).
 * Pour activé l'option km/h, il faut décommenter cette ligne #define AIRSPEED_IN_KMH
 * Sinon meter cette ligne en commentaire pour activer l'option knot/h.
 *
-* oXs peux aussi utiliser la mesure de vitesse air pour calculer le varimetre compenser appeller PRANDTL_DTE (=delta total energy).
+* OXS peux aussi utiliser la mesure de vitesse air pour calculer le varimetre compenser appeller PRANDTL_DTE (=delta total energy).
 * Aller voir sur le web pour plus d'information a propos dTE (= electronically compensated vario).
 * Le proincip)e est d'essayer de detectè uniquement les vrai assencdance  en neutralisant les effait de la gouverne de profondeur.
 * Normalement, DTE doit être transmis par le parametre vitesse vertival (vitesse verticale = Valeur par défaut) car OpenTX ne supporte pas encore un champ spécifique pour celui-ci.
@@ -626,7 +626,7 @@ comment
 *     
 *     Afin d'obtenir les meilleures mesures de tension, l'OXS peuvent être calibrés. Ce processus facultatif permet de compenser les tolérances sur les résistances et sur Arduino ADC (convertisseur analogique / numérique).
 *     Pour étalonner chaque mesure de tension, procédez comme suit afin de trouver les meilleures valeurs à configurer dans les lignes #define OFFSET_VOLTAGE et #define SCALE_VOLTAGE
-*      - Reglé les paramètres dans oXs_config.h
+*      - Reglé les paramètres dans OXS_config.h
 *            - Laisser OFFSET_VOLTAGE = 0 et SCALE_VOLTAGE = 1 (ce reglage ajout aucune compensation)
 *            - Sélectionner un champ pour transmettre la tension souhaitée (par exemple T1 pour VOLT3) et remplir la ligne "#define SETUP_DATA_TO_SEND" en conséquence
 *      - Charger le programme dans Arduino
@@ -757,7 +757,7 @@ comment
 *     Il nécessite un matériel supplémentaire. Il peut s'agir d'un IC comme ACS712 (pour 5, 20, 30 ampères) ou ACS758 (pour 50, 100, 150, 200 ampères).
 *     La plupart des capteurs peuvent lire des courants bidirectionnels, mais ACS758 qui est de types "U" ne peut lire que un courant unidirectionnel (fournissant alors une sensibilité plus élevée).
 *     Ces capteurs de courant sont assez bon marché (voir par exemple ebay) et renvoyer une tension qui dépend du courant. Cette tension est mesurée par OXS via une broche analogique.
-*     La valeur de la PIN à remplir dans oXs_config.h est un nombre de 0 à 7 (0 signifie A0, 1 signifie A1, ... 7 signifie A7).
+*     La valeur de la PIN à remplir dans OXS_config.h est un nombre de 0 à 7 (0 signifie A0, 1 signifie A1, ... 7 signifie A7).
 *     Si un capteur de courant est utilisé, ne pas utiliser une broche déjà utilisée par une tension.
 * /!\ Veillez à ce que la tension appliquée à la broche Arduino ne dépasse pas Vcc (normalement 5 volts) ou 1,1 volt (si la tension de référence interne est utilisée)
 *     Il se peut que vous devez utiliser un diviseur de tension afin de réduire la tension appliquée sur la broche Arduino.
@@ -899,125 +899,128 @@ comment
 
 
 
-**** 9 - GPS (optionnal)  *********************************************************************************************
-* It is possible to connect a GPS module to Arduino. In this case, oXs will transmit to the Tx some data generated by the GPS module.
-* Note: data are sent to the receiver only when the GPS has a fix. 
-*     So, it can take several minutes before oXs start sending GPS data.
-*     If GPS lost his fix, oXs will stop sending GPS data until GPS got a new fix.
-* When Frsky (SPORT or HUB) receiver is used, oXs will always send longitude, latitude, altitude, ground speed and course. 
-*   This does not require any additional lines in the section "Data to transmit" (see 9 here above) 
-* When Multiplex receiver is used, the user has well to specify under the line "#define SETUP_MULTIPLEX_DATA_TO_SEND" which data are sent and the line number where the data have to appear on the display.
-* Hardware points of attention.
-*   Supported GPS modules: oXs supports modules based on UBLOX GPS (easily available on ebay or aliexpress) like Neo6M, Neo7M and Neo8M. 
-*   Most modules have a build in voltage regulator in order to drop the voltage down to 3.3 volt which is about the max allowed by the GPS
-*   They have 4 pins available that have to be connected to Arduino
-*     - GPS gound is connected to Arduino ground
-*     - GPS Vcc is normally connected to Arduino Raw pin (which is normally connected to Vcc from the receiver). 
-*          Still take care that the voltage regulator on the GPS module is, most of the time, foreseen for a maximum voltage of 6 Volt while arduino Raw pin accept more. 
-*          So, if you Raw pin get more that 6 volt, it is safe to add another voltage regulator to drop the GPS Vcc down.  
-*    - GPS Tx pin is connected to Arduino Rx pin      
-*    - GPS Rx pin is connected to a resistor (e.g. 10k) and the other pin of the resistor is connected to Arduino pin 6 (digital pin 6). 
-*          This resistor is added (at least for an Arduino 5 volt) in order to protect the GPS pin. 
-*          This is requested because Arduino will generate a signal with a high level equal to arduino Vcc (so normally 5 volt) while the GPS module should normally not accept more than 3.3 Volt.
-*          To be safier, you could even add a second resistor between GPS Rx pin and Ground (value= 22k) but, in my case, it worked without this second resistor. 
-*          Note: it would be possible to use another pin than Arduino pin 6 but then it requires to change some parameters in file oXs_gps.cpp (see "Setup the GPS sensor").
-*   !! IMPORTANT NOTE : 
-*      Arduino Rx pin is used for 2 purposed:  getting the data from the GPS and uploading the program into the Arduino (normally only to be done once) using a USB to serial adapter.
-*              You must avoid having both GPS and USB connected at the same time because while uploading a program in Arduino, there will be conflicts between the signals sent by the 2 devices and programming will fail.
-*              There is another risk: if your USB to serial adapter generates 5 volts signal, it could damage the GPS module. 
-*              So, when you connect the usb to serial adapter to the Arduino, you should disconnect at least the GPS TX pin from the Arduino Rx pin.  
-*              Personnaly I use a connector between Arduino and GPS module and so I can disconnect totally the GPS module.
-* Software points of attention
-*    UBLOX GPS module are normally delivered with a default configuration (generating automatically e.g some NMEA messages at 9600 bauds at a refresh rate of 1 hz).
-*    oXs assumes that, at start up, GPS is working at 9600 bauds. oXs sent then some commands in order to
-*       - disable all NMEA messages
-*       - activates some UBX messages
-*       - increase frequency of calculation (to 5 Hz instead of 1hz)
-*       - set up the baud rate to 38400 instead of 9600.
-*    Those parameters are not saved in the GPS (because some GPS modules does not allow it). So, oXs will send those commands at each power on.   
-*    If you oXs does not send GPS data, please check that your GPS module has still the default configuration (most important is that it is configured to receive UBX command messages at 9600 bauds). 
-*       An easy way to check the GPS configuration is to connect the GPS module to a 3.3 volt FTDI ( or USB to serial adapter) and to use a free software named "u-center". 
-*       This software is available on the official web site of UBLOX. More info is easily available on the web. 
-*  OXs allows to modify some parameters in the config.h file:
-*     -   #define A_GPS_IS_CONNECTED      NO       : Replace NO by YES if a GPS is connected and has to transmit his data
-*     -   #define GPS_SPEED_IN_KMH   : uncomment this line if GPS speed has to be sent in km/h instead of knot/h 
-*     -   #define GPS_SPEED_3D       : uncomment this line if GPS speed has to be the 3d speed instead of the 2d speed (note: 3d is probably less accurate - to test)
+**** 9 - GPS (optionel)  *********************************************************************************************
+* Il est possible de connecter un module GPS à Arduino. Dans ce cas, OXS transmettra a l'emetteur certaines données générées par le module GPS.
+* Note: les données sont envoyées au destinataire uniquement lorsque le GPS est prês (connecter au satelite).
+*     Ainsi, il peut prendre plusieurs minutes avant que OXS ne commence à envoyer des données GPS.
+*     Si le GPS a perdu sa connexcion avec les satelit, OXS arrêtera d'envoyer des données GPS jusqu'à ce que le GPS ait obtenu une nouvelle solution.
+* Lorsque le récepteur Frsky (SPORT ou HUB) est utilisé, OXS enverra toujours la longitude, la latitude, l'altitude, la vitesse du sol et le parcours. 
+*   Cela ne nécessite aucune ligne supplémentaire dans la section "Données à transmettre" (voir 9 ci-dessus) 
+* Lorsque le récepteur multiplex est utilisé, l'utilisateur doit bien définir sous la ligne "#define SETUP_MULTIPLEX_DATA_TO_SEND", les données sont envoyées et le numéro de ligne où les données doivent apparaître à l'écran.
+* Points a faire attention sur le type de matériels.
+*   Modules GPS pris en charge: OXS prend en charge les modules basés sur UBLOX GPS (facilement disponible sur ebay ou aliexpress) comme Neo6M, Neo7M et Neo8M. 
+*   La plupart des modules sont équipé d'un régulateur de tension afin de ramener la tension à 3,3 volts, soit environ le maximum autorisé par le GPS
+*   Ils ont 4 broches disponibles qui doivent être connectés à Arduino
+*     - GPS Ground est connecté à Arduino Ground
+*     - GPS Vcc est normalement connecté à la broche Raw Arduino (qui est normalement connectée à Vcc du récepteur)
+*          Toujours prendre soin que le régulateur de tension sur le module GPS soit, pour la plupart du temps, prévu pour une tension maximale de 6 volts alors que la broche RAW arduino accepte plus. 
+*          Donc, si votre broche RAW recoi plus de 6 volts, il est prudent d'ajouter un autre régulateur de tension pour faire tomber la tension GPS Vcc. 
+*    - La broche GPS Tx est connectée à la broche Arduino Rx      
+*    - La broche GPS Rx est connectée à une résistance (par exemple 10k) et l'autre broche de la résistance est connectée à la broche 6 d'Arduino (broche numérique 6).
+*          Cette résistance est ajoutée (au moins pour un Arduino 5 volts) afin de protéger la broche GPS. 
+*          Ceci est demandé car Arduino généreré un signal avec un niveau élevé égal à Arduino Vcc (normalement 5 volts) alors que le module GPS ne devrait normalement pas accepter plus de 3.3 Volt.
+*          Pour être plus sûr, vous pouvez même ajouter une deuxième résistance entre GPS Rx pin et Ground (valeur = 22k) mais, dans mon cas, cela a fonctionné sans cette deuxième résistance. 
+*          Note: Il serait possible d'utiliser une autre broche que la broche 6 d'Arduino, mais il faut modifier certains paramètres dans le fichier OXS_gps.cpp (voir "Configuration du capteur GPS").
+*  /!\ Note importante : 
+*      La broche Arduino Rx est utilisée pour 2 besoin: obtenir les données du GPS et télécharger le programme dans l'Arduino (normalement fait une fois) à l'aide d'un adaptateur USB vers série.
+*              Vous devez éviter d'utiliser le GPS et l'USB en même temps, car lors du téléchargement d'un programme dans Arduino, il y aura des conflits entre les signaux envoyés par les 2 appareils (le PC et le GPC) et la programmation échouera.
+*              Il existe un autre risque: si votre adaptateur USB vers série génère un signal de 5 volts, cela pourrait endommager le module GPS.
+*              Donc, lorsque vous connectez l'usb à l'adaptateur série à l'Arduino, vous devez déconnecter au moins la broche GPS TX de la broche Arduino Rx.  
+*              Personnellement, j'utilise un connecteur entre Arduino et le module GPS et je peux donc déconnecter complètement le module GPS.
+* Points a faire d'attention sur le logiciel
+*    Le module GPS UBLOX est normalement livré avec une configuration par défaut (générant automatiquement, par exemple, des messages NMEA à 9600 bauds à un taux de rafraîchissement de 1 hz).
+*    OXS suppose que, au démarrage, le GPS fonctionne à 9600 bauds. OXS a envoyé alors quelques commandes pour
+*       - Désactiver tous les messages NMEA
+*       - Active certains messages UBX
+*       - Augmenter la fréquence de calcul (à 5 Hz au lieu de 1 heure))
+*       - Configurez le débit en bauds à 38400 au lieu de 9600.
+*    Ces paramètres ne sont pas enregistrés dans le GPS (car certains modules GPS ne le permettent pas). Ainsi, OXS enverra ces commandes à chaque mise sous tension.  
+*    Si OXS n'émet pas de données GPS, vérifiez que votre module GPS a encore la configuration par défaut (le plus important est qu'il soit configuré pour recevoir des messages de commande UBX à 9600 bauds). 
+*       Un moyen simple de vérifier la configuration GPS est de connecter le module GPS à un FTDI de 3,3 volts (ou un adaptateur USB à série) et d'utiliser un logiciel gratuit nommé "u-centre". 
+*       Ce logiciel est disponible sur le site officiel de UBLOX. Plus d'informations sont facilement disponibles sur le Web. 
+*  OXS permet de modifier certains paramètres dans le fichier config.h:
+*     -   #define A_GPS_IS_CONNECTED      NO       	: Remplacez NO par YES si un GPS est connecté et doit transmettre ses données
+*     -   #define GPS_SPEED_IN_KMH   				: Décommentez cette ligne si la vitesse GPS doit être envoyée en km / h au lieu de nœud / h
+*     -   #define GPS_SPEED_3D       				: Décommentez cette ligne si la vitesse GPS doit être la vitesse 3d au lieu de la vitesse 2d (note: 3d est probablement moins précis - à tester)
 *     
-************************************************************************************************************************ 
+************************************************************************************************************************
+#define A_GPS_IS_CONNECTED      NO    	// Remplacez NO par YES si un GPS est connecté et doit transmettre ses données
+//#define GPS_SPEED_IN_KMH				// Décommentez cette ligne si la vitesse GPS doit être envoyée en km / h au lieu de nœud / h
+#define GPS_SPEED_3D  					// Décommentez cette ligne si la vitesse GPS doit être la vitesse 3d au lieu de la vitesse 2d (note: 3d est probablement moins précis - à tester)
+************************************************************************************************************************
 
-******  10 - IMU based on mpu6050 (accelerometer/gyro sensor) (optionnal) ********************************************************
+
+
+****** 10 - IMU 6050 (capteur accéléromètre/gyroscope) (optionnel) et HMC5883 (magnetometre)) ********************************************************
 // ***** 10.1 - IMU 6050 *****
-*  It is possible to connect an IMU sensor (=accelerometer/gyro) to arduino; this is optionnal.
-*  It allows :
-*      - to reduce the reaction time of the vario by about 0.5 sec (note: a baro sensor has to be connected too because oXs merges the data from both sensors)
-*      - to transmit data about accelerations and/or orientation (pitch/roll); in this case it is important that oXs device is mounted in a fix position and is aligned with the plane axis. 
-*  Only one IMU sensor is supported : the mpu6050. 
-*  This sensor is easily available on ebay, ... under different modules. The best module to use is probably the GY-86 because it has also a voltage regulator (3.3volt), I2C level converters, and a baro sensor (MS5611)     
-*  5 pins from the mpu6050 have to be connected to Arduino:
+*  Il est possible de connecter un capteur IMU (= accéléromètre / gyro) à l'arduino; C'est optionnel.
+*  Il permet :
+*      - Pour réduire le temps de réaction du vario d'environ 0,5 sec (note: un capteur baro doit également être connecté parce que OXS fusionne les données des deux capteurs)
+*      - Transmettre des données sur les accélérations et / ou l'orientation (pitch / roll); Dans ce cas, il est important que le dispositif OXS soit monté dans une position correcte et soit aligné avec l'axe du plan avion. 
+*  Un seul capteur IMU qui est pris en charge est le: mpu6050. 
+*  Ce capteur est facilement disponible sur ebay, ... sous différents modules. Le meilleur module à utiliser est probablement le GY-86 car il dispose également d'un régulateur de tension (3.3 volts), d'un convertisseur de niveau I2C et d'un capteur baro (MS5611)    
+*  5 broches de la mpu6050 doivent être connectées à Arduino:
 *       - MP6050 ground  <--->  Arduino ground
 *       - MP6050 Vcc     <--->  Arduino Vcc
 *       - MP6050 SDA     <--->  Arduino SDA = Arduino A4
 *       - MP6050 SCL     <--->  Arduino SCL = Arduino A5
-*       - MP6050 INT     <--->  Arduino INT0 = Arduino 2 OR Arduino INT1 = Arduino 3(do not use the same pin for another purpose like PPM!)
-* In order to activate the IMU, set YES in the line #define A_MPU6050_IS_CONNECTED       
-* When IMU is activated, this version of oXs calculates a vertical speed in a different way merging the altitude from baro sensor with vertical acceleration from IMU (in Earth reference).
-* This other type of vertical speed can be send as Vspeed assigning the value BARO_AND_IMU in #define VSPEED_SOURCE (see section 4.2)
-* It is also possible to assign it in  "VARIO_PRIMARY" or "VARIO_SECONDARY"  and so to switch between 2 vario sources from the Tx (using a ppm channel) 
-* In order to get best results from IMU, it is required to calibrate the accelerometer offsets. To do so, please :
-*    - upload a version of oXs firmware whith the line #define DISPLAY_ACC_OFFSET uncommented
-*    - let oXs runs while connected to the PC (via USB serial interface = FTDI)
-*    - open Arduino IDE terminal (press CTRL + SHIFT + M simultaniously)
-*    - take care to set the baud rate to 115200 (or 38400 if GPS is activated too)
-*    - after startup, terminal should, every 2 or 3 sec, display Acc followed by 3 numbers being respectively AccX, AccY and AccZ. Please note that those numbers change when mpu6050 moves.
-*    - ensure that the mpu6050 (GY86) is perfectly horizontal and does not move (e.g. put on a table) 
-*    - notice the 2 first numbers ( = AccX and AccY ) ; Don't take care of the 3rd number because when the sensor is in this position, it will reflect the gravity and will be around 16384. 
-*    - rotate mpu6050 in order to get X or Y axis perfectly vertical and do not move. Now, the 3rd number would become much lower (because it does not measure gravity anymore)
-*    - notice the 3rd number ( = Accz )
-*    - update oXs_config.h file filling the 3 numbers in lines #define ACC_OFFSET_X , #define ACC_OFFSET_Y and #define ACC_OFFSET_Z
-*    - set line #define DISPLAY_ACC_OFFSET as comment (adding "//" in front)
-*    - upload again oXs firmware in arduino
+*       - MP6050 INT     <--->  Arduino INT0 = Arduino 2 OR Arduino INT1 = Arduino 3 (n'utilisez pas la même broche pour un autre but, comme PPM!)
+* Pour activer l'IMU, définissez YES dans la ligne #define A_MPU6050_IS_CONNECTED       
+* Lorsque IMU est activé, cette version d'OXS calcule une vitesse verticale de manière différente, fusionnant l'altitude du capteur baro avec l'accélération verticale de l'IMU (en référence Terre).
+* Cet autre type de vitesse verticale peut être envoyé comme vitesse vertical en configurant la valeur de BARO_AND_IMU à #define VSPEED_SOURCE (voir section 4.2)
+* Il est également possible de l'affecter à "VARIO_PRIMARY" ou "VARIO_SECONDARY" et donc de basculer entre 2 sources vario du Tx (en utilisant un canal ppm)
+* Afin d'obtenir les meilleurs résultats d'IMU, il est nécessaire de calibrer les décalages de l'accéléromètre. Pour ce faire, il vous faut:
+*    - Téléchargez une version du microprogramme OXS avec la ligne #define DISPLAY_ACC_OFFSET sans commentaire
+*    - Lancez OXS en cours de connexion au PC (via l'interface série USB = FTDI)
+*    - Ouvrir le terminal IDE Arduino (appuyez simultanément sur CTRL + MAJ + M)
+*    - Veillez à régler le débit en bauds à 115200 (ou 38400 si le GPS est activé aussi)
+*    - Après le démarrage, le terminal doit, tous les 2 ou 3 s, afficher Acc suivi par 3 nombres respectivement AccX, AccY et AccZ. Notez que ces chiffres changent lorsque mpu6050 se déplace.
+*    - Assurez-vous que le mpu6050 (GY86) est parfaitement horizontal et ne se déplace pas (par exemple, mettre sur une table) 
+*    - Notez les 2 premiers numéros (= AccX et AccY); Ne prenez pas soin du 3ème numéro car lorsque le capteur est dans cette position, il reflètera la gravité et sera autour de 16384. 
+*    - Tournez le mpu6050 afin d'obtenir des axes X ou Y parfaitement verticaux et ne vous déplacez pas. Maintenant, le 3ème nombre deviendrait beaucoup plus bas (car il ne mesure plus la gravité)
+*    - Notez le 3ème numéro (= Accz)
+*    - Mettez à jour le fichier OXS_config.h remplissant les 3 nombres dans les lignes #define ACC_OFFSET_X, #define ACC_OFFSET_Y et #define ACC_OFFSET_Z
+*    - Définissez ligne #define DISPLAY_ACC_OFFSET comme commentaire (ajoutant "//" à l'avant)
+*    - Télécharger à nouveau le firmware OXS dans arduino
 ************************************************************************************************************************ 
-#define A_MPU6050_IS_CONNECTED      NO     : Replace NO by YES if a IMU6050 is connected and has to transmit his data
-#define PIN_INT_6050 3    // Interrupt from 6050 has to be connected to Arduino pin 2 or pin 3 (do not use here the same pin as PPM) 
+#define A_MPU6050_IS_CONNECTED      NO     	// Replace NO by YES if a IMU6050 is connected and has to transmit his data
+#define PIN_INT_6050 3    					// Interrupt from 6050 has to be connected to Arduino pin 2 or pin 3 (do not use here the same pin as PPM) 
 #define DISPLAY_ACC_OFFSET
-#define ACC_OFFSET_X 0 // fill here the value reported when DISPLAY_ACC_OFFSET is activated (eg. -160)
-#define ACC_OFFSET_Y 0 // fill here the value reported when DISPLAY_ACC_OFFSET is activated (eg. -150)
-#define ACC_OFFSET_Z 0 // fill here the value reported when DISPLAY_ACC_OFFSET is activated (eg. -1100)
-
-// ***** 10.2 - HMC5883 *****
-*  If you use a module like GY-86 AND if IMU6050 is connected to arduino (see 10.1), oXs can get access to a magetometer HMC5883 in order to get a Yaw measurement.
-*  This does not require additional wiring. 
-* In order to activate the HMC5883, set YES in the line CALCULATE_YAW_WITH_HMC5883       
-* Take care that to get reliable values from the magnetometer, it is mandatory to calibrate it.
-* This is a non trivial process.
-* I recommend to folow the process described in this link: http://www.physi.cz/hmc5883l-magnetometer-calibration.html
-* It means that you have to:
-* 1) collect sample data from oXs: 
-*    This require that you: 
-*      - uncomment the line #define GENERATE_MAG_CALIBRATION_DATA
-*      - upload the program in the Arduino
-*      - open the Arduino PC terminal
-*      - in the PC terminal, you will get a few lines of general data followed by a list with 3 values per line (those are the raw X, Y and Z magnetometer readings) 
-*      - rotate the sensor slowly on 360° along ALL axis in order to collect more than 1000 lines of data (this may take several minutes)
-*  2)copy and paste the lines from PC terminal to a TXT file (using a text editor like notepad). Remove the first lines of general data (before the list)
-*     and save this file as TXT file
-*  3)download the windows program form the link here above (see "Download Executable" )
-*      run this program, set norm to 1.0, click "open" and select the TXT file with your sample data and then click on "Calibrate"
-*  4) note the 3 "combined bias" values and copy them in XMAG_OFFSET, YMAG_OFFSET and ZMAG_OFFSET (in oXs_config_advanced.h)
-*  5) note the 9 "combined scale factors..." values and open now a link to a web site that will let you find the inverse of the matrix of the 9 values : 
-*      https://www.wolframalpha.com/input/?i=%7B%7B591.0437,-13.1628,-15.0294%7D,%7B-13.1628,596.1147,30.5314%7D,%7B-15.0294,30.5314,552.0759%7D%7D%5E-1
-*      - fill the 9 values in the first input field (respect the special format with {{ , , } , { , , } , { , , }} and click on the button on the right of the input line.
-*  6) you will get a "result" matrix. Note the 9 values from result and copy them in XXMAG_CORRECTION , XYMAG_CORRECTION , XZMAG_CORRECTION ... ZZMAG_CORRECTION  (in oXs_config_advanced.h)
-*  7) set the line #define GENERATE_MAG_CALIBRATION_DATA as comment and upload the program again in Arduino
+#define ACC_OFFSET_X 0 						// fill here the value reported when DISPLAY_ACC_OFFSET is activated (eg. -160)
+#define ACC_OFFSET_Y 0 						// fill here the value reported when DISPLAY_ACC_OFFSET is activated (eg. -150)
+#define ACC_OFFSET_Z 0 						// fill here the value reported when DISPLAY_ACC_OFFSET is activated (eg. -1100)
 ************************************************************************************************************************ 
-#define CALCULATE_YAW_WITH_HMC5883   NO    // select between YES , NO ; YES requires that A_MPU6050_IS_CONNECTED is YES here above
-
-//#define GENERATE_MAG_CALIBRATION_DATA   // uncomment this line when HMC5883 calibration has to be performed. Set back as comment once calibration parameters have been introduced 
-
-#define    XMAG_OFFSET 2     // must be an integer
-#define    YMAG_OFFSET -1     // must be an integer
-#define    ZMAG_OFFSET 139     // must be an integer
-#define    XXMAG_CORRECTION  0.122082   // can have decimals
+// ***** 10.2 - HMC5883 *****
+* Si vous utilisez un module comme GY-86 et si IMU6050 est connecté à arduino (voir 10.1), OXS peut accéder à un magetomètre HMC5883 afin d'obtenir une mesure Yaw.
+* Cela ne nécessite pas de câblage supplémentaire.  
+* Pour activer le HMC5883, réglez YES dans la ligne CALCULATE_YAW_WITH_HMC5883      
+* Veillez à obtenir des valeurs fiables du magnétomètre, il est obligatoire de le calibrer.
+* Il s'agit d'un processus non trivial.
+* Je recommande de suivre le processus décrit dans ce lien: http://www.physi.cz/hmc5883l-magnetometer-calibration.html
+* Cela signifie que vous devez:
+* 1) Collecter des données d'OXS: 
+*    Cela exige que vous: 
+*      - Décommentez la ligne #define GENERATE_MAG_CALIBRATION_DATA
+*      - Télécharger le programme dans l'Arduino
+*      - Ouvrez le terminal PC Arduino
+*      - Dans le terminal PC, vous obtiendrez quelques lignes de données générales suivies d'une liste avec 3 valeurs par ligne (il s'agit des lectures X, Y et Z du magnétomètre)
+*      - Tournez le capteur lentement sur 360 ° le long de tous les axes afin de collecter plus de 1000 lignes de données (cela peut prendre plusieurs minutes)
+*  2)Copiez et collez les lignes du terminal PC vers un fichier TXT (en utilisant un éditeur de texte comme bloc-notes). Supprimez les premières lignes de données générales (avant la liste) et enregistrez ce fichier en tant que fichier TXT
+*  3)Téléchargez le programme Windows dans le lien ci-dessus (voir "Téléchargement exécutable")
+*      Exécutez ce programme, réglez la norme en 1.0, cliquez sur "ouvrir" et sélectionnez le fichier TXT avec vos données d'échantillons, puis cliquez sur "Calibrer"
+*  4) Notez les 3 valeurs "biais combiné" et copiez-les dans XMAG_OFFSET, YMAG_OFFSET et ZMAG_OFFSET (dans OXS_config_advanced.h)
+*  5) Notez les 9 "facteurs d'échelle combinés ..." et ouvrez maintenant un lien vers un site Web qui vous permettra de trouver l'inverse de la matrice des 9 valeurs:
+*      https://www.wolframalpha.com/input/?i=%7B%7B591.0437,-13.1628,-15.0294%7D,%7B-13.1628,596.1147,30.5314%7D,%7B-15.0294,30.5314,552.0759%7D%7D%5E-1
+*      - Remplissez les 9 valeurs dans le premier champ de saisie (respecter le format spécial avec {{,,}, {,,}, {,,}} et cliquez sur le bouton à droite de la ligne d'entrée.
+*  6) Vous obtiendrez une matrice "résultat". Notez les 9 valeurs du résultat et copiez-les dans XXMAG_CORRECTION, XYMAG_CORRECTION, XZMAG_CORRECTION ... ZZMAG_CORRECTION (dans OXS_config_advanced.h)
+*  7) Définissez la ligne #define GENERATE_MAG_CALIBRATION_DATA comme commentaire et téléchargez encore le programme à Arduino
+************************************************************************************************************************ 
+#define CALCULATE_YAW_WITH_HMC5883   NO    	// Sélectionnez entre YES, NO; YES demande a ce que A_MPU6050_IS_CONNECTED soit à YES ici ci-dessus
+//#define GENERATE_MAG_CALIBRATION_DATA   	// Décommentez cette ligne lorsque l'étalonnage HMC5883 doit être effectué. Rétablir en tant que commentaire une fois que les paramètres d'étalonnage ont été introduits
+#define    XMAG_OFFSET 2     				// Doit etre un interger
+#define    YMAG_OFFSET -1     				// Doit etre un interger
+#define    ZMAG_OFFSET 139     				// Doit etre un interger
+#define    XXMAG_CORRECTION  0.122082   	// peux avoir des décimals
 #define    XYMAG_CORRECTION  -0.00204026
 #define    XZMAG_CORRECTION  0.00377534 
 #define    YXMAG_CORRECTION  -0.00204026
@@ -1026,11 +1029,14 @@ comment
 #define    ZXMAG_CORRECTION  0.00377534
 #define    ZYMAG_CORRECTION  -0.00491189
 #define    ZZMAG_CORRECTION  0.138038
+************************************************************************************************************************ 
+
+
 
 ****** 11 - Flow sensor ******************
-* If you use a fuel engine, you can connect a liquid flow meter to oXs
+* If you use a fuel engine, you can connect a liquid flow meter to OXS
 * This sensor generates a pulse each time some milli liters are going trough the sensor 
-* oXs can count the number of pulses and calculates 3 data : the current consumed milli liter / min and, taking care of tank capacity, the remaining fuel in ml and in %.
+* OXS can count the number of pulses and calculates 3 data : the current consumed milli liter / min and, taking care of tank capacity, the remaining fuel in ml and in %.
 * It is recommended to use following type of flow meter because it is probably more accurate than other when flow is low
 * http://www.conrad.be/ce/nl/product/155374/BIO-TECH-eK-FCH-M-Doorstroomsensor-1-stuks-Voedingsspanning-bereik-5-24-VDC-Meetbereik-08-0015-lmin-l-x;jsessionid=EED7B26A7F28BA3F20F0060807E20FD1.ASTPCEN22?ref=searchDetail
 * It is foreseen to measure from 0.015 up to 0.8 ml/min.
@@ -1038,28 +1044,28 @@ comment
 * There are other cheap flow sensors on ebay or aliexpress but I expect that there are not accurate enough when flow is low.
 * 
 * To activate such a flow sensor, you have to: 
-*   - assign YES to the define A_FLOW_SENSOR_IS_CONNECTED (in oXs_config_basic.h file)
+*   - assign YES to the define A_FLOW_SENSOR_IS_CONNECTED (in OXS_config_basic.h file)
 *   - specify in PULSES_PER_ML the number of pulses generated by the sensor when 1 milli liter of liquid flows trough it
 *   - specify in TANK_CAPACITY the maximum capacity in milli liter
 *   - specify 8 values used to calibrate your sensor in INIT_FLOW_PARAM
 *         Those parameters are used in order to take care that the number of pulses generated by the sensor when 1 milli liter of liquid flows trough it varies with the flow it self.
-*         For 4 flow values (the first 4 parameters) , oXs allows you to define a correction (in %) in the last 4 parameters.  
+*         For 4 flow values (the first 4 parameters) , OXS allows you to define a correction (in %) in the last 4 parameters.  
 *         The process to calibrate the sensor should be as follow : 
 *              Set last 4 parameters to 0 (so 0% correction)
 *              Run you engine at 4 different speeds (from very low, to some medium and finally to high speed) for a few minutes. 
 *              For each run, 
-*                - note the remaining fuel (in ml) reported by oXs at start (e.g. 1200) and at end (e.g. 1090)of the run 
+*                - note the remaining fuel (in ml) reported by OXS at start (e.g. 1200) and at end (e.g. 1090)of the run 
 *                - measure the real remaining fuel (in ml) in the tank at start (e.g. 1500) and at end (e.g. 1380)of the run 
 *                - note the enlapsed time (in min) between start and end of the run (e.g. 2 min).  
-*                - compare the consumed ml (difference between remaining fuel at start and at end) reported by oXs and in the reality (e.g. reported = 1200 - 1090 = 110ml; real = 1500 - 1380= 120ml) 
+*                - compare the consumed ml (difference between remaining fuel at start and at end) reported by OXS and in the reality (e.g. reported = 1200 - 1090 = 110ml; real = 1500 - 1380= 120ml) 
 *                - calculate the correction factor to apply (e.g. (120 - 110) / 110 = 9%) ; note correction could be negative)
-*                - calculate the flow where this correction applies (= consumed ml reported by oXs / enlapsed time = 110 ml / 2 min = 55 ml/min) 
+*                - calculate the flow where this correction applies (= consumed ml reported by OXS / enlapsed time = 110 ml / 2 min = 55 ml/min) 
 *              Fill the first 4 parameters with the calculated flows (e.g. 55) and the last 4 parameters with the correction percentage (e.g. 9). 
 *              Take care that the first 4 parameters have to be in ascending order (so from low speed to high speed).
-*         Note: when oXs calculates the consumption, it will apply linear interpolation for the related range of values.
+*         Note: when OXS calculates the consumption, it will apply linear interpolation for the related range of values.
 *
-*   If you move an oXs device from one plane to another, you will probably have to modify the values set in TANK_CAPACITY and/or INIT_FLOW_PARAM.  
-*   This requires to upload a new firmware in your oXs except if you are using JETI protocol or SPORT protocol with openTx 2.2.x (or above). 
+*   If you move an OXS device from one plane to another, you will probably have to modify the values set in TANK_CAPACITY and/or INIT_FLOW_PARAM.  
+*   This requires to upload a new firmware in your OXS except if you are using JETI protocol or SPORT protocol with openTx 2.2.x (or above). 
 *   For JETI protocol, you can just enter the JETIBOX dialog box, press DOWN key to go to the item to modify and press "<" or ">" to increase/decrease the value. 
 *       Do not forget to activate the SAVE_TO_EEPROM option in section 8 in order to save the parameters and reuse them at next power on. 
 *   For SPORT protocol, you must run some LUA scripts. In this package (in the folder "lua scripts"), you can find 3 lua scripts to be installed in the folder SCRIPTS/FUNCTIONS of the SD card:
@@ -1073,20 +1079,20 @@ comment
 *
 * Please note that the fuel consumption can be saved every 30 sec in a non volatile memory.
 * To activate this option, you have to say YES in the line #define SAVE_TO_EEPROM from section 8
-* If this option is activated, when oXs start at power on, it start counting from the last remaining fuel when power goes off. 
-* Otherwise, oXs reset the fuel consumption and assumes a 100% tank.
+* If this option is activated, when OXS start at power on, it start counting from the last remaining fuel when power goes off. 
+* Otherwise, OXS reset the fuel consumption and assumes a 100% tank.
 * 
 * A reset of the fuel consumption can be requested from the TX. This is really needed when SAVE_TO_EEPROM is activated
 * This can be done in several ways depending also on the protocol being used:
 * For all protocols, it can be requested using a PPM signal
-*    This requires to activate the oXs PPM option (see section 3) and to connect a Rx channel to oXs.
+*    This requires to activate the OXS PPM option (see section 3) and to connect a Rx channel to OXS.
 *    Reset will occur when absolute value of PPM signal exceed the value specified in FLOW_SENSOR_RESET_AT_PPM (section 11)
 * Furthermore:
 *  -for JETI protocol it can be requested from the JETIBOX pressing simultanously the "<" and the ">" keys when the JETIBOX dislay the remaining fuel in percentage 
-*  - for the FRSKY SPORT protocol, since openTX version 2.2.x it is possible to activate a LUA function script that will send a reset command to oXs
+*  - for the FRSKY SPORT protocol, since openTX version 2.2.x it is possible to activate a LUA function script that will send a reset command to OXS
 *  
-* For JETI protocols, oXs transmits automatically the current flow, the remaining fuel in ml and in % 
-* For other protocols, you have to ask oXs to transmit the data; so you have : 
+* For JETI protocols, OXS transmits automatically the current flow, the remaining fuel in ml and in % 
+* For other protocols, you have to ask OXS to transmit the data; so you have : 
 *   - to uncomment the line #define FILL_TEST_1_2_3_WITH_FLOW_SENSOR_CONSUMPTION  (in section 2.5 )
 *   - to specify in which telemetry fields, TEST_1 (current flow in ml/min), TEST_2 (remaining fuel in ml) and TEST_3 (remaining fuel in %) are sent (see section 2.1/2.4)
 *       Please note that if you transmit TEST_1... TEST_3 in AccX...AccZ in FRSKY protocol, the values are divided by 100 by openTx. You can get the original values back if you set up a scale = 255 on Tx side in the telemetry fields
@@ -1098,22 +1104,22 @@ comment
 #define FLOW_SENSOR_RESET_AT_PPM         95                   // when absolute value of ppm is greater than this, flow counter is reset.
 
 ****** 20 - Sequencer (ON/OFF) for several digital outputs **************************************************************************************
-* oXs allows you to control (HIGH/LOW) up to 6 digitals Arduino outputs in different sequences.
+* OXS allows you to control (HIGH/LOW) up to 6 digitals Arduino outputs in different sequences.
 * Each sequence is composed of one or several steps; each step defines for how long (= a duration) which outputs are HIGH and which outputs are LOW.
-* oXs determines normally the sequence to be played based on the signal received on a PPM channel (see section 3 in order to set up a PPM signal). 
+* OXS determines normally the sequence to be played based on the signal received on a PPM channel (see section 3 in order to set up a PPM signal). 
 * Still there are 2 exceptions:
-*    At power on or when no PPM channel is configured/received, oXs will generate as default the sequence defined in the line #define SEQUENCE_m100 (see below)
-*    When a low voltage alarm is configured (see below) and if the voltage becomes low, oXs will generate the sequence defined in the line #define SEQUENCE_LOW (see below) as long as the voltage remains low   
-* When a sequence has been played, oXs can or repeat it or just wait for a new sequence. The difference is made in the set up of the sequence.
-* Each time a new (= different) valid PPM signal is received, oXs start immediately the corresponding sequence (even if the current sequence is not completely played)
+*    At power on or when no PPM channel is configured/received, OXS will generate as default the sequence defined in the line #define SEQUENCE_m100 (see below)
+*    When a low voltage alarm is configured (see below) and if the voltage becomes low, OXS will generate the sequence defined in the line #define SEQUENCE_LOW (see below) as long as the voltage remains low   
+* When a sequence has been played, OXS can or repeat it or just wait for a new sequence. The difference is made in the set up of the sequence.
+* Each time a new (= different) valid PPM signal is received, OXS start immediately the corresponding sequence (even if the current sequence is not completely played)
 * - In order to use the sequencer functionality, you first have to define which Arduino digital pin have to be controlled by the sequencer.
 *     The arduino pins that can be controlled are the pin 13, 12, 11, 10 , 9 and 8.
 *     This set up is achived by a line like : #define SEQUENCE_OUTPUTS 0b100100
 *     Each bit (1 or 0 after the "b") represent an output; the least significant bit correspond to pin 8, the bit on the left pin 9 etc... up to pin 13  
 *     Put 1 when the pin has to be controlled by the sequencer, 0 otherwise; In this example, it means that only pins 13 and 10 would be controlled.
 *     Note: if the line #define SEQUENCE_OUTPUTS xxxx is omitted or put as comment, then the sequencer is not active at all.
-*           Take care not to use the same pin for the sequencer and for another oXs funtionallity (e.g. as Tx pin, for push button, for PPM, for RPM, ...)
-*           If a pin is set up with 0 (= not controlled by oXs), it will never be forced to HIGH or LOW by the sequencer even if a 1 or 0 is set up in a sequence.
+*           Take care not to use the same pin for the sequencer and for another OXS funtionallity (e.g. as Tx pin, for push button, for PPM, for RPM, ...)
+*           If a pin is set up with 0 (= not controlled by OXS), it will never be forced to HIGH or LOW by the sequencer even if a 1 or 0 is set up in a sequence.
 *           When sequencer is activated ( SEQUENCE_OUTPUTS is defined) PPM signal is automatically used ONLY to control the sequence (so PPM can't control any more vario sensitivity, ...)
 *           Current passing through the digital pins of Arduino should not exceed 40mA per pin (and 200 mA for all pins).
 *               In case you want to have a higher current (which is the case for most high-power LEDs and LED strips), you need to add a transistor. Connection diagram could easily be found in Google.
@@ -1132,11 +1138,11 @@ comment
 *             - A duration can be any value between 0 and 255.
 *               The value fix the minimum duration that a combination of outputs has to be applied. Duration (in msec) = value * SEQUENCE_UNIT * 10
 *               So a value = 2 means a duration of 1 sec (if SEQUENCE_UNIT = 50).
-*               Value = 0 has a special meaning. When oXs reachs a duration = 0, it applies the corresponding combination of outputs and keeps it for an unlimitted time.
+*               Value = 0 has a special meaning. When OXS reachs a duration = 0, it applies the corresponding combination of outputs and keeps it for an unlimitted time.
 *               This allows to force the outputs to stay with a specific combination after having played the sequence.
-*               If duration = 0 is used, it should be in the last step of the sequence (because oXs will never apply the following steps).
-*               If duration is set to 0 in the first step, oXs will apply directly the specific combination of outputs and keep it. 
-*               If duration = 0 is not used in a sequence, oXs will automatically repeat the whole sequence after reaching the last step.
+*               If duration = 0 is used, it should be in the last step of the sequence (because OXS will never apply the following steps).
+*               If duration is set to 0 in the first step, OXS will apply directly the specific combination of outputs and keep it. 
+*               If duration = 0 is not used in a sequence, OXS will automatically repeat the whole sequence after reaching the last step.
 *               Note: if you need a duration that is longer than the max duration (= 255 * SEQUENCE_UNIT * 10 msec), you can put several steps with the same combination of outputs.   
 *             - A combination (LOW/HIGH) of outputs defines which pins have to be set to LOW and which one to HIGH
 *               A combination can be defined in binary format so setting six 1 (HIGH) and/or 0 (LOW) just after "0b" (e.g. 0b100100)
@@ -1152,19 +1158,19 @@ comment
 *            - after 1.5 sec, set pin 13 and 10 to HIGH for a duration of 0.5 sec (1 * 50 * 10)
 *            - after 0.5 sec repeat first step (pin 13 HIGH for 1 sec)
 *            - continue with next steps
-*      Note: when a sequence name is not defined, oXs handles it like it would be defined with 0 , 0b000000 (so no repeat, all outputs LOW)
-* - Finally you can (but it is not mandatory) set up the condition(s) for a low voltage detection. When a voltage becomes too low, oXs starts automatically SEQUENCE_LOW (and discard PPM channel)
+*      Note: when a sequence name is not defined, OXS handles it like it would be defined with 0 , 0b000000 (so no repeat, all outputs LOW)
+* - Finally you can (but it is not mandatory) set up the condition(s) for a low voltage detection. When a voltage becomes too low, OXS starts automatically SEQUENCE_LOW (and discard PPM channel)
 *     A low voltage condition can be set up based on 1 or 2 voltage(s):
 *         - the voltage on the Arduino pin defined by the 6th parameter PIN_VOLTAGE; this set up is achived by a line like : #define SEQUENCE_MIN_VOLT_6 6000 where 6000 is the "low" voltage in mVolt.
 *           Note: if you use this option, do not forget assign a pin number to the 6th parameter in #define PIN_VOLTAGE and to fill (if requested) the 6th parameter of other voltage parameters.        
 *                 The pin defined in the 6th parameter of PIN_VOLTAGE can be the same as another parameter in PIN_VOLTAGE; this can be useful if you want to set up low voltage parameters too.
 *         - the lowest lipo cell voltage; this set up is achived by a line like : #define SEQUENCE_MIN_CELL 3000 where 3000 is the "low" voltage in mVolt.
 *           Note: if you use this option, do not forget to define the other voltage parameters PIN_VOLTAGE , etc ... and NUMBEROFCELLS        
-*     Note:  when no one low voltage parameter is defined, oXs will not automatically start SEQUENCE_LOW.
-*            when both voltage parameters are defined, oXs will automatically start SEQUENCE_LOW as soon as one of the 2 voltages becomes low.
-*            If you want that oXs notifies a low voltage detection do not forget to also define SEQUENCE_LOW (otherwise, oXs will just set all output pins to LOW)
+*     Note:  when no one low voltage parameter is defined, OXS will not automatically start SEQUENCE_LOW.
+*            when both voltage parameters are defined, OXS will automatically start SEQUENCE_LOW as soon as one of the 2 voltages becomes low.
+*            If you want that OXS notifies a low voltage detection do not forget to also define SEQUENCE_LOW (otherwise, OXS will just set all output pins to LOW)
 *            If you have telemetry, you can also make a set up on Tx side in order to detect a low voltage and then send a specific value on the ppm channel.
-*               In this case you do not have to define the set up in oXs and the same device can be used on several model.
+*               In this case you do not have to define the set up in OXS and the same device can be used on several model.
 ************************************************************************************************************************
  
 **** xx - Reserved for developer. **************************************************************************************
