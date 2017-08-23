@@ -736,7 +736,7 @@ void OXS_OUT::fillJetiBufferWithText() {
 
 #ifdef GPS_INSTALLED            
       case GPS_COURSE :
-        mergeLabelUnit( textIdx, "Gps Course", "°"  ) ;
+        mergeLabelUnit( textIdx, "Gps Course", degreeChar  ) ;
         break ;
       case GPS_SPEED :
         mergeLabelUnit( textIdx, "Gps Speed", "Km/h"  ) ;
@@ -748,13 +748,13 @@ void OXS_OUT::fillJetiBufferWithText() {
         mergeLabelUnit( textIdx, "Gps Distance", "m"  ) ;
         break ;
       case GPS_BEARING :
-        mergeLabelUnit( textIdx, "Gps Bearing", "°"  ) ;
+        mergeLabelUnit( textIdx, "Gps Bearing", degreeChar  ) ;
         break ;
       case GPS_LONG :                                          // Still to be added 
         mergeLabelUnit( textIdx, "Gps Long", degreeChar  ) ;
         break ;
       case GPS_LAT :                                           // Still to be added
-        mergeLabelUnit( textIdx, "Gps Lat", "°"  ) ;
+        mergeLabelUnit( textIdx, "Gps Lat", degreeChar  ) ;
         break ;
 
 #endif                           // end GPS_INSTALLED
