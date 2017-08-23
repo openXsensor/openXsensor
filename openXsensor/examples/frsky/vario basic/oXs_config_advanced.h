@@ -349,4 +349,3 @@ struct ONE_MEASUREMENT {
 
 #endif// End define OXS_CONFIG_ADVANCED_h
 
-

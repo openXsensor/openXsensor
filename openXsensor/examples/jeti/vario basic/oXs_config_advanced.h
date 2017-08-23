@@ -123,7 +123,7 @@
 
 // ***** 6.3 - Max number of Lipo cells to measure (and transmit to Tx) *****      Is defined only in oXs_config_basic.h file
 
-// ***** 6.4 - Convert voltage to temperature (° Celcius) *****     
+// ***** 6.4 - Convert voltage to temperature (Â° Celcius) *****     
 //#define FIRST_NTC_ON_VOLT_NR 1   // uncomment this line when thermistor are used; specify index of first voltage being used for conversion to temperature (e.g. 5 means VOLT_5)
 #define LAST_NTC_ON_VOLT_NR 1    // specify index of last voltage being used for conversion to temperature (e.g. 6 means VOLT_6)
 #define SERIE_RESISTOR 4700      // resistance connected to Arduino Vcc (in Ohm)

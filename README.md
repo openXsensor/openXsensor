@@ -1,10 +1,10 @@
-##OpenXsensor New Home
+## OpenXsensor New Home
 _from may 2015_
 
 ![OXS logo](https://github.com/openXsensor/openXsensor/wiki/images/OXS_Logo.png)
 
 
-###Introduction
+### Introduction
 
 OpenXsensor is the evolution of [OpenXvario](https://code.google.com/p/openxvario/) and extends it to multi-sensing applications.
 
@@ -18,7 +18,7 @@ It is compatible with :
   * The Graupner receivers (Hott protocol)
   * The Jeti receivers (EX protocol only)
 
-###Functionalities provided at your choice :
+### Functionalities provided at your choice :
 
   * Altimeter / Variometer
     * Uses normally a MS5611 sensor (GY-63 or GY-86 module)
@@ -27,7 +27,7 @@ It is compatible with :
 	* Possibility to change vario sensitivity and/or to switch between 2 vertical speeds from TX while flying
   * Air Speed
     * Uses normally a 4525DO-DS5AI001DP sensor
-	* Alternative: ADS1115 + MPXV7002DP (not yet tested)
+	* Alternative: ADS1115 + MPXV7002DP
 	* Can also be used by oXs to compensate vertical speed measurements (dTE)
   * GPS
     * Can be connected to a GPS (NEO6/NEO7/NEO8) and transmit collected data
@@ -45,13 +45,14 @@ It is compatible with :
   * Current sensor
     * Max Amp depends on the sensor being used (e.g. ACS712, ACS754, ACS758) 
 	* Can calculate the consumed current
+  * Flow sensor (provides actual flow, remaining tank capacity in ml and %)	
   * Can use any sensor outputting voltage
     * Conversion from Volt to other units (e.g. to degree for temperature sensor)
 	* Can be associate with termistor
   * Can calculate glider ratio to improve glider setup while flying
   * Can generate several sequences of signal (e.g. for light sequencer)
   
-Note: Setup is done editing manually the file oXs_config.h
+Note: Setup is done editing manually the files oXs_config_basic.h and (in some cases oXs_config_advanced.h)
 	  All details about the requirements and the way to configure oXs are given in the file oXs_config_description.h
 	  Some explanations are given in wiki (but are not 100% up to date). It is safe to higtly recommended to read oXs_config_description.h 
 

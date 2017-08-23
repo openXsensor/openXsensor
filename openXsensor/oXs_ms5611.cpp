@@ -30,7 +30,7 @@ OXS_MS5611::OXS_MS5611(uint8_t addr)
   // constructor
   _addr=addr;
   varioData.SensorState = 0 ;
-#ifdef DEBUGVARIO  
+#ifdef DEBUG  
   printer = &print; //operate on the address of print
 //  printer->begin(115200);
 //  printer->print("Vario Sensor:MS5611 I2C Addr=");
@@ -83,10 +83,10 @@ void OXS_MS5611::setup() {
   printer->println(millis());
 
 #endif
-  
   I2c.begin() ;
-  I2c.timeOut( 80); //initialise the time out in order to avoid infinite loop
+  I2c.timeOut(80); //initialise the time out in order to avoid infinite loop
 #ifdef DEBUGI2CMS5611
+  printer->println(F("begin I2C scan"));
   I2c.scan() ;
   printer->print(F("last I2C scan adr: "));
   printer->println( I2c.scanAdr , HEX  );

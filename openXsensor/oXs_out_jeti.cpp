@@ -52,6 +52,8 @@ uint8_t  nbWaitingDelay ;
 
 uint8_t jetiMenu ;
 
+char degreeChar[2] ;
+
 //#if defined ( A_FLOW_SENSOR_IS_CONNECTED ) && ( A_FLOW_SENSOR_IS_CONNECTED == YES)  // we will use interrupt PCINT0 
   extern volatile uint16_t flowMeterCnt ;            // counter of pin change connected to the flow sensor (increased in the interrupt. reset every X sec when flow is processed)
   extern float currentFlow  ;                     // count the consumed ml/min during the last x sec
@@ -139,8 +141,8 @@ void OXS_OUT::setup() {
     PORTC = 0 ; 
 #endif
 
-
-
+    degreeChar[0] = 0xB0 ; // for the symbol °, fill with 0xB0 followed by 0x00 as showed in jetiprotocol example and in datasheet (code A02 for european set of char))
+    degreeChar[1] = 0x00 ;
     initJetiListOfFields() ;
   
 #ifdef DEBUG
@@ -185,7 +187,7 @@ void OXS_OUT::initJetiListOfFields() {  // fill an array with the list of fields
 #if defined(PIN_VOLTAGE) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_1 || VFAS_SOURCE == VOLT_2 || VFAS_SOURCE == VOLT_3 || VFAS_SOURCE == VOLT_4 || VFAS_SOURCE == VOLT_5 || VFAS_SOURCE == VOLT_6 )
     listOfFields[listOfFieldsIdx++] = VOLTAGE_SOURCE ;
 #endif
-#if defined(PIN_CURRENTSENSOR) 
+#if defined(PIN_CURRENTSENSOR) || ( defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON))
     listOfFields[listOfFieldsIdx++] =  CURRENTMA ;
     listOfFields[listOfFieldsIdx++] =  MILLIAH ;
 #endif
@@ -356,7 +358,8 @@ boolean OXS_OUT::retrieveFieldIfAvailable(uint8_t fieldId , int32_t * fieldValue
           break ;
 #endif
 
-#if defined (PIN_CURRENTSENSOR)
+#if ( defined(PIN_CURRENTSENSOR) ) || ( defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON))
+#if defined (PIN_CURRENTSENSOR) // when current is provide by arduino adc
       case CURRENTMA :
          if ( ! currentData->milliAmps.available  ) return 0;
          * fieldValue = currentData->milliAmps.value /10; // converted in A with 2 decimals
@@ -369,6 +372,20 @@ boolean OXS_OUT::retrieveFieldIfAvailable(uint8_t fieldId , int32_t * fieldValue
          * dataType = JETI14_2D ;
          currentData->consumedMilliAmps.available = false ;
          break ;
+#else  // when current is provided using an ads1115
+      case CURRENTMA :
+         if ( ! oXs_ads1115.adsCurrentData.milliAmps.available   ) return 0;
+         * fieldValue = oXs_ads1115.adsCurrentData.milliAmps.value /10; // converted in A with 2 decimals
+         * dataType = JETI14_2D ;
+         oXs_ads1115.adsCurrentData.milliAmps.available = false ;
+         break ;
+      case MILLIAH :
+         if ( ! oXs_ads1115.adsCurrentData.consumedMilliAmps.available  ) return 0;
+         * fieldValue = oXs_ads1115.adsCurrentData.consumedMilliAmps.value / 10 ; // converted in Ah with 2 decimals
+         * dataType = JETI14_2D ;
+         oXs_ads1115.adsCurrentData.consumedMilliAmps.available = false ;
+         break ;
+#endif
 #endif
 
 #ifdef AIRSPEED       
@@ -500,7 +517,8 @@ boolean OXS_OUT::tryToAddFieldToJetiBuffer (void) { // return true if a field ha
 void OXS_OUT::addFieldToJetiBuffer(int32_t fieldValue , uint8_t dataType ) {  // dataType has 1 high bits = 0 ,
                                                                      // then 2 bits to say precision (0= 0 digits, ... 2 = 2 digits) and 1 bit = 0
                                                                      // then 4 bits to say the type in Jeti codification     
-    uint8_t codifJeti = dataType & 0x0F ;
+    uint8_t codifJeti ;
+    codifJeti = dataType & 0x0F ;
     switch (codifJeti) {
     case JETI_30 :
       jetiData[jetiMaxData++] = (listOfFieldsIdx << 4) | ( codifJeti ) ; // first 4 bits are the field identifiers ( 1...15) and the last 4 bits the type of data)
@@ -519,6 +537,13 @@ void OXS_OUT::addFieldToJetiBuffer(int32_t fieldValue , uint8_t dataType ) {  //
       jetiData[jetiMaxData++] = (listOfFieldsIdx << 4) | ( codifJeti) ; // first 4 bits are the field identifiers ( 1...15) and the last 4 bits the type of data)
       jetiData[jetiMaxData++] = fieldValue & 0xFF ;
       jetiData[jetiMaxData++] = ( ( fieldValue >> 8 ) & 0x1F ) | ((fieldValue < 0) ? 0x80 :0x00 )  ; 
+      break ;
+    case JETI_GPS :
+      jetiData[jetiMaxData++] = (listOfFieldsIdx << 4) | ( codifJeti ) ; // first 4 bits are the field identifiers ( 1...15) and the last 4 bits the type of data)
+      jetiData[jetiMaxData++] = fieldValue & 0xFF ;
+      jetiData[jetiMaxData++] = ( fieldValue >> 8 ) & 0xFF ;
+      jetiData[jetiMaxData++] = ( fieldValue >> 16 ) & 0xFF ;
+      jetiData[jetiMaxData++] = ( ( fieldValue >> 24 ) & 0xFF )   ; 
       break ;
 
     
@@ -601,30 +626,30 @@ void OXS_OUT::fillJetiBufferWithText() {
         break ;
 #endif
 
-#if (NUMBEROFCELLS > 0)     //  This part has still to be adapted for Multiplex !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#if (NUMBEROFCELLS > 0)     
       case  CELL_1 :
-          mergeLabelUnit( textIdx, "Cell 1", "Volt"  ) ;
+          mergeLabelUnit( textIdx, "Cell 1", "V"  ) ;
           break ;
       case  CELL_2 :
-          mergeLabelUnit( textIdx, "Cell 2", "Volt"  ) ;
+          mergeLabelUnit( textIdx, "Cell 2", "V"  ) ;
           break ;
       case  CELL_3 :
-          mergeLabelUnit( textIdx, "Cell 3", "Volt"  ) ;
+          mergeLabelUnit( textIdx, "Cell 3", "V"  ) ;
           break ;
       case  CELL_4 :
-          mergeLabelUnit( textIdx, "Cell 4", "Volt"  ) ;
+          mergeLabelUnit( textIdx, "Cell 4", "V"  ) ;
           break ;
       case  CELL_5 :
-          mergeLabelUnit( textIdx, "Cell 5", "Volt"  ) ;
+          mergeLabelUnit( textIdx, "Cell 5", "V"  ) ;
           break ;
       case  CELL_6 :
-          mergeLabelUnit( textIdx, "Cell 6", "Volt"  ) ;
+          mergeLabelUnit( textIdx, "Cell 6", "V"  ) ;
           break ;
       case  CELL_MIN :
-          mergeLabelUnit( textIdx, "Cell min", "Volt"  ) ;
+          mergeLabelUnit( textIdx, "Cell min", "V"  ) ;
           break ;
       case  CELL_TOT :
-          mergeLabelUnit( textIdx, "All cells", "Volt"  ) ;
+          mergeLabelUnit( textIdx, "All cells", "V"  ) ;
           break ;
 
 #endif  // NUMBEROFCELLS > 0 
@@ -664,37 +689,37 @@ void OXS_OUT::fillJetiBufferWithText() {
 #else
 #if defined(PIN_VOLTAGE) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_1 )
       case VOLT_1 :  
-         mergeLabelUnit( textIdx, "Voltage 1", "Volt"  ) ;
+         mergeLabelUnit( textIdx, "Voltage 1", "V"  ) ;
          break ;
 #endif
 #if defined(PIN_VOLTAGE) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_2 )
       case VOLT_2 :  
-         mergeLabelUnit( textIdx, "Voltage 2", "Volt"  ) ;
+         mergeLabelUnit( textIdx, "Voltage 2", "V"  ) ;
           break ;
 #endif
 #if defined(PIN_VOLTAGE) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_3 )
       case VOLT_3 :  
-         mergeLabelUnit( textIdx, "Voltage 3", "Volt"  ) ;
+         mergeLabelUnit( textIdx, "Voltage 3", "V"  ) ;
           break ;
 #endif
 #if defined(PIN_VOLTAGE) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_4 )
       case VOLT_4 :  
-         mergeLabelUnit( textIdx, "Voltage 4", "Volt"  ) ;
+         mergeLabelUnit( textIdx, "Voltage 4", "V"  ) ;
           break ;
 #endif
 #if defined(PIN_VOLTAGE) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_5 )
       case VOLT_5 :  
-         mergeLabelUnit( textIdx, "Voltage 5", "Volt"  ) ;
+         mergeLabelUnit( textIdx, "Voltage 5", "V"  ) ;
           break ;
 #endif
 #if defined(PIN_VOLTAGE) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_6 )
       case VOLT_6 :  
-         mergeLabelUnit( textIdx, "Voltage 6", "Volt"  ) ;
+         mergeLabelUnit( textIdx, "Voltage 6", "V"  ) ;
           break ;
 #endif
 #endif // end defined ( TEMPERATURE_SOURCE ) && ( TEMPERATURE_SOURCE == NTC )
 
-#if defined (PIN_CURRENTSENSOR)
+#if defined (PIN_CURRENTSENSOR) || ( defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON))
       case CURRENTMA :
          mergeLabelUnit( textIdx, "Current", "Amp"  ) ;
          break ;
@@ -725,12 +750,12 @@ void OXS_OUT::fillJetiBufferWithText() {
       case GPS_BEARING :
         mergeLabelUnit( textIdx, "Gps Bearing", "°"  ) ;
         break ;
-//    case GPS_LONG :                                          // Still to be added 
-//        mergeLabelUnit( textIdx, "Gps Long", "°"  ) ;
-//        break ;
-//    case GPS_LAT :                                           // Still to be added
-//        mergeLabelUnit( textIdx, "Gps Lat", "°"  ) ;
-//        break ;
+      case GPS_LONG :                                          // Still to be added 
+        mergeLabelUnit( textIdx, "Gps Long", degreeChar  ) ;
+        break ;
+      case GPS_LAT :                                           // Still to be added
+        mergeLabelUnit( textIdx, "Gps Lat", "°"  ) ;
+        break ;
 
 #endif                           // end GPS_INSTALLED
 #if defined ( A_FLOW_SENSOR_IS_CONNECTED ) && ( A_FLOW_SENSOR_IS_CONNECTED == YES)
