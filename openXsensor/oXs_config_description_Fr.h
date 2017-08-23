@@ -36,7 +36,7 @@ Ecrit par par Rainer Schlosshan traduction Thierry ZINK
 *   6.4 - Conversion de tension en température (° Celcius)     
 *   6.5 - Paramètre des capteurs de mesure de courant.
 *   6.6 - Paramètres de Ads1115
-*  7 - Réglage capteur RPM (tour par minute) (optionnel))
+*  7 - Réglage capteur RPM (tour par minute) (optionnel)
 *  8 - Réglage de la mémoire non volatile (optionnel)
 *  9 - GPS (optionnel)
 *  10 - IMU 6050 (capteur accéléromètre/gyroscope) (optionnel)  et HMC5883 (magnetometre)
@@ -795,101 +795,109 @@ comment
 #define RESISTOR_TO_GROUND_FOR_CURRENT  10
 #define RESISTOR_TO_CURRENT_SENSOR      40
 ************************************************************************************************************************
-***** 6.6 - Ads1115 parameters  *************************************************************************************
-*    It is possible to connect an external ADC of the type ads1115. 
-*    This device is very cheap (about 2 $) and can provide more accuracy than internal Arduino ADC
-*    It has 16 bits resolution, accurate internal voltage reference, a programmable gain amplifier and the ability to measure directly the voltage between 2 pins 
-*    See datatsheet of ads1115 for more details
-*    oXs can be connected to one of those device via I2C bus. It can then provide up to 4 voltage measurements named ADS_VOLT_1 ...ADS_VOLT_4
-*    oXs allows to convert one ads voltage measurement into current and consumption (when ads1115 is connected to a current sensor) 
-*    oXs also allows to convert one ads voltage measurement into airspeed and compensated vario (when ads1115 is connected to a differential baro sensor like the MPXV7002) 
-*          MPXV7002 sensor is a cheapier and easier to find alternative to the MS4525 sensor (but is less accurate)
-*    In order to use an ads1115 ADC, you must uncomment ACD_MEASURE and specify several sets of 4 parameters. 
-*    Attention : let line ADC_MEASURE as comment if ads1115 is not used (in order to avoid I2C errors and slow down oXs)
-*        In ACD_MEASURE, you specify the ads115 pins being used for voltage measurement
-*              Fill always 4 values. Still, if you do not need all 4 measurements, use the value ADS_OFF for the unrequired measurement(s)
-*              Note : the more measurements you ask for, the more time it require to get each of them because ads can only perfom one at a time
-*              Select 4 values between A0_TO_A1, A0_TO_A3, A1_TO_A3, A2_TO_A3, A0_TO_GND, A1_TO_GND, A2_TO_GND, A3_TO_GND, ADS_OFF
-*        In ADC_FULL_SCALE_VOLT, you specify the ads1115 gain parameter for each of the 4 measurements.
-*              Fill always 4 values even if you do not need all 4 measurements
-*              This allows to amplify a low voltage applied on input pins before it is converted by the ADC. So accuracy of conversion is optimum. 
-*              Select between MV6144 MV4096 MV2048 MV1024 MV512 MV256 where the digits give the max mvolt being applied on the pin (e.g. for A0_TO_GND) or between 2 pins (e.g. for A0_TO_A1)
-*        In ADS_SCALE, you specify a scaling factor to be applied on each measurement in order to get a value that conforms the expected measurement.
-*              Fill always 4 values even if you do not need all 4 measurements
-*              When scaling parameter = 1, oXs returns a value = 1 when the voltage applied on ads1115 pin(s) is the max voltage set by ADC_FULL_SCALE_VOLT. 
-*              So, if ADC_FULL_SCALE_VOLT is set on MV512, when input voltage will be 512mv (or more)), oXs will return 1 if ADS_SCALE = 1.
-*              If you do not have a voltage divider on ads1115, you probably expect that oXs returns 512; then set ADS_SCALE to 512.
-*              If you have a voltage divider, the voltage that you want to measure is greater than the voltage applied on ads1115 pin and you have to increase ADS_SCALE.
-*              e.g. if your voltage divider divides your voltage by 10, you must set ADS_SCALE to 5120 (= 512 * 10)
-*              Note: ADS_SCALE can have decimals (e.g. 100.5) . It can be positive or negative; It can't be 0
-*        In ADS_OFFSET, you specify an offset to be applied. 
-*              Fill always 4 values even if you do not need all 4 measurements
-*              When no offset has to be applied, set the value on 0
-*              The specified offset is added to the value calculated after scaling.  
-*              each value must be an integer (positive or negative); it can be 0
-*        In ADS_RATE, you specify the number of milli sec that ads1115 takes to convert a voltage.      
-*              Fill always 4 values even if you do not need all 4 measurements
-*              Using a high value reduces power consumption still, it reduces the number of measurements that can be performed/transmitted per second    
-*              Select values between MS137, MS69, MS35, MS18, MS9, MS5, MS3 , MS2;  the digits correspond to the number of milli sec (e.g. MS18 means 18 msec)
-*              Note : oXs will wait at least the specified delay but it can be that the delay is higher due to other tasks to be performed by oXs
-*        In ADS_AVERAGING_ON, you specify the number of voltages to be collected in order to calculate an average. 
-*              Fill always 4 values even if you do not need all 4 measurements. If you do not want averaging, set the value on 1
-*              It must must be an integer, positive and different from 0.
-*              Note : Increasing the value is a way to reduce noise. Still it increase the delay between 2 transmissions 
-*        In ADS_CURRENT_BASED_ON, you specify which voltage measurement (if any) is used for current (and current consumption)
-*              Uncomment this line only when a conversion is requested 
-*              Keep this line as comment if there is no current sensor or if the wurrent sensor is connected to an Arduino pin as explained in section 6.4
-*              Fill only one value; select a value between ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
-*              Note : when oXs calculate a curent based on a voltage, it used also 2 parameters from section 6.4 : MVOLT_AT_ZERO_AMP and MVOLT_PER_AMP
-*        In ADS_AIRSPEED_BASED_ON, you specify which voltage measurement (if any) is used for airspeed
-*              Uncomment this line only when an analog airspeed sensor is connected to ads1115 
-*              Keep this line as comment if there is no airspeed sensor connected to ads1115
-*              Fill only one value; select a value between ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
-*              Note : A typical airspeed sensor is the MPXV7002DP which is easaly available on ebay or aliexpress.com.
-*                     When this sensor is used, you have to configure ads1115 in following way:
-*                     - ask only for one ads1115 measurement and it must be a differential voltage : so use this setup : ADS_MEASURE A0_to_A1, ADS_OFF, ADS_OFF, ADS_OFF
-*                     - connect one resistor of about 10kohm between ads1115 Vcc and ads1115 A1 and another one of the same value between ads1115 Ground and ads1115 A1; so A1 pin get Vcc/2 volt
-*                     - set the ads1115 gain in order to get 2048 mvolt at full scale:  so use : ADC_FULL_SCALE_VOLT MV2048,MV2048,MV2048,MV2048  
-*                     - set the ads rate in order to make ADC conversion as fast as possible; so use : ADS_RATE MS2, MS2, MS2, MS2
-*                     - the other parameters are not critical (not used for airspeed)
+***** 6.6 - Paramètres de Ads1115  *************************************************************************************
+*    Il est possible de connecter un ADC externe du type ads1115. 
+*    Cet appareil est très bon marché (environ 2 $) et peut fournir plus de précision que l'Arduino ADC interne
+*    Il a une résolution de 16 bits, une référence de tension interne précise, un amplificateur de gain programmable et la capacité de mesurer directement la tension entre 2 broches 
+*    Voir la fiche technique de ADS1115 pour plus de détails
+*    OXS peut être connecté à l'un de ces appareils via le bus I2C. Il peut alors fournir jusqu'à 4 mesures de tension appelées ADS_VOLT_1 ... ADS_VOLT_4
+*    OXS permet de convertir une mesure de tension d'annonces en courant et consommation (lorsque ads1115 est connecté à un capteur de courant)
+*    OXS permet également de convertir une mesure de tension de ads1115 en vitesse et vario compensé (lorsque ads1115 est connecté à un capteur baro différentiel comme le MPXV7002)
+*          Le capteur MPXV7002 est une alternative moins coûteuse et plus facile a trouver que le capteur MS4525 (mais moins précise)
+*    Pour utiliser un ads1115 ADC, vous devez décommenter ACD_MEASURE et spécifier plusieurs ensembles de 4 paramètres.
+*    /!\ Attention: laissez ADC_MEASURE comme commentaire si ads1115 n'est pas utilisé (afin d'éviter les erreurs I2C et ralentir les OX)
+*        Dans ACD_MEASURE, vous spécifiez les broches ads115 utilisées pour la mesure de tension
+*              Remplissez toujours les 4 valeurs. Pourtant, si vous n'avez pas besoin de toutes les 4 mesures, utilisez la valeur ADS_OFF pour les mesures non requises
+*              Note : Plus vous demandez de mesure, plus de temps sera nécessaire pour obtenir chacune d'elles car elles ne sont envoyé qu'une a la fois.
+*              Sélectionnez 4 valeurs parmi: A0_TO_A1, A0_TO_A3, A1_TO_A3, A2_TO_A3, A0_TO_GND, A1_TO_GND, A2_TO_GND, A3_TO_GND, ADS_OFF
+*        Dans ADC_FULL_SCALE_VOLT, vous spécifiez le paramètre de gain ads1115 pour chacune des 4 mesures.
+*              Remplissez toujours 4 valeurs même si vous n'avez pas besoin des 4 mesures
+*              Cela permet d'amplifier une faible tension appliquée sur les broches d'entrée avant qu'il ne soit converti par l'ADC. La précision de la conversion est donc optimale.
+*              Sélectionnez entre MV6144 MV4096 MV2048 MV1024 MV512 MV256 où les chiffres donnent le mvolt maximal appliqué sur la broche (par exemple pour A0_TO_GND) ou entre 2 broches (par exemple pour A0_TO_A1)
+*        Dans ADS_SCALE, vous spécifiez un facteur d'échelle à appliquer sur chaque mesure afin d'obtenir une valeur conforme à la mesure attendue.
+*              Remplissez toujours 4 valeurs même si vous n'avez pas besoin des 4 mesures
+*              Lorsque le paramètre de mise à l'échelle = 1, OXS renvoie une valeur = 1 lorsque la tension appliquée sur la/les PIN de ads1115 est la tension maximale définie par ADC_FULL_SCALE_VOLT. 
+*              Donc, si ADC_FULL_SCALE_VOLT est réglé sur MV512, lorsque la tension d'entrée sera de 512mv (ou plus), OXS renvera 1 si ADS_SCALE = 1
+*              Si vous ne disposez pas d'un diviseur de tension sur ads1115, vous vous attendez probablement à ce que les OX renvoient 512; définissez alors ADS_SCALE à 512.
+*              Si vous avez un diviseur de tension, la tension que vous souhaitez mesurer est supérieure à la tension appliquée sur ads1115 broches et vous devez augmenter ADS_SCALE.
+*              par exemple. Si votre diviseur de tension divise votre tension par 10, vous devez définir ADS_SCALE à 5120 (= 512 * 10)
+*              Note: ADS_SCALE peut avoir des décimales (par exemple, 100.5). Cela peut être positif ou négatif; Il ne peut pas être 0
+*        Dans ADS_OFFSET, vous spécifiez un décalage à appliquer. 
+*              Remplissez toujours 4 valeurs même si vous n'avez pas besoin des 4 mesures
+*              Lorsqu'aucun décalage ne doit être appliqué, réglez la valeur sur 0
+*              Le décalage spécifié est ajouté à la valeur calculée après la mise à l'échelle  
+*              Chaque valeur doit être un nombre entier (positif ou négatif); Il peut être 0
+*        Dans ADS_RATE, vous spécifiez le nombre de milli sec que Ads1115 prend pour convertir une tension.     
+*              Remplissez toujours 4 valeurs même si vous n'avez pas besoin des 4 mesures
+*              L'utilisation d'une valeur élevée réduit la consommation d'énergie, mais elle réduit le nombre de mesures pouvant être effectuées / transmises par seconde 
+*              Sélectionnez les valeurs entre MS137, MS69, MS35, MS18, MS9, MS5, MS3, MS2; Les chiffres correspondent au nombre de milli sec (par exemple MS18 signifie 18 ms)
+*              Remarque: OXS attendra au moins le délai spécifié, mais il se peut que le délai soit plus élevé en raison d'autres tâches devant être exécutées par OXS
+*        Dans ADS_AVERAGING_ON, vous spécifiez le nombre de tensions à collecter afin de calculer une moyenne.
+*              Remplissez toujours 4 valeurs, même si vous n'avez pas besoin des 4 mesures. Si vous ne désirez pas une moyenne, définissez la valeur sur 1
+*              Cela doit être un nombre entier, positif et différent de 0.
+*              Note : L'augmentation de la valeur est un moyen de réduire le bruit, mais il augmente le délai entre 2 transmissions
+*        Dans ADS_CURRENT_BASED_ON, vous spécifiez quelle mesure de tension (le cas échéant) est utilisée pour le courant (et la consommation actuelle)
+*              Décommentez cette ligne uniquement lorsqu'une conversion est demandée
+*              Gardez cette ligne en tant que commentaire s'il n'y a pas de capteur de courant ou si le capteur est connecté à une broche Arduino comme expliqué à la section 6.4
+*              Remplissez une seule valeur; Sélectionnez une valeur parmi ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
+*              Note : Lorsque OXS calcule un curent basé sur une tension, il utilise également 2 paramètres de la section 6.4: MVOLT_AT_ZERO_AMP ​​et MVOLT_PER_AMP
+*        Dans ADS_AIRSPEED_BASED_ON, vous spécifiez quelle mesure de tension (le cas échéant) est utilisée pour la vitesse air
+*              Décommentez cette ligne uniquement lorsqu'un capteur de vitesse analogique est connecté à ads1115 
+*              Gardez cette ligne comme un commentaire s'il n'y a pas de capteur de vitesse connecté à ads1115
+*              Remplissez une seule valeur; Sélectionnez une valeur entre ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
+*              Note : Un capteur de vitesse typique est le MPXV7002DP qui est disponible sur ebay ou aliexpress.com.
+*                     Lorsque ce capteur est utilisé, vous devez configurer l ads1115 de la manière suivante
+*                     - Demandez q'une mesure ads1115 et celci doit être une tension différentielle: utilisez donc cette configuration: ADS_MEASURE A0_to_A1, ADS_OFF, ADS_OFF, ADS_OFF
+*                     - Connectez une résistance d'environ 10kohm entre l ads1115 Vcc et ads1115 A1 et une autre de la même valeur entre l'ads1115 Ground et l'ads1115 A1; Donc A1 broche obtenir Vcc/2 volt
+*                     - Définissez le gain de ads1115 pour obtenir 2048 mvolt à pleine échelle: utilisez donc: ADC_FULL_SCALE_VOLT MV2048, MV2048, MV2048, MV2048  
+*                     - Définir le taux de rafraichisement de ads afin de faire la conversion ADC le plus rapidement possible; utilisez donc: ADS_RATE MS2, MS2, MS2, MS2
+*                     - Les autres paramètres ne sont pas critiques (pas utilisé pour la vitesse air)
 ************************************************************************************************************************
-#define ADS_MEASURE A1_TO_GND ,   ADS_OFF , ADS_OFF , ADS_OFF // uncomment when ADS1115 is used; select 4 values between A0_TO_A1, A0_TO_A3, A1_TO_A3, A2_TO_A3, A0_TO_GND, A1_TO_GND, A2_TO_GND, A3_TO_GND, ADS_OFF
-#define ADS_FULL_SCALE_VOLT  MV4096, MV4096, MV4096, MV4096 //  select between MV6144 MV4096 MV2048 MV1024 MV512 MV256
-#define ADS_OFFSET 0, 0 , 0 , 0 // must be an integer (positive or negative)
-#define ADS_SCALE 2, 10, 1, 1 // can be a float
-#define ADS_RATE  MS137 , MS5, MS3 , MS2 // select between MS137, MS69, MS35, MS18, MS9, MS5, MS3 , MS2
-#define ADS_AVERAGING_ON 1 , 10, 50, 50 // number of values used for averaging (must be between 1 and 254) 
-#define ADS_CURRENT_BASED_ON ADS_VOLT_1  // uncomment if current, and comsumption have to be calculated based on one of ADS voltage measurement; select then the voltage to be used between ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
-#define ADS_AIRSPEED_BASED_ON ADS_VOLT1  // uncomment if airspeed (and dte) have to be calculated based on one of ADS voltage measurement ; select then the voltage to be used between ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
+#define ADS_MEASURE A1_TO_GND ,   ADS_OFF , ADS_OFF , ADS_OFF 	// décomenter lorsque ADS1115 est utilisé; Sélectionnez 4 valeurs entre A0_TO_A1, A0_TO_A3, A1_TO_A3, A2_TO_A3, A0_TO_GND, A1_TO_GND, A2_TO_GND, A3_TO_GND, ADS_OFF
+#define ADS_FULL_SCALE_VOLT  MV4096, MV4096, MV4096, MV4096 	// Sélectionnez entre MV6144 MV4096 MV2048 MV1024 MV512 MV256
+#define ADS_OFFSET 0, 0 , 0 , 0 								// Doit être un nombre entier (positif ou négatif)
+#define ADS_SCALE 2, 10, 1, 1 									// peux est un float
+#define ADS_RATE  MS137 , MS5, MS3 , MS2 						// Sélectionnez entre MS137, MS69, MS35, MS18, MS9, MS5, MS3, MS2
+#define ADS_AVERAGING_ON 1 , 10, 50, 50 						// Nombre de valeurs utilisées pour la moyenne (doit être compris entre 1 et 254)
+#define ADS_CURRENT_BASED_ON ADS_VOLT_1  						// décomenter si le courant et la comsomation doivent être calculés en fonction de l'une des mesures de tension ADS; Sélectionnez ensuite la tension à utiliser entre ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
+#define ADS_AIRSPEED_BASED_ON ADS_VOLT1  						// Décommenter si la vitesse (et dte) doit être calculée en fonction de l'une des mesures de tension ADS; Sélectionnez ensuite la tension à utiliser entre ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
+************************************************************************************************************************
 
-**** 7 - RPM (rotations per minute) sensor settings (optional) ***************************************************************************
-*      It is possible to measure RPM using a sensor connected to pin ICP (=PB0, = pin 8) of OXS.
-*      This sensor must provide a level change (0 - Vcc) on this pin each time a blade passes in front of it.
-*      The number of blades is an important parameter to set up but this is done on Tx side.
-*      It is also possible to build a small PCB board that will provide pulsed when connected on a brushless wire.
-*      To activate this function, put YES instead of NO in line #define CALCULATE_RPM  .
-*      Note: The digital pin 8 (PB0/ICP) is the only one to be used to measure RPM.
-*            The value calculated by oXs is in Hertz (and not in roration per minute)
+
+
+**** 7 - Réglage capteur RPM (tour par minute) (optionnel) ***************************************************************************
+*      Il est possible de mesurer les RPM à l'aide d'un capteur connecté sur le PIN ICP (= PB0, = broche 8) d'OXS
+*      Ce capteur doit fournir un changement de niveau (0 - Vcc) sur cette broche chaque fois qu'une lame passe devant elle.
+*      Le nombre de pales est un paramètre important à configurer, mais cela se fait sur le côté émetteur
+*      Il est également possible de construire une petite carte PCB qui fournira des impulsions lorsqu'elle est connectée sur un fil sans balais.
+*      Pour activer cette fonction, mettez YES au lieu de NO dans la ligne #define CALCULATE_RPM  .
+*      Note: La broche numérique 8 (PB0 / ICP) est la seule à être utilisée pour mesurer les RPM.
+*            La valeur calculée par OXS est en Hertz (et non en roration par minute)
 ************************************************************************************************************************
 #define CALCULATE_RPM     NO 
+************************************************************************************************************************
 
 
-**** 8 - Persistent memory settings ************************************************************************************
-*      Optional Feature.
-*      If persistent memory is activated, current consumption and fuel consumption (+ flow parameters) will be stored in EEProm every 30 seconds.
-*      This value will be restored every power-up.
-*      So, you will get ongoing consumption even if the you turn off the model between flights.
-*      If you want to save those data, you have to say YES in the line "#define SAVE_TO_EEPROM"
+
+**** 8 - Réglage de la mémoire non volatile (optionnel) ************************************************************************************
+*      Fonction optionnelle.
+*      Si la mémoire persistante est activée, la consommation de courant et la consommation de carburant (+ paramètres de flux) seront stockées dans EEProm toutes les 30 secondes.
+*      Cette valeur sera restaurée chaque mise sous tension.
+*      Ainsi, vous obtiendrez une consommation continue même si vous éteignez le modèle entre les vols.
+*      Si vous souhaitez enregistrer ces données, vous devez dire OUI dans la ligne "#define SAVE_TO_EEPROM"
 *      
-*      It is also possible to reset:  
-*       - the current and fuel consumption to zero pressing on a push button connected to OXS.
-*         Therefore a DIGITAL Arduino pin has to be connected to a push button, the other pin of the push button being connected to Gnd (ground).
-*         In order to use this feature, you must specify the DIGITAL Arduino pin being used.
-*               Default: 10 ; other digital pin can be used; Do not use a pin that is already used for another purpose.
-*       - the fuel consumption to zero from TX using a chanel on TX connected to Aduino using PPM feature (see section 3 PPM and 11 flow sensor )         
+*      Il est également possible de réinitialiser:  
+*       - la consommation de courant et de carburant à zéro appuyant sur un bouton-poussoir connecté à OXS.
+*         pour cela une broche DIGITAL Arduino doit être connectée à un bouton-poussoir, l'autre broche du bouton-poussoir étant connectée à Gnd (terre).
+*         Pour utiliser cette fonction, vous devez spécifier la broche DIDITAL Arduino utilisée.
+*               Par défaut: 10; Une autre broche numérique peut être utilisée; N'utilisez pas une broche déjà utilisée dans un autre but.
+*       - La consommation de carburant à zéro à partir de l'émmeteur en utilisant un canal sur l'émmetteur connecté à l'Aduino à l'aide de la fonction PPM (voir la section 3 PPM et 11 capteur de débit)         
 ************************************************************************************************************************
 #define SAVE_TO_EEPROM    NO
 #define PIN_PUSHBUTTON    10   
+************************************************************************************************************************
+
+
 
 **** 9 - GPS (optionnal)  *********************************************************************************************
 * It is possible to connect a GPS module to Arduino. In this case, oXs will transmit to the Tx some data generated by the GPS module.
