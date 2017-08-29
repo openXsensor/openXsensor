@@ -12,7 +12,7 @@ Ecrit par par Rainer Schlosshan traduction Thierry ZINK
 ************************************************************************************************************************
 ************************************* description général de toute les options *****************************************
 ************************************************************************************************************************
-*  le fichier OXS_config.h permet aux utilisateurs de configurer différentes options. Voici la liste des différentes options.
+*  Les fichiers oXs_config_basic.h et oXs_config_advanced.h permettent à l'utilisateur de configurer différentes options. Voici un résumé des principales options.
 *  
 *  1 - Choix du protocole de télémétrie
 *    1.1 - Sélection de la sortie vers le récepteur
@@ -47,7 +47,7 @@ Ecrit par par Rainer Schlosshan traduction Thierry ZINK
 * Note: Les paramètres activé commence par  "#define",  suivi du nom du paramètre et dans la majorité des cas d’une valeur pour ce paramètre
 *        Pour activé ou désactivé les paramètres il faut supprimer ou ajouté les "//" qui précède "#define" Example “// #define ParameterToto Bonjour“ le ParametreToto ne sera pas pris en compte car pour Arduino c’est considérer comme un commentaire. 
 ************************************************************************************************************************
-comment
+
 
 **** 1 - Choix du protocole de télémétrie **********************************************************************
 * Actuellement OXS supports 4 protocoles de télémétrie: Multiplex , Frsky, Jeti and Hott (=Graupner)
@@ -1106,81 +1106,81 @@ comment
 
 
 
-****** 20 - Sequencer (ON/OFF) for several digital outputs **************************************************************************************
-* OXS allows you to control (HIGH/LOW) up to 6 digitals Arduino outputs in different sequences.
-* Each sequence is composed of one or several steps; each step defines for how long (= a duration) which outputs are HIGH and which outputs are LOW.
-* OXS determines normally the sequence to be played based on the signal received on a PPM channel (see section 3 in order to set up a PPM signal). 
-* Still there are 2 exceptions:
-*    At power on or when no PPM channel is configured/received, OXS will generate as default the sequence defined in the line #define SEQUENCE_m100 (see below)
-*    When a low voltage alarm is configured (see below) and if the voltage becomes low, OXS will generate the sequence defined in the line #define SEQUENCE_LOW (see below) as long as the voltage remains low   
-* When a sequence has been played, OXS can or repeat it or just wait for a new sequence. The difference is made in the set up of the sequence.
-* Each time a new (= different) valid PPM signal is received, OXS start immediately the corresponding sequence (even if the current sequence is not completely played)
-* - In order to use the sequencer functionality, you first have to define which Arduino digital pin have to be controlled by the sequencer.
-*     The arduino pins that can be controlled are the pin 13, 12, 11, 10 , 9 and 8.
-*     This set up is achived by a line like : #define SEQUENCE_OUTPUTS 0b100100
-*     Each bit (1 or 0 after the "b") represent an output; the least significant bit correspond to pin 8, the bit on the left pin 9 etc... up to pin 13  
-*     Put 1 when the pin has to be controlled by the sequencer, 0 otherwise; In this example, it means that only pins 13 and 10 would be controlled.
-*     Note: if the line #define SEQUENCE_OUTPUTS xxxx is omitted or put as comment, then the sequencer is not active at all.
-*           Take care not to use the same pin for the sequencer and for another OXS funtionallity (e.g. as Tx pin, for push button, for PPM, for RPM, ...)
-*           If a pin is set up with 0 (= not controlled by OXS), it will never be forced to HIGH or LOW by the sequencer even if a 1 or 0 is set up in a sequence.
-*           When sequencer is activated ( SEQUENCE_OUTPUTS is defined) PPM signal is automatically used ONLY to control the sequence (so PPM can't control any more vario sensitivity, ...)
-*           Current passing through the digital pins of Arduino should not exceed 40mA per pin (and 200 mA for all pins).
-*               In case you want to have a higher current (which is the case for most high-power LEDs and LED strips), you need to add a transistor. Connection diagram could easily be found in Google.
-* - Then you can (optionnal) specify the units used for defining the durations
-*       By default, the durations are expressed in 10 milli second. A parameter allow you to increase the unit in multiple of 10 milli second;
-*       E.g with a line like #define SEQUENCE_UNIT 50, the durations will become multiple of 500 milli second (= 50 * 10).
-*       Note; this parameter should be an integer between 1 and 1000. So, take care that it is not possible to get a duration less than 10 msec.
-*             If this line is ommitted (or as comment), the default value (1 = 10 msec) will be applied.
-* - Then you have to define the sequences being used for each value of the PPM channel
-*       You can define up to 9 different sequences.
-*       A sequence is defined by a line like : #define SEQUENCE_m50    200 , 0b100000 , 300 , 0b000000 , 100 , 0b100100
-*       Each sequence is identified by the value of the ppm signal that will activate it; suffix m100 (m = minus) means that it should be activated when ppm is about -100, m75 is for ppm = -75, 75 is for ppm = +75, etc...
-*       Sequence suffix are in multiple of 25; so valid sequence suffix are only : m100, m75, m50, m25, 0, 25, 50, 75 and 100
-*       Each sequence is composed of several steps (from 1 up to 126 steps or even more) (separated by ",")
-*          Each step is composed of 2 parameters (also separated by ",") : a duration and a combination (LOW/HIGH) of outputs
-*             - A duration can be any value between 0 and 255.
-*               The value fix the minimum duration that a combination of outputs has to be applied. Duration (in msec) = value * SEQUENCE_UNIT * 10
-*               So a value = 2 means a duration of 1 sec (if SEQUENCE_UNIT = 50).
-*               Value = 0 has a special meaning. When OXS reachs a duration = 0, it applies the corresponding combination of outputs and keeps it for an unlimitted time.
-*               This allows to force the outputs to stay with a specific combination after having played the sequence.
-*               If duration = 0 is used, it should be in the last step of the sequence (because OXS will never apply the following steps).
-*               If duration is set to 0 in the first step, OXS will apply directly the specific combination of outputs and keep it. 
-*               If duration = 0 is not used in a sequence, OXS will automatically repeat the whole sequence after reaching the last step.
-*               Note: if you need a duration that is longer than the max duration (= 255 * SEQUENCE_UNIT * 10 msec), you can put several steps with the same combination of outputs.   
-*             - A combination (LOW/HIGH) of outputs defines which pins have to be set to LOW and which one to HIGH
-*               A combination can be defined in binary format so setting six 1 (HIGH) and/or 0 (LOW) just after "0b" (e.g. 0b100100)
-*               The least significant bit correspond to pin 8, the bit on the left pin 9 etc... up to pin 13.
-*               So if SEQUENCE_OUTPUTS = 0b110111, then 0b100100 means that:
-*                   - pins 13 and 10 have to be HIGH,
-*                   - pins 9 and 8  have to be LOW
-*                   - the others (pin 12 and 11) are not controlled by sequence because of the value assigned to SEQUENCE_OUTPUTS = 0b100111 
-*      So #define SEQUENCE_m50    2 , 0b100000 , 3 , 0b000000 , 1 , 0b100100 means (assuming that SEQUENCE_OUTPUTS = 0b100100 and SEQUENCE_UNIT = 50, ):
-*            - set pin 13 to HIGH and  pin 10 to 0 (= 0b100000) when PPM signal becomes -50
-*            - then wait at least for 2 * 50 * 10 = 1000 ms = 1 sec before changing the outputs
-*            - after 1 sec, set pin 13 ( and pin 10) to LOW (=0b000000) for a duration of 1.5 sec (3 * 50 * 10)
-*            - after 1.5 sec, set pin 13 and 10 to HIGH for a duration of 0.5 sec (1 * 50 * 10)
-*            - after 0.5 sec repeat first step (pin 13 HIGH for 1 sec)
-*            - continue with next steps
-*      Note: when a sequence name is not defined, OXS handles it like it would be defined with 0 , 0b000000 (so no repeat, all outputs LOW)
-* - Finally you can (but it is not mandatory) set up the condition(s) for a low voltage detection. When a voltage becomes too low, OXS starts automatically SEQUENCE_LOW (and discard PPM channel)
-*     A low voltage condition can be set up based on 1 or 2 voltage(s):
-*         - the voltage on the Arduino pin defined by the 6th parameter PIN_VOLTAGE; this set up is achived by a line like : #define SEQUENCE_MIN_VOLT_6 6000 where 6000 is the "low" voltage in mVolt.
-*           Note: if you use this option, do not forget assign a pin number to the 6th parameter in #define PIN_VOLTAGE and to fill (if requested) the 6th parameter of other voltage parameters.        
-*                 The pin defined in the 6th parameter of PIN_VOLTAGE can be the same as another parameter in PIN_VOLTAGE; this can be useful if you want to set up low voltage parameters too.
-*         - the lowest lipo cell voltage; this set up is achived by a line like : #define SEQUENCE_MIN_CELL 3000 where 3000 is the "low" voltage in mVolt.
-*           Note: if you use this option, do not forget to define the other voltage parameters PIN_VOLTAGE , etc ... and NUMBEROFCELLS        
-*     Note:  when no one low voltage parameter is defined, OXS will not automatically start SEQUENCE_LOW.
-*            when both voltage parameters are defined, OXS will automatically start SEQUENCE_LOW as soon as one of the 2 voltages becomes low.
-*            If you want that OXS notifies a low voltage detection do not forget to also define SEQUENCE_LOW (otherwise, OXS will just set all output pins to LOW)
-*            If you have telemetry, you can also make a set up on Tx side in order to detect a low voltage and then send a specific value on the ppm channel.
-*               In this case you do not have to define the set up in OXS and the same device can be used on several model.
+****** 20 - Séquenceur  (ON/OFF) pour certaine sortie digitale  **************************************************************************************
+* OXS vous permet de contrôler (HIGH / LOW) jusqu'à 6 numéros de sorties Arduino dans différentes séquences.
+* Chaque séquence est composée d'une ou plusieurs étapes; Chaque étape définit pour combien de temps (= une durée) les sorties sont HAUT et les sorties sont BAS.
+* OXS détermine normalement la séquence à lire en fonction du signal reçu sur un canal PPM (voir la section 3 pour configurer un signal PPM).
+* Il y a encore 2 exceptions:
+*    À la mise sous tension ou lorsque aucune chaîne PPM n'est configurée / reçue, OXS générera par défaut la séquence définie dans la ligne #define SEQUENCE_m100 (voir ci-dessous)
+*    Lorsqu'une alarme de basse tension est configurée (voir ci-dessous) et si la tension devient faible, OXS générera la séquence définie dans la ligne #define SEQUENCE_LOW (voir ci-dessous) tant que la tension reste faible  
+* Lorsqu'une séquence a été lue, OXS peut la répéter ou attendre une nouvelle séquence. La différence est faite dans la configuration de la séquence.
+* Chaque fois qu'un nouveau signal PPM (= différent) est reçu, OXS démarre immédiatement la séquence correspondante (même si la séquence actuelle n'est pas complètement lue)
+* - Pour utiliser la fonctionnalité du séquenceur, vous devez d'abord définir quelle pins Arduino doit être contrôlée par le séquenceur.
+*     Les broches arduino qui peuvent être contrôlées sont les broches 13, 12, 11, 10, 9 et 8.
+*     Cette configuration est obtenue par une ligne comme: #define SEQUENCE_OUTPUTS 0b100100
+*     Chaque bit (1 ou 0 après le "b") représente une sortie; Le bit le moins important correspond à la broche 8, le bit sur la broche gauche 9, etc., jusqu'à la broche 13  
+*     Mettre 1 lorsque la broche doit être contrôlée par le séquenceur, 0 sinon; Dans cet exemple, cela signifie que seules les broches 13 et 10 seraient contrôlées.
+*     Remarque: si la ligne #define SEQUENCE_OUTPUTS xxxx est omise ou mise comme commentaire, le séquenceur n'est pas actif du tout.
+*           Veillez à ne pas utiliser la même broche pour le séquenceur et pour une autre fonctionnalité OXS (par exemple comme broche Tx, pour bouton poussoir, pour PPM, pour RPM, ...)
+*           Si une broche est configurée avec 0 (= non contrôlée par OXS), elle ne sera jamais forcée à HIGH ou LOW par le séquenceur même si un 1 ou 0 est configuré dans une séquence.
+*           Lorsque le séquenceur est activé (SEQUENCE_OUTPUTS est défini) Le signal PPM est automatiquement utilisé SEULEMENT pour contrôler la séquence (donc PPM ne peut plus contrôler plus de sensibilité vario ...)
+*           Le passage de courant à travers les broches numériques d'Arduino ne doit pas dépasser 40mA par broche (et 200 mA pour toutes les broches).
+*               Dans le cas où vous souhaitez avoir un courant plus élevé (ce qui est le cas pour la plupart des LED à haute puissance et des bandes LED), vous devez ajouter un transistor. Le schéma de connexion peut facilement être trouvé dans Google.
+* - Ensuite, vous pouvez (optionnel) spécifier les unités utilisées pour définir les durées
+*       Par défaut, les durées sont exprimées en 10 millièmes de seconde. Un paramètre vous permet d'augmenter l'unité en plusieurs fois de 10 millièmes de seconde;
+*       Exemple: avec une ligne comme #define SEQUENCE_UNIT 50, les durées deviennent multiples de 500 millièmes de seconde (= 50 * 10)
+*       Remarque; Ce paramètre doit être un nombre entier entre 1 et 1000. Donc, veillez à ce qu'il soit impossible d'obtenir une durée inférieure à 10 ms.
+*             Si cette ligne est omise (ou comme commentaire), la valeur par défaut (1 = 10 ms) sera appliquée.
+* - Ensuite, vous devez définir les séquences utilisées pour chaque valeur du canal PPM
+*       Vous pouvez définir jusqu'à 9 séquences différentes.
+*       Une séquence est définie par une ligne comme: #define SEQUENCE_m50 200, 0b100000, 300, 0b000000, 100, 0b100100
+*       Chaque séquence est identifiée par la valeur du signal en ppm qui l'active; Le suffixe m100 (m = moins) signifie qu'il doit être activé lorsque la ppm est d'environ -100, m75 est pour ppm = -75, 75 est pour ppm = +75, etc.
+*       Le suffixe de séquence est en multiple de 25; Le suffixe de séquence valide est seulement: m100, m75, m50, m25, 0, 25, 50, 75 et 100
+*       Chaque séquence se compose de plusieurs étapes (de 1 à 126 étapes ou même plus) (séparées par ",")
+*          Chaque étape est composée de 2 paramètres (également séparés par ","): une durée et une combinaison (LOW / HIGH) des sorties
+*             - Une durée peut être n'importe quelle valeur entre 0 et 255.
+*               La valeur fixe la durée minimale qu'une combinaison de sorties doit être appliquée. Durée (en ms) = valeur * SEQUENCE_UNIT * 10
+*               Ainsi, une valeur = 2 signifie une durée de 1 seconde (si SEQUENCE_UNIT = 50).
+*               Valeur = 0 a une signification particulière. Lorsque OXS atteint une durée = 0, il applique la combinaison correspondante de sorties et la conserve pendant un temps non limité.
+*               Cela permet de forcer les sorties à rester avec une combinaison spécifique après avoir joué la séquence.
+*               Si la durée = 0 est utilisée, elle devrait être dans la dernière étape de la séquence (parce qu'OXS n'appliquera jamais les étapes suivantes).
+*               Si la durée est définie sur 0 dans la première étape, OXS appliquera directement la combinaison spécifique des sorties et la gardera. 
+*               Si la durée = 0 n'est pas utilisée dans une séquence, OXS répétera automatiquement toute la séquence après avoir atteint la dernière étape.
+*               Note: Si vous avez besoin d'une durée supérieure à la durée maximale (= 255 * SEQUENCE_UNIT * 10 ms), vous pouvez mettre plusieurs étapes avec la même combinaison de sorties.  
+*             - Une combinaison (LOW / HIGH) des sorties définit les broches qui doivent être réglées sur LOW et celles à HIGH
+*               Une combinaison peut être définie en format binaire pour définir six 1 (HIGH) et / ou 0 (LOW) juste après "0b" (par exemple 0b100100)
+*               Le bit le moins important correspond à la broche 8, au bit sur la broche gauche 9, etc., jusqu'à la broche 13.
+*               Donc, si SEQUENCE_OUTPUTS = 0b110111, alors 0b100100 signifie que:
+*                   - les pins 13 et 10 doivent être HIGH,
+*                   - Les broches 9 et 8 doivent être LOW
+*                   - Les autres (broches 12 et 11) ne sont pas contrôlés par une séquence en raison de la valeur attribuée à SEQUENCE_OUTPUTS = 0b100111
+*      Ainsi, #define SEQUENCE_m50 2, 0b100000, 3, 0b000000, 1, 0b100100 signifie (en supposant que SEQUENCE_OUTPUTS = 0b100100 et SEQUENCE_UNIT = 50,):
+*            - Metre la pin 13 sur HIGH et la pin 10 à 0 (= 0b100000) lorsque le signal PPM devient -50
+*            - Attendre au moins 2 * 50 * 10 = 1000 ms = 1 sec avant de changer les sorties
+*            - Après 1 sec, metre la pin 13 (et la pin 10) sur LOW (= 0b000000) pendant une durée de 1,5 sec (3 * 50 * 10)
+*            - Après 1,5 sec, metre la pin 13 et 10 sur HIGH pendant une durée de 0,5 sec (1 * 50 * 10)
+*            - Après 0,5 seconde, répéter la première étape (pin 13 HIGH pendant 1 sec)
+*            - Continuez avec les prochaines étapes
+*      Note: Lorsqu'un nom de séquence n'est pas défini, OXS le gère comme si il serait défini avec 0, 0b000000 (donc pas de répétition, toutes les sorties LOW)
+* - Enfin, vous pouvez (mais ce n'est pas obligatoire) configurer la (les) condition (s) pour une détection basse tension. Lorsqu'une tension devient trop faible, OXS démarre automatiquement SEQUENCE_LOW (et rejete toute les information venant par le canal PPM)
+*     Une condition basse tension peut être configurée en fonction de 1 ou 2 tension (s):
+*         - La tension sur pin Arduino définie par le 6ème paramètre PIN_VOLTAGE; Cette configuration est obtenue par une ligne comme: #define SEQUENCE_MIN_VOLT_6 6000 où 6000 est la tension "basse" dans mVolt.
+*           Note: Si vous utilisez cette option, n'oubliez pas d'assigner un numéro de broche au 6ème paramètre dans #define PIN_VOLTAGE et de remplir (si demandé) le 6ème paramètre d'autres paramètres de tension.        
+*                 La pin définie dans le 6ème paramètre de PIN_VOLTAGE peut être identique à un autre paramètre dans PIN_VOLTAGE; Cela peut être utile si vous souhaitez également configurer des paramètres de basse tension.
+*         - La plus faible tension de la cellule lipo; Cette configuration est obtenue par une ligne comme: #define SEQUENCE_MIN_CELL 3000 où 3000 est la tension "basse" en mVolt.
+*           Note: Si vous utilisez cette option, n'oubliez pas de définir les autres paramètres de tension PIN_VOLTAGE, etc ... et NUMBEROFCELLS       
+*     Note: Lorsque aucun paramètre de basse tension n'est défini, OXS ne démarre pas automatiquement SEQUENCE_LOW.
+*            Lorsque les deux paramètres de tension sont définis, OXS démarrera automatiquement SEQUENCE_LOW dès que l'une des 2 tensions devient faible.
+*  	  		 Si vous souhaitez que OXS notifie une détection de basse tension, n'oubliez pas de définir SEQUENCE_LOW (sinon, OXS définira toutes les broches de sortie sur LOW)
+*            Si vous avez la télémétrie, vous pouvez également effectuer une configuration sur le côté Tx pour détecter une basse tension, puis envoyer une valeur spécifique sur le canal ppm.
+*               Dans ce cas, vous ne devez pas définir la configuration dans OXS et le même appareil peut être utilisé sur plusieurs modèles.
 ************************************************************************************************************************
  
 **** xx - Reserved for developer. **************************************************************************************
-* DEBUG must be activated here when you want to debug one or several functions in some other files.
-* Enabling DEBUG will allow to use Arduino Serial Monitor at 115200 baud (or 38600 when GPS is activated) to see init data and some live sensor values
-* You can then select the parts that you want to debug by uncommenting the specifics DEBUG parameters you want in each file
-* Note: OXS allows to transmit 3 fields named TEST1, TEST2, TEST3. You can fill those fields with whatever you want where you want if you want to transmit additional data to the Tx.
-* Just fill in test1.value (or 2, 3) with an int32_t and test1.available (or 2, 3) with true and add those OXS measurements in the data to be sent section. 
+* DEBUG doit être activé ici lorsque vous souhaitez déboguer une ou plusieurs fonctions dans d'autres fichiers.
+* L'activation de DEBUG permettra d'utiliser Arduino Serial Monitor à 115200 baud (ou 38600 lorsque le GPS est activé) pour voir les données d'initialisation et certaines valeurs de capteur en direct
+* Vous pouvez ensuite sélectionner les parties que vous souhaitez déboguer en décommentant les paramètres DEBUG spécifiques que vous souhaitez dans chaque fichier
+* Note: OXS permet de transmettre 3 champs appelés TEST1, TEST2, TEST3. Vous pouvez remplir ces champs avec ce que vous voulez, si vous voulez transmettre des données supplémentaires au Tx.
+* Il suffit de remplir test1.value (ou 2, 3) avec int32_t et test1.available (ou 2, 3) avec true et ajouter ces mesures OXS dans la section à envoyer. 
 ************************************************************************************************************************
 //#define DEBUG
