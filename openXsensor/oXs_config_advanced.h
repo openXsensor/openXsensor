@@ -19,7 +19,7 @@
 // ****** 1.1 - Pin connected to Rx ********
 #define PIN_SERIALTX      4                  // The pin which transmits the serial data to the telemetry receiver, Usually pin 4 (otherwise pin 2)
 
-// ***** 1.2 - SPORT_SENSOR_ID used (only for Frsky Sport protocol)  *****   See list of available values in oXs_config_descripion.h 
+// ***** 1.2 - SPORT_SENSOR_ID used (only for Frsky Sport protocol)  *****   See list of available values in oXs_config_descripion.h
 #define         DATA_ID_VARIO  0x00  // = sensor 0 used for Alt and Vspeed
 #define         DATA_ID_FLVSS  0xA1  //          1 used for Cell values
 #define         DATA_ID_FAS    0x22  //          2 used for vfas , current and fuel
@@ -27,13 +27,13 @@
 #define         DATA_ID_RPM    0xE4  //          4 used for rpm, T1, T2, airspeed
 #define         DATA_ID_ACC    0x67  //          7 used for Acc X, Y, Z
 #define         DATA_ID_TX     0x0D  //           used to read data sent by Tx in order to adjust some oXs parameters (flow sensor or ppm)
-// --------- 2 - Data to transmit ---------                   
+// --------- 2 - Data to transmit ---------
 // ***** 2.1 - Frsky data *****                              see oXs_config_basic.h file
 // ***** 2.2 - Hott data *****                               see oXs_config_basic.h file
-// ***** 2.3 - Multiplex data *****                          see oXs_config_basic.h file   
+// ***** 2.3 - Multiplex data *****                          see oXs_config_basic.h file
 // ***** 2.4 - Jeti data *****                               see oXs_config_basic.h file
 
-// ***** 2.5 - How to fill TEST_1, TEST_2, TEST_3  ******    
+// ***** 2.5 - How to fill TEST_1, TEST_2, TEST_3  ******
 //define FILL_TEST_3_WITH_EXPECTED_ALT                        // uncomment this line if oXs has to calculate an expected Alt in the future based on current Alt, Vspeed and vertical Acc
 //#define EXPECTED_ALT_AT_SEC 0.2                               // time (in sec) for expected Alt (this line must be uncommented wen previous is uncommented
 
@@ -60,10 +60,10 @@
 
 // --------- 4 - Vario settings ---------    Type of baro is defined in oXs_config_basic.h file
 
-// ***** 4.1 - Connecting 1 or 2 barometric sensor(s)  ***** 
+// ***** 4.1 - Connecting 1 or 2 barometric sensor(s)  *****
 #define SECOND_BARO_SENSOR_USE    NO_BARO                    // select between NO_BARO , MS5611
 
-// ***** 4.2 - Type of Vspeed to transmit  *****             Is defined only in oXs_config_basic.h file                       
+// ***** 4.2 - Type of Vspeed to transmit  *****             Is defined only in oXs_config_basic.h file
 
 // ***** 4.3 - Sensitivity predefined by program *****
 #define SENSITIVITY_MIN 20          // normal value for MS5611; for BMP, it is probably better to use a lower value like 20
@@ -97,11 +97,11 @@
 #define SPEED_TOLERANCE   5              // in % of speed
 #define VSPEED_MIN_TOLERANCE -200        // out of tolerance when Vspeed is lower than this value  (cm/sec)
 #define VSPEED_MAX_TOLERANCE  -10        // out of tolerance when Vspeed is upper than this value  (cm/sec)
-#define GLIDER_RATIO_ON_AT_PPM -100      // Glider ratio is calculated when PPM has this value ; keep as comment when ppm is not used 
+#define GLIDER_RATIO_ON_AT_PPM -100      // Glider ratio is calculated when PPM has this value ; keep as comment when ppm is not used
 
 // --------- 5 - Airspeed settings ---------
-//#define AIRSPEED_AT_SEA_LEVEL_AND_15C // if this line is commented, airspeed is calculated using baro pressure and temperature (so being "true" airspeed instead of normalised airspeed)      
-//#define AIRSPEED_IN_KMH  // uncomment this line if airspeed has to be in km/h instead of knot/h ( except some old versions, openTx expects knot/h) 
+//#define AIRSPEED_AT_SEA_LEVEL_AND_15C // if this line is commented, airspeed is calculated using baro pressure and temperature (so being "true" airspeed instead of normalised airspeed)
+//#define AIRSPEED_IN_KMH  // uncomment this line if airspeed has to be in km/h instead of knot/h ( except some old versions, openTx expects knot/h)
 
 #define AIRSPEED_RESET_AT_PPM   100
 
@@ -115,7 +115,7 @@
 // ***** 6.1 - Voltage Reference to measure voltages and current *****
 //#define USE_INTERNAL_REFERENCE  // uncomment this line if you use 1.1 volt internal reference instead of Vcc
 //#define USE_EXTERNAL_REFERENCE  // uncomment this line if you use an external reference instead of Vcc
-//#define REFERENCE_VOLTAGE 4970    // set value in milliVolt; if commented, oXs will use or 1100 (if internal ref is used) or 5000 (if internal ref is not used) 
+//#define REFERENCE_VOLTAGE 4970    // set value in milliVolt; if commented, oXs will use or 1100 (if internal ref is used) or 5000 (if internal ref is not used)
 
 // ***** 6.2 - Voltage parameters *****
 #define OFFSET_VOLTAGE      0   , 0     , 0    , 0    , 0   , 0                // optionnal, can be negative, must be integer, in principe in mv
@@ -123,7 +123,7 @@
 
 // ***** 6.3 - Max number of Lipo cells to measure (and transmit to Tx) *****      Is defined only in oXs_config_basic.h file
 
-// ***** 6.4 - Convert voltage to temperature (° Celcius) *****     
+// ***** 6.4 - Convert voltage to temperature (° Celcius) *****
 //#define FIRST_NTC_ON_VOLT_NR 1   // uncomment this line when thermistor are used; specify index of first voltage being used for conversion to temperature (e.g. 5 means VOLT_5)
 #define LAST_NTC_ON_VOLT_NR 1    // specify index of last voltage being used for conversion to temperature (e.g. 6 means VOLT_6)
 #define SERIE_RESISTOR 4700      // resistance connected to Arduino Vcc (in Ohm)
@@ -148,7 +148,7 @@
 #define ADS_OFFSET 0, 0 , 0 , 0 // must be an integer (positive or negative)
 #define ADS_SCALE 1, 1, 1, 1 // can be a float
 #define ADS_RATE  MS2 , MS9, MS9 , MS2 // select between MS137, MS69, MS35, MS18, MS9, MS5, MS3 , MS2
-#define ADS_AVERAGING_ON 10 , 20, 30, 50 // number of values used for averaging (must be between 1 and 254) 
+#define ADS_AVERAGING_ON 10 , 20, 30, 50 // number of values used for averaging (must be between 1 and 254)
 #define ADS_CURRENT_BASED_ON ADS_VOLT_1  // uncomment if current, and comsumption have to be calculated based on one of ADS voltage measurement; select then the voltage to be used between ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
 //#define ADS_AIRSPEED_BASED_ON ADS_VOLT_1  // uncomment if airspeed (and dte) have to be calculated based on one of ADS voltage measurement ; select then the voltage to be used between ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
 // --------- 7 - RPM (rotations per minute) settings ---------                      Is defined only in oXs_config_basic.h file
@@ -158,27 +158,27 @@
 
 // --------- 9 - GPS ------------------------------------------------------------------------------------------------
 //#define GPS_SPEED_IN_KMH  // uncomment this line if GPS speed has to be sent in km/h instead of knot/h (only for Frsky protocol)
-#define GPS_SPEED_3D      // uncomment this line if GPS speed has to be the 3d speed instead of the 2d speed (note: 3d is probably less accurate - to test) 
+#define GPS_SPEED_3D      // uncomment this line if GPS speed has to be the 3d speed instead of the 2d speed (note: 3d is probably less accurate - to test)
 
 // --------- 10 - IMU 6050 --- (accelerometer + gyro) and HMC5883 (magnetometer) --------------------------------------
 // ***** 10.1 - IMU 6050 *****
 #define PIN_INT_6050 2   // Interrupt from 6050 has to be connected to Arduino pin 2 or pin 3 (do not use here the same pin as PPM)
 
-//#define DISPLAY_ACC_OFFSET // used ONLY in order to display the acceleration offset on pc terminal; KEEP AS COMMENT once offsets have been setup 
+//#define DISPLAY_ACC_OFFSET // used ONLY in order to display the acceleration offset on pc terminal; KEEP AS COMMENT once offsets have been setup
 
 #define ACC_OFFSET_X 0 // fill here the first value reported when DISPLAY_ACC_OFFSET is activated (eg. -160)
 #define ACC_OFFSET_Y 0 // fill here the second value reported when DISPLAY_ACC_OFFSET is activated (eg. -150)
 #define ACC_OFFSET_Z 0 // fill here the third value reported when DISPLAY_ACC_OFFSET is activated (eg. -1100)
 
 // ***** 10.2 - HMC5883 *****
-//#define GENERATE_MAG_CALIBRATION_DATA   // uncomment this line when HMC5883 calibration has to be performed. Set back as comment once calibration parameters have been introduced 
+//#define GENERATE_MAG_CALIBRATION_DATA   // uncomment this line when HMC5883 calibration has to be performed. Set back as comment once calibration parameters have been introduced
 
 #define    XMAG_OFFSET 2.4683     // must be an integer
 #define    YMAG_OFFSET -1.3694     // must be an integer
 #define    ZMAG_OFFSET 138.9683     // must be an integer
 #define    XXMAG_CORRECTION  0.122082   // can have decimals
 #define    XYMAG_CORRECTION  -0.00204026
-#define    XZMAG_CORRECTION  0.00377534 
+#define    XZMAG_CORRECTION  0.00377534
 #define    YXMAG_CORRECTION  -0.00204026
 #define    YYMAG_CORRECTION  0.130413
 #define    YZMAG_CORRECTION  -0.00491189
@@ -193,9 +193,9 @@
 #define FLOW_SENSOR_RESET_AT_PPM         95                   // when absolute value of ppm is greater than this, flow counter is reset.
 
 // --------- 20 - Sequencer ---------
-//#define SEQUENCE_OUTPUTS 0b100000  
+//#define SEQUENCE_OUTPUTS 0b100000
 #define SEQUENCE_UNIT 100
-#define SEQUENCE_m100    1 , 0b100000 , 1 , 0b000000 , 1 , 0b100000 , 1 , 0b000000 
+#define SEQUENCE_m100    1 , 0b100000 , 1 , 0b000000 , 1 , 0b100000 , 1 , 0b000000
 #define SEQUENCE_m75     1 , 0b100000 , 1 , 0b000000 , 2 , 0b100000 , 2 , 0b000000
 #define SEQUENCE_m50     5 , 0b100000 , 5 , 0b000000
 #define SEQUENCE_m25     5 , 0b100000 , 5 , 0b000000 , 0 , 0b100000
@@ -216,7 +216,7 @@
 
 #define BASED_ON_AIRSPEED 0
 #define BASED_ON_GPS_SPEED 1
-#define AVERAGING_DELAY_MILLISEC  AVERAGING_TOLERANCE * 100  
+#define AVERAGING_DELAY_MILLISEC  AVERAGING_TOLERANCE * 100
 
 #define FIRST_BARO 1
 #define SECOND_BARO 2
@@ -255,10 +255,10 @@ struct ONE_MEASUREMENT {
 #define NTC 20
 
 #define SECONDS_SINCE_T0        32
-#define AVERAGE_VSPEED_SINCE_TO 33 
+#define AVERAGE_VSPEED_SINCE_TO 33
 
 /***************************************************************************************/
-/* oXs code used by Flow sensor and for SPORT Lua scripts                                                        */ 
+/* oXs code used by Flow sensor and for SPORT Lua scripts                                                        */
 /***************************************************************************************/
 #define TX_FIELD_FLOW_1     0
 #define TX_FIELD_FLOW_2     1
@@ -284,69 +284,72 @@ struct ONE_MEASUREMENT {
 
 
 #ifdef FIRST_BARO_SENSOR_USE
-  #if (FIRST_BARO_SENSOR_USE ==  MS5611 ) || (FIRST_BARO_SENSOR_USE ==  GY86 ) || (FIRST_BARO_SENSOR_USE ==  BMP085 ) || (FIRST_BARO_SENSOR_USE ==  BMP180 ) || (FIRST_BARO_SENSOR_USE ==  BMP280 ) 
+  #if (FIRST_BARO_SENSOR_USE ==  MS5611 ) || (FIRST_BARO_SENSOR_USE ==  GY86 ) || (FIRST_BARO_SENSOR_USE ==  BMP085 ) || (FIRST_BARO_SENSOR_USE ==  BMP180 ) || (FIRST_BARO_SENSOR_USE ==  BMP280 )
     #define VARIO
   #endif
-  #if  (FIRST_BARO_SENSOR_USE ==  BMP085 ) || (FIRST_BARO_SENSOR_USE ==  BMP180 ) 
+  #if  (FIRST_BARO_SENSOR_USE ==  BMP085 ) || (FIRST_BARO_SENSOR_USE ==  BMP180 )
     #define SENSOR_IS_BMP180
   #endif
-  #if  (FIRST_BARO_SENSOR_USE ==  BMP280 ) 
+  #if  (FIRST_BARO_SENSOR_USE ==  BMP280 )
     #define SENSOR_IS_BMP280
   #endif
 #endif
 
 #ifdef SECOND_BARO_SENSOR_USE
-  #if SECOND_BARO_SENSOR_USE ==  MS5611  
+  #if SECOND_BARO_SENSOR_USE ==  MS5611
     #define VARIO2
   #endif
-#endif  
+#endif
 
 
-#ifdef  AIRSPEED_SENSOR_USE 
+#ifdef  AIRSPEED_SENSOR_USE
   #if ( AIRSPEED_SENSOR_USE == MS4525 )
-    #define AIRSPEED    
+    #define AIRSPEED
   #endif
-#endif  
+#endif
 
 
-#ifdef CALCULATE_RPM 
+#ifdef CALCULATE_RPM
   #if ( CALCULATE_RPM == YES )
     #define MEASURE_RPM
   #endif
-#endif  
+#endif
 
+#ifdef  A_ADS1115_IS_CONNECTED
+  #if ( A_ADS1115_IS_CONNECTED == YES )
+    #define ADS1115_INSTALLED
+  #endif
+#endif
 
-#ifdef  A_GPS_IS_CONNECTED 
+#ifdef  A_GPS_IS_CONNECTED
   #if ( A_GPS_IS_CONNECTED == YES )
     #define GPS_INSTALLED
   #endif
-#endif  
+#endif
 
 
-#ifdef  A_MPU6050_IS_CONNECTED 
+#ifdef  A_MPU6050_IS_CONNECTED
   #if ( A_MPU6050_IS_CONNECTED == YES )
-    #define USE_6050 
+    #define USE_6050
   #endif
-#endif  
+#endif
 
-#ifdef  A_MPU6050_IS_CONNECTED 
-  #if ( A_MPU6050_IS_CONNECTED == YES ) 
+#ifdef  A_MPU6050_IS_CONNECTED
+  #if ( A_MPU6050_IS_CONNECTED == YES )
     #ifdef CALCULATE_YAW_WITH_HMC5883
       #if ( CALCULATE_YAW_WITH_HMC5883 == YES )
         #define USE_HMC5883
       #endif
-    #endif    
+    #endif
   #endif
-#endif  
+#endif
 
 #if defined( DISPLAY_ACC_OFFSET ) && defined ( A_MPU6050_IS_CONNECTED ) && ( A_MPU6050_IS_CONNECTED == YES )
   #define DEBUG
 #endif
-#if defined( GENERATE_MAG_CALIBRATION_DATA ) && defined ( A_MPU6050_IS_CONNECTED ) && ( A_MPU6050_IS_CONNECTED == YES ) && defined ( USE_HMC5883 )   
+#if defined( GENERATE_MAG_CALIBRATION_DATA ) && defined ( A_MPU6050_IS_CONNECTED ) && ( A_MPU6050_IS_CONNECTED == YES ) && defined ( USE_HMC5883 )
   #define DEBUG
 #endif
 
 
 #endif// End define OXS_CONFIG_ADVANCED_h
-
-
