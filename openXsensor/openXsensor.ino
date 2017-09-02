@@ -820,7 +820,7 @@ void readSensors() {
 #ifdef ADS_MEASURE
     if( oXs_ads1115.readSensor() ) { // return true when a new average is available; it means that the new value has to be stored/processed.
     }
-#endif             // End GPS_INSTALLED
+#endif             // End ADS_MEASURE
 
 
 #ifdef MEASURE_RPM

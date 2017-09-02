@@ -8,6 +8,7 @@
 //#define DEBUGSETNEWDATA
 //#define DEBUGFORMATONEVALUE
 //#define DEBUGJETIFRAME
+#define DEBUGADSCURRENT 
 #endif
 //#define DEBUG_FORCE_VARIODATA  // this is used to force oXs to send a fixed dummy value for Vspeed and Alt in order to test if an issue result of bmp180 or from Multiplex / Jeti protocol.
 //#define DEBUG_SERIAL_RX          // this is used to generate pulses when oXs decodes a byte sent by the receiver
@@ -378,12 +379,20 @@ boolean OXS_OUT::retrieveFieldIfAvailable(uint8_t fieldId , int32_t * fieldValue
          * fieldValue = oXs_ads1115.adsCurrentData.milliAmps.value /10; // converted in A with 2 decimals
          * dataType = JETI14_2D ;
          oXs_ads1115.adsCurrentData.milliAmps.available = false ;
+#ifdef DEBUGADSCURRENT
+        printer->print(F("milliAmp="));
+        printer->println(oXs_ads1115.adsCurrentData.milliAmps.value /10);
+#endif                   
          break ;
       case MILLIAH :
          if ( ! oXs_ads1115.adsCurrentData.consumedMilliAmps.available  ) return 0;
          * fieldValue = oXs_ads1115.adsCurrentData.consumedMilliAmps.value / 10 ; // converted in Ah with 2 decimals
          * dataType = JETI14_2D ;
          oXs_ads1115.adsCurrentData.consumedMilliAmps.available = false ;
+#ifdef DEBUGADSCURRENT
+         printer->print(F("consumed milliAmp="));
+         printer->println(oXs_ads1115.adsCurrentData.consumedMilliAmps.value / 10);
+#endif          
          break ;
 #endif
 #endif
@@ -736,7 +745,7 @@ void OXS_OUT::fillJetiBufferWithText() {
 
 #ifdef GPS_INSTALLED            
       case GPS_COURSE :
-        mergeLabelUnit( textIdx, "Gps Course", "°"  ) ;
+        mergeLabelUnit( textIdx, "Gps Course", degreeChar  ) ;
         break ;
       case GPS_SPEED :
         mergeLabelUnit( textIdx, "Gps Speed", "Km/h"  ) ;
@@ -748,13 +757,13 @@ void OXS_OUT::fillJetiBufferWithText() {
         mergeLabelUnit( textIdx, "Gps Distance", "m"  ) ;
         break ;
       case GPS_BEARING :
-        mergeLabelUnit( textIdx, "Gps Bearing", "°"  ) ;
+        mergeLabelUnit( textIdx, "Gps Bearing", degreeChar  ) ;
         break ;
       case GPS_LONG :                                          // Still to be added 
         mergeLabelUnit( textIdx, "Gps Long", degreeChar  ) ;
         break ;
       case GPS_LAT :                                           // Still to be added
-        mergeLabelUnit( textIdx, "Gps Lat", "°"  ) ;
+        mergeLabelUnit( textIdx, "Gps Lat", degreeChar  ) ;
         break ;
 
 #endif                           // end GPS_INSTALLED

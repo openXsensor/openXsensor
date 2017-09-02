@@ -3,7 +3,7 @@
 
 #ifdef DEBUG
 //#define DEBUGGPS
-//#define DEBUGPARSEGPS
+#define DEBUGPARSEGPS
 //#define DEBUGSENDGPS
 //#define DEBUG_FORWARD_GPS_MSG_TO_PC
 #endif

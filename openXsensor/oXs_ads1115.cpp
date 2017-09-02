@@ -5,7 +5,8 @@
   //#define DEBUGADS1115EACHREAD
   //#define DEBUGADS1115REQUESTCONV
   //#define DEBUGADS1115MVOLT
-  //#define DEBUGADSAIRSPEEDDATA 
+  //#define DEBUGADSAIRSPEEDDATA
+  #define DEBUGCURRENT 
 #endif
 
 //#define DEBUG_FORCE_ADS_VOLT_1_4_WITHOUT_ADS1115
@@ -209,7 +210,7 @@ void OXS_ADS1115::ads_calculateCurrent(void) {
 //      if (currentData.milliAmps.value < 0) currentData.milliAmps.value = 0 ;
       adsCurrentData.milliAmps.available = true ;
       sumCurrent = 0;
-      cnt = 0;
+      
       floatConsumedMilliAmps += ((float) adsCurrentData.milliAmps.value) * (milliTmp - lastCurrentMillis ) / 3600.0 /1000.0 ;   
       adsCurrentData.consumedMilliAmps.value = (int32_t) floatConsumedMilliAmps ;
       adsCurrentData.consumedMilliAmps.available = true ;
@@ -224,6 +225,7 @@ void OXS_ADS1115::ads_calculateCurrent(void) {
       printer->print(" consumed milliAmph =  ");
       printer->println(adsCurrentData.consumedMilliAmps.value);
 #endif
+      cnt = 0;
   } 
 }
 #endif

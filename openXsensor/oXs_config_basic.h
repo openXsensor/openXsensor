@@ -20,7 +20,7 @@
 #define OXS_CONFIG_BASIC_h
 
 // --------- 1 - Telemetry protocol ---------  
-#define PROTOCOL  JETI  // select between FRSKY_SPORT , FRSKY_HUB , FRSKY_SPORT_HUB , MULTIPLEX , HOTT, JETI
+#define PROTOCOL  FRSKY_SPORT  // select between FRSKY_SPORT , FRSKY_HUB , FRSKY_SPORT_HUB , MULTIPLEX , HOTT, JETI
 
 // ***** 1.1 - Pin connected to Rx ************                              See oXs_config_advanced.h (normally no need to change it) (default is arduino pin 4 connected to RX) 
 // ***** 1.2 - SPORT_SENSOR_ID (used only for Frsky Sport protocol)  *****   See oXs_config_advanced.h (normally no need to change it) 
@@ -47,9 +47,9 @@
 
 // ***** 2.3 - Multiplex data *****
 #define SETUP_MULTIPLEX_DATA_TO_SEND    \
-                        3 , REL_ALTIMETER , 1 , 1 , 0 , -16384 , 16383 , \
-                        4 , VERTICAL_SPEED , 1 , 1 , 0, -500 , 500  , \
-                        5 , ALTIMETER_MAX , 1 , 1 , 0 , -16384 , 16383 
+                        5 , REL_ALTIMETER , 1 , 1 , 0 , -16384 , 16383 , \
+                        6 , VERTICAL_SPEED , 1 , 1 , 0, -500 , 500  , \
+                        7 , ALTIMETER_MAX , 1 , 1 , 0 , -16384 , 16383 
                         // 6 , CURRENTMA , 1 , 1, 0 , -16384 , 16383 ,\
                         // 7 , MILLIAH  , 1 , 1, 0 , -16384 , 16383
                         // 7 , CELL_TOT , 1 , 1 , 0 , -16384 , 16383 , \
@@ -67,7 +67,7 @@
 
 // --------- 4 - Vario settings ---------
 // ***** 4.1 - Connecting 1 or 2 barometric sensor(s)  *****
-#define FIRST_BARO_SENSOR_USE   MS5611       // select between NO_BARO , MS5611, GY86 , BMP085 , BMP180 , BMP280  
+#define FIRST_BARO_SENSOR_USE   NO_BARO       // select between NO_BARO , MS5611, GY86 , BMP085 , BMP180 , BMP280  
 
 // ***** 4.2 - Type of Vspeed to transmit  *****                                    
 #define VSPEED_SOURCE  FIRST_BARO    // select between FIRST_BARO, SECOND_BARO , AVERAGE_FIRST_SECOND, AIRSPEED_COMPENSATED , BARO_AND_IMU or PPM_SELECTION
