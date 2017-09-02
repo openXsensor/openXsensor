@@ -49,7 +49,7 @@
 #define MS2 7
 
 
-  extern const uint8_t ads_Measure[4] ;
+  extern const uint8_t ADS1115_MEASURE[4] ;
   extern const uint8_t ads_Gain[4] ;
   extern const uint8_t ads_Rate[4] ;
   extern const float ads_Offset[4] ;
@@ -81,11 +81,11 @@ public:
   void ads_requestNextConv(void) ; 
   void ads_calculateCurrent(void) ;
   void ads_calculate_airspeed( int16_t ads_difPressureADC ) ;
-#if defined(ADS_MEASURE) && defined(ADS1115_INSTALLED) && defined(ADS_CURRENT_BASED_ON)
+#if defined(ADS1115_MEASURE) && defined(ADS1115_CURRENT_BASED_ON)
   struct CURRENTDATA adsCurrentData ;
   float floatConsumedMilliAmps ; // in mA
 #endif
-#if defined(ADS_MEASURE) && defined(ADS1115_INSTALLED) && defined(ADS_AIRSPEED_BASED_ON)
+#if defined(ADS1115_MEASURE) && defined(ADS_AIRSPEED_BASED_ON)
   struct AIRSPEEDDATA adsAirSpeedData ;
 #endif
   

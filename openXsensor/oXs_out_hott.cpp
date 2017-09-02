@@ -168,13 +168,13 @@ void OXS_OUT::sendData() {
 #if defined(BATTERY_1_SOURCE) && ( (BATTERY_1_SOURCE == VOLT_1) || (BATTERY_1_SOURCE == VOLT_2) || (BATTERY_1_SOURCE == VOLT_3) || (BATTERY_1_SOURCE == VOLT_4) || (BATTERY_1_SOURCE == VOLT_5) || (BATTERY_1_SOURCE == VOLT_6) ) && defined(PIN_VOLTAGE)
               TxHottData.gamMsg.Battery1 = voltageData->mVolt[BATTERY_1_SOURCE - VOLT_1].value / 100;    //battery 1 voltage  0.1V steps. 55 = 5.5V only pos. voltages
 #endif
-#if defined(BATTERY_1_SOURCE) && ( (BATTERY_1_SOURCE == ADS_VOLT_1) || (BATTERY_1_SOURCE == ADS_VOLT_2) || (BATTERY_1_SOURCE == ADS_VOLT_3) || (BATTERY_1_SOURCE == ADS_VOLT_4) ) && defined(ADS_MEASURE) && defined(ADS1115_INSTALLED)
+#if defined(BATTERY_1_SOURCE) && ( (BATTERY_1_SOURCE == ADS_VOLT_1) || (BATTERY_1_SOURCE == ADS_VOLT_2) || (BATTERY_1_SOURCE == ADS_VOLT_3) || (BATTERY_1_SOURCE == ADS_VOLT_4) ) && defined(ADS1115_MEASURE)
               TxHottData.gamMsg.Battery1 = ads_Conv[BATTERY_1_SOURCE - ADS_VOLT_1].value / 100;    //battery 1 voltage  0.1V steps. 55 = 5.5V only pos. voltages
 #endif
 #if defined(BATTERY_2_SOURCE) && ( (BATTERY_2_SOURCE == VOLT_1) || (BATTERY_2_SOURCE == VOLT_2) || (BATTERY_2_SOURCE == VOLT_3) || (BATTERY_2_SOURCE == VOLT_4) || (BATTERY_2_SOURCE == VOLT_5) || (BATTERY_2_SOURCE == VOLT_6) ) && defined(PIN_VOLTAGE)
               TxHottData.gamMsg.Battery2 = voltageData->mVolt[BATTERY_2_SOURCE - VOLT_1].value / 100;    //battery 1 voltage  0.1V steps. 55 = 5.5V only pos. voltages
 #endif
-#if defined(BATTERY_2_SOURCE) && ( (BATTERY_2_SOURCE == ADS_VOLT_1) || (BATTERY_2_SOURCE == ADS_VOLT_2) || (BATTERY_2_SOURCE == ADS_VOLT_3) || (BATTERY_2_SOURCE == ADS_VOLT_4) ) && defined(ADS_MEASURE) && defined(ADS1115_INSTALLED)
+#if defined(BATTERY_2_SOURCE) && ( (BATTERY_2_SOURCE == ADS_VOLT_1) || (BATTERY_2_SOURCE == ADS_VOLT_2) || (BATTERY_2_SOURCE == ADS_VOLT_3) || (BATTERY_2_SOURCE == ADS_VOLT_4) ) && defined(ADS1115_MEASURE)
               TxHottData.gamMsg.Battery1 = ads_Conv[BATTERY_2_SOURCE - ADS_VOLT_1].value / 100;    //battery 1 voltage  0.1V steps. 55 = 5.5V only pos. voltages
 #endif
 
