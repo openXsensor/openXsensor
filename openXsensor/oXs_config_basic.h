@@ -98,6 +98,7 @@
 // ***** 6.5 - Current parameters  *****                                           see oXs_config_advanced.h if you want to measure current with a current sensor
 
 // ***** 6.6 - Ads1115 parameters  *****                                           see oXs_config_advanced.hif you want to measure voltages with higher accuracy using n ads1115 module
+#define A_ADS1115_IS_CONNECTED      NO             // select between YES , NO
 
 // --------- 7 - RPM (rotations per minute) settings ---------
 #define CALCULATE_RPM     NO                                               // select between YES , NO       

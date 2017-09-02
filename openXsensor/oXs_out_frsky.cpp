@@ -40,7 +40,7 @@ extern OXS_VOLTAGE oXs_Voltage ;
 extern OXS_CURRENT oXs_Current ;
 extern OXS_4525 oXs_4525 ;
 
-#if  defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON)
+#if  defined(ADS1115_MEASURE) && defined(ADS1115_CURRENT_BASED_ON)
 extern  CURRENTDATA adsCurrentData ;
 #endif
 
@@ -62,7 +62,7 @@ extern uint8_t volatile sendStatus ;
   struct ONE_MEASUREMENT vfas ; 
 #endif
 
-#if ( defined(PIN_CURRENTSENSOR) ) || ( defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON)) 
+#if ( defined(PIN_CURRENTSENSOR) ) || ( defined(ADS1115_MEASURE) && defined(ADS1115_CURRENT_BASED_ON)) 
     struct ONE_MEASUREMENT sport_currentData ;
 #endif
 
@@ -247,14 +247,14 @@ void initMeasurement() {
 // pointer to vfas
 #if defined(PIN_VOLTAGE) && defined(VFAS_SOURCE) && ( VFAS_SOURCE == VOLT_1 || VFAS_SOURCE == VOLT_2 || VFAS_SOURCE == VOLT_3 || VFAS_SOURCE == VOLT_4 || VFAS_SOURCE == VOLT_5 || VFAS_SOURCE == VOLT_6 )
     p_measurements[5] = &vfas ;
-#elif defined(ADS_MEASURE) && defined(VFAS_SOURCE) && ( VFAS_SOURCE == ADS_VOLT_1 || VFAS_SOURCE == ADS_VOLT_2 || VFAS_SOURCE == ADS_VOLT_3 || VFAS_SOURCE == ADS_VOLT_4 )
+#elif defined(ADS1115_MEASURE) && defined(VFAS_SOURCE) && ( VFAS_SOURCE == ADS_VOLT_1 || VFAS_SOURCE == ADS_VOLT_2 || VFAS_SOURCE == ADS_VOLT_3 || VFAS_SOURCE == ADS_VOLT_4 )
     p_measurements[5] = &vfas ;
 #else
     p_measurements[5] = &no_data ;
 #endif
    
 // pointer to current
-#if ( defined(PIN_CURRENTSENSOR) ) || ( defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON)) 
+#if ( defined(PIN_CURRENTSENSOR) ) || ( defined(ADS1115_MEASURE) && defined(ADS1115_CURRENT_BASED_ON)) 
     p_measurements[6] = &sport_currentData ;
 #else
     p_measurements[6] = &no_data ;
@@ -263,7 +263,7 @@ void initMeasurement() {
 // pointer to fuel                                    
 #if defined(FUEL_SOURCE) && defined(PIN_VOLTAGE) && ( FUEL_SOURCE == VOLT_1 || FUEL_SOURCE == VOLT_2 || FUEL_SOURCE == VOLT_3 || FUEL_SOURCE == VOLT_4 || FUEL_SOURCE == VOLT_5 || FUEL_SOURCE == VOLT_6 )
     p_measurements[7] =  &oXs_Voltage.voltageData.mVolt[FUEL_SOURCE - VOLT_1];
-#elif defined(FUEL_SOURCE) && defined(ADS_MEASURE) && ( FUEL_SOURCE == ADS_VOLT_1 || FUEL_SOURCE == ADS_VOLT_2 || FUEL_SOURCE == ADS_VOLT_3 || FUEL_SOURCE == ADS_VOLT_4 )
+#elif defined(FUEL_SOURCE) && defined(ADS1115_MEASURE) && ( FUEL_SOURCE == ADS_VOLT_1 || FUEL_SOURCE == ADS_VOLT_2 || FUEL_SOURCE == ADS_VOLT_3 || FUEL_SOURCE == ADS_VOLT_4 )
     p_measurements[7] =  &ads_Conv[FUEL_SOURCE - ADS_VOLT_1]; 
 #else
     p_measurements[7] = &no_data ;
@@ -272,7 +272,7 @@ void initMeasurement() {
 // pointer to A3                                    
 #if defined(A3_SOURCE) && defined(PIN_VOLTAGE) && ( A3_SOURCE == VOLT_1 || A3_SOURCE == VOLT_2 || A3_SOURCE == VOLT_3 || A3_SOURCE == VOLT_4 || A3_SOURCE == VOLT_5 || A3_SOURCE == VOLT_6 )
     p_measurements[8] =  &oXs_Voltage.voltageData.mVolt[A3_SOURCE - VOLT_1];
-#elif defined(A3_SOURCE) && defined(ADS_MEASURE) && ( A3_SOURCE == ADS_VOLT_1 || A3_SOURCE == ADS_VOLT_2 || A3_SOURCE == ADS_VOLT_3 || A3_SOURCE == ADS_VOLT_4 )
+#elif defined(A3_SOURCE) && defined(ADS1115_MEASURE) && ( A3_SOURCE == ADS_VOLT_1 || A3_SOURCE == ADS_VOLT_2 || A3_SOURCE == ADS_VOLT_3 || A3_SOURCE == ADS_VOLT_4 )
     p_measurements[8] =  &ads_Conv[A3_SOURCE - ADS_VOLT_1];
 #else
     p_measurements[8] = &no_data ;
@@ -281,7 +281,7 @@ void initMeasurement() {
 // pointer to A4                                    
 #if defined(A4_SOURCE) && defined(PIN_VOLTAGE) && ( A4_SOURCE == VOLT_1 || A4_SOURCE == VOLT_2 || A4_SOURCE == VOLT_3 || A4_SOURCE == VOLT_4 || A4_SOURCE == VOLT_5 || A4_SOURCE == VOLT_6 )
     p_measurements[9] =  &oXs_Voltage.voltageData.mVolt[A4_SOURCE - VOLT_1];
-#elif defined(A4_SOURCE) && defined(ADS_MEASURE) && ( A4_SOURCE == ADS_VOLT_1 || A4_SOURCE == ADS_VOLT_2 || A4_SOURCE == ADS_VOLT_3 || A4_SOURCE == ADS_VOLT_4 )
+#elif defined(A4_SOURCE) && defined(ADS1115_MEASURE) && ( A4_SOURCE == ADS_VOLT_1 || A4_SOURCE == ADS_VOLT_2 || A4_SOURCE == ADS_VOLT_3 || A4_SOURCE == ADS_VOLT_4 )
     p_measurements[9] =  &ads_Conv[A4_SOURCE - ADS_VOLT_1];
 #else
     p_measurements[9] = &no_data ;
@@ -349,7 +349,7 @@ void initMeasurement() {
    p_measurements[16] = &ppm ; 
 #elif defined(T1_SOURCE) && defined(PIN_VOLTAGE) && ( T1_SOURCE == VOLT_1 || T1_SOURCE == VOLT_2 || T1_SOURCE == VOLT_3 || T1_SOURCE == VOLT_4 || T1_SOURCE == VOLT_5 || T1_SOURCE == VOLT_6 )
    p_measurements[16] = &oXs_Voltage.voltageData.mVolt[T1_SOURCE - VOLT_1] ;
-#elif defined(T1_SOURCE) && defined(ADS_MEASURE) && ( T1_SOURCE == ADS_VOLT_1 || T1_SOURCE == ADS_VOLT_2 || T1_SOURCE == ADS_VOLT_3 || T1_SOURCE == ADS_VOLT_4 )
+#elif defined(T1_SOURCE) && defined(ADS1115_MEASURE) && ( T1_SOURCE == ADS_VOLT_1 || T1_SOURCE == ADS_VOLT_2 || T1_SOURCE == ADS_VOLT_3 || T1_SOURCE == ADS_VOLT_4 )
     p_measurements[16] =  &ads_Conv[T1_SOURCE - ADS_VOLT_1];
 #else
    p_measurements[16] = &no_data ; // T1 
@@ -374,7 +374,7 @@ void initMeasurement() {
    p_measurements[17] = &ppm ; 
 #elif defined(T2_SOURCE) && defined(PIN_VOLTAGE) && ( T2_SOURCE == VOLT_1 || T2_SOURCE == VOLT_2 || T2_SOURCE == VOLT_3 || T2_SOURCE == VOLT_4 || T2_SOURCE == VOLT_5 || T2_SOURCE == VOLT_6 )
    p_measurements[17] = &oXs_Voltage.voltageData.mVolt[T2_SOURCE - VOLT_1] ;
-#elif defined(T2_SOURCE) && defined(ADS_MEASURE) && ( T2_SOURCE == ADS_VOLT_1 || T2_SOURCE == ADS_VOLT_2 || T2_SOURCE == ADS_VOLT_3 || T2_SOURCE == ADS_VOLT_4 )
+#elif defined(T2_SOURCE) && defined(ADS1115_MEASURE) && ( T2_SOURCE == ADS_VOLT_1 || T2_SOURCE == ADS_VOLT_2 || T2_SOURCE == ADS_VOLT_3 || T2_SOURCE == ADS_VOLT_4 )
     p_measurements[17] =  &ads_Conv[T2_SOURCE - ADS_VOLT_1];
 #else
    p_measurements[17] = &no_data ; // T2 
@@ -385,7 +385,7 @@ void initMeasurement() {
 // pointer to airspeed
 #if defined(AIRSPEED) 
   p_measurements[18] = &oXs_4525.airSpeedData.airSpeed ;
-#elif defined(ADS_MEASURE) && defined(ADS_AIRSPEED_BASED_ON)
+#elif defined(ADS1115_MEASURE) && defined(ADS_AIRSPEED_BASED_ON)
   p_measurements[18] = &oXs_ads1115.adsAirSpeedData.airSpeed ;
 #else
   p_measurements[18] = &no_data ; 
@@ -406,7 +406,7 @@ void initMeasurement() {
    p_measurements[19] = &averageVspeedSinceT0 ; 
 #elif defined(ACCX_SOURCE) && defined(PIN_VOLTAGE) && ( ACCX_SOURCE == VOLT_1 || ACCX_SOURCE == VOLT_2 || ACCX_SOURCE == VOLT_3 || ACCX_SOURCE == VOLT_4 || ACCX_SOURCE == VOLT_5 || ACCX_SOURCE == VOLT_6 )
    p_measurements[19] = &oXs_Voltage.voltageData.mVolt[ACCX_SOURCE - VOLT_1] ;
-#elif defined(ACCX_SOURCE) && defined(ADS_MEASURE) && ( ACCX_SOURCE == ADS_VOLT_1 || ACCX_SOURCE == ADS_VOLT_2 || ACCX_SOURCE == ADS_VOLT_3 || ACCX_SOURCE == ADS_VOLT_4 )
+#elif defined(ACCX_SOURCE) && defined(ADS1115_MEASURE) && ( ACCX_SOURCE == ADS_VOLT_1 || ACCX_SOURCE == ADS_VOLT_2 || ACCX_SOURCE == ADS_VOLT_3 || ACCX_SOURCE == ADS_VOLT_4 )
     p_measurements[19] =  &ads_Conv[ACCX_SOURCE - ADS_VOLT_1];
 #elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == PITCH) && defined(USE_6050)
    p_measurements[19] = &pitch ; // accX
@@ -433,7 +433,7 @@ void initMeasurement() {
    p_measurements[20] = &averageVspeedSinceT0 ; 
 #elif defined(ACCY_SOURCE) && defined(PIN_VOLTAGE) && ( ACCY_SOURCE == VOLT_1 || ACCY_SOURCE == VOLT_2 || ACCY_SOURCE == VOLT_3 || ACCY_SOURCE == VOLT_4 || ACCY_SOURCE == VOLT_5 || ACCY_SOURCE == VOLT_6 )
    p_measurements[20] = &oXs_Voltage.voltageData.mVolt[ACCY_SOURCE - VOLT_1] ;
-#elif defined(ACCY_SOURCE) && defined(ADS_MEASURE) && ( ACCY_SOURCE == ADS_VOLT_1 || ACCY_SOURCE == ADS_VOLT_2 || ACCY_SOURCE == ADS_VOLT_3 || ACCY_SOURCE == ADS_VOLT_4 )
+#elif defined(ACCY_SOURCE) && defined(ADS1115_MEASURE) && ( ACCY_SOURCE == ADS_VOLT_1 || ACCY_SOURCE == ADS_VOLT_2 || ACCY_SOURCE == ADS_VOLT_3 || ACCY_SOURCE == ADS_VOLT_4 )
     p_measurements[20] =  &ads_Conv[ACCY_SOURCE - ADS_VOLT_1];
 #elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == PITCH) && defined(USE_6050)
    p_measurements[20] = &pitch ; 
@@ -460,7 +460,7 @@ void initMeasurement() {
    p_measurements[21] = &averageVspeedSinceT0 ; 
 #elif defined(ACCZ_SOURCE) && defined(PIN_VOLTAGE) && ( ACCZ_SOURCE == VOLT_1 || ACCZ_SOURCE == VOLT_2 || ACCZ_SOURCE == VOLT_3 || ACCZ_SOURCE == VOLT_4 || ACCZ_SOURCE == VOLT_5 || ACCZ_SOURCE == VOLT_6 )
    p_measurements[21] = &oXs_Voltage.voltageData.mVolt[ACCZ_SOURCE - VOLT_1] ;
-#elif defined(ACCZ_SOURCE) && defined(ADS_MEASURE) && ( ACCZ_SOURCE == ADS_VOLT_1 || ACCZ_SOURCE == ADS_VOLT_2 || ACCZ_SOURCE == ADS_VOLT_3 || ACCZ_SOURCE == ADS_VOLT_4 )
+#elif defined(ACCZ_SOURCE) && defined(ADS1115_MEASURE) && ( ACCZ_SOURCE == ADS_VOLT_1 || ACCZ_SOURCE == ADS_VOLT_2 || ACCZ_SOURCE == ADS_VOLT_3 || ACCZ_SOURCE == ADS_VOLT_4 )
     p_measurements[21] =  &ads_Conv[ACCZ_SOURCE - ADS_VOLT_1];
 #elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == PITCH) && defined(USE_6050)
    p_measurements[21] = &pitch ; // accX
@@ -489,14 +489,14 @@ void OXS_OUT::sendSportData()
       vfas.value = oXs_Voltage.voltageData.mVolt[VFAS_SOURCE - VOLT_1].value / 10 ;  // voltage in mv is divided by 10 because SPORT expect it (volt * 100) 
       vfas.available = true ; 
    }
-  #elif defined(ADS_MEASURE) && ( (VFAS_SOURCE == ADS_VOLT_1) || (VFAS_SOURCE == ADS_VOLT_2) || (VFAS_SOURCE == ADS_VOLT_3) || (VFAS_SOURCE == ADS_VOLT_4) )
+  #elif defined(ADS1115_MEASURE) && ( (VFAS_SOURCE == ADS_VOLT_1) || (VFAS_SOURCE == ADS_VOLT_2) || (VFAS_SOURCE == ADS_VOLT_3) || (VFAS_SOURCE == ADS_VOLT_4) )
    if ( (!vfas.available) && ( ads_Conv[VFAS_SOURCE - ADS_VOLT_1].available) ){
       vfas.value = ads_Conv[VFAS_SOURCE - ADS_VOLT_1].value / 10 ;  // voltage in mv is divided by 10 because SPORT expect it (volt * 100) 
       vfas.available = true ; 
    }
   #else
     #if  ( (VFAS_SOURCE == ADS_VOLT_1) || (VFAS_SOURCE == ADS_VOLT_2) || (VFAS_SOURCE == ADS_VOLT_3) || (VFAS_SOURCE == ADS_VOLT_4) )
-      #error When VFAS_SOURCE is ADS_VOLT_1, ADS_VOLT_2,... ADS_VOLT_4 then ADS_MEASURE must be defined too.
+      #error When VFAS_SOURCE is ADS_VOLT_1, ADS_VOLT_2,... ADS_VOLT_4 then ADS1115_MEASURE must be defined too.
     #elif   ( (VFAS_SOURCE == VOLT_1) || (VFAS_SOURCE == VOLT_2) || (VFAS_SOURCE == VOLT_3) || (VFAS_SOURCE == VOLT_4) || (VFAS_SOURCE == VOLT_5) || (VFAS_SOURCE == VOLT_6) )
       #error When VFAS_SOURCE is VOLT_1, VOLT_2,... VOLT_6 then PIN_VOLTAGE must be defined too.
     #else
@@ -511,7 +511,7 @@ void OXS_OUT::sendSportData()
       sport_currentData.value = oXs_Current.currentData.milliAmps.value  / 100 ;
       sport_currentData.available = true ;
     }  
-#elif defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON)
+#elif defined(ADS1115_MEASURE) && defined(ADS1115_CURRENT_BASED_ON)
     if ( oXs_ads1115.adsCurrentData.milliAmps.available ) {
       oXs_ads1115.adsCurrentData.milliAmps.available = false ;
       sport_currentData.value = oXs_ads1115.adsCurrentData.milliAmps.value  / 100 ;
@@ -699,21 +699,21 @@ void OXS_OUT::SendFrame1(){
 // vfas
 #if defined(PIN_VOLTAGE) && defined(VFAS_SOURCE) &&  ( (VFAS_SOURCE == VOLT_1) || (VFAS_SOURCE == VOLT_2) || (VFAS_SOURCE == VOLT_3) || (VFAS_SOURCE == VOLT_4) || (VFAS_SOURCE == VOLT_5) || (VFAS_SOURCE == VOLT_6) )
     SendValue( FRSKY_USERDATA_VFAS_NEW ,  (int16_t) (voltageData->mVolt[VFAS_SOURCE - VOLT_1 ].value / 100) ) ; // convert mvolt in 1/10 of volt; in openTx 2.1.x, it is possible to get 1 more decimal using [VFAS_SOURCE - VOLT_1 ].value/10.)+2000);  
-#elif defined(ADS_MEASURE) && defined(VFAS_SOURCE) &&  ( (VFAS_SOURCE == ADS_VOLT_1) || (VFAS_SOURCE == ADS_VOLT_2) || (VFAS_SOURCE == ADS_VOLT_3) || (VFAS_SOURCE == ADS_VOLT_4)  )
+#elif defined(ADS1115_MEASURE) && defined(VFAS_SOURCE) &&  ( (VFAS_SOURCE == ADS_VOLT_1) || (VFAS_SOURCE == ADS_VOLT_2) || (VFAS_SOURCE == ADS_VOLT_3) || (VFAS_SOURCE == ADS_VOLT_4)  )
     SendValue( FRSKY_USERDATA_VFAS_NEW ,  (int16_t) (ads_Conv[VFAS_SOURCE - ADS_VOLT_1 ].value / 100) ) ; // convert mvolt in 1/10 of volt; in openTx 2.1.x, it is possible to get 1 more decimal using [VFAS_SOURCE - VOLT_1 ].value/10.)+2000);  
 #endif
    
 // current
 #if defined(PIN_CURRENTSENSOR) 
     SendValue( FRSKY_USERDATA_CURRENT ,  (int16_t) ( oXs_Current.currentData.milliAmps.value / 100 ) ) ;
-#elif defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON)
+#elif defined(ADS1115_MEASURE) && defined(ADS1115_CURRENT_BASED_ON)
     SendValue( FRSKY_USERDATA_CURRENT ,  (int16_t) ( oXs_ads1115.adsCurrentData.milliAmps.value / 100 ) ) ;
 #endif
 
 // fuel                                     
 #if defined(FUEL_SOURCE) && defined(PIN_VOLTAGE) && ( FUEL_SOURCE == VOLT_1 || FUEL_SOURCE == VOLT_2 || FUEL_SOURCE == VOLT_3 || FUEL_SOURCE == VOLT_4 || FUEL_SOURCE == VOLT_5 || FUEL_SOURCE == VOLT_6 )
     SendValue(FRSKY_USERDATA_FUEL,  (int16_t)  voltageData->mVolt[FUEL_SOURCE - VOLT_1].value ) ;
-#elif defined(VFAS_SOURCE) && defined(ADS_MEASURE) && ( (FUEL_SOURCE == ADS_VOLT_1) || (FUEL_SOURCE == ADS_VOLT_2) || (FUEL_SOURCE == ADS_VOLT_3) || (FUEL_SOURCE == ADS_VOLT_4)  )
+#elif defined(VFAS_SOURCE) && defined(ADS1115_MEASURE) && ( (FUEL_SOURCE == ADS_VOLT_1) || (FUEL_SOURCE == ADS_VOLT_2) || (FUEL_SOURCE == ADS_VOLT_3) || (FUEL_SOURCE == ADS_VOLT_4)  )
     SendValue( FRSKY_USERDATA_FUEL ,  (int16_t) (ads_Conv[FUEL_SOURCE - ADS_VOLT_1 ].value ) ) ; 
 #endif
    
@@ -741,7 +741,7 @@ void OXS_OUT::SendFrame1(){
     SendValue( FRSKY_USERDATA_TEMP1 , (int16_t) ppm.value) ; 
 #elif defined(T1_SOURCE) && defined(PIN_VOLTAGE) &&  ( (T1_SOURCE == VOLT_1) || (T1_SOURCE == VOLT_2) || (T1_SOURCE == VOLT_3) || (T1_SOURCE == VOLT_4) || (T1_SOURCE == VOLT_5) || (T1_SOURCE == VOLT_6) )
     SendValue( FRSKY_USERDATA_TEMP1 ,  (int16_t) (voltageData->mVolt[T1_SOURCE - VOLT_1 ].value ) ) ; 
-#elif defined(T1_SOURCE) && defined(ADS_MEASURE) &&  ( (T1_SOURCE == ADS_VOLT_1) || (T1_SOURCE == ADS_VOLT_2) || (T1_SOURCE == ADS_VOLT_3) || (T1_SOURCE == ADS_VOLT_4)  )
+#elif defined(T1_SOURCE) && defined(ADS1115_MEASURE) &&  ( (T1_SOURCE == ADS_VOLT_1) || (T1_SOURCE == ADS_VOLT_2) || (T1_SOURCE == ADS_VOLT_3) || (T1_SOURCE == ADS_VOLT_4)  )
     SendValue( FRSKY_USERDATA_TEMP1 ,  (int16_t) (ads_Conv[T1_SOURCE - ADS_VOLT_1 ].value ) ) ; 
 #endif
 
@@ -765,7 +765,7 @@ void OXS_OUT::SendFrame1(){
     SendValue( FRSKY_USERDATA_TEMP2 , (int16_t) ppm.value) ; 
 #elif defined(T2_SOURCE) && defined(PIN_VOLTAGE) &&  ( (T2_SOURCE == VOLT_1) || (T2_SOURCE == VOLT_2) || (T2_SOURCE == VOLT_3) || (T2_SOURCE == VOLT_4) || (T2_SOURCE == VOLT_5) || (T2_SOURCE == VOLT_6) )
     SendValue( FRSKY_USERDATA_TEMP2 ,  (int16_t) (voltageData->mVolt[T2_SOURCE - VOLT_1 ].value ) ) ; 
-#elif defined(T2_SOURCE) && defined(ADS_MEASURE) &&  ( (T2_SOURCE == ADS_VOLT_1) || (T2_SOURCE == ADS_VOLT_2) || (T2_SOURCE == ADS_VOLT_3) || (T2_SOURCE == ADS_VOLT_4)  )
+#elif defined(T2_SOURCE) && defined(ADS1115_MEASURE) &&  ( (T2_SOURCE == ADS_VOLT_1) || (T2_SOURCE == ADS_VOLT_2) || (T2_SOURCE == ADS_VOLT_3) || (T2_SOURCE == ADS_VOLT_4)  )
     SendValue( FRSKY_USERDATA_TEMP2 ,  (int16_t) (ads_Conv[T2_SOURCE - ADS_VOLT_1 ].value ) ) ;     
 #endif
    
@@ -795,7 +795,7 @@ void OXS_OUT::SendFrame1(){
    SendValue( FRSKY_USERDATA_ACC_X , (int16_t) yaw.value) ;        
 #elif defined(ACCX_SOURCE) && defined(PIN_VOLTAGE) &&  ( (ACCX_SOURCE == VOLT_1) || (ACCX_SOURCE == VOLT_2) || (ACCX_SOURCE == VOLT_3) || (ACCX_SOURCE == VOLT_4) || (ACCX_SOURCE == VOLT_5) || (ACCX_SOURCE == VOLT_6) )
     SendValue( FRSKY_USERDATA_ACC_X ,  (int16_t) (voltageData->mVolt[ACCX_SOURCE - VOLT_1 ].value ) ) ; 
-#elif defined(ACCX_SOURCE) && defined(ADS_MEASURE) &&  ( (ACCX_SOURCE == ADS_VOLT_1) || (ACCX_SOURCE == ADS_VOLT_2) || (ACCX_SOURCE == ADS_VOLT_3) || (ACCX_SOURCE == ADS_VOLT_4)  )
+#elif defined(ACCX_SOURCE) && defined(ADS1115_MEASURE) &&  ( (ACCX_SOURCE == ADS_VOLT_1) || (ACCX_SOURCE == ADS_VOLT_2) || (ACCX_SOURCE == ADS_VOLT_3) || (ACCX_SOURCE == ADS_VOLT_4)  )
     SendValue( FRSKY_USERDATA_ACC_X ,  (int16_t) (ads_Conv[ACCX_SOURCE - ADS_VOLT_1 ].value ) ) ; 
 #endif
 
@@ -820,7 +820,7 @@ void OXS_OUT::SendFrame1(){
    SendValue( FRSKY_USERDATA_ACC_Y , (int16_t) yaw.value) ;        
 #elif defined(ACCY_SOURCE) && defined(PIN_VOLTAGE) &&  ( (ACCY_SOURCE == VOLT_1) || (ACCY_SOURCE == VOLT_2) || (ACCY_SOURCE == VOLT_3) || (ACCY_SOURCE == VOLT_4) || (ACCY_SOURCE == VOLT_5) || (ACCY_SOURCE == VOLT_6) )
     SendValue( FRSKY_USERDATA_ACC_Y ,  (int16_t) (voltageData->mVolt[ACCY_SOURCE - VOLT_1 ].value ) ) ; 
-#elif defined(ACCY_SOURCE) && defined(ADS_MEASURE) &&  ( (ACCY_SOURCE == ADS_VOLT_1) || (ACCY_SOURCE == ADS_VOLT_2) || (ACCY_SOURCE == ADS_VOLT_3) || (ACCY_SOURCE == ADS_VOLT_4)  )
+#elif defined(ACCY_SOURCE) && defined(ADS1115_MEASURE) &&  ( (ACCY_SOURCE == ADS_VOLT_1) || (ACCY_SOURCE == ADS_VOLT_2) || (ACCY_SOURCE == ADS_VOLT_3) || (ACCY_SOURCE == ADS_VOLT_4)  )
     SendValue( FRSKY_USERDATA_ACC_Y ,  (int16_t) (ads_Conv[ACCY_SOURCE - ADS_VOLT_1 ].value ) ) ; 
 #endif
 
@@ -845,7 +845,7 @@ void OXS_OUT::SendFrame1(){
    SendValue( FRSKY_USERDATA_ACC_Z , (int16_t) yaw.value) ;        
 #elif defined(ACCZ_SOURCE) && defined(PIN_VOLTAGE) &&  ( (ACCZ_SOURCE == VOLT_1) || (ACCZ_SOURCE == VOLT_2) || (ACCZ_SOURCE == VOLT_3) || (ACCZ_SOURCE == VOLT_4) || (ACCZ_SOURCE == VOLT_5) || (ACCZ_SOURCE == VOLT_6) )
     SendValue( FRSKY_USERDATA_ACC_Z ,  (int16_t) (voltageData->mVolt[ACCZ_SOURCE - VOLT_1 ].value ) ) ; 
-#elif defined(ACCZ_SOURCE) && defined(ADS_MEASURE) &&  ( (ACCZ_SOURCE == ADS_VOLT_1) || (ACCZ_SOURCE == ADS_VOLT_2) || (ACCZ_SOURCE == ADS_VOLT_3) || (ACCZ_SOURCE == ADS_VOLT_4)  )
+#elif defined(ACCZ_SOURCE) && defined(ADS1115_MEASURE) &&  ( (ACCZ_SOURCE == ADS_VOLT_1) || (ACCZ_SOURCE == ADS_VOLT_2) || (ACCZ_SOURCE == ADS_VOLT_3) || (ACCZ_SOURCE == ADS_VOLT_4)  )
     SendValue( FRSKY_USERDATA_ACC_Z ,  (int16_t) (ads_Conv[ACCZ_SOURCE - ADS_VOLT_1 ].value ) ) ; 
 #endif
 
