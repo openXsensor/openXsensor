@@ -16,7 +16,7 @@ extern unsigned long millis( void ) ;
 extern void delay(unsigned long ms) ;
 
 #ifdef ADS1115_MEASURE 
-  const uint8_t ADS_MEASURE[4] = {ADS1115_MEASURE} ; //  how to configure the multiplexer
+  const uint8_t ads_Measure[4] = {ADS1115_MEASURE} ; //  how to configure the multiplexer
   const uint8_t ads_Gain[4] = { ADS_FULL_SCALE_VOLT }; //  how to configure the programmable gain amplifier
   const uint8_t ads_Rate[4] = { ADS_RATE }; // how to configure the time of conversion
   const float ads_Offset[4] = { ADS_OFFSET };
@@ -172,11 +172,11 @@ void OXS_ADS1115::ads_requestNextConv(void) {
     do {
       ads_CurrentIdx++ ;
       if( ads_CurrentIdx > 3 ) ads_CurrentIdx = 0 ;
-    } while (  ADS_MEASURE[ads_CurrentIdx] == ADS_OFF ) ;
+    } while (  ads_Measure[ads_CurrentIdx] == ADS_OFF ) ;
 // perhaps this line has to be splitted in 2 in order to let multiplexer, gain and rate to set up before asking for a conversion.
 
     uint8_t dataToWrite[2] ;
-    dataToWrite[0] = (( 1 << 7 | ADS_MEASURE[ads_CurrentIdx] << 4 | ads_Gain[ads_CurrentIdx] << 1 | 1  ) ) ;
+    dataToWrite[0] = (( 1 << 7 | ads_Measure[ads_CurrentIdx] << 4 | ads_Gain[ads_CurrentIdx] << 1 | 1  ) ) ;
     dataToWrite[1] = ( ads_Rate[ads_CurrentIdx] << 5 | 0B11 );
         // bit 15 says that a conversion is requested, bit 8 says on shot mode, bits 0 and 1 = 11 says comparator is disabled.
     I2CErrorCodeAds1115 = I2c.write((uint8_t) ads_Addr , (uint8_t) 0X01 , (uint8_t) 2 , &dataToWrite[0] ) ; // send the Address, 1 = config register , 2 bytes , pointer to the data to write

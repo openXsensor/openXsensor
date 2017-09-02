@@ -49,7 +49,7 @@
 #define MS2 7
 
 
-  extern const uint8_t ADS_MEASURE[4] ;
+  extern const uint8_t ads_Measure[4] ;
   extern const uint8_t ads_Gain[4] ;
   extern const uint8_t ads_Rate[4] ;
   extern const float ads_Offset[4] ;
