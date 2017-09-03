@@ -185,6 +185,7 @@
 #define ADS_2               38
 #define ADS_3               39
 #define ADS_4               40
+#define DS1820				41
 
 // to do : add alt min, alt max ,  rpm max? , current max (not sure that it is neaded because it can be calculated on TX side
 // End of list of type of available measurements
@@ -283,6 +284,7 @@ extern struct ONE_MEASUREMENT yaw ;
 extern struct ONE_MEASUREMENT pitch ;
 extern struct ONE_MEASUREMENT roll ;
 
+extern struct ONE_MEASUREMENT ds1820TempStruct ;
 
 #ifdef MEASURE_RPM
 extern volatile uint16_t RpmValue ;
