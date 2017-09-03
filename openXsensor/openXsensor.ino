@@ -25,6 +25,11 @@
   #include "EEPROMAnything.h"
 #endif
 
+#ifdef ONE_WIRE_BUS
+	#include "OneWire.h"
+	#include "DallasTemperature.h"
+#endif
+
 #if  ! defined(PROTOCOL)
     #error The parameter PROTOCOL in config_basic.h is not defined
 #elif ! ( (PROTOCOL == FRSKY_SPORT) or (PROTOCOL == FRSKY_HUB) or (PROTOCOL == FRSKY_SPORT_HUB) or (PROTOCOL == HOTT) or (PROTOCOL == MULTIPLEX)  or (PROTOCOL == JETI))    
@@ -76,13 +81,13 @@
 #if defined( T1_SOURCE ) && ( !  ( ( T1_SOURCE == PPM) || ( T1_SOURCE == GLIDER_RATIO) || ( T1_SOURCE == SECONDS_SINCE_T0) || ( T1_SOURCE == AVERAGE_VSPEED_SINCE_TO) || ( T1_SOURCE == SENSITIVITY) \
     || ( T1_SOURCE == VOLT_1) || ( T1_SOURCE == VOLT_2) || ( T1_SOURCE == VOLT_3) || ( T1_SOURCE == VOLT_4) || ( T1_SOURCE == VOLT_5) || ( T1_SOURCE == VOLT_6) \
     || ( T1_SOURCE == ADS_VOLT_1) || ( T1_SOURCE == ADS_VOLT_2) || ( T1_SOURCE == ADS_VOLT_3) || ( T1_SOURCE == ADS_VOLT_4) \
-    || ( T1_SOURCE == TEST_1) || ( T1_SOURCE == TEST_2) || ( T1_SOURCE == TEST_3) ) )
+    || ( T1_SOURCE == TEST_1) || ( T1_SOURCE == TEST_2) || ( T1_SOURCE == TEST_3) || ( T1_SOURCE == DS1820) ) )
  #error When defined, T1_SOURCE must be one of following values TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , SENSITIVITY , PPM , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4, 
 #endif
 #if defined( T2_SOURCE ) && ( !  ( ( T2_SOURCE == PPM) || ( T2_SOURCE == GLIDER_RATIO) || ( T2_SOURCE == SECONDS_SINCE_T0) || ( T2_SOURCE == AVERAGE_VSPEED_SINCE_TO) || ( T2_SOURCE == SENSITIVITY) \
     || ( T2_SOURCE == VOLT_1) || ( T2_SOURCE == VOLT_2) || ( T2_SOURCE == VOLT_3) || ( T2_SOURCE == VOLT_4) || ( T2_SOURCE == VOLT_5) || ( T2_SOURCE == VOLT_6)\
     || ( T2_SOURCE == ADS_VOLT_1) || ( T2_SOURCE == ADS_VOLT_2) || ( T2_SOURCE == ADS_VOLT_3) || ( T2_SOURCE == ADS_VOLT_4) \
-    || ( T2_SOURCE == TEST_1) || ( T2_SOURCE == TEST_2) || ( T2_SOURCE == TEST_3) ) )
+    || ( T2_SOURCE == TEST_1) || ( T2_SOURCE == TEST_2) || ( T2_SOURCE == TEST_3 || ( T1_SOURCE == DS1820) ) ) )
  #error When defined, T2_SOURCE must be one of following values TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , SENSITIVITY , PPM , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4, 
 #endif
 #if defined ( ADS_AIRSPEED_BASED_ON ) && ( ! ( ( ADS_AIRSPEED_BASED_ON == ADS_VOLT_1) || ( ADS_AIRSPEED_BASED_ON == ADS_VOLT_2) || ( ADS_AIRSPEED_BASED_ON == ADS_VOLT_3) || ( ADS_AIRSPEED_BASED_ON == ADS_VOLT_4) ) )
@@ -220,6 +225,9 @@ boolean gliderRatioPpmOn = false ;
   #endif
 #endif // end of USE_6050
  
+#ifdef ONE_WIRE_BUS
+ struct ONE_MEASUREMENT ds1820TempStruct ; 
+#endif
 
 
 #if defined(ADS_AIRSPEED_BASED_ON) and (ADS_AIRSPEED_BASED_ON >= ADS_VOLT1) and (ADS_AIRSPEED_BASED_ON <= ADS_VOLT_4)
@@ -424,6 +432,18 @@ extern uint8_t  volatile TxDataIdx ;
   #endif //DEBUG
 #endif
 
+#ifdef ONE_WIRE_BUS
+ // Setup a oneWire instance to communicate with any OneWire devices (not just Maxim/Dallas temperature ICs)
+ OneWire oneWire(ONE_WIRE_BUS);
+ // Pass our oneWire reference to Dallas Temperature. 
+ DallasTemperature sensors(&oneWire);
+ DeviceAddress tempDeviceAddress;
+ 
+ int  resolution = 10;
+ unsigned long lastTempRequest = 0;
+ int  ds1820DelayInMillis = 0;
+ float ds1820Temp = 0.0;
+#endif
 
 //Create a class used for telemetry ;content of class depends on the selected protocol (managed via #ifdef in different files)
 #ifdef DEBUG  
@@ -526,6 +546,8 @@ void setup(){
   oXs_Out.currentData=&oXs_Current.currentData;
 #endif
 
+
+
 #if defined (VARIO) &&  ( defined ( AIRSPEED) || (defined (ADS_MEASURE) && defined (ADS_AIRSPEED_BASED_ON) ) )
   compensatedClimbRate.available = false;
 //  compensatedClimbRate = 0;
@@ -553,9 +575,28 @@ void setup(){
 #if defined(ADS_MEASURE) && defined(ADS_AIRSPEED_BASED_ON)
   oXs_Out.airSpeedData=&oXs_ads1115.adsAirSpeedData;
 #endif            
+#endif //ADS_MEASURE
 
+#ifdef ONE_WIRE_BUS
+#ifdef DEBUG 
+  Serial.println(F("DS1820 Temp setting up.."));
+#endif 
 
+  sensors.begin();
+  sensors.getAddress(tempDeviceAddress, 0);
+  sensors.setResolution(tempDeviceAddress, resolution);
+  
+  sensors.setWaitForConversion(false);
+  sensors.requestTemperatures();
+  ds1820DelayInMillis = 750 / (1 << (12 - resolution)); 
+  lastTempRequest = millis(); 
+  
+#ifdef DEBUG 
+  Serial.println(F("finished"));
 #endif
+#endif//DS1820
+
+
 
 #if defined (SAVE_TO_EEPROM ) and ( SAVE_TO_EEPROM == YES )
   LoadFromEEProm();
@@ -821,6 +862,19 @@ void readSensors() {
     if( oXs_ads1115.readSensor() ) { // return true when a new average is available; it means that the new value has to be stored/processed.
     }
 #endif             // End ADS_MEASURE
+
+#ifdef ONE_WIRE_BUS
+  if (millis() - lastTempRequest >= ds1820DelayInMillis) // waited long enough??
+  {
+	  ds1820Temp = sensors.getTempCByIndex(0);
+	  sensors.requestTemperatures(); 
+    lastTempRequest = millis();
+    /*#ifdef DEBUG
+      Serial.print(F("T="));    
+      Serial.println( ds1820Temp );
+    #endif*/
+  }
+#endif
 
 
 #ifdef MEASURE_RPM
@@ -1106,6 +1160,11 @@ static uint32_t previousYawRateMillis ;
     test1.available = test2.available = test3.available = true ;
     newFlowAvailable = false ;
   }  
+#endif
+
+#if defined ( ONE_WIRE_BUS )
+	ds1820TempStruct.value = (uint32_t)ds1820Temp;
+	ds1820TempStruct.available = true;
 #endif
 
 //  test1.value = oXs_MS5611.varioData.absoluteAlt.value/10 ;
@@ -1928,6 +1987,12 @@ void OutputToSerial(){
   Serial.print(F(" ;mAh="));  
   Serial.print( oXs_Current.currentData.consumedMilliAmps.value);
 #endif // PIN_CURRENTSENSOR
+
+#ifdef ONE_WIRE_BUS
+  Serial.print(F(" ;T="));    
+  Serial.print( ds1820Temp );
+#endif
+
 #ifdef HOTT
   Serial.println("H.");
 #endif  

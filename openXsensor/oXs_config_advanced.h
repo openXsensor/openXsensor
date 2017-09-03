@@ -17,7 +17,7 @@
 // --------- 1 - Telemetry protocol ---------  Protocol is defined in oXs_config_basic.h file
 
 // ****** 1.1 - Pin connected to Rx ********
-#define PIN_SERIALTX      4                  // The pin which transmits the serial data to the telemetry receiver, Usually pin 4 (otherwise pin 2)
+#define PIN_SERIALTX      2                  // The pin which transmits the serial data to the telemetry receiver, Usually pin 4 (otherwise pin 2)
 
 // ***** 1.2 - SPORT_SENSOR_ID used (only for Frsky Sport protocol)  *****   See list of available values in oXs_config_descripion.h 
 #define         DATA_ID_VARIO  0x00  // = sensor 0 used for Alt and Vspeed
@@ -119,7 +119,7 @@
 
 // ***** 6.2 - Voltage parameters *****
 #define OFFSET_VOLTAGE      0   , 0     , 0    , 0    , 0   , 0                // optionnal, can be negative, must be integer, in principe in mv
-#define SCALE_VOLTAGE       1.0 , 1.0   , 204.6  , 204.6  , 1.0 , 1.0              // optionnal, can be negative, can have decimals
+#define SCALE_VOLTAGE       1.0 , 1.0   , 1.0  , 1.0  , 1.0 , 1.0              // optionnal, can be negative, can have decimals
 
 // ***** 6.3 - Max number of Lipo cells to measure (and transmit to Tx) *****      Is defined only in oXs_config_basic.h file
 
@@ -136,7 +136,7 @@
 //#define B_COEFFICIENT 3950 // B coefficient of NTC
 
 // ***** 6.5 - Current parameters  *****
-//#define PIN_CURRENTSENSOR   3  // uncomment when Arduino pin is used to measure the voltage provided by a current sensor
+#define PIN_CURRENTSENSOR   7  // uncomment when Arduino pin is used to measure the voltage provided by a current sensor
 #define MVOLT_AT_ZERO_AMP              2500    // in millivolt
 #define MVOLT_PER_AMP                  60      // in milliVolt per Amp
 #define RESISTOR_TO_GROUND_FOR_CURRENT  19.8   // put as comment or set to 0 if no divider is used
@@ -191,6 +191,13 @@
 #define TANK_CAPACITY                    1000                 // tank capacity in ml
 #define INIT_FLOW_PARAM  30 , 100 , 500 , 700 , 0 , 0, 0, 0   // define at 4 levels of flow (in mliter/min) (e.g. 30, 100, 500, 700) 4 correction parameters (in %; e.g. 20, 10, -5, 15); flow levels have to be sorted from low to high
 #define FLOW_SENSOR_RESET_AT_PPM         95                   // when absolute value of ppm is greater than this, flow counter is reset.
+
+
+//
+// DS1820 Temp Sensor is plugged into port 3 on the Arduino
+// !! 4K7 pullup to VCC needed !!
+#define ONE_WIRE_BUS 3
+
 
 // --------- 20 - Sequencer ---------
 //#define SEQUENCE_OUTPUTS 0b100000  
