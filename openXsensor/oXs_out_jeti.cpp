@@ -165,27 +165,27 @@ void OXS_OUT::initJetiListOfFields() {  // fill an array with the list of fields
     listOfFields[listOfFieldsIdx++] = VERTICAL_SPEED ;
     listOfFields[listOfFieldsIdx++] = ALTIMETER_MAX ;
 #endif
-#if defined(PIN_VOLTAGE) && defined(NUMBEROFCELLS) && (NUMBEROFCELLS > 0)      
+#if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined(NUMBEROFCELLS) && (NUMBEROFCELLS > 0)      
    listOfFields[listOfFieldsIdx++] = CELL_1 ;
    listOfFields[listOfFieldsIdx++] = CELL_MIN ;
    listOfFields[listOfFieldsIdx++] = CELL_TOT ;
 #endif
-#if defined(PIN_VOLTAGE) && defined(NUMBEROFCELLS) && (NUMBEROFCELLS > 1)      
+#if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined(NUMBEROFCELLS) && (NUMBEROFCELLS > 1)      
    listOfFields[listOfFieldsIdx++] = CELL_2 ;
 #endif
-#if defined(PIN_VOLTAGE) && defined(NUMBEROFCELLS) && (NUMBEROFCELLS > 2)      
+#if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined(NUMBEROFCELLS) && (NUMBEROFCELLS > 2)      
    listOfFields[listOfFieldsIdx++] = CELL_3 ;
 #endif
-#if defined(PIN_VOLTAGE) && defined(NUMBEROFCELLS) && (NUMBEROFCELLS > 3)      
+#if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined(NUMBEROFCELLS) && (NUMBEROFCELLS > 3)      
    listOfFields[listOfFieldsIdx++] = CELL_4 ;
 #endif
-#if defined(PIN_VOLTAGE) && defined(NUMBEROFCELLS) && (NUMBEROFCELLS > 4)      
+#if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined(NUMBEROFCELLS) && (NUMBEROFCELLS > 4)      
    listOfFields[listOfFieldsIdx++] = CELL_5 ;
 #endif
-#if defined(PIN_VOLTAGE) && defined(NUMBEROFCELLS) && (NUMBEROFCELLS > 5)      
+#if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined(NUMBEROFCELLS) && (NUMBEROFCELLS > 5)      
    listOfFields[listOfFieldsIdx++] = CELL_6 ;
 #endif
-#if defined(PIN_VOLTAGE) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_1 || VFAS_SOURCE == VOLT_2 || VFAS_SOURCE == VOLT_3 || VFAS_SOURCE == VOLT_4 || VFAS_SOURCE == VOLT_5 || VFAS_SOURCE == VOLT_6 )
+#if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_1 || VFAS_SOURCE == VOLT_2 || VFAS_SOURCE == VOLT_3 || VFAS_SOURCE == VOLT_4 || VFAS_SOURCE == VOLT_5 || VFAS_SOURCE == VOLT_6 )
     listOfFields[listOfFieldsIdx++] = VOLTAGE_SOURCE ;
 #endif
 #if ( defined(ARDUINO_MEASURES_A_CURRENT) && (ARDUINO_MEASURES_A_CURRENT == YES) ) || ( defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON))
@@ -310,7 +310,7 @@ boolean OXS_OUT::retrieveFieldIfAvailable(uint8_t fieldId , int32_t * fieldValue
 
 #endif  // NUMBEROFCELLS > 0 
 
-#if defined(PIN_VOLTAGE) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_1 )
+#if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_1 )
       case VOLT_1 :  
          if (! voltageData->mVolt[0].available  ) return 0;
          * fieldValue = voltageData->mVolt[0].value / 10;
@@ -318,7 +318,7 @@ boolean OXS_OUT::retrieveFieldIfAvailable(uint8_t fieldId , int32_t * fieldValue
          voltageData->mVolt[0].available = false ;
          break ;
 #endif
-#if defined(PIN_VOLTAGE) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_2 )
+#if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_2 )
       case VOLT_2 :  
          if ( ! voltageData->mVolt[1].available  ) return 0;
          * fieldValue = voltageData->mVolt[1].value / 10 ;
@@ -326,7 +326,7 @@ boolean OXS_OUT::retrieveFieldIfAvailable(uint8_t fieldId , int32_t * fieldValue
          voltageData->mVolt[1].available = false ;
           break ;
 #endif
-#if defined(PIN_VOLTAGE) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_3 )
+#if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_3 )
       case VOLT_3 :  
          if ( ! voltageData->mVolt[2].available  ) return 0;
          * fieldValue = voltageData->mVolt[2].value / 10 ;
@@ -334,7 +334,7 @@ boolean OXS_OUT::retrieveFieldIfAvailable(uint8_t fieldId , int32_t * fieldValue
          voltageData->mVolt[2].available = false ;
           break ;
 #endif
-#if defined(PIN_VOLTAGE) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_4 )
+#if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_4 )
       case VOLT_4 :  
          if ( ! voltageData->mVolt[3].available  ) return 0;
          * fieldValue = voltageData->mVolt[3].value / 10 ;
@@ -342,7 +342,7 @@ boolean OXS_OUT::retrieveFieldIfAvailable(uint8_t fieldId , int32_t * fieldValue
          voltageData->mVolt[3].available = false ;
           break ;
 #endif
-#if defined(PIN_VOLTAGE) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_5 )
+#if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_5 )
       case VOLT_5 :  
          if ( ! voltageData->mVolt[4].available  ) return 0;
          * fieldValue = voltageData->mVolt[4].value / 10 ;
@@ -350,7 +350,7 @@ boolean OXS_OUT::retrieveFieldIfAvailable(uint8_t fieldId , int32_t * fieldValue
          voltageData->mVolt[4].available = false ;
           break ;
 #endif
-#if defined(PIN_VOLTAGE) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_6 )
+#if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_6 )
       case VOLT_6 :  
          if ( ! voltageData->mVolt[5].available  ) return 0;
          * fieldValue = voltageData->mVolt[5].value / 10 ;
@@ -664,64 +664,64 @@ void OXS_OUT::fillJetiBufferWithText() {
 #endif  // NUMBEROFCELLS > 0 
 
 #if defined ( TEMPERATURE_SOURCE ) && ( TEMPERATURE_SOURCE == NTC )
-#if defined(PIN_VOLTAGE) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_1 )
+#if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_1 )
       case VOLT_1 :  
          mergeLabelUnit( textIdx, "Temperature", "C"  ) ;
          break ;
 #endif
-#if defined(PIN_VOLTAGE) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_2 )
+#if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_2 )
       case VOLT_2 :  
          mergeLabelUnit( textIdx, "Temperature", "C"  ) ;
           break ;
 #endif
-#if defined(PIN_VOLTAGE) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_3 )
+#if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_3 )
       case VOLT_3 :  
          mergeLabelUnit( textIdx, "Temperature", "C"  ) ;
           break ;
 #endif
-#if defined(PIN_VOLTAGE) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_4 )
+#if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_4 )
       case VOLT_4 :  
          mergeLabelUnit( textIdx, "Temperature", "C"  ) ;
           break ;
 #endif
-#if defined(PIN_VOLTAGE) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_5 )
+#if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_5 )
       case VOLT_5 :  
          mergeLabelUnit( textIdx, "Temperature", "C"  ) ;
           break ;
 #endif
-#if defined(PIN_VOLTAGE) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_6 )
+#if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_6 )
       case VOLT_6 :  
          mergeLabelUnit( textIdx, "Temperature", "C"  ) ;
           break ;
 #endif
 
 #else
-#if defined(PIN_VOLTAGE) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_1 )
+#if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_1 )
       case VOLT_1 :  
          mergeLabelUnit( textIdx, "Voltage 1", "V"  ) ;
          break ;
 #endif
-#if defined(PIN_VOLTAGE) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_2 )
+#if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_2 )
       case VOLT_2 :  
          mergeLabelUnit( textIdx, "Voltage 2", "V"  ) ;
           break ;
 #endif
-#if defined(PIN_VOLTAGE) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_3 )
+#if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_3 )
       case VOLT_3 :  
          mergeLabelUnit( textIdx, "Voltage 3", "V"  ) ;
           break ;
 #endif
-#if defined(PIN_VOLTAGE) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_4 )
+#if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_4 )
       case VOLT_4 :  
          mergeLabelUnit( textIdx, "Voltage 4", "V"  ) ;
           break ;
 #endif
-#if defined(PIN_VOLTAGE) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_5 )
+#if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_5 )
       case VOLT_5 :  
          mergeLabelUnit( textIdx, "Voltage 5", "V"  ) ;
           break ;
 #endif
-#if defined(PIN_VOLTAGE) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_6 )
+#if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_6 )
       case VOLT_6 :  
          mergeLabelUnit( textIdx, "Voltage 6", "V"  ) ;
           break ;

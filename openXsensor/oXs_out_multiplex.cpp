@@ -240,7 +240,7 @@ uint8_t OXS_OUT::formatOneValue( uint8_t currentFieldToSend) {
 //        break ;
 //#endif  // End defined (VARIO) && defined ( AIRSPEED)
 
-#ifdef PIN_VOLTAGE
+#if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES)
       case VOLT_1 :  
          if (! voltageData->mVolt[0].available  ) return 0;
          valueTemp = voltageData->mVolt[0].value / 100;
@@ -286,7 +286,7 @@ uint8_t OXS_OUT::formatOneValue( uint8_t currentFieldToSend) {
          break ;
 #endif
 
-#if (NUMBEROFCELLS > 0)     //  This part has still to be adapted for Multiplex !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && (NUMBEROFCELLS > 0)     //  This part has still to be adapted for Multiplex !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       case  CELL_1 :
           if ( ! voltageData->mVoltCell_Available[0]  ) return 0;
           valueTemp =  voltageData->mVoltCell[0] /100 ; 
