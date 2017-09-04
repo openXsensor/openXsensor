@@ -686,8 +686,11 @@ See OpenXsensor https://github.com/openXsensor/
 *                                Third pin  must be connected to cell 3 (via a voltage divider calculated for about 13 volt
 *                                Other pins may still be used for other data (temperature, current, ...)
 *     Notes: You must use voltage dividers to scale down the voltages on each pin of the lipo balance plug
-*            If you use the 1.1 internal reference, you can set all R1 = 10 kOhm. Then R2 could best be
+*            If you use the 1.1 internal reference, you can set all R1 (resistor to ground) = 10 kOhm. Then R2 (resistor to voltage) could best be
 *                   33 kOhm for Voltage1, 68 kOhm for Voltage2, 120 kOhm for Voltage3 and 150 kOhm for voltage4
+*            If you use the 5V Vcc as reference, you do not need a divider for Volt1 and if you use R1 (resistor to ground) = 10 kOhm. Then R2 (resistor to voltage) could best be
+*                   8.7 kOhm for Voltage2, 22 kOhm for Voltage3 and 27 kOhm for voltage4
+*                   
 *            Please note that the more cells you have the more inaccurate the measurements become specially if you do not calibrate the voltages.
 *            Probably, it make no sense to measure more that 3 or 4 cells individually
 *            If you don't want to transmit cell voltage, set value to 0 (zero) or comment the line.

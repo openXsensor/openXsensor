@@ -680,6 +680,9 @@ Ecrit par par Rainer Schlosshan traduction Thierry ZINK
 *     Remarques: Vous devez utiliser des diviseurs de tension pour réduire les tensions sur chaque broche de la boucle d'équilibrage lipo
 *            Si vous utilisez la référence interne 1.1 et si R1 = 10 kOhm pour chaque diviseur, alors R2 pourrait être 
 *                   33 kOhm pour la tension1, 68 kOhm pour la tension2, 120 kOhm pour la tension 3 et 150 kOhm pour la tension4
+*           Si vous utilisez 5V Vcc comme réference, vous ne devez pas utiliser de diviseur pour Volt1 et si pour les autres voltages vous utilisez R1 (resistor to ground) = 10 kOhm. Alors R2 (resistor to voltage) peut être
+*                   8.7 kOhm pour Voltage2, 22 kOhm pour Voltage3 et 27 kOhm pour voltage4
+*       
 *            Veuillez noter que plus vous disposez de cellules, plus la marge d'erreur augmente si vous ne calibrez pas les tensions.
 *            Si vous ne souhaitez pas transmettre de tension de cellule, réglez la valeur sur 0 (zéro) ou mettez la ligne en commentaire.
 *            Ce paramètre définit le nombre maximal de cellules que vous attendez à transmettre.
