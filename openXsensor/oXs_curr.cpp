@@ -79,7 +79,7 @@ void OXS_CURRENT::setupCurrent( ) {
 
 
 // **************** Read the Current sensor *********************
-#ifdef PIN_CURRENTSENSOR
+#if defined(ARDUINO_MEASURES_A_CURRENT) && (ARDUINO_MEASURES_A_CURRENT == YES)
 void OXS_CURRENT::readSensor() {
   static int cnt = 0;
 //  static int cntMAmp =0;

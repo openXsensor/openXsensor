@@ -81,11 +81,12 @@ public:
   void ads_requestNextConv(void) ; 
   void ads_calculateCurrent(void) ;
   void ads_calculate_airspeed( int16_t ads_difPressureADC ) ;
-#if defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON)
+#if defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON)
   struct CURRENTDATA adsCurrentData ;
   float floatConsumedMilliAmps ; // in mA
 #endif
-#if defined(ADS_MEASURE) && defined(ADS_AIRSPEED_BASED_ON)
+
+#if defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined(ADS_MEASURE) && defined(ADS_AIRSPEED_BASED_ON)
   struct AIRSPEEDDATA adsAirSpeedData ;
 #endif
   

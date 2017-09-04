@@ -8,7 +8,7 @@
 //#define DEBUGNTC
 #endif
 
-#ifdef PIN_VOLTAGE
+#if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES)
 
 extern unsigned long micros( void ) ;
 extern unsigned long millis( void ) ;
@@ -357,7 +357,7 @@ uint32_t OXS_VOLTAGE::calculateCell(int32_t V0 , int32_t V1 , int32_t V2 , uint8
 #endif // end calculateCell
 
 
-#if defined ( PIN_VOLTAGE ) && defined ( FIRST_NTC_ON_VOLT_NR )
+#if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined ( PIN_VOLTAGE ) && defined ( FIRST_NTC_ON_VOLT_NR )
 void  OXS_VOLTAGE::convertNtcVoltToTemp (int32_t &voltage ) {     //Calculate temperature using the Beta Factor equation
         // Convert the thermal stress value to resistance
         // we reuse here the mVolt calculated by oXs. The config must be adapted in a such a way that this mVolt is equal to the raw value returned by the ADC * 1000 (for better accuracy)

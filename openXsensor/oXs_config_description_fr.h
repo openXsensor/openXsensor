@@ -570,8 +570,9 @@ Ecrit par par Rainer Schlosshan traduction Thierry ZINK
 #define REFERENCE_VOLTAGE 5000
 ************************************************************************************************************************
 * 6.2 - Configuration des tensions *******************************************************************************************
-*     oXs peut mesurer jusqu'à 6 tensions d'entrée (veuillez noter que chez certains fabricants, les Arduino pro mini ont moins de broches analogiques disponibles).
+*     oXs peut mesurer jusqu'à 6 tensions d'entrée avec l'Arduino ADC (veuillez noter que chez certains fabricants, les Arduino pro mini ont moins de broches analogiques disponibles).
 *     Pour mesurer les tensions, vous:
+*       - Devez spécifier YES dans la ligne ARDUINO_MEASURES_VOLTAGES
 *       - Devez spécifier les broches analogiques (A0 à A7) connectées à une batterie (par exemple un lipo multicellulaire) ou à un capteur analogique (par exemple, un capteur de température qui transforme la température en une tension qui elle peut être mesurée)
 *       - Devez spécifier les valeurs des résistances utilisées pour les ponts diviseurs de tension (voir ci-dessous)
 *       - Pouvez spécifier un décalage et/ou une mise à l'échelle à appliquer
@@ -580,7 +581,8 @@ Ecrit par par Rainer Schlosshan traduction Thierry ZINK
 *          N'utilisez pas la même broche analogique pour mesurer une tension et un courant.
 *     /!\ Attention: ne pas utiliser les broches A4 et A5 si vous utilisez un vario ou un capteur de vitesse air ou un ads1115 (ces broches sont réservées au bus I2C de ces capteurs).
 *     
-*    Les broches utilisées pour mesurer certaines tensions sont définies dans la ligne #define PIN_VOLTAGE. Il est préférable de mettre cette ligne en commentaire (avec "//" à l'avant) si aucune tension ne doit être mesurée.
+*    Si vous ne mesurez pas de voltages avec l'Arduino ADC, mettez NO dans la ligne ARDUINO_MEASURES_VOLTAGES
+*    Les broches utilisées pour mesurer certaines tensions sont définies dans la ligne #define PIN_VOLTAGE.
 *     Lorsqu'elle est utilisée, cette ligne doit contenir 6 valeurs (séparées par des virgules); la première valeur est utilisée pour mesurer VOLT_1, la deuxième VOLT_2, ... jusqu'à VOLT_6
 *     Chaque valeur doit être un nombre de 0 à 7 (0 signifie A0 = pin analogique 0, 1 signifie A1, ... 7 signifie A7) ou la valeur "8" (quand la tension ne doit pas être mesurée)
 *     Note: les mêmes valeurs de broches analogiques peuvent être utilisées dans plusieurs tensions (par exemple pour VOLT1 et VOLT6).
@@ -648,6 +650,7 @@ Ecrit par par Rainer Schlosshan traduction Thierry ZINK
 *     
 ************************************************************************************************************************
                            VOLT1  VOLT2  VOLT3  VOLT4  VOLT5  VOLT6 
+#define ARDUINO_MEASURES_VOLTAGES YES
 #define PIN_VOLTAGE         2    , 0    , 2   ,  3 ,     8 ,    8             
 #define RESISTOR_TO_GROUND 12   , 20 ,   30 ,   40 ,    50 ,   60           // Mettre la valeur à 0 lorsqu'aucun diviseur n'est utilisé pour une de ces tensions
 #define RESISTOR_TO_VOLTAGE 50, 100.1 , 200,   300 ,   500 ,  600           // Mettre la valeur à 0 lorsqu'aucun diviseur n'est utilisé pour une de ces tensions
@@ -755,7 +758,7 @@ Ecrit par par Rainer Schlosshan traduction Thierry ZINK
 *     Il nécessite un matériel supplémentaire. Il peut s'agir d'un IC comme le ACS712 (pour 5, 20, 30 ampères) ou le ACS758 (pour 50, 100, 150, 200 ampères).
 *     La plupart des capteurs sont bidirectionnels, mais le ACS758 de type "U" ne peut mesurer qu'un courant unidirectionnel (fournissant alors une sensibilité plus élevée).
 *     Ces capteurs de courant sont assez bon marché (voir par exemple ebay ou aliexpress ) et renvoyent une tension proportionnelle au courant. Cette tension est mesurée par oXs via une broche analogique.
-*     La valeur de la PIN à remplir dans oXs_config.h est un nombre de 0 à 7 (0 signifie A0, 1 signifie A1, ... 7 signifie A7).
+*     La valeur de la PIN à remplir dans oXs_config_advanced.h est un nombre de 0 à 7 (0 signifie A0, 1 signifie A1, ... 7 signifie A7).
 *     Si un capteur de courant est utilisé, ne pas utiliser une broche déjà utilisée pour mesurer une tension.
 * /!\ Veillez à ce que la tension appliquée à la broche de l'Arduino ne dépasse pas Vcc (normalement 5 volts) ou 1,1 volt (si la tension de référence interne est utilisée)
 *     Il se peut que vous deviez utiliser un diviseur de tension afin de réduire la tension appliquée à la broche Arduino.
@@ -768,7 +771,7 @@ Ecrit par par Rainer Schlosshan traduction Thierry ZINK
 *       Par conséquent, VCC / 2 (= O amp) varie avec VCC.
 *       Ceci est un problème si l'Arduino ADC est configuré pour utiliser la référence interne de 1.1 volts avec un capteur bidirecttionnel.
 *       Donc, dans ce cas, il est préférable de configurer l'ADC afin d'utiliser VCC comme référence pour la conversion.
-*       Pour utiliser un capteur de courant, vous devez dé-commenter la ligne //#define PIN_CURRENTSENSOR et spécifier la broche Arduino connectée au capteur utilisé. 
+*       Pour utiliser un capteur de courant, vous devez mettre YES dans la ligne ARDUINO_MEASURES_A_CURRENT et vous devez spécifier dans PIN_CURRENTSENSOR la broche Arduino connectée au capteur utilisé. 
 *       Vous devez également définir 2 paramètres en fonction du type de capteur utilisé; Ces paramètres sont donnés dans la fiche technique du capteur.
 *         - MVOLT_AT_ZERO_AMP  =  MilliVolt généré par le capteur lorsque le courant est 0 Amp: la valeur normale est:
 *                                       - Pour un capteur bidirectionnel: Vcc du capteur de courant / 2 (donc = 2500 si le capteur est connecté à Arduino Vcc et Arduino Vcc est de 5 Volt).
@@ -779,7 +782,7 @@ Ecrit par par Rainer Schlosshan traduction Thierry ZINK
 *        Voir la section 6.2 ci-dessus sur le diviseur de tension. Le principe est tout simplement le même, mais les noms des 2 paramètres sont:
 *          - RESISTOR_TO_GROUND_FOR_CURRENT
 *          - RESISTOR_TO_CURRENT_SENSOR 
-*  Remarque: ces paramètres sont automatiquement négligés lorsque PIN-CURRENTSENSOR n'est pas défini (= mis en commentaire)
+*  Remarque: ces paramètres sont automatiquement négligés lorsque ARDUINO_MEASURES_A_CURRENT est NO
 *  Remarque: Lorsque un capteur de courant est utilisé, oXs peut également calculer et transmettre la consommation de courant (milliAh) et le "carburant restant" (fuel) (en % descendant de 100% à 0%).
 *        Si vous voulez ce dernier, utilisez une configuration comme "Fuel , MILLIAH , -100 , 4000 ,0" dans la section "données à transmettre" (et remplacez 4000 par la capacité - en milliAmph - de votre batterie) (voir ci-dessous) .
 *        Avec les émetteurs utilisant le logiciel OpenTx ou Ersky9x, il est préférable de laisser l'émetteur calculer ces valeurs en fonction du courant.
@@ -787,7 +790,8 @@ Ecrit par par Rainer Schlosshan traduction Thierry ZINK
 *               Par exemple: avec Ersky9x, dans le menu de télémétrie configuré "courant source" défini "FAS"; Dans «Alarme mAh», réglez le mah que vous désirez pour que l'alarme sonne et sélectionnez le son d'avertissement / la voix,
 *               Pour n'utiliser que 70% d'une lipo de 2200 mAh, utilisez 1540 comme capacité. Le pourcentage de FUEL commencera à 100% et descendra 0% lorsque 1540 sont consommés.
 ************************************************************************************************************************
-//#define PIN_CURRENTSENSOR         2
+#define ARDUINO_MEASURES_A_CURRENT          NO
+#define PIN_CURRENTSENSOR         2
 #define MVOLT_AT_ZERO_AMP           600
 #define MVOLT_PER_AMP               60
 #define RESISTOR_TO_GROUND_FOR_CURRENT  10
@@ -802,8 +806,8 @@ Ecrit par par Rainer Schlosshan traduction Thierry ZINK
 *    oXs permet de convertir une des mesures de tension en courant et consommation (lorsque l’ads1115 est connecté à un capteur de courant)
 *    oXs permet également de convertir une des mesures de tension en vitesse et vario compensé (lorsque l’ads1115 est connecté à un capteur baro différentiel comme le MPXV7002)
 *          Le capteur MPXV7002 est une alternative moins coûteuse et plus facile à trouver que le capteur MS4525 (mais elle est moins précise)
-*    Pour utiliser un ads1115 ADC, vous devez dé-commenter ACD_MEASURE et spécifier plusieurs groupes de 4 paramètres.
-*    /!\ Attention: laissez ADC_MEASURE en commentaire si ads1115 n'est pas utilisé (afin d'éviter les erreurs I2C et de ralentir oXs)
+*    Pour utiliser un ads1115 ADC, vous devez sélectionner YES dans la ligne AN_ADS1115_IS_CONNECTED (dans oXs_config_basic.h) et spécifier plusieurs groupes de 4 paramètres.
+*    /!\ Attention: mettez NO AN_ADS1115_IS_CONNECTED si un ads1115 n'est pas utilisé (afin d'éviter les erreurs I2C et de ralentir oXs)
 *        Dans ACD_MEASURE, vous spécifiez les broches ads115 utilisées pour les mesures de tension
 *              Remplissez toujours les 4 valeurs. Pourtant, si vous n'avez pas besoin de toutes les 4 mesures, utilisez la valeur ADS_OFF pour les mesures non requises
 *              Note : Plus vous demandez de mesures, plus il faudra de temps pour obtenir chacune d'elles car elles sont mesurées l'une à la suite de l'autre
@@ -851,7 +855,8 @@ Ecrit par par Rainer Schlosshan traduction Thierry ZINK
 *                     - Définissez le taux de rafraîchissement de l’ads afin de faire la conversion ADC le plus rapidement possible; utilisez donc: ADS_RATE MS2, MS2, MS2, MS2
 *                     - Les autres paramètres ne sont pas critiques (non utilisés pour la vitesse air)
 ************************************************************************************************************************
-#define ADS_MEASURE A1_TO_GND ,   ADS_OFF , ADS_OFF , ADS_OFF   // Dé-commentez lorsque l'ADS1115 est utilisé; Sélectionnez 4 valeurs parmi A0_TO_A1, A0_TO_A3, A1_TO_A3, A2_TO_A3, A0_TO_GND, A1_TO_GND, A2_TO_GND, A3_TO_GND, ADS_OFF
+#define AN_ADS1115_IS_CONNECTED NO                              // Sélectionnez parmi YES et NO
+#define ADS_MEASURE A1_TO_GND ,   ADS_OFF , ADS_OFF , ADS_OFF   // Si un ads1115 est utilisé, sélectionnez 4 valeurs parmi A0_TO_A1, A0_TO_A3, A1_TO_A3, A2_TO_A3, A0_TO_GND, A1_TO_GND, A2_TO_GND, A3_TO_GND, ADS_OFF
 #define ADS_FULL_SCALE_VOLT  MV4096, MV4096, MV4096, MV4096   // Sélectionnez parmi MV6144 MV4096 MV2048 MV1024 MV512 MV256
 #define ADS_OFFSET 0, 0 , 0 , 0                 // Doit être un nombre entier (positif ou négatif)
 #define ADS_SCALE 2, 10, 1, 1                   // Peut est un float (avec décimales)
@@ -940,16 +945,15 @@ Ecrit par par Rainer Schlosshan traduction Thierry ZINK
 *     -   #define A_GPS_IS_CONNECTED      NO        : Remplacez NO par YES si un GPS est connecté et doit transmettre ses données
 *     -   #define GPS_SPEED_IN_KMH          : Dé-commentez cette ligne si la vitesse GPS doit être envoyée en km / h au lieu de nœud / h (note: le protocole Frsky exige une valeur en noeud, la conversion en km/h se fait dans l'émetteur)
 *     -   #define GPS_SPEED_3D              : Décommentez cette ligne si la vitesse GPS doit être la vitesse 3d au lieu de la vitesse 2d (note: 3d est probablement moins précis - à tester)
-*     
+*     -   #define GPS_REFRESH_RATE  5       // taux de rafraichissment des données du GPS; selectionnez parmi 1, 5 or 10 (Hz). Par défaut = 5 Hz; Ublox NEO6 ne supporte pas le 10 Hz   
 ************************************************************************************************************************
-#define A_GPS_IS_CONNECTED      NO      // Remplacez NO par YES si un GPS est connecté et doit transmettre ses données
-//#define GPS_SPEED_IN_KMH        // Décommettez cette ligne si la vitesse GPS doit être envoyée en km / h au lieu de nœud / h
-#define GPS_SPEED_3D            // Décommettez cette ligne si la vitesse GPS doit être la vitesse 3d au lieu de la vitesse 2d (note: 3d est probablement moins précis - à tester)
+#define A_GPS_IS_CONNECTED      YES                 // Selectionnez parmi YES , NO
+//#define GPS_SPEED_IN_KMH  // Dé-commentez cette ligne si la vitesse GPS doit être envoyée en km/h au lieu de noeud/h (ne pas utiliser pour les protocole FRSKY, HOTT et JETI car c'est le TX qui fait la conversion)
+#define GPS_SPEED_3D      // Décommentez cette ligne si la vitesse GPS doit être la vitesse 3d au lieu de la vitesse 2d (note: 3d est probablement moins précis - à tester)
+#define GPS_REFRESH_RATE  5       // taux de rafraichissment des données du GPS; selectionnez parmi 1, 5 or 10 (Hz). Par défaut = 5 Hz; Ublox NEO6 ne supporte pas le 10 Hz  
 ************************************************************************************************************************
 
-
-
-****** 10 - IMU 6050 (capteur accéléromètre/gyroscope) (optionnel) et HMC5883 (magnétomètre)) ********************************************************
+****** 10 - IMU 6050 (capteur accéléromètre/gyroscope) (optionnel) et HMC5883 (magnétomètre)) *************************************************
 // ***** 10.1 - IMU 6050 *****
 *  Il est possible de connecter un capteur IMU (= accéléromètre / gyro) à l'Arduino; C'est optionnel.
 *  Cela permet :

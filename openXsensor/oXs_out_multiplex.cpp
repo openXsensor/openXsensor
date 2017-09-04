@@ -273,7 +273,7 @@ uint8_t OXS_OUT::formatOneValue( uint8_t currentFieldToSend) {
           break ;
 #endif
 
-#if defined (PIN_CURRENTSENSOR)
+#if defined(ARDUINO_MEASURES_A_CURRENT) && (ARDUINO_MEASURES_A_CURRENT == YES)
       case CURRENTMA :
          if ( ! currentData->milliAmps.available  ) return 0;
          valueTemp = currentData->milliAmps.value /100;

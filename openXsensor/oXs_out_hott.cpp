@@ -165,16 +165,16 @@ void OXS_OUT::sendData() {
 #if  defined(NUMBEROFCELLS) && (NUMBEROFCELLS >= 6) 
               TxHottData.gamMsg.cell[5] =  voltageData->mVoltCell[5] /20 ; // Volt Cell 6 (in 2 mV increments, 210 == 4.20 V)
 #endif
-#if defined(BATTERY_1_SOURCE) && ( (BATTERY_1_SOURCE == VOLT_1) || (BATTERY_1_SOURCE == VOLT_2) || (BATTERY_1_SOURCE == VOLT_3) || (BATTERY_1_SOURCE == VOLT_4) || (BATTERY_1_SOURCE == VOLT_5) || (BATTERY_1_SOURCE == VOLT_6) ) && defined(PIN_VOLTAGE)
+#if defined(BATTERY_1_SOURCE) && ( (BATTERY_1_SOURCE == VOLT_1) || (BATTERY_1_SOURCE == VOLT_2) || (BATTERY_1_SOURCE == VOLT_3) || (BATTERY_1_SOURCE == VOLT_4) || (BATTERY_1_SOURCE == VOLT_5) || (BATTERY_1_SOURCE == VOLT_6) ) && defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES)
               TxHottData.gamMsg.Battery1 = voltageData->mVolt[BATTERY_1_SOURCE - VOLT_1].value / 100;    //battery 1 voltage  0.1V steps. 55 = 5.5V only pos. voltages
 #endif
-#if defined(BATTERY_1_SOURCE) && ( (BATTERY_1_SOURCE == ADS_VOLT_1) || (BATTERY_1_SOURCE == ADS_VOLT_2) || (BATTERY_1_SOURCE == ADS_VOLT_3) || (BATTERY_1_SOURCE == ADS_VOLT_4) ) && defined(ADS_MEASURE)
+#if defined(BATTERY_1_SOURCE) && ( (BATTERY_1_SOURCE == ADS_VOLT_1) || (BATTERY_1_SOURCE == ADS_VOLT_2) || (BATTERY_1_SOURCE == ADS_VOLT_3) || (BATTERY_1_SOURCE == ADS_VOLT_4) ) && defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined(ADS_MEASURE)
               TxHottData.gamMsg.Battery1 = ads_Conv[BATTERY_1_SOURCE - ADS_VOLT_1].value / 100;    //battery 1 voltage  0.1V steps. 55 = 5.5V only pos. voltages
 #endif
-#if defined(BATTERY_2_SOURCE) && ( (BATTERY_2_SOURCE == VOLT_1) || (BATTERY_2_SOURCE == VOLT_2) || (BATTERY_2_SOURCE == VOLT_3) || (BATTERY_2_SOURCE == VOLT_4) || (BATTERY_2_SOURCE == VOLT_5) || (BATTERY_2_SOURCE == VOLT_6) ) && defined(PIN_VOLTAGE)
+#if defined(BATTERY_2_SOURCE) && ( (BATTERY_2_SOURCE == VOLT_1) || (BATTERY_2_SOURCE == VOLT_2) || (BATTERY_2_SOURCE == VOLT_3) || (BATTERY_2_SOURCE == VOLT_4) || (BATTERY_2_SOURCE == VOLT_5) || (BATTERY_2_SOURCE == VOLT_6) ) && defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES)
               TxHottData.gamMsg.Battery2 = voltageData->mVolt[BATTERY_2_SOURCE - VOLT_1].value / 100;    //battery 1 voltage  0.1V steps. 55 = 5.5V only pos. voltages
 #endif
-#if defined(BATTERY_2_SOURCE) && ( (BATTERY_2_SOURCE == ADS_VOLT_1) || (BATTERY_2_SOURCE == ADS_VOLT_2) || (BATTERY_2_SOURCE == ADS_VOLT_3) || (BATTERY_2_SOURCE == ADS_VOLT_4) ) && defined(ADS_MEASURE)
+#if defined(BATTERY_2_SOURCE) && ( (BATTERY_2_SOURCE == ADS_VOLT_1) || (BATTERY_2_SOURCE == ADS_VOLT_2) || (BATTERY_2_SOURCE == ADS_VOLT_3) || (BATTERY_2_SOURCE == ADS_VOLT_4) ) && defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined(ADS_MEASURE)
               TxHottData.gamMsg.Battery1 = ads_Conv[BATTERY_2_SOURCE - ADS_VOLT_1].value / 100;    //battery 1 voltage  0.1V steps. 55 = 5.5V only pos. voltages
 #endif
 
@@ -190,7 +190,7 @@ void OXS_OUT::sendData() {
               TxHottData.gamMsg.temperature1 = oXs_MS5611.varioData.sensitivity.value + 20 ; // Hott applies an offset of 20. A value of 20 = 0°C    
 #elif defined(TEMPERATURE_1_SOURCE) && (TEMPERATURE_1_SOURCE == PPM ) && defined(PIN_PPM)
               TxHottData.gamMsg.temperature1 = ppm.value + 120 ; // Hott applies an offset of 20. A value of 20 = 0°C    
-#elif defined(TEMPERATURE_1_SOURCE) && ( (TEMPERATURE_1_SOURCE == VOLT_1 ) || (TEMPERATURE_1_SOURCE == VOLT_2 ) || (TEMPERATURE_1_SOURCE == VOLT_3 ) || (TEMPERATURE_1_SOURCE == VOLT_4 ) || (TEMPERATURE_1_SOURCE == VOLT_5 ) || (TEMPERATURE_1_SOURCE == VOLT_6 ) )  && defined(PIN_VOLTAGE)
+#elif defined(TEMPERATURE_1_SOURCE) && ( (TEMPERATURE_1_SOURCE == VOLT_1 ) || (TEMPERATURE_1_SOURCE == VOLT_2 ) || (TEMPERATURE_1_SOURCE == VOLT_3 ) || (TEMPERATURE_1_SOURCE == VOLT_4 ) || (TEMPERATURE_1_SOURCE == VOLT_5 ) || (TEMPERATURE_1_SOURCE == VOLT_6 ) )  && defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES)
               TxHottData.gamMsg.temperature1 = (voltageData->mVolt[TEMPERATURE_1_SOURCE - VOLT_1].value ) + 20 ; // Hott applies an offset of 20. A value of 20 = 0°C    
 #else
               TxHottData.gamMsg.temperature1 = 20 ; // Hott applies an offset of 20. A value of 20 = 0°C    
@@ -208,7 +208,7 @@ void OXS_OUT::sendData() {
               TxHottData.gamMsg.temperature2 = oXs_MS5611.varioData.sensitivity.value + 20 ; // Hott applies an offset of 20. A value of 20 = 0°C    
 #elif defined(TEMPERATURE_2_SOURCE) && (TEMPERATURE_2_SOURCE == PPM ) && defined(PIN_PPM)
               TxHottData.gamMsg.temperature2 = ppm.value + 120 ; // Hott applies an offset of 20. A value of 20 = 0°C    
-#elif defined(TEMPERATURE_2_SOURCE) && ( (TEMPERATURE_2_SOURCE == VOLT_1 ) || (TEMPERATURE_2_SOURCE == VOLT_2 ) || (TEMPERATURE_2_SOURCE == VOLT_3 ) || (TEMPERATURE_2_SOURCE == VOLT_4 ) || (TEMPERATURE_2_SOURCE == VOLT_5 ) || (TEMPERATURE_2_SOURCE == VOLT_6 ) ) && defined(PIN_VOLTAGE)
+#elif defined(TEMPERATURE_2_SOURCE) && ( (TEMPERATURE_2_SOURCE == VOLT_1 ) || (TEMPERATURE_2_SOURCE == VOLT_2 ) || (TEMPERATURE_2_SOURCE == VOLT_3 ) || (TEMPERATURE_2_SOURCE == VOLT_4 ) || (TEMPERATURE_2_SOURCE == VOLT_5 ) || (TEMPERATURE_2_SOURCE == VOLT_6 ) ) && defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES)
               TxHottData.gamMsg.temperature2 = (voltageData->mVolt[TEMPERATURE_2_SOURCE - VOLT_1].value ) + 20 ; // Hott applies an offset of 20. A value of 20 = 0°C    
 #else
               TxHottData.gamMsg.temperature2 = 20 ; // Hott applies an offset of 20. A value of 20 = 0°C    
@@ -227,13 +227,13 @@ void OXS_OUT::sendData() {
               TxHottData.gamMsg.climbrate_L = 30000 ;          //climb rate in 0.01m/s. Value of 30000 = 0.00 m/s
 #endif
               TxHottData.gamMsg.climbrate3s = 120 ;                     //#28 climb rate in m/3sec. Value of 120 = 0m/3sec
-#if defined(PIN_CURRENTSENSOR)
+#if defined(ARDUINO_MEASURES_A_CURRENT) && (ARDUINO_MEASURES_A_CURRENT == YES)
               TxHottData.gamMsg.current =  currentData->milliAmps.value /100;               //current in 0.1A steps 100 == 10,0A
 #endif
-#if defined(MAIN_BATTERY_SOURCE) && ( (MAIN_BATTERY_SOURCE == VOLT_1) || (MAIN_BATTERY_SOURCE == VOLT_2) || (MAIN_BATTERY_SOURCE == VOLT_3) || (MAIN_BATTERY_SOURCE == VOLT_4) || (MAIN_BATTERY_SOURCE == VOLT_5) || (MAIN_BATTERY_SOURCE == VOLT_6) ) && defined(PIN_VOLTAGE)
+#if defined(MAIN_BATTERY_SOURCE) && ( (MAIN_BATTERY_SOURCE == VOLT_1) || (MAIN_BATTERY_SOURCE == VOLT_2) || (MAIN_BATTERY_SOURCE == VOLT_3) || (MAIN_BATTERY_SOURCE == VOLT_4) || (MAIN_BATTERY_SOURCE == VOLT_5) || (MAIN_BATTERY_SOURCE == VOLT_6) ) && defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES)
               TxHottData.gamMsg.main_voltage = voltageData->mVolt[MAIN_BATTERY_SOURCE - VOLT_1].value / 100;          //Main power voltage using 0.1V steps 100 == 10,0V] / 100
 #endif
-#if defined(PIN_CURRENTSENSOR)
+#if defined(ARDUINO_MEASURES_A_CURRENT) && (ARDUINO_MEASURES_A_CURRENT == YES)
               TxHottData.gamMsg.batt_cap =  currentData->consumedMilliAmps.value / 10 ;   // used battery capacity in 10mAh steps
 #endif
 #ifdef AIRSPEED       

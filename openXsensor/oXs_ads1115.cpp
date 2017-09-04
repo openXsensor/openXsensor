@@ -16,7 +16,7 @@ extern unsigned long micros( void ) ;
 extern unsigned long millis( void ) ;
 extern void delay(unsigned long ms) ;
 
-#ifdef ADS_MEASURE 
+#if defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined( ADS_MEASURE) 
   const uint8_t ads_Measure[4] = {ADS_MEASURE} ; //  how to configure the multiplexer
   const uint8_t ads_Gain[4] = { ADS_FULL_SCALE_VOLT }; //  how to configure the programmable gain amplifier
   const uint8_t ads_Rate[4] = { ADS_RATE }; // how to configure the time of conversion
@@ -65,7 +65,7 @@ void OXS_ADS1115::setup() {
   ads_Counter[2] = ads_MaxCount[2] ;
   ads_Counter[3] = ads_MaxCount[3] ;
   
-#if defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON)
+#if defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON)
   adsCurrentData.milliAmps.available = false ;
   adsCurrentData.consumedMilliAmps.available = false ;
 #endif            
@@ -94,7 +94,7 @@ boolean OXS_ADS1115::readSensor() {  // return true when there is a new average 
       ads_SumOfConv[ads_CurrentIdx] = 0 ;            // reset the sum 
       ads_Counter[ads_CurrentIdx] = ads_MaxCount[ads_CurrentIdx] ;   // reset the counter to the number of count before averaging
       ads_Last_Conv_Idx = ads_CurrentIdx ;
-#if defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON)
+#if defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON)
             if ( ads_CurrentIdx == ( ADS_CURRENT_BASED_ON - ADS_VOLT_1 ) ) ads_calculateCurrent() ;
 #endif            
 
@@ -151,7 +151,7 @@ boolean OXS_ADS1115::readSensor() {  // return true when there is a new average 
             ads_SumOfConv[ads_CurrentIdx] = 0 ;            // reset the sum 
             ads_Counter[ads_CurrentIdx] = ads_MaxCount[ads_CurrentIdx] ;   // reset the counter to the number of count before averaging
             ads_Last_Conv_Idx = ads_CurrentIdx ;
-#if defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON)
+#if defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON)
             if ( ads_CurrentIdx == ( ADS_CURRENT_BASED_ON - ADS_VOLT_1 ) ) ads_calculateCurrent() ;
 #endif            
           }
@@ -195,7 +195,7 @@ void OXS_ADS1115::ads_requestNextConv(void) {
 } // end of Ads_requestNextConv
 
 
-#if defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON) // this part is compiled only when the config ask for current
+#if defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON) // this part is compiled only when the config ask for current
 void OXS_ADS1115::ads_calculateCurrent(void) {
     
     static int32_t sumCurrent = 0 ;
@@ -341,7 +341,7 @@ void OXS_ADS1115::ads_calculate_airspeed( int16_t ads_difPressureAdc ) {
 }
 #endif // end of conditional compiling for calculate airspeed.
 
-#endif // end of #ifdef ADS_MEASURE 
+#endif // end of #if defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined( ADS_MEASURE) 
 
 /*
                 difPressureAdc =  ( ( (data[0] << 8) + data[1] ) & 0x3FFF) - 0x2000   ; // substract in order to have a zero value 

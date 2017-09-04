@@ -1,7 +1,7 @@
 // OpenXsensor https://github.com/openXsensor/
 // started by Rainer Schlosshan and maintained by Michel Strens
 
-// This is version : 8.2.2 (20 august 2017)
+// This is version : 8.2.3 (4 sept 2017)
 
 //******************************************************************************************************************************************************* //
 //                                                                                                                                                        //
@@ -66,11 +66,12 @@
 // --------- 3 - PPM settings ---------            see oXs_config_advanced.h (default, this option is not active)
 
 // --------- 4 - Vario settings ---------
-// ***** 4.1 - Connecting 1 or 2 barometric sensor(s)  *****
-#define FIRST_BARO_SENSOR_USE   NO_BARO       // select between NO_BARO , MS5611, GY86 , BMP085 , BMP180 , BMP280  
-
+// ***** 4.1 - Connecting 1 or 2 barometric sensor(s)  ***** 
+#define FIRST_BARO_SENSOR_USE   MS5611       // select between NO_BARO , MS5611, GY86 , BMP085 , BMP180 , BMP280  
+                                              // Note : when used, second sensor is to define in oXs_config_advanced.h
+                                              
 // ***** 4.2 - Type of Vspeed to transmit  *****                                    
-#define VSPEED_SOURCE  FIRST_BARO    // select between FIRST_BARO, SECOND_BARO , AVERAGE_FIRST_SECOND, AIRSPEED_COMPENSATED , BARO_AND_IMU or PPM_SELECTION
+#define VSPEED_SOURCE  FIRST_BARO    // select between FIRST_BARO, BARO_AND_IMU, SECOND_BARO , AVERAGE_FIRST_SECOND, AIRSPEED_COMPENSATED or PPM_SELECTION
 
 // ***** 4.3 - Sensitivity predefined by program *****                               see oXs_config_advanced.h (normally no need to change it)
 // ***** 4.4 - Sensitivity adjusted from the TX *****                                see oXs_config_advanced.h (normally no need to change it)
@@ -85,40 +86,40 @@
 
 // ***** 6.1 - Voltage Reference to measure voltages and current *****              see oXs_config_advanced.h when voltage reference is not Vcc and 5 volt
 
-// ***** 6.2 - Voltage parameters *****                                             see oXs_config_advanced.h for additionnal parameters (scale , offset)
-//#define PIN_VOLTAGE         2  , 8     , 0   , 8    , 8   , 8               // set this line as comment if no one voltage has to be measured, set the value to 8 for the voltage(s) not to be measured.
-#define RESISTOR_TO_GROUND  359 , 20    , 0  , 0 , 0  , 0               // set value to 0 when no divider is used for a voltage; can contains decimals 
-#define RESISTOR_TO_VOLTAGE 1178 , 100.1 , 0 , 39   , 500 , 0              // set value to 0 when no divider is used for a voltage; can contains decimals 
+// ***** 6.2 - Voltage parameters *****                                             see oXs_config_advanced.h for additionnal parameters when YES
+#define ARDUINO_MEASURES_VOLTAGES   NO                                        //   select between YES , NO (When NO, following lines are discarded)
 
 // ***** 6.3 - Max number of Lipo cells to measure (and transmit to Tx) *****
 #define NUMBEROFCELLS 0                                                 // Put this line as comment or set value to 0 (zero) if you do not want to transmit cell voltages.
 
 // ***** 6.4 - Convert voltage to temperature (° Celcius) *****                    see oXs_config_advanced.h if you want to measure temperature(s) with thermistor
 
-// ***** 6.5 - Current parameters  *****                                           see oXs_config_advanced.h if you want to measure current with a current sensor
+// ***** 6.5 - Current parameters  *****                                           see also oXs_config_advanced.h for additionnal parameters if you want to measure current with a current sensor
+#define ARDUINO_MEASURES_A_CURRENT   NO                                       //   select between YES , NO 
 
-// ***** 6.6 - Ads1115 parameters  *****                                           see oXs_config_advanced.hif you want to measure voltages with higher accuracy using n ads1115 module
+// ***** 6.6 - Ads1115 parameters  *****                                           see oXs_config_advanced.h for additional parameters when AN_ADS1115_IS_CONNECTED is YES
+#define AN_ADS1115_IS_CONNECTED   NO                 // select between YES , NO
 
 // --------- 7 - RPM (rotations per minute) settings ---------
-#define CALCULATE_RPM     NO                                               // select between YES , NO       
+#define CALCULATE_RPM     NO                         // select between YES , NO       
 
 // --------- 8 - Persistent memory settings ---------                             ( see also oXs_config_advanced.h - used mainly when a flow sensor is connected )
 #define SAVE_TO_EEPROM     NO
 
-// --------- 9 - GPS ---------------                                       see oXs_config_advanced.h for additionnal parameters (normally no need to change them)
-#define A_GPS_IS_CONNECTED      YES                 // select between YES , NO
+// --------- 9 - GPS ---------------                                               see oXs_config_advanced.h for additionnal parameters (normally no need to change them)
+#define A_GPS_IS_CONNECTED      NO                 // select between YES , NO
 
 // --------- 10 - IMU 6050 --- (accelerometer + gyro)  and HMC5883 (magnetometer) --  see oXs_config_advanced.h for additionnal parameters e.g. about calibration
 // ***** 10.1 - IMU 6050 *****
-#define A_MPU6050_IS_CONNECTED      NO             // select between YES , NO
+#define A_MPU6050_IS_CONNECTED      NO              // select between YES , NO
 
 // ***** 10.2 - HMC5883 *****
 #define CALCULATE_YAW_WITH_HMC5883   NO             // select between YES , NO ; YES requires that A_MPU6050_IS_CONNECTED is YES here above
 
 // --------- 11 - Flow sensor ---------------                                       if YES, see also oXs_config_advanced.h 
-#define A_FLOW_SENSOR_IS_CONNECTED      NO                   // select between YES , NO
+#define A_FLOW_SENSOR_IS_CONNECTED      NO          // select between YES , NO
 
-// --------- 20 - Sequencer ---------                                       see oXs_config_advanced.h (only when oXs has to generate signals in sequence)
+// --------- 20 - Sequencer ---------                                               see oXs_config_advanced.h (only when oXs has to generate signals in sequence)
 
 
 #endif// End define OXS_CONFIG_BASIC_h

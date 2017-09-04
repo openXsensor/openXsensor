@@ -118,6 +118,9 @@
 //#define REFERENCE_VOLTAGE 4970    // set value in milliVolt; if commented, oXs will use or 1100 (if internal ref is used) or 5000 (if internal ref is not used) 
 
 // ***** 6.2 - Voltage parameters *****
+#define PIN_VOLTAGE         2  , 8     , 0   , 8    , 8   , 8               //  Fill 6 values; set to 0 up to 7 for analog pins A0 up to A7 ; set the value to 8 for the voltage(s) not to be measured.
+#define RESISTOR_TO_GROUND  359 , 20    , 0  , 0 , 0  , 0               // set value to 0 when no divider is used for a voltage; can contains decimals 
+#define RESISTOR_TO_VOLTAGE 1178 , 100.1 , 0 , 39   , 500 , 0              // set value to 0 when no divider is used for a voltage; can contains decimals 
 #define OFFSET_VOLTAGE      0   , 0     , 0    , 0    , 0   , 0                // optionnal, can be negative, must be integer, in principe in mv
 #define SCALE_VOLTAGE       1.0 , 1.0   , 204.6  , 204.6  , 1.0 , 1.0              // optionnal, can be negative, can have decimals
 
@@ -136,7 +139,7 @@
 //#define B_COEFFICIENT 3950 // B coefficient of NTC
 
 // ***** 6.5 - Current parameters  *****
-//#define PIN_CURRENTSENSOR   3  // uncomment when Arduino pin is used to measure the voltage provided by a current sensor
+#define PIN_CURRENTSENSOR   3  //      Arduino pin used to measure the voltage provided by a current sensor
 #define MVOLT_AT_ZERO_AMP              2500    // in millivolt
 #define MVOLT_PER_AMP                  60      // in milliVolt per Amp
 #define RESISTOR_TO_GROUND_FOR_CURRENT  19.8   // put as comment or set to 0 if no divider is used
@@ -144,7 +147,7 @@
 
 // ***** 6.6 - Ads1115 parameters  *****
 #define ADS_MEASURE A0_TO_GND ,  ADS_OFF , ADS_OFF , ADS_OFF // uncomment when ADS1115 is used; select 4 values between A0_TO_A1, A0_TO_A3, A1_TO_A3, A2_TO_A3, A0_TO_GND, A1_TO_GND, A2_TO_GND, A3_TO_GND, ADS_OFF
-#define ADS_FULL_SCALE_VOLT  MV2048, MV4096, MV6144, MV4096 //  select between MV6144 MV4096 MV2048 MV1024 MV512 MV256
+#define ADS_FULL_SCALE_VOLT  MV4096, MV4096, MV6144, MV4096 //  select between MV6144 MV4096 MV2048 MV1024 MV512 MV256
 #define ADS_OFFSET 0, 0 , 0 , 0 // must be an integer (positive or negative)
 #define ADS_SCALE 1, 1, 1, 1 // can be a float
 #define ADS_RATE  MS2 , MS9, MS9 , MS2 // select between MS137, MS69, MS35, MS18, MS9, MS5, MS3 , MS2
@@ -159,6 +162,7 @@
 // --------- 9 - GPS ------------------------------------------------------------------------------------------------
 //#define GPS_SPEED_IN_KMH  // uncomment this line if GPS speed has to be sent in km/h instead of knot/h (only for Frsky protocol)
 #define GPS_SPEED_3D      // uncomment this line if GPS speed has to be the 3d speed instead of the 2d speed (note: 3d is probably less accurate - to test) 
+#define GPS_REFRESH_RATE  5       // rate at which GPS sent new data; select between 1, 5 or 10 (Hz). Default = 5 Hz; Ublox NEO6 does not support 10 hz  
 
 // --------- 10 - IMU 6050 --- (accelerometer + gyro) and HMC5883 (magnetometer) --------------------------------------
 // ***** 10.1 - IMU 6050 *****

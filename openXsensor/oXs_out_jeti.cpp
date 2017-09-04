@@ -188,7 +188,7 @@ void OXS_OUT::initJetiListOfFields() {  // fill an array with the list of fields
 #if defined(PIN_VOLTAGE) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_1 || VFAS_SOURCE == VOLT_2 || VFAS_SOURCE == VOLT_3 || VFAS_SOURCE == VOLT_4 || VFAS_SOURCE == VOLT_5 || VFAS_SOURCE == VOLT_6 )
     listOfFields[listOfFieldsIdx++] = VOLTAGE_SOURCE ;
 #endif
-#if defined(PIN_CURRENTSENSOR) || ( defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON))
+#if ( defined(ARDUINO_MEASURES_A_CURRENT) && (ARDUINO_MEASURES_A_CURRENT == YES) ) || ( defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON))
     listOfFields[listOfFieldsIdx++] =  CURRENTMA ;
     listOfFields[listOfFieldsIdx++] =  MILLIAH ;
 #endif
@@ -359,8 +359,8 @@ boolean OXS_OUT::retrieveFieldIfAvailable(uint8_t fieldId , int32_t * fieldValue
           break ;
 #endif
 
-#if ( defined(PIN_CURRENTSENSOR) ) || ( defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON))
-#if defined (PIN_CURRENTSENSOR) // when current is provide by arduino adc
+#if ( defined(ARDUINO_MEASURES_A_CURRENT) && (ARDUINO_MEASURES_A_CURRENT == YES) ) || ( defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON))
+#if defined(ARDUINO_MEASURES_A_CURRENT) && (ARDUINO_MEASURES_A_CURRENT == YES) // when current is provide by arduino adc
       case CURRENTMA :
          if ( ! currentData->milliAmps.available  ) return 0;
          * fieldValue = currentData->milliAmps.value /10; // converted in A with 2 decimals
@@ -728,7 +728,7 @@ void OXS_OUT::fillJetiBufferWithText() {
 #endif
 #endif // end defined ( TEMPERATURE_SOURCE ) && ( TEMPERATURE_SOURCE == NTC )
 
-#if defined (PIN_CURRENTSENSOR) || ( defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON))
+#if ( defined(ARDUINO_MEASURES_A_CURRENT) && (ARDUINO_MEASURES_A_CURRENT == YES) ) || ( defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON))
       case CURRENTMA :
          mergeLabelUnit( textIdx, "Current", "Amp"  ) ;
          break ;
