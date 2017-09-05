@@ -104,7 +104,7 @@ void OXS_CURRENT::readSensor() {
   sumCurrent += analogRead(_pinCurrent) ; 
   cnt++ ;
   milliTmp = millis() ;
-  if(  milliTmp > ( lastCurrentMillis + 200) ){   // calculate average once per 200 millisec
+  if(  ( milliTmp - lastCurrentMillis) > 200 ) {   // calculate average once per 200 millisec
       currentData.milliAmps.value = ((sumCurrent / cnt) - offsetCurrentSteps ) * mAmpPerStep ;
 //      if (currentData.milliAmps.value < 0) currentData.milliAmps.value = 0 ;
 	  currentData.milliAmps.available = true ;
