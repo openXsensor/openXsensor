@@ -874,15 +874,16 @@ Ecrit par par Rainer Schlosshan traduction Thierry ZINK
 **** 7 - Configuration du capteur RPM (tour par minute) (optionnel) ***************************************************************************
 *      Il est possible de mesurer une fréquence de rotation (RPM) à l'aide d'un capteur connecté sur la PIN ICP (= PB0, = broche 8) d'oXs
 *      Ce capteur doit fournir un changement de niveau (0 - Vcc) sur cette broche par exemple chaque fois qu'une pale devant le capteur.
-*      Le nombre de pales est un paramètre important à configurer, mais cela se fait côté émetteur
+*      Le nombre de pales est un paramètre important à configurer dans le paramètre PULSES_PER_ROTATION. Totefois pour le protocole Frsky, ce paramètre est négligé car le paramètre est introduit dans le Tx
 *      Il est également possible de construire une petite carte PCB qui fournira des impulsions lorsqu'elle est connectée à un moteur brushless.
 *      Pour activer cette fonction, mettez YES au lieu de NO dans la ligne #define CALCULATE_RPM  .
 *      Note: La broche numérique 8 (PB0 / ICP) est la seule à être utilisée pour mesurer les RPM.
-*            Attention : lLa valeur calculée par oXs est en Hertz (et non en tour par minute)
+*            Attention : Pour le protocole Frsky la valeur calculée par oXs est en Hertz (et non en tour par minute) et la conversion est faite dans le Tx
 ************************************************************************************************************************
 #define CALCULATE_RPM     NO 
-************************************************************************************************************************
+#define PULSES_PER_ROTATION 2
 
+************************************************************************************************************************
 
 
 **** 8 - Configuration de la mémoire persistante (=non volatile) (optionnel) ************************************************************************************

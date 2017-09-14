@@ -81,7 +81,7 @@ void OXS_OUT::setup() {
        multiplexData.mbData[fieldContainsData[mbIndex][0]].active = AVAILABLE ;
      }  
 
-// for defug purpose only
+// for debug purpose only
 multiplexData.mbData[15].response[0] = 0xF0 ;
 multiplexData.mbData[15].response[1] = 0x0F ;
 multiplexData.mbData[15].response[2] = 0xAA ;
@@ -342,7 +342,11 @@ uint8_t OXS_OUT::formatOneValue( uint8_t currentFieldToSend) {
 #ifdef MEASURE_RPM 
       case  RPM :
           if ( ! sport_rpm.available  ) return 0;
-          valueTemp = sport_rpm.value ;  // to adjust probably
+#if defined (PULSES_PER_ROTATION)
+          valueTemp  =  sport_rpm.value * 60.0 / PULSES_PER_ROTATION ;
+#else  // if PULSES_PER_ROTATION is not defined, we assume 1
+          valueTemp  =  sport_rpm.value * 60 ;
+#endif        
           sport_rpm.available  = false ;
           break ;   
 #endif

@@ -1,7 +1,7 @@
 // OpenXsensor https://github.com/openXsensor/
 // started by Rainer Schlosshan and maintained by Michel Strens
 
-// This is version : 8.2.3 (4 sept 2017)
+// This is version : 8.2.4 (14 sept 2017)
 
 //******************************************************************************************************************************************************* //
 //                                                                                                                                                        //
@@ -100,7 +100,7 @@
 // ***** 6.6 - Ads1115 parameters  *****                                           see oXs_config_advanced.h for additional parameters when AN_ADS1115_IS_CONNECTED is YES
 #define AN_ADS1115_IS_CONNECTED   NO                 // select between YES , NO
 
-// --------- 7 - RPM (rotations per minute) settings ---------
+// --------- 7 - RPM (rotations per minute) settings ---------                     see oXs_config_advanced.h for additional parameter about the number of pulses per rotation
 #define CALCULATE_RPM     NO                         // select between YES , NO       
 
 // --------- 8 - Persistent memory settings ---------                             ( see also oXs_config_advanced.h - used mainly when a flow sensor is connected )

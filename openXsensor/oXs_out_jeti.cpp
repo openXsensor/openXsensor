@@ -74,6 +74,10 @@ char degreeChar[2] ;
   void itoc ( int16_t n , uint8_t posLastDigit ) ;
 
   extern void checkFlowParam() ;
+
+#if defined (MEASURE_RPM)
+  extern struct ONE_MEASUREMENT sport_rpm ;
+#endif
   
 //#endif
 #define UP          0xD0
@@ -211,6 +215,9 @@ void OXS_OUT::initJetiListOfFields() {  // fill an array with the list of fields
 #endif                          // end FLOW_SENSOR_IS_CONNECTED
 #if defined (TEMPERATURE_SOURCE) && ( defined (VARIO) && ( TEMPERATURE_SOURCE == MS5611 ) )  
     listOfFields[listOfFieldsIdx++] = TEMPERATURE ;
+#endif
+#if defined (MEASURE_RPM)
+    listOfFields[listOfFieldsIdx++] = RPM ;
 #endif
   numberOfFields = listOfFieldsIdx - 1 ;
   listOfFieldsIdx = 1 ; 
@@ -475,6 +482,21 @@ boolean OXS_OUT::retrieveFieldIfAvailable(uint8_t fieldId , int32_t * fieldValue
         * dataType = JETI14_0D ;
         break ;
 #endif
+#if defined (MEASURE_RPM)
+    case RPM :
+//        if ( ! sport_rpm.available  ) {
+//          * fieldValue = 0 ;
+//        } else {
+#if defined (PULSES_PER_ROTATION)
+        * fieldValue  =  sport_rpm.value * 60.0 / PULSES_PER_ROTATION ;
+#else  // if PULSES_PER_ROTATION is not defined, we assume 1
+        * fieldValue  =  sport_rpm.value * 60 ;
+#endif        
+//        }                         
+        * dataType = JETI22_0D ;
+        break ;
+#endif
+
    } // end of switch
    return 1 ;
 }
@@ -730,10 +752,10 @@ void OXS_OUT::fillJetiBufferWithText() {
 
 #if ( defined(ARDUINO_MEASURES_A_CURRENT) && (ARDUINO_MEASURES_A_CURRENT == YES) ) || ( defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON))
       case CURRENTMA :
-         mergeLabelUnit( textIdx, "Current", "Amp"  ) ;
+         mergeLabelUnit( textIdx, "Current", "A"  ) ;
          break ;
       case MILLIAH :
-         mergeLabelUnit( textIdx, "Consumption", "AmpH"  ) ;
+         mergeLabelUnit( textIdx, "Consumption", "mAh"  ) ;
          break ;
 #endif
 
@@ -783,6 +805,11 @@ void OXS_OUT::fillJetiBufferWithText() {
           mergeLabelUnit( textIdx, "Temperature", "C"  ) ;
           break ;
 #endif
+#if defined (MEASURE_RPM)
+      case RPM :
+          mergeLabelUnit( textIdx, "T/min", "t/min"  ) ;
+          break ;
+#endif    
   } // end switch
     
         jetiData[2] =  ( jetiMaxData - 2 ) ; // update number of bytes that will be in buffer (including crc); keep flag in bit 6/7 to zero because it is text and not data

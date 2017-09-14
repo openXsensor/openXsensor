@@ -154,7 +154,8 @@
 #define ADS_AVERAGING_ON 10 , 20, 30, 50 // number of values used for averaging (must be between 1 and 254) 
 #define ADS_CURRENT_BASED_ON ADS_VOLT_1  // uncomment if current, and comsumption have to be calculated based on one of ADS voltage measurement; select then the voltage to be used between ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
 //#define ADS_AIRSPEED_BASED_ON ADS_VOLT_1  // uncomment if airspeed (and dte) have to be calculated based on one of ADS voltage measurement ; select then the voltage to be used between ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
-// --------- 7 - RPM (rotations per minute) settings ---------                      Is defined only in oXs_config_basic.h file
+// --------- 7 - RPM (rotations per minute) settings ---------                      
+#define PULSES_PER_ROTATION 2
 
 // --------- 8 - Persistent memory settings ---------
 //#define PIN_PUSHBUTTON    2   // default is 10 but my own device is 2

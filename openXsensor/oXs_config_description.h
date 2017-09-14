@@ -867,14 +867,14 @@ See OpenXsensor https://github.com/openXsensor/
 **** 7 - RPM (rotations per minute) sensor settings (optional) ***************************************************************************
 *      It is possible to measure RPM using a sensor connected to pin ICP (=PB0, = pin 8) of OXS.
 *      This sensor must provide a level change (0 - Vcc) on this pin each time a blade passes in front of it.
-*      The number of blades is an important parameter to set up but this is done on Tx side.
+*      The number of blades has to be defined in PULSES_PER_ROTATION except for Frsky protocol (OpenTx, ...) where it is supposed to be done on Tx side only (so this parameter is discarded for Frsky prtocol).
 *      It is also possible to build a small PCB board that will provide pulsed when connected on a brushless wire.
 *      To activate this function, put YES instead of NO in line #define CALCULATE_RPM  .
 *      Note: The digital pin 8 (PB0/ICP) is the only one to be used to measure RPM.
-*            The value calculated by oXs is in Hertz (and not in roration per minute)
+*            for Frsky protocol, the value calculated by oXs is in Hertz (and not in roration per minute) and the conversion is done by the TX
 ************************************************************************************************************************
 #define CALCULATE_RPM     NO 
-
+#define PULSES_PER_ROTATION 2
 
 **** 8 - Persistent memory settings ************************************************************************************
 *      Optional Feature.
