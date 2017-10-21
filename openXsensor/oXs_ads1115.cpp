@@ -5,8 +5,8 @@
   //#define DEBUGADS1115EACHREAD
   //#define DEBUGADS1115REQUESTCONV
   //#define DEBUGADS1115MVOLT
-  //#define DEBUGADSAIRSPEEDDATA
-  #define DEBUGCURRENT 
+  #define DEBUGADSAIRSPEEDDATA
+  //#define DEBUGCURRENT 
 #endif
 
 //#define DEBUG_FORCE_ADS_VOLT_1_4_WITHOUT_ADS1115
@@ -266,8 +266,8 @@ void OXS_ADS1115::ads_calculate_airspeed( int16_t ads_difPressureAdc ) {
        } // end calibration
   }  else { // sensor is calibrated
                     ads_difPressureAdc_0 = ( ads_difPressureAdc - offset7002 )  ;
-                    ads_sumDifPressureAdc_0 += ads_difPressureAdc_0 ;
-                    ads_cntDifPressureAdc_0++ ;
+  //                  ads_sumDifPressureAdc_0 += ads_difPressureAdc_0 ;
+  //                  ads_cntDifPressureAdc_0++ ;
 #define FILTERING7002_ADC_MIN        0.001 // 
 #define FILTERING7002_ADC_MAX        0.01  // 
 #define FILTERING7002_ADC_MIN_AT       10  // when abs(delta between ADC and current value) is less than MIN_AT , apply MIN  
@@ -313,25 +313,28 @@ void OXS_ADS1115::ads_calculate_airspeed( int16_t ads_difPressureAdc ) {
 //                  adsAirSpeedData.airSpeed.value = 0 ;
 //              }    
               adsAirSpeedData.airSpeed.available = true ; 
+
 // check if offset must be reset
               if (adsAirSpeedData.airspeedReset) { // adjust the offset if a reset command is received from Tx
                     offset7002 =  offset7002  + ads_smoothDifPressureAdc ;
+                    ads_smoothDifPressureAdc = 0 ;
                     adsAirSpeedData.airspeedReset = false ; // avoid that offset is changed again and again if PPM do not send a command
               }
-
 #ifdef DEBUGADSAIRSPEEDDATA
                   static bool firstRawData = true ;
                   if ( firstRawData ) {
-                          printer->println(F("at,  difPressureAdc ,difPressADC_0 , ads_smoothDifPressureAdc , actualPressure , adsAirSpeedData.airSpeed ")) ;
+                          printer->println(F("at,  difPressureAdc ,difPressADC_0 , ads_smoothDifPressureAdc , actualPressure , adsAirSpeedData.airSpeed, offset, reset  ")) ;
                         firstRawData = false ;
                   } else {
                         printer->print( ads_airSpeedMillis ); printer->print(F(" , "));
                         printer->print( ads_difPressureAdc ); printer->print(F(" , "));
                         printer->print( ads_difPressureAdc_0); printer->print(F(" , "));
-                        printer->print( ads_smoothDifPressureAdc ); printer->print(F(" , ")); 
+                        printer->print( ads_smoothDifPressureAdc * 1000); printer->print(F(" , ")); 
                         printer->print( actualPressure ); printer->print(F(" , ")); 
                         printer->print( ads_smoothAirSpeed * 3.6 / 100 ); printer->print(F(" , "));
-                         
+                        printer->print( offset7002 * 1000); printer->print(F(" , ")); 
+                        if ( ads_smoothDifPressureAdc == 0) printer->print(F(" reset")) ;
+                        
                         printer->println(" ") ; 
                   }       
 #endif

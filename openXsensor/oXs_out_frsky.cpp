@@ -345,7 +345,7 @@ void initMeasurement() {
    p_measurements[16] = &averageVspeedSinceT0 ; 
 #elif defined(T1_SOURCE) && ( T1_SOURCE == SENSITIVITY) && defined(VARIO)
    p_measurements[16] = &oXs_MS5611.varioData.sensitivity ; 
-#elif defined(T1_SOURCE) && ( T1_SOURCE == PPM) && defined(PIN_PPM)
+#elif defined(T1_SOURCE) && ( T1_SOURCE == PPM) && ( defined(PIN_PPM) || ( defined(PPM_VIA_SPORT) && ( (PROTOCOL  == FRSKY_SPORT) || (PROTOCOL == FRSKY_SPORT_HUB) ) ) )
    p_measurements[16] = &ppm ; 
 #elif defined(T1_SOURCE) && defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && ( T1_SOURCE == VOLT_1 || T1_SOURCE == VOLT_2 || T1_SOURCE == VOLT_3 || T1_SOURCE == VOLT_4 || T1_SOURCE == VOLT_5 || T1_SOURCE == VOLT_6 )
    p_measurements[16] = &oXs_Voltage.voltageData.mVolt[T1_SOURCE - VOLT_1] ;
@@ -370,7 +370,7 @@ void initMeasurement() {
    p_measurements[17] = &averageVspeedSinceT0 ; 
 #elif defined(T2_SOURCE) && ( T2_SOURCE == SENSITIVITY) && defined(VARIO) 
    p_measurements[17] = &oXs_MS5611.varioData.sensitivity ; 
-#elif defined(T2_SOURCE) && ( T2_SOURCE == PPM) && defined(PIN_PPM)
+#elif defined(T2_SOURCE) && ( T2_SOURCE == PPM) && ( defined(PIN_PPM) || ( defined(PPM_VIA_SPORT) && ( (PROTOCOL  == FRSKY_SPORT) || (PROTOCOL == FRSKY_SPORT_HUB) ) ) )
    p_measurements[17] = &ppm ; 
 #elif defined(T2_SOURCE) && defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && ( T2_SOURCE == VOLT_1 || T2_SOURCE == VOLT_2 || T2_SOURCE == VOLT_3 || T2_SOURCE == VOLT_4 || T2_SOURCE == VOLT_5 || T2_SOURCE == VOLT_6 )
    p_measurements[17] = &oXs_Voltage.voltageData.mVolt[T2_SOURCE - VOLT_1] ;
@@ -737,7 +737,7 @@ void OXS_OUT::SendFrame1(){
     SendValue( FRSKY_USERDATA_TEMP1 , (int16_t) averageVspeedSinceT0.value) ;     
 #elif defined(T1_SOURCE) && ( T1_SOURCE == SENSITIVITY) && defined(VARIO)
     SendValue( FRSKY_USERDATA_TEMP1 , (int16_t) oXs_MS5611.varioData.sensitivity.value) ; 
-#elif defined(T1_SOURCE) && ( T1_SOURCE == PPM) && defined(PIN_PPM)
+#elif defined(T1_SOURCE) && ( T1_SOURCE == PPM) && ( defined(PIN_PPM) || ( defined(PPM_VIA_SPORT) && ( (PROTOCOL  == FRSKY_SPORT) || (PROTOCOL == FRSKY_SPORT_HUB) ) ) )
     SendValue( FRSKY_USERDATA_TEMP1 , (int16_t) ppm.value) ; 
 #elif defined(T1_SOURCE) && defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) &&  ( (T1_SOURCE == VOLT_1) || (T1_SOURCE == VOLT_2) || (T1_SOURCE == VOLT_3) || (T1_SOURCE == VOLT_4) || (T1_SOURCE == VOLT_5) || (T1_SOURCE == VOLT_6) )
     SendValue( FRSKY_USERDATA_TEMP1 ,  (int16_t) (voltageData->mVolt[T1_SOURCE - VOLT_1 ].value ) ) ; 
@@ -761,7 +761,7 @@ void OXS_OUT::SendFrame1(){
     SendValue( FRSKY_USERDATA_TEMP2 , (int16_t) averageVspeedSinceT0.value) ;     
 #elif defined(T2_SOURCE) && ( T2_SOURCE == SENSITIVITY) && defined(VARIO)
    SendValue( FRSKY_USERDATA_TEMP2 , (int16_t) oXs_MS5611.varioData.sensitivity.value) ; 
-#elif defined(T2_SOURCE) && ( T2_SOURCE == PPM) && defined(PIN_PPM)
+#elif defined(T2_SOURCE) && ( T2_SOURCE == PPM) && ( defined(PIN_PPM) || ( defined(PPM_VIA_SPORT) && ( (PROTOCOL  == FRSKY_SPORT) || (PROTOCOL == FRSKY_SPORT_HUB) ) ) )
     SendValue( FRSKY_USERDATA_TEMP2 , (int16_t) ppm.value) ; 
 #elif defined(T2_SOURCE) && defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) &&  ( (T2_SOURCE == VOLT_1) || (T2_SOURCE == VOLT_2) || (T2_SOURCE == VOLT_3) || (T2_SOURCE == VOLT_4) || (T2_SOURCE == VOLT_5) || (T2_SOURCE == VOLT_6) )
     SendValue( FRSKY_USERDATA_TEMP2 ,  (int16_t) (voltageData->mVolt[T2_SOURCE - VOLT_1 ].value ) ) ; 

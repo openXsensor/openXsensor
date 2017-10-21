@@ -243,6 +243,7 @@ boolean gliderRatioPpmOn = false ;
 uint16_t ppmus ; // duration of ppm in usec
 int prevPpm ; //^previous ppm
 struct ONE_MEASUREMENT ppm ; // duration of pulse in range -100 / + 100 ; can exceed those limits
+struct ONE_MEASUREMENT newPpm ; // keep the ppm value received via sport before it is processed in other part of the code
 
 #if defined ( A_FLOW_SENSOR_IS_CONNECTED ) && ( A_FLOW_SENSOR_IS_CONNECTED == YES)  // we will use interrupt PCINT0 
   volatile uint16_t flowMeterCnt ;            // counter of pin change connected to the flow sensor (increased in the interrupt. reset every X sec when flow is processed)
@@ -719,8 +720,8 @@ if ( currentLoopMillis - lastLoop500Millis > 500 ) {
     // prepare the telemetry data to be sent (nb: data are prepared but not sent)
     if ( millis() > 1500 ) oXs_Out.sendData(); 
    
-// PPM Processing = Read the ppm Signal from receiver and process it 
-#ifdef PIN_PPM 
+// PPM Processing = Read the ppm Signal from receiver  or use the SPORT ppm value from readSensors and process it 
+#if defined ( PIN_PPM ) || (  defined(PPM_VIA_SPORT) && ( (PROTOCOL  == FRSKY_SPORT) || (PROTOCOL == FRSKY_SPORT_HUB) ) )
 #if defined (VARIO) || defined (VARIO2)
     if (checkFreeTime()) ProcessPPMSignal();
 #else
@@ -880,10 +881,10 @@ void readSensors() {
         consumedML = 0 ;                                  // reset consumption                                               
       }
 #endif
-#if  defined ( PPM_VIA_SPORT )      
-      if ( txField == TX_FIELD_PPM )  {                   // use the value for ppm 
-          ppm.value =  txValue ;
-          ppm.available = true ;
+#if  defined ( PPM_VIA_SPORT ) &&   ( ( PROTOCOL  == FRSKY_SPORT ) || ( PROTOCOL == FRSKY_SPORT_HUB ) )   
+      if ( txField == TX_FIELD_PPM )  {                   // save the value for ppm 
+          newPpm.value =  ((int32_t) txValue) * 100 / 1024 ;
+          newPpm.available = true ;
       }   
 #endif
     } else {
@@ -1573,7 +1574,7 @@ void LoadFromEEProm(){
 /* ProcessPPMSignal => read PPM signal from receiver and       */
 /*   use its value to adjust sensitivity and other parameters  */
 /***************************************************************/
-#if defined ( PIN_PPM ) || (  defined ( PPM_VIA_SPORT ) && ( PROTOCOL  == FRSKY_SPORT ) )
+#if defined ( PIN_PPM ) || (  defined ( PPM_VIA_SPORT ) && ( (PROTOCOL  == FRSKY_SPORT) || (PROTOCOL  == FRSKY_SPORT_HUB) ) )
 volatile uint16_t time1 ;
 void ProcessPPMSignal(){
 #if defined ( PIN_PPM )  // when ppm is read from a rx channel
@@ -1585,24 +1586,19 @@ void ProcessPPMSignal(){
   if (ppmus>0){  // if a value has been defined for ppm (in microseconds)
     ppm.value = map( ppmus , PPM_MIN_100, PPM_PLUS_100, -100 , 100 ) ; // map ppm in order to calibrate between -100 and 100
     ppm.available = true ;
-#ifdef DEBUGPPMVALUE
-       Serial.print(micros()); Serial.print(F("="));  Serial.println(ppm.value);
-#endif
   } 
-#else   // so when done via SPORT (defined ( PPM_VIA_SPORT ) && ( PROTOCOL  == FRSKY_SPORT ))
-        // ppm.value and .available are filled in readSensor()
+#else   // so when done via SPORT (defined ( PPM_VIA_SPORT ) && ( PROTOCOL  == FRSKY_SPORT ) || (PROTOCOL  == FRSKY_SPORT_HUB) ) )
+        // newPpm.value and .available are already filled in readSensor() when new values are received
+      if (newPpm.available ){
+          ppm.value = newPpm.value ;
+          ppm.available = true ;
+          newPpm.available = false ;
+      }
 #endif  
   if  (ppm.available ) {  
-#ifdef DEBUGPPM
-    static uint16_t ppmCount ;
-    if ( (((int) ppm.value) - ((int ) prevPpm) > 3 ) || (((int) prevPpm) - ((int ) ppm.value) > 3 )  )  {
-        Serial.print(F(" us="));  Serial.print(ppmus); Serial.print(F(" c="));  Serial.println(ppmCount);
-        ppmCount = 0 ;
-    }  else {
-      ppmCount++;
-    }  
+#ifdef DEBUGPPMVALUE
+       Serial.print(micros()); Serial.print(F(" ppm="));  Serial.println(ppm.value);
 #endif
-
 #ifdef SEQUENCE_OUTPUTS
     if ( ( ( ppm.value - prevPpm) > 3 ) || (( prevPpm - ppm.value) > 3 )  )  { // handel ppm only if it changes by more than 3 
         setNewSequence( ) ;

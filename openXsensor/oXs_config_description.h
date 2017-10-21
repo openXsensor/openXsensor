@@ -269,7 +269,7 @@ See OpenXsensor https://github.com/openXsensor/
 *
 *   If you want to use this feature, you must:
 *      - uncomment the 3 folowing lines
-*      - specify in PIN_PPM the Arduino DIGITAL pin being connected to a Rx channel                                It is a DIGITAL Arduino pin that has to be connected to a signal channel from receiver (like for a servo).
+*      - specify in PIN_PPM the Arduino DIGITAL pin being connected to a Rx channel (like for a servo).
 *            Default: 2 ; you can also use pin 3 to read the PPM signal.
 *            Take care, only pin 2 or 3 may be used for PPM signal.
 *            Remove or keep this line as comment if you want to disable the remote control functionality.
@@ -817,11 +817,10 @@ See OpenXsensor https://github.com/openXsensor/
 *              Select between MV6144 MV4096 MV2048 MV1024 MV512 MV256 where the digits give the max mvolt being applied on the pin (e.g. for A0_TO_GND) or between 2 pins (e.g. for A0_TO_A1)
 *        In ADS_SCALE, you specify a scaling factor to be applied on each measurement in order to get a value that conforms the expected measurement.
 *              Fill always 4 values even if you do not need all 4 measurements
-*              When scaling parameter = 1, oXs returns a value = 1 when the voltage applied on ads1115 pin(s) is the max voltage set by ADC_FULL_SCALE_VOLT. 
-*              So, if ADC_FULL_SCALE_VOLT is set on MV512, when input voltage will be 512mv (or more)), oXs will return 1 if ADS_SCALE = 1.
-*              If you do not have a voltage divider on ads1115, you probably expect that oXs returns 512; then set ADS_SCALE to 512.
+*              When scaling parameter = 1, oXs returns a value = ADC_FULL_SCALE_VOLT when the voltage applied on ads1115 pin(s) is the max voltage set by ADC_FULL_SCALE_VOLT. 
+*              So, if ADC_FULL_SCALE_VOLT is set on MV512, when input voltage will be 512mv (or more)), oXs will return 512 if ADS_SCALE = 1.
 *              If you have a voltage divider, the voltage that you want to measure is greater than the voltage applied on ads1115 pin and you have to increase ADS_SCALE.
-*              e.g. if your voltage divider divides your voltage by 10, you must set ADS_SCALE to 5120 (= 512 * 10)
+*              e.g. if your voltage divider divides your voltage by 10, you must set ADS_SCALE to 10
 *              Note: ADS_SCALE can have decimals (e.g. 100.5) . It can be positive or negative; It can't be 0
 *        In ADS_OFFSET, you specify an offset to be applied. 
 *              Fill always 4 values even if you do not need all 4 measurements
@@ -1031,7 +1030,7 @@ See OpenXsensor https://github.com/openXsensor/
 * oXs can count the number of pulses and calculates 3 data : the current consumed milli liter / min and, taking care of tank capacity, the remaining fuel in ml and in %.
 * It is recommended to use following type of flow meter because it is probably more accurate than other when flow is low
 * http://www.conrad.be/ce/nl/product/155374/BIO-TECH-eK-FCH-M-Doorstroomsensor-1-stuks-Voedingsspanning-bereik-5-24-VDC-Meetbereik-08-0015-lmin-l-x;jsessionid=EED7B26A7F28BA3F20F0060807E20FD1.ASTPCEN22?ref=searchDetail
-* It is foreseen to measure from 0.015 up to 0.8 ml/min.
+* It is foreseen to measure from 0.015 up to 0.8 l/min.
 * The output signal of the flow meter sensor has to be connected to arduino pin 9 (and the other 2 pins to 5 volt VCC and to Ground).
 * There are other cheap flow sensors on ebay or aliexpress but I expect that there are not accurate enough when flow is low.
 * 

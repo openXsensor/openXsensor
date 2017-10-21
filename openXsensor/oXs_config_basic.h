@@ -1,7 +1,7 @@
 // OpenXsensor https://github.com/openXsensor/
 // started by Rainer Schlosshan and maintained by Michel Strens
 
-// This is version : 8.2.4 (14 sept 2017)
+// This is version : 8.2.6 (21 oct 2017)
 
 //******************************************************************************************************************************************************* //
 //                                                                                                                                                        //
@@ -27,14 +27,14 @@
 
 // --------- 2 - Data to transmit ---------   uncomment the lines below if you want to transmit some extra oXs measurements into some telemetry fields
 // ***** 2.1 - Frsky data *****                
-//#define VFAS_SOURCE   VOLT_1                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4 
+//#define VFAS_SOURCE  VOLT_1                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4 
 //#define FUEL_SOURCE   ADS_VOLT_1                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
 //#define A3_SOURCE     ADS_VOLT_1                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
 //#define A4_SOURCE     ADS_VOLT_3                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
 //#define ACCX_SOURCE     TEST_1                   //  select between TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, PITCH, ROLL , YAW, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4 
 //#define ACCY_SOURCE     TEST_2                 //  select between TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, PITCH, ROLL , YAW, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
 //#define ACCZ_SOURCE     TEST_3                 //  select between TEST_1, TEST_2, TEST_3, GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, PITCH, ROLL , YAW, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
-//#define T1_SOURCE       VOLT_3                   //  select between TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , SENSITIVITY, PPM, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
+//#define T1_SOURCE       PPM                   //  select between TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , SENSITIVITY, PPM, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
 //#define T2_SOURCE       ADS_VOLT_4                    //  select between TEST_1, TEST_2, TEST_3, , GLIDER_RATIO, SECONDS_SINCE_T0 ,AVERAGE_VSPEED_SINCE_TO , SENSITIVITY, PPM, VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
 
 // ***** 2.2 - Hott data *****
@@ -42,7 +42,7 @@
 //#define BATTERY_1_SOURCE          ADS_VOLT_1                 // select between VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
 //#define BATTERY_2_SOURCE          ADS_VOLT_2                 // select between VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
 //#define MAIN_BATTERY_SOURCE       ADS_VOLT_3                 // select between VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
-#define TEMPERATURE_1_SOURCE      VOLT_1          //  select between VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SENSITIVITY , PPM
+//#define TEMPERATURE_1_SOURCE      VOLT_1          //  select between VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SENSITIVITY , PPM
 //#define TEMPERATURE_2_SOURCE      PPM             //  select between VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SENSITIVITY, PPM
 
 // ***** 2.3 - Multiplex data *****
@@ -50,6 +50,7 @@
                         5 , REL_ALTIMETER , 1 , 1 , 0 , -16384 , 16383 , \
                         6 , VERTICAL_SPEED , 1 , 1 , 0, -500 , 500  , \
                         7 , ALTIMETER_MAX , 1 , 1 , 0 , -16384 , 16383 
+                        // 8 , VOLT_1 , 1, 1 , 0 , -16384 , 16383
                         // 6 , CURRENTMA , 1 , 1, 0 , -16384 , 16383 ,\
                         // 7 , MILLIAH  , 1 , 1, 0 , -16384 , 16383
                         // 7 , CELL_TOT , 1 , 1 , 0 , -16384 , 16383 , \
@@ -67,7 +68,7 @@
 
 // --------- 4 - Vario settings ---------
 // ***** 4.1 - Connecting 1 or 2 barometric sensor(s)  ***** 
-#define FIRST_BARO_SENSOR_USE   MS5611       // select between NO_BARO , MS5611, GY86 , BMP085 , BMP180 , BMP280  
+#define FIRST_BARO_SENSOR_USE   MS5611        // select between NO_BARO , MS5611, GY86 , BMP085 , BMP180 , BMP280  
                                               // Note : when used, second sensor is to define in oXs_config_advanced.h
                                               
 // ***** 4.2 - Type of Vspeed to transmit  *****                                    
@@ -87,10 +88,10 @@
 // ***** 6.1 - Voltage Reference to measure voltages and current *****              see oXs_config_advanced.h when voltage reference is not Vcc and 5 volt
 
 // ***** 6.2 - Voltage parameters *****                                             see oXs_config_advanced.h for additionnal parameters when YES
-#define ARDUINO_MEASURES_VOLTAGES   NO                                        //   select between YES , NO (When NO, following lines are discarded)
+#define ARDUINO_MEASURES_VOLTAGES   NO                                        //   select between YES , NO (When NO, following line is discarded)
 
 // ***** 6.3 - Max number of Lipo cells to measure (and transmit to Tx) *****
-#define NUMBEROFCELLS 4                                                 // Put this line as comment or set value to 0 (zero) if you do not want to transmit cell voltages.
+#define NUMBEROFCELLS 0                                                 // Put this line as comment or set value to 0 (zero) if you do not want to transmit cell voltages.
 
 // ***** 6.4 - Convert voltage to temperature (° Celcius) *****                    see oXs_config_advanced.h if you want to measure temperature(s) with thermistor
 

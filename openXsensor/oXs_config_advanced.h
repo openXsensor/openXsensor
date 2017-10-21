@@ -17,7 +17,7 @@
 // --------- 1 - Telemetry protocol ---------  Protocol is defined in oXs_config_basic.h file
 
 // ****** 1.1 - Pin connected to Rx ********
-#define PIN_SERIALTX      4                  // The pin which transmits the serial data to the telemetry receiver, Usually pin 4 (otherwise pin 2)
+#define PIN_SERIALTX      4                 // The pin which transmits the serial data to the telemetry receiver, Usually pin 4 (otherwise pin 2)
 
 // ***** 1.2 - SPORT_SENSOR_ID used (only for Frsky Sport protocol)  *****   See list of available values in oXs_config_descripion.h 
 #define         DATA_ID_VARIO  0x00  // = sensor 0 used for Alt and Vspeed
@@ -56,7 +56,7 @@
 #define PPM_MIN_100       988     // default 1500 - 512 ; // pulse width (usec) when TX sends a channel = -100
 #define PPM_PLUS_100      2012    // default 1500 + 512 ; // pulse width (usec) when TX sends a channel = +100
 
-//#define PPM_VIA_SPORT             // uncomment this line to get ppm data over SPORT protocol instead of from a PWM channel (it requires a Tx with openTx running LUA script)
+#define PPM_VIA_SPORT             // uncomment this line to get ppm data over SPORT protocol instead of from a PWM channel (it requires a Tx with openTx running LUA script)
 
 // --------- 4 - Vario settings ---------    Type of baro is defined in oXs_config_basic.h file
 
@@ -113,16 +113,16 @@
 // --------- 6 - Voltages & Current sensor settings ---------
 
 // ***** 6.1 - Voltage Reference to measure voltages and current *****
-//#define USE_INTERNAL_REFERENCE  // uncomment this line if you use 1.1 volt internal reference instead of Vcc
+#define USE_INTERNAL_REFERENCE  // uncomment this line if you use 1.1 volt internal reference instead of Vcc
 //#define USE_EXTERNAL_REFERENCE  // uncomment this line if you use an external reference instead of Vcc
 //#define REFERENCE_VOLTAGE 4970    // set value in milliVolt; if commented, oXs will use or 1100 (if internal ref is used) or 5000 (if internal ref is not used) 
 
 // ***** 6.2 - Voltage parameters *****
-#define PIN_VOLTAGE         3  , 2     , 1   , 0    , 8   , 8               //  Fill 6 values; set to 0 up to 7 for analog pins A0 up to A7 ; set the value to 8 for the voltage(s) not to be measured.
-#define RESISTOR_TO_GROUND  0 , 10    , 10  , 10 , 0  , 0               // set value to 0 when no divider is used for a voltage; can contains decimals 
-#define RESISTOR_TO_VOLTAGE 0 , 8.7 , 22 , 27  , 0 , 0              // set value to 0 when no divider is used for a voltage; can contains decimals 
+#define PIN_VOLTAGE         6  , 8     , 8   , 8    , 8   , 8               //  Fill 6 values; set to 0 up to 7 for analog pins A0 up to A7 ; set the value to 8 for the voltage(s) not to be measured.
+#define RESISTOR_TO_GROUND  18 , 10    , 10  , 10 , 0  , 0               // set value to 0 when no divider is used for a voltage; can contains decimals 
+#define RESISTOR_TO_VOLTAGE 47 , 8.7 , 22 , 27  , 0 , 0              // set value to 0 when no divider is used for a voltage; can contains decimals 
 #define OFFSET_VOLTAGE      0   , 0     , 0    , 0    , 0   , 0                // optionnal, can be negative, must be integer, in principe in mv
-#define SCALE_VOLTAGE       1.0 , 1.0   , 1.0  , 1.0  , 1.0 , 1.0              // optionnal, can be negative, can have decimals
+#define SCALE_VOLTAGE       0.987 , 1.0   , 1.0  , 1.0  , 1.0 , 1.0              // optionnal, can be negative, can have decimals
 
 // ***** 6.3 - Max number of Lipo cells to measure (and transmit to Tx) *****      Is defined only in oXs_config_basic.h file
 
@@ -146,14 +146,15 @@
 #define RESISTOR_TO_CURRENT_SENSOR      0   // put as comment or set to 0 if no divider is used (e.g  39   for 1.1 internal ref)
 
 // ***** 6.6 - Ads1115 parameters  *****
-#define ADS_MEASURE A0_TO_GND ,  ADS_OFF , ADS_OFF , ADS_OFF // uncomment when ADS1115 is used; select 4 values between A0_TO_A1, A0_TO_A3, A1_TO_A3, A2_TO_A3, A0_TO_GND, A1_TO_GND, A2_TO_GND, A3_TO_GND, ADS_OFF
-#define ADS_FULL_SCALE_VOLT  MV4096, MV4096, MV6144, MV4096 //  select between MV6144 MV4096 MV2048 MV1024 MV512 MV256
+#define ADS_MEASURE A0_TO_A1 ,  ADS_OFF , ADS_OFF , ADS_OFF // select 4 values between A0_TO_A1, A0_TO_A3, A1_TO_A3, A2_TO_A3, A0_TO_GND, A1_TO_GND, A2_TO_GND, A3_TO_GND, ADS_OFF
+#define ADS_FULL_SCALE_VOLT  MV2048, MV4096, MV6144, MV4096 //  select between MV6144 MV4096 MV2048 MV1024 MV512 MV256
 #define ADS_OFFSET 0, 0 , 0 , 0 // must be an integer (positive or negative)
 #define ADS_SCALE 1, 1, 1, 1 // can be a float
 #define ADS_RATE  MS2 , MS9, MS9 , MS2 // select between MS137, MS69, MS35, MS18, MS9, MS5, MS3 , MS2
 #define ADS_AVERAGING_ON 10 , 20, 30, 50 // number of values used for averaging (must be between 1 and 254) 
-#define ADS_CURRENT_BASED_ON ADS_VOLT_1  // uncomment if current, and comsumption have to be calculated based on one of ADS voltage measurement; select then the voltage to be used between ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
-//#define ADS_AIRSPEED_BASED_ON ADS_VOLT_1  // uncomment if airspeed (and dte) have to be calculated based on one of ADS voltage measurement ; select then the voltage to be used between ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
+//#define ADS_CURRENT_BASED_ON ADS_VOLT_1  // uncomment if current, and comsumption have to be calculated based on one of ADS voltage measurement; select then the voltage to be used between ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
+#define ADS_AIRSPEED_BASED_ON ADS_VOLT_1  // uncomment if airspeed (and dte) have to be calculated based on one of ADS voltage measurement ; select then the voltage to be used between ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
+
 // --------- 7 - RPM (rotations per minute) settings ---------                      
 #define PULSES_PER_ROTATION 2
 

@@ -92,7 +92,7 @@ void OXS_VOLTAGE::setupVoltage( void ) {
   for (int cntInit = 0 ; cntInit < 6 ; cntInit++) {
     if ( tempPin[ cntInit ] < 8 ) {
       voltageData.mVoltPin[cntInit] =  tempPin[ cntInit ] ;
-      pinMode(voltageData.mVoltPin[cntInit],INPUT);
+      // pinMode(voltageData.mVoltPin[cntInit],INPUT);  // this instruction was wrong because pinMode need A0... A7 for analog pin - and not 0...7
       voltageData.atLeastOneVolt = true ;
     } else {
       voltageData.mVoltPin[cntInit] = 8 ;
