@@ -43,7 +43,8 @@ struct t_mbAllData {
 #define JETI14_0D 0b00000001  // 0 decimal, jeti TYpe = 1
 #define JETI14_1D 0b00100001  // 1 decimal, jeti TYpe = 1  
 #define JETI14_2D 0b01000001  // 2 decimal, jeti TYpe = 1
-#define JETI22_0D 0b00000100  // 0 decimal, jeti TYpe = 1  
+#define JETI22_0D 0b00000100  // 0 decimal, jeti TYpe = 1
+#define JETI22_1D 0b00100100  // 1 decimal, jeti TYpe = 1
 #define JETI_GPS  0b00001001  // special GPS format in 4 bytes, type = 9 in decimal
 
 //  This is the list of oXs codes for each available measurements

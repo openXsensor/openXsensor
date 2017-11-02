@@ -125,14 +125,14 @@ void OXS_OUT::setup() {
 
   // Activate pin change interrupt on Tx pin  
 #if PIN_SERIALTX == 4
-    PCMSK2 |= 0x10 ;			              // IO4 (PD4) on Arduini mini
+    PCMSK2 |= 0x10 ;                    // IO4 (PD4) on Arduini mini
 #elif PIN_SERIALTX == 2
     PCMSK2 |= 0x04 ;                    // IO2 (PD2) on Arduini mini
 #else
     #error "This PIN is not supported"
 #endif
 
-//    PCIFR = (1<<PCIF2) ;	// clear pending interrupt
+//    PCIFR = (1<<PCIF2) ;  // clear pending interrupt
 
     state = IDLE ;     // Internal State Variable
 
@@ -238,7 +238,7 @@ boolean OXS_OUT::retrieveFieldIfAvailable(uint8_t fieldId , int32_t * fieldValue
       * fieldValue = relativeAltTest++ ;
       if ( relativeAltTest >= 300 ) relativeAltTest = 0 ;
 #endif    
-      * dataType = JETI14_1D ;
+      * dataType = JETI22_1D ;
       varioData->relativeAlt.available = false ;
       break ;
     case VERTICAL_SPEED :
@@ -260,7 +260,7 @@ boolean OXS_OUT::retrieveFieldIfAvailable(uint8_t fieldId , int32_t * fieldValue
         * fieldValue =  relativeAltMaxTest-- ;
         if ( relativeAltMaxTest <= -300 ) relativeAltMaxTest = 0 ;
 #endif    
-        * dataType = JETI14_1D ;
+        * dataType = JETI22_1D ;
         varioData->relativeAltMaxAvailable = false ;
         break ;
 #endif
@@ -393,8 +393,8 @@ boolean OXS_OUT::retrieveFieldIfAvailable(uint8_t fieldId , int32_t * fieldValue
          break ;
       case MILLIAH :
          if ( ! oXs_ads1115.adsCurrentData.consumedMilliAmps.available  ) return 0;
-         * fieldValue = oXs_ads1115.adsCurrentData.consumedMilliAmps.value / 10 ; // converted in Ah with 2 decimals
-         * dataType = JETI14_2D ;
+         * fieldValue = oXs_ads1115.adsCurrentData.consumedMilliAmps.value  ; // in mAh without decimals
+         * dataType = JETI22_0D ;                                             
          oXs_ads1115.adsCurrentData.consumedMilliAmps.available = false ;
 #ifdef DEBUGADSCURRENT
          printer->print(F("consumed milliAmp="));
@@ -643,14 +643,14 @@ void OXS_OUT::fillJetiBufferWithText() {
   if (textIdx > numberOfFields ) textIdx = 0;
   switch (listOfFields[textIdx]) {
     case 0:
-        mergeLabelUnit( textIdx, "openXsensor", " "  ) ; 
+        mergeLabelUnit( textIdx, "oXs", " "  ) ; 
         break ;
 #if defined(VARIO) 
     case REL_ALTIMETER :
-      mergeLabelUnit( textIdx, "Alt.", "m"  ) ; 
+      mergeLabelUnit( textIdx, "Rel. altit", "m"  ) ; 
         break ;
     case VERTICAL_SPEED :
-      mergeLabelUnit( textIdx, "VSpeed", "m/s"  ) ; 
+      mergeLabelUnit( textIdx, "Vario", "m/s"  ) ; 
         break ;
     case ALTIMETER_MAX :
     mergeLabelUnit( textIdx, "Alt.max", "m"  ) ; 
@@ -677,10 +677,10 @@ void OXS_OUT::fillJetiBufferWithText() {
           mergeLabelUnit( textIdx, "Cell 6", "V"  ) ;
           break ;
       case  CELL_MIN :
-          mergeLabelUnit( textIdx, "Cell min", "V"  ) ;
+          mergeLabelUnit( textIdx, "LowestCell", "V"  ) ;
           break ;
       case  CELL_TOT :
-          mergeLabelUnit( textIdx, "All cells", "V"  ) ;
+          mergeLabelUnit( textIdx, "Accu. volt", "V"  ) ;
           break ;
 
 #endif  // NUMBEROFCELLS > 0 
@@ -688,32 +688,32 @@ void OXS_OUT::fillJetiBufferWithText() {
 #if defined ( TEMPERATURE_SOURCE ) && ( TEMPERATURE_SOURCE == NTC )
 #if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_1 )
       case VOLT_1 :  
-         mergeLabelUnit( textIdx, "Temperature", "C"  ) ;
+         mergeLabelUnit( textIdx, "Temp.", "\xB0\x43"  ) ;
          break ;
 #endif
 #if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_2 )
       case VOLT_2 :  
-         mergeLabelUnit( textIdx, "Temperature", "C"  ) ;
+         mergeLabelUnit( textIdx, "Temp.", "\xB0\x43"  ) ;
           break ;
 #endif
 #if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_3 )
       case VOLT_3 :  
-         mergeLabelUnit( textIdx, "Temperature", "C"  ) ;
+         mergeLabelUnit( textIdx, "Temp.", "\xB0\x43"  ) ;
           break ;
 #endif
 #if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_4 )
       case VOLT_4 :  
-         mergeLabelUnit( textIdx, "Temperature", "C"  ) ;
+         mergeLabelUnit( textIdx, "Temp.", "\xB0\x43"  ) ;
           break ;
 #endif
 #if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_5 )
       case VOLT_5 :  
-         mergeLabelUnit( textIdx, "Temperature", "C"  ) ;
+         mergeLabelUnit( textIdx, "Temp.", "\xB0\x43"  ) ;
           break ;
 #endif
 #if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_6 )
       case VOLT_6 :  
-         mergeLabelUnit( textIdx, "Temperature", "C"  ) ;
+         mergeLabelUnit( textIdx, "Temp.", "\xB0\x43"  ) ;
           break ;
 #endif
 
@@ -755,7 +755,7 @@ void OXS_OUT::fillJetiBufferWithText() {
          mergeLabelUnit( textIdx, "Current", "A"  ) ;
          break ;
       case MILLIAH :
-         mergeLabelUnit( textIdx, "Consumption", "mAh"  ) ;
+         mergeLabelUnit( textIdx, "Capacity", "mAh"  ) ;
          break ;
 #endif
 
@@ -767,16 +767,16 @@ void OXS_OUT::fillJetiBufferWithText() {
 
 #ifdef GPS_INSTALLED            
       case GPS_COURSE :
-        mergeLabelUnit( textIdx, "Gps Course", degreeChar  ) ;
+        mergeLabelUnit( textIdx, "Course", degreeChar  ) ;
         break ;
       case GPS_SPEED :
-        mergeLabelUnit( textIdx, "Gps Speed", "Km/h"  ) ;
+        mergeLabelUnit( textIdx, "Speed", "Km/h"  ) ;
         break ;
       case GPS_ALTITUDE : 
         mergeLabelUnit( textIdx, "Gps Alt", "m"  ) ;
         break ;
       case GPS_DISTANCE :
-        mergeLabelUnit( textIdx, "Gps Distance", "m"  ) ;
+        mergeLabelUnit( textIdx, "Distance", "m"  ) ;
         break ;
       case GPS_BEARING :
         mergeLabelUnit( textIdx, "Gps Bearing", degreeChar  ) ;
@@ -791,7 +791,7 @@ void OXS_OUT::fillJetiBufferWithText() {
 #endif                           // end GPS_INSTALLED
 #if defined ( A_FLOW_SENSOR_IS_CONNECTED ) && ( A_FLOW_SENSOR_IS_CONNECTED == YES)
       case FLOW_ACTUAL :
-          mergeLabelUnit( textIdx, "Consumption", "ml/min"  ) ;
+          mergeLabelUnit( textIdx, "Flow", "ml/min"  ) ;
           break ;
       case FLOW_REMAIN :
           mergeLabelUnit( textIdx, "Remain", "ml"  ) ;
@@ -802,12 +802,12 @@ void OXS_OUT::fillJetiBufferWithText() {
 #endif                           // A_FLOW_SENSOR_IS_CONNECTED 
 #if defined (TEMPERATURE_SOURCE) && ( defined (VARIO) && ( TEMPERATURE_SOURCE == MS5611 ) )  
       case TEMPERATURE :
-          mergeLabelUnit( textIdx, "Temperature", "C"  ) ;
+          mergeLabelUnit( textIdx, "Temp.", "\xB0\x43"  ) ;
           break ;
 #endif
 #if defined (MEASURE_RPM)
       case RPM :
-          mergeLabelUnit( textIdx, "T/min", "t/min"  ) ;
+          mergeLabelUnit( textIdx, "Revolution", "rpm"  ) ;
           break ;
 #endif    
   } // end switch
@@ -1170,4 +1170,5 @@ ISR(TIMER1_COMPB_vect)       // interrupt on COMPB is used to receive data (keyb
 // -------------------------End of Jeti protocol--------------------------------------------------------------------------------------
 
 #endif // END of JETI
+
 
