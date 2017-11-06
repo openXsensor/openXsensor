@@ -1123,6 +1123,14 @@ static uint32_t previousYawRateMillis ;
 //  test1.value = oXs_MS5611.varioData.absoluteAlt.value/10 ;
 //  test1.available = true ;
 
+//#if defined(ARDUINO_MEASURES_A_CURRENT) && (ARDUINO_MEASURES_A_CURRENT == YES)
+//if ( currentData.consumedMilliAmps.available) {
+// test1.value = currentData.consumedMilliAmps.value ;
+// test1.value =  true ;
+// currentData.consumedMilliAmps.available = false ;
+//} 
+#endif
+
 } // end of calculate all fields
 
 
