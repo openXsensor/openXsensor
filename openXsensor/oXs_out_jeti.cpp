@@ -8,7 +8,10 @@
 //#define DEBUGSETNEWDATA
 //#define DEBUGFORMATONEVALUE
 //#define DEBUGJETIFRAME
-#define DEBUGADSCURRENT 
+//#define DEBUGADSCURRENT
+//#define DEBUGSETNEWDATA
+//#define DEBUGASERIAL
+//#define DEBUGJETI
 #endif
 //#define DEBUG_FORCE_VARIODATA  // this is used to force oXs to send a fixed dummy value for Vspeed and Alt in order to test if an issue result of bmp180 or from Multiplex / Jeti protocol.
 //#define DEBUG_SERIAL_RX          // this is used to generate pulses when oXs decodes a byte sent by the receiver
@@ -24,7 +27,7 @@ uint8_t listOfFields[16] ; // list of oXs Field Id to transmit
 //struct ONE_MEASUREMENT * p_measurements[16] ;      // array of 16 pointers (each pointer point to a structure containing a byte saying if a value is available and to the value.
 uint8_t listOfFieldsIdx ; // current fields being handled
 uint8_t numberOfFields ; // number of fields to transmit (from 1 ... 15)
-uint8_t volatile jetiData[63] = { 0x7E, 0x9F, 0x40 , 0x11 , 0xA4 ,  0xAD , 0x04, 0x00 };  // 64 = 29 bytes for data + 34 bytes for text ; buffer where Jeti frame is prepared , 7E = header, 1F = X frame, 40 = means data (and not txt) + length in 6 bits - to be filled-, A400 0001 = device id ; 00  = fixed value
+uint8_t volatile jetiData[63] = { 0x7E, 0x9F, 0x40 , 0x11 , 0xA4 ,  0xAD , 0x04, 0x00 };  // 64 = 29 bytes for data + 34 bytes for text ; buffer where Jeti frame is prepared , 7E = header, 0x?F = X frame(? = any 4 bits) , 40 = means data (TXT would be 00) + length in 6 bits - to be filled-, A400 0001 = device id ; 00  = fixed value
 uint8_t volatile jetiMaxData ;   // max number of bytes prepared in the buffer to be sent
 volatile uint8_t state ;                  //!< Holds the state of the software UART.
 volatile uint8_t oneByteReceived ;           // Keep a flag that is true when a byte has been received
@@ -317,9 +320,61 @@ boolean OXS_OUT::retrieveFieldIfAvailable(uint8_t fieldId , int32_t * fieldValue
 
 #endif  // NUMBEROFCELLS > 0 
 
+#if defined ( TEMPERATURE_SOURCE ) && ( TEMPERATURE_SOURCE == NTC )  // if a voltage field is (mis)used to transmit a NTC temperature, then format is different (no decimal).
 #if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_1 )
       case VOLT_1 :  
          if (! voltageData->mVolt[0].available  ) return 0;
+         * fieldValue = voltageData->mVolt[0].value ;
+         * dataType = JETI14_0D ;
+         voltageData->mVolt[0].available = false ;
+         break ;
+#endif
+#if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_2 )
+      case VOLT_2 :  
+         if ( ! voltageData->mVolt[1].available  ) return 0;
+         * fieldValue = voltageData->mVolt[1].value ;
+         * dataType = JETI14_0D ;
+         voltageData->mVolt[1].available = false ;
+          break ;
+#endif
+#if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_3 )
+      case VOLT_3 :  
+         if ( ! voltageData->mVolt[2].available  ) return 0;
+         * fieldValue = voltageData->mVolt[2].value ;
+         * dataType = JETI14_0D ;
+         voltageData->mVolt[2].available = false ;
+          break ;
+#endif
+#if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_4 )
+      case VOLT_4 :  
+         if ( ! voltageData->mVolt[3].available  ) return 0;
+         * fieldValue = voltageData->mVolt[3].value ;
+         * dataType = JETI14_0D ;
+         voltageData->mVolt[3].available = false ;
+          break ;
+#endif
+#if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_5 )
+      case VOLT_5 :  
+         if ( ! voltageData->mVolt[4].available  ) return 0;
+         * fieldValue = voltageData->mVolt[4].value ;
+         * dataType = JETI14_0D ;
+         voltageData->mVolt[4].available = false ;
+          break ;
+#endif
+#if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_6 )
+      case VOLT_6 :  
+         if ( ! voltageData->mVolt[5].available  ) return 0;
+         * fieldValue = voltageData->mVolt[5].value ;
+         * dataType = JETI14_0D ;
+         voltageData->mVolt[5].available = false ;
+          break ;
+#endif
+#else  // TEMPERATURE_SOURCE is not NTC and so VOLTAGE_SOURCE is a real voltage
+
+#if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && defined(VOLTAGE_SOURCE) && ( VOLTAGE_SOURCE == VOLT_1 )
+      case VOLT_1 :  
+         if (! voltageData->mVolt[0].available  ) return 0;
+         
          * fieldValue = voltageData->mVolt[0].value / 10;
          * dataType = JETI14_2D ;
          voltageData->mVolt[0].available = false ;
@@ -365,6 +420,7 @@ boolean OXS_OUT::retrieveFieldIfAvailable(uint8_t fieldId , int32_t * fieldValue
          voltageData->mVolt[5].available = false ;
           break ;
 #endif
+#endif // end of defined ( TEMPERATURE_SOURCE ) && ( TEMPERATURE_SOURCE == NTC )
 
 #if ( defined(ARDUINO_MEASURES_A_CURRENT) && (ARDUINO_MEASURES_A_CURRENT == YES) ) || ( defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON))
 #if defined(ARDUINO_MEASURES_A_CURRENT) && (ARDUINO_MEASURES_A_CURRENT == YES) // when current is provide by arduino adc
@@ -827,7 +883,7 @@ void OXS_OUT::sendData()    // this part could be modified in order to put more 
 //  jetiFrameReadyToSend = 0 ;
   static  uint8_t jetiSendDataFrameCount ;
 #ifdef DEBUGJETI
-         printer->print("st: ") ; printer->println(state) ;
+         //printer->print("st: ") ; printer->println(state) ;
 #endif  
   if (state == IDLE ) {
       if (jetiSendDataFrameCount  >= 5 ) { //Send a text frame instead of a data frame once every 5 data frames 
@@ -845,7 +901,7 @@ void OXS_OUT::sendData()    // this part could be modified in order to put more 
       } // end test on jetiSendDataFrameCount
 //    if ( jetiFrameReadyToSend ) {
 #ifdef DEBUGJETI
-         printer->print("nf: ") ; printer->print(numberOfFields) ; printer->print(" nb: ") ; printer->print(jetiMaxData) ; 
+         printer->print("nf: ") ; printer->print(numberOfFields) ; printer->print(" nb: ") ; printer->print(jetiMaxData) ; printer->print(" > ") ;
         for (uint8_t i= 0 ; i < jetiMaxData ; i++){
           printer->print(jetiData[i], HEX) ; printer->print(" ");
         }
@@ -990,11 +1046,6 @@ void itoc ( int16_t n , uint8_t posLastDigit ) {
 }  // end itoc
 
 //---------------------------------- Here the code to handle the UART  
-#ifdef DEBUG
-//#define DEBUGSETNEWDATA
-//#define DEBUGASERIAL
-//#define DEBUGJETI
-#endif
 
 #define FORCE_INDIRECT(ptr) __asm__ __volatile__ ("" : "=e" (ptr) : "0" (ptr))
 

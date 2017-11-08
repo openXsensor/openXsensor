@@ -1,7 +1,7 @@
 // OpenXsensor https://github.com/openXsensor/
 // started by Rainer Schlosshan and maintained by Michel Strens
 
-// This is version : 8.2.9 (6 nov 2017)
+// This is version : 8.2.10 (8 nov 2017)
 
 //******************************************************************************************************************************************************* //
 //                                                                                                                                                        //
@@ -60,7 +60,7 @@
 
 // ***** 2.4 - Jeti data *****
 //#define VOLTAGE_SOURCE   VOLT_1                     // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
-//#define TEMPERATURE_SOURCE MS5611                   // select between MS5611 and NTC
+//#define TEMPERATURE_SOURCE NTC                   // select between MS5611 and NTC
 
 // ***** 2.5 - How to fill TEST_1, TEST_2, TEST_3  ******     see oXs_config_advanced.h (required only when some measurements have to be filled in TEST_1, TEST_2 or TEST_3)
 

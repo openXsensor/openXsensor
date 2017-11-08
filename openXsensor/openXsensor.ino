@@ -1129,7 +1129,7 @@ static uint32_t previousYawRateMillis ;
 // test1.value =  true ;
 // currentData.consumedMilliAmps.available = false ;
 //} 
-#endif
+//#endif
 
 } // end of calculate all fields
 
