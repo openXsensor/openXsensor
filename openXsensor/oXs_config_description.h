@@ -1028,7 +1028,7 @@ See OpenXsensor https://github.com/openXsensor/
 * If you use a fuel engine, you can connect a liquid flow meter to oXs
 * This sensor generates a pulse each time some milli liters are going trough the sensor 
 * oXs can count the number of pulses and calculates 3 data : the current consumed milli liter / min and, taking care of tank capacity, the remaining fuel in ml and in %.
-* It is recommended to use following type of flow meter because it is probably more accurate than other when flow is low
+* It is recommended to use following type of flow meter because it is probably more accurate than others when flow is low
 * http://www.conrad.be/ce/nl/product/155374/BIO-TECH-eK-FCH-M-Doorstroomsensor-1-stuks-Voedingsspanning-bereik-5-24-VDC-Meetbereik-08-0015-lmin-l-x;jsessionid=EED7B26A7F28BA3F20F0060807E20FD1.ASTPCEN22?ref=searchDetail
 * It is foreseen to measure from 0.015 up to 0.8 l/min.
 * The output signal of the flow meter sensor has to be connected to arduino pin 9 (and the other 2 pins to 5 volt VCC and to Ground).
@@ -1073,7 +1073,9 @@ See OpenXsensor https://github.com/openXsensor/
 * If this option is activated, when oXs start at power on, it start counting from the last remaining fuel when power goes off. 
 * Otherwise, oXs reset the fuel consumption and assumes a 100% tank.
 * 
-* A reset of the fuel consumption can be requested from the TX. This is really needed when SAVE_TO_EEPROM is activated
+* A reset of the fuel consumption can be achieved in different ways. This is really needed when SAVE_TO_EEPROM is activated
+* First reset is performed pressing more than 3 sec on the push button (see push button section).
+* A reset of the fuel consumption can also be requested from the TX.
 * This can be done in several ways depending also on the protocol being used:
 * For all protocols, it can be requested using a PPM signal
 *    This requires to activate the oXs PPM option (see section 3) and to connect a Rx channel to oXs.
