@@ -199,7 +199,9 @@ void OXS_OUT::initJetiListOfFields() {  // fill an array with the list of fields
     listOfFields[listOfFieldsIdx++] =  CURRENTMA ;
     listOfFields[listOfFieldsIdx++] =  MILLIAH ;
 #endif
-#ifdef AIRSPEED       
+#ifdef AIRSPEED    
+    listOfFields[listOfFieldsIdx++] = AIR_SPEED ;
+#elif defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined(ADS_MEASURE) && defined(ADS_AIRSPEED_BASED_ON)    
     listOfFields[listOfFieldsIdx++] = AIR_SPEED ;
 #endif  // End airpseed    
 #ifdef GPS_INSTALLED            
@@ -467,6 +469,13 @@ boolean OXS_OUT::retrieveFieldIfAvailable(uint8_t fieldId , int32_t * fieldValue
         * dataType = JETI14_1D ;
         airSpeedData->airSpeed.available = false ;
         break ;
+#elif defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined(ADS_MEASURE) && defined(ADS_AIRSPEED_BASED_ON)
+      case  AIR_SPEED :
+        if ( ! oXs_ads1115.adsAirSpeedData.airSpeed.available  ) return 0;
+        * fieldValue = oXs_ads1115.adsAirSpeedData.airSpeed.value  * 1.852;   //  convert from 1/10 of knots to  1/10 of Km/h 
+        * dataType = JETI14_1D ;
+        oXs_ads1115.adsAirSpeedData.airSpeed.available = false ;
+        break ;
 #endif  // End airpseed    
 
 #ifdef GPS_INSTALLED            
@@ -548,7 +557,8 @@ boolean OXS_OUT::retrieveFieldIfAvailable(uint8_t fieldId , int32_t * fieldValue
 #else  // if PULSES_PER_ROTATION is not defined, we assume 1
         * fieldValue  =  sport_rpm.value * 60 ;
 #endif        
-//        }                         
+//        }  
+        * fieldValue = 1000 ;                       
         * dataType = JETI22_0D ;
         break ;
 #endif
@@ -819,6 +829,10 @@ void OXS_OUT::fillJetiBufferWithText() {
       case  AIR_SPEED :
         mergeLabelUnit( textIdx, "Airspeed", "Km/h"  ) ;
         break ;
+#elif defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined(ADS_MEASURE) && defined(ADS_AIRSPEED_BASED_ON)    
+      case  AIR_SPEED :
+        mergeLabelUnit( textIdx, "Airspeed", "Km/h"  ) ;
+        break ;        
 #endif  // End airpseed    
 
 #ifdef GPS_INSTALLED            

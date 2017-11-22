@@ -1126,8 +1126,16 @@ static uint32_t previousYawRateMillis ;
 //#if defined(ARDUINO_MEASURES_A_CURRENT) && (ARDUINO_MEASURES_A_CURRENT == YES)
 //if ( currentData.consumedMilliAmps.available) {
 // test1.value = currentData.consumedMilliAmps.value ;
-// test1.value =  true ;
+// test1.available =  true ;
 // currentData.consumedMilliAmps.available = false ;
+//} 
+//#endif
+
+//#if defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON)
+//if ( oXs_ads1115.adsCurrentData.consumedMilliAmps.available) {
+// test1.value = oXs_ads1115.adsCurrentData.consumedMilliAmps.value ;
+// test1.available =  true ;
+// oXs_ads1115.adsCurrentData.consumedMilliAmps.available = false ;
 //} 
 //#endif
 
@@ -1483,6 +1491,9 @@ void Reset3SecButtonPress()
 #elif defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined (ADS_MEASURE)  && defined (ADS_CURRENT_BASED_ON)
   oXs_ads1115.floatConsumedMilliAmps = 0 ;
   oXs_ads1115.adsCurrentData.consumedMilliAmps.value = 0 ;
+#endif
+#if defined ( A_FLOW_SENSOR_IS_CONNECTED ) && ( A_FLOW_SENSOR_IS_CONNECTED == YES)
+  consumedML = 0 ;
 #endif
 }
 

@@ -161,7 +161,7 @@ void OXS_VOLTAGE::voltageNrIncrease() {
       voltageNr = 0 ;
       cnt++;
       if(millis() > ( lastVoltMillis + 500) ){   // calculate average only once every 500 msec 
-        for (int cntVolt = 0 ; cntVolt < 6 ; cntVolt++) {      
+        for (uint8_t cntVolt = 0 ; cntVolt < 6 ; cntVolt++) {      
           if ( voltageData.mVoltPin[cntVolt] < 8) {
             voltageData.mVolt[cntVolt].value = round( ((float) voltageData.sumVoltage[cntVolt]  * voltageData.mVoltPerStep[cntVolt] ) / (float) cnt  ) + voltageData.offset[cntVolt];
 //            voltageData.mVolt[cntVolt].value = (voltageData.sumVoltage[cntVolt] / cnt  * voltageData.mVoltPerStep[cntVolt] ) + voltageData.offset[cntVolt];
