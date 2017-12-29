@@ -52,7 +52,7 @@
 //#define FILL_TEST_1_2_3_WITH_FLOW_SENSOR_CONSUMPTION             // uncomment to activate this option
 
 // --------- 3 - PPM settings ---------
-//#define PIN_PPM           3     // Uncomment this line in order to use a Rx channel to control oXs; default is 2 but my own device use 3
+//#define PIN_PPM           2     // Uncomment this line in order to use a Rx channel to control oXs; default is 2 but my own device use 3
 #define PPM_MIN_100       988     // default 1500 - 512 ; // pulse width (usec) when TX sends a channel = -100
 #define PPM_PLUS_100      2012    // default 1500 + 512 ; // pulse width (usec) when TX sends a channel = +100
 
@@ -113,7 +113,7 @@
 // --------- 6 - Voltages & Current sensor settings ---------
 
 // ***** 6.1 - Voltage Reference to measure voltages and current *****
-#define USE_INTERNAL_REFERENCE  // uncomment this line if you use 1.1 volt internal reference instead of Vcc
+#define USE_INTERNAL_REFERENCE  // uncomment this line if you use 1.1 volt internal reference instead of Vcc (voltage divider mst be used to reduce voltages to 1.1 volt max)
 //#define USE_EXTERNAL_REFERENCE  // uncomment this line if you use an external reference instead of Vcc
 //#define REFERENCE_VOLTAGE 4970    // set value in milliVolt; if commented, oXs will use or 1100 (if internal ref is used) or 5000 (if internal ref is not used) 
 
@@ -200,19 +200,19 @@
 
 // --------- 20 - Sequencer ---------
 //#define SEQUENCE_OUTPUTS 0b100000  
-#define SEQUENCE_UNIT 100
-#define SEQUENCE_m100    1 , 0b100000 , 1 , 0b000000 , 1 , 0b100000 , 1 , 0b000000 
-#define SEQUENCE_m75     1 , 0b100000 , 1 , 0b000000 , 2 , 0b100000 , 2 , 0b000000
-#define SEQUENCE_m50     5 , 0b100000 , 5 , 0b000000
-#define SEQUENCE_m25     5 , 0b100000 , 5 , 0b000000 , 0 , 0b100000
+#define SEQUENCE_UNIT 2
+#define SEQUENCE_m100    1 , 0b100000 , 3 , 0b000000 , 1 , 0b100000 , 3 , 0b000000 
+//#define SEQUENCE_m75     1 , 0b100000 , 1 , 0b000000 , 2 , 0b100000 , 2 , 0b000000
+//#define SEQUENCE_m50     5 , 0b100000 , 5 , 0b000000
+//#define SEQUENCE_m25     5 , 0b100000 , 5 , 0b000000 , 0 , 0b100000
 #define SEQUENCE_0       3 , 0b100000 , 1 , 0b000000
-#define SEQUENCE_25      2 , 0b100000 , 2 , 0b000000
-#define SEQUENCE_50      5 , 0b100000 , 5 , 0b000000
-#define SEQUENCE_75      7 , 0b100000 , 7 , 0b000000
-#define SEQUENCE_100     8 , 0b100000 , 8 , 0b000000
-#define SEQUENCE_LOW    10 , 0b100000 ,10 , 0b000000   // sequence for Low voltage
+//#define SEQUENCE_25      2 , 0b100000 , 2 , 0b000000
+//#define SEQUENCE_50      5 , 0b100000 , 5 , 0b000000
+//#define SEQUENCE_75      7 , 0b100000 , 7 , 0b000000
+#define SEQUENCE_100     8 , 0b100000 , 16 , 0b000000 , 24 , 0b100000 , 32 , 0b000000  
+//#define SEQUENCE_LOW    10 , 0b100000 ,10 , 0b000000   // sequence for Low voltage
 //#define SEQUENCE_MIN_VOLT_6 4000 // sequence_100 will be activated if voltage 6 is lower that the value.
-#define SEQUENCE_MIN_CELL   3000 // sequence_100 will be activated if lowest cell is lower that the value.
+//#define SEQUENCE_MIN_CELL   3000 // sequence_100 will be activated if lowest cell is lower that the value.
 
 
 // --------- xx - Reserved for developer. DEBUG must be activated here when we want to debug one or several functions in some other files. ---------

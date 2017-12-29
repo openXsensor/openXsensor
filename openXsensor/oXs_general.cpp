@@ -27,9 +27,10 @@ ISR( TIMER1_CAPT_vect, ISR_NOBLOCK )
 
 	if ( ++RpmCounter > 3 )
 	{
+		uint8_t oReg = SREG ; // save status register
 		cli() ;
 		uint16_t time = ICR1 ;	// Read capture register on timer 1
-		sei() ;
+		SREG = oReg ; // restore status register
 		elapsed = time - lastTimerValue ;
   #if F_CPU == 20000000L   // 20MHz clock 
    #error Unsupported clock speed

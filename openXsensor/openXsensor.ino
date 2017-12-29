@@ -147,7 +147,6 @@ extern unsigned long millis( void ) ;
 //#define DEBUGOUTDATATOSERIAL
 //#define DEBUGENTERLOOP
 //#define DEBUGSEQUENCE
-//#define DEBUGPPM
 //#define DEBUGPPMVALUE
 //#define DEBUGFORCEPPM
 //#define DEBUG_VARIO_TIME
@@ -743,7 +742,7 @@ if ( currentLoopMillis - lastLoop500Millis > 500 ) {
 
 // if a sequence is set up
 #ifdef SEQUENCE_OUTPUTS
-#if (defined( SEQUENCE_MIN_VOLT_6) || defined ( SEQUENCE_MIN_CELL ) 
+#if defined( SEQUENCE_MIN_VOLT_6) || defined ( SEQUENCE_MIN_CELL ) 
   if ( (lowVoltage == true) && (prevLowVoltage == false) ) {
     prevLowVoltage = true ;
     ppm.value = 125 ; // fix the sequence to be used when voltage is low  ; it is sequence +125
@@ -854,12 +853,13 @@ void readSensors() {
 
 
 #if ( defined ( PPM_VIA_SPORT ) || ( defined ( A_FLOW_SENSOR_IS_CONNECTED ) && ( A_FLOW_SENSOR_IS_CONNECTED == YES) ) ) && defined (PROTOCOL ) && ( ( PROTOCOL == FRSKY_SPORT ) || ( PROTOCOL == FRSKY_SPORT_HUB ) ) // if it is allowed to read SPORT
+    uint8_t oReg = SREG ; // save status register
     cli() ;
     if ( TxDataIdx == 8 ) {
       TxDataIdx++ ; // Increase the number of data in order to avoid to read twice
       uint16_t txField = ( TxData[2] << 8 ) + TxData[1] ;                                                      // id of the field being received
       uint32_t txValue = ( ( ( ( (TxData[6] << 8) + TxData[5] ) << 8 ) + TxData[4] ) << 8 ) + TxData[3] ;      // value of the field being received
-      sei() ;
+      SREG = oReg ;  // restore the status register
 #ifdef DEBUG_READ_SPORT
       Serial.print("At: ") ; Serial.print(millis()) ;
       Serial.print(" "); Serial.print(TxData[0], HEX);  
@@ -888,7 +888,7 @@ void readSensors() {
       }   
 #endif
     } else {
-      sei() ;      
+      SREG = oReg ;  // restore the status register      
     }
 #endif
  
@@ -1132,11 +1132,24 @@ static uint32_t previousYawRateMillis ;
 //#endif
 
 //#if defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON)
+//if ( oXs_ads1115.adsCurrentData.MilliAmps.available) {
+// test2.value = oXs_ads1115.adsCurrentData.MilliAmps.value ;
+// test2.available =  true ;
+// oXs_ads1115.adsCurrentData.MilliAmps.available = false ;
+//} 
 //if ( oXs_ads1115.adsCurrentData.consumedMilliAmps.available) {
-// test1.value = oXs_ads1115.adsCurrentData.consumedMilliAmps.value ;
-// test1.available =  true ;
+// test3.value = oXs_ads1115.adsCurrentData.consumedMilliAmps.value ;
+// test3.available =  true ;
 // oXs_ads1115.adsCurrentData.consumedMilliAmps.available = false ;
 //} 
+//#endif
+
+//#if ( defined(AIRSPEED) && (defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined (ADS_MEASURE) && defined (ADS_AIRSPEED_BASED_ON) )
+//	if ( oXs_ads1115.adsAirSpeedData.airSpeed.available == true ) {
+//     test1.value = oXs_ads1115.adsAirSpeedData.airSpeed.value ;
+//	 test1.available = true ;
+//	 oXs_ads1115.adsAirSpeedData.airSpeed.available = false ;
+//	}
 //#endif
 
 } // end of calculate all fields
@@ -1447,7 +1460,7 @@ void checkButton() {
     // Do Something after certain times the button has been pressed for....
     if( (buttonPressDuration>=100) and (buttonPressDuration<3000) )
       Reset1SecButtonPress();
-    else if( (buttonPressDuration>=3000) and (buttonPressDuration<5000) )
+    else if( (buttonPressDuration>=3000) and (buttonPressDuration<8000) )
       Reset3SecButtonPress();
     //else if( (buttonPressDuration>=5000) and (buttonPressDuration<10000) )
     else if( (buttonPressDuration>=10000) and (buttonPressDuration<15000) )
@@ -1545,9 +1558,12 @@ void SaveToEEProm(){
     }
     break;  
 #endif  // end A_FLOW_SENSOR_IS_CONNECTED
-  }
+  }     // end of switch
   caseWriteEeprom++;
   if(caseWriteEeprom > CASE_MAX_EEPROM) caseWriteEeprom = 0;
+
+// to do : add values from ads1115 about current consumption; to do also in LoadFromEEprom()
+  
 } // end SaveToEEPom
 
 /******************************************/
@@ -1596,6 +1612,7 @@ void LoadFromEEProm(){
 #if defined ( PIN_PPM ) || (  defined ( PPM_VIA_SPORT ) && ( (PROTOCOL  == FRSKY_SPORT) || (PROTOCOL  == FRSKY_SPORT_HUB) ) )
 volatile uint16_t time1 ;
 void ProcessPPMSignal(){
+boolean getNewPpm = false ; // become true if a new ppm value has been acquired  
 #if defined ( PIN_PPM )  // when ppm is read from a rx channel
   ReadPPM(); // set ppmus to 0 if ppm is not available or has not been collected X time, other fill ppmus with the (max) pulse duration in usec 
 #ifdef DEBUGFORCEPPM
@@ -1605,6 +1622,7 @@ void ProcessPPMSignal(){
   if (ppmus>0){  // if a value has been defined for ppm (in microseconds)
     ppm.value = map( ppmus , PPM_MIN_100, PPM_PLUS_100, -100 , 100 ) ; // map ppm in order to calibrate between -100 and 100
     ppm.available = true ;
+    getNewPpm = true ;
   } 
 #else   // so when done via SPORT (defined ( PPM_VIA_SPORT ) && ( PROTOCOL  == FRSKY_SPORT ) || (PROTOCOL  == FRSKY_SPORT_HUB) ) )
         // newPpm.value and .available are already filled in readSensor() when new values are received
@@ -1612,18 +1630,21 @@ void ProcessPPMSignal(){
           ppm.value = newPpm.value ;
           ppm.available = true ;
           newPpm.available = false ;
+          getNewPpm = true ;
       }
 #endif  
-  if  (ppm.available ) {  
+  if  (getNewPpm ) { 
+    getNewPpm = false ; // reset the indicator saying there is a new ppm to handle. 
 #ifdef DEBUGPPMVALUE
        Serial.print(micros()); Serial.print(F(" ppm="));  Serial.println(ppm.value);
 #endif
 #ifdef SEQUENCE_OUTPUTS
     if ( ( ( ppm.value - prevPpm) > 3 ) || (( prevPpm - ppm.value) > 3 )  )  { // handel ppm only if it changes by more than 3 
+        prevPpm = ppm.value ;
         setNewSequence( ) ;
     }  
 #else // so if Sequence is not used and so PPM is used for Vario sensitivity , vario compensation , airspeed reset , glider ratio and/or vario source selection 
-    if (ppm.value == prevPpm) {  // test if new value is equal to previous in order to avoid unstabel handling 
+    if ( ( ( ppm.value - prevPpm) < 4 ) && ( ( prevPpm - ppm.value) < 4 ) ) {  // test if new value is quite close to previous in order to avoid unstabel handling 
     
 #if defined ( VARIO_PRIMARY) && defined ( VARIO_SECONDARY)  && defined (VARIO ) && ( defined (VARIO2) || ( defined ( AIRSPEED) || ( defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined ( ADS_MEASURE ) && defined( ADS_AIRSPEED_BASED_ON ) ) )  || defined (USE_6050) )  && defined (PIN_PPM)
         if ( (ppm.value >= (SWITCH_VARIO_MIN_AT_PPM - 4)) && (ppm.value <= (SWITCH_VARIO_MAX_AT_PPM + 4)) ) {
@@ -1676,9 +1697,10 @@ void ProcessPPMSignal(){
 #endif    
     
     } // end ppm == prePpm
+    prevPpm = ppm.value ;  
 #endif  // end of #ifdef SEQUENCE_OUTPUTS & #else
   }  // end if  (ppm.available ) 
-  prevPpm = ppm.value ;
+  
 }  // end processPPMSignal
 
 
@@ -1700,15 +1722,16 @@ ISR(INT0_vect, ISR_NOBLOCK)  // NOBLOCK allows other interrupts to be served whe
 ISR(INT1_vect, ISR_NOBLOCK)
 #endif
 {
+	uint8_t oReg = SREG; // store SREG value 
 	cli() ;
 	uint16_t time = TCNT1 ;	// Read timer 1
-	sei() ;
+	SREG = oReg ; // restore SREG value
 	if ( EICRA & PPM_INT_EDGE ) // a rising edge occurs
 	{
-		StartTime = time ;
+		StartTime = time ;              // save the value of the timer
 		EICRA &= ~PPM_INT_EDGE ;				// allow a falling edge to generate next interrupt
 	}
-	else
+	else                       // a falling edge occurs   
 	{
 //		EndTime = time ;		
 		time -= StartTime ;
@@ -1724,7 +1747,7 @@ ISR(INT1_vect, ISR_NOBLOCK)
 		
 //                if (  ppmInterrupted == 0  ) { // do not handle PulseTime if pin change interrupt has been delayed by another interrupt (Timer 1 compare A handling)
 		  time1 = time ; 
-                  PulseTimeAvailable = true ;
+      PulseTimeAvailable = true ;
 //		} else {
 //                ppmInterruptedCopy++ ;  // used in order to test the value outside ISR
 //                }
@@ -1733,26 +1756,25 @@ ISR(INT1_vect, ISR_NOBLOCK)
 	}
 }
 
-void ReadPPM() {
+void ReadPPM() {    // set ppmus to 0 if ppm is not available or has not been collected X time, other fill ppmus with the (max) pulse duration in usec 
          static uint8_t ppmIdx ;
          static uint16_t ppmTemp ;
          static uint16_t ppmMax ; // highest value of ppmTemp received ; Some ppm measurement are wrong (to low) because there are some interrupt some 
-#define PPM_COUNT_MAX 10 // select the max of 10 ppm
-        cli() ;
-        if ( !PulseTimeAvailable ) { // if no new pulse is available just exit with ppmus = 0
-              ppmus = 0 ;
-              sei() ;  
-        } else { 
-            ppmTemp = time1 ; 
+         ppmus = 0 ;
+         if ( PulseTimeAvailable ) { // if new pulse is available
+#define PPM_COUNT_MAX 5 // select the max of 5 ppm (so once every 100 msec
+           uint8_t oReg = SREG ; // save Status register
+           cli() ; 
+            ppmTemp = time1 ;    // use values from interrupt
             PulseTimeAvailable = false ;
-            sei() ;
+            SREG = oReg ;  // restore Status register  
             if ( ppmIdx >= PPM_COUNT_MAX ) {
                 ppmus = ppmMax ; // we keep the highest value
                 ppmIdx = 0 ;
                 ppmMax = ppmTemp ; 
             } else {
                 ppmIdx++ ;
-                if( ppmTemp > ppmMax ) ppmMax = ppmTemp ;  
+                if( ppmTemp > ppmMax ) ppmMax = ppmTemp ;  // save the highest value
             }  // end test on ppmIdx   
         } // end test on PulseTimeAvailable
 } //end ReadPPM()
@@ -1793,9 +1815,11 @@ void processFlowMeterCnt () {    // get the flowmeter counter once per X seconds
   uint32_t currentFlowMillis = millis() ;
   if ( ( currentFlowMillis - prevFlowMillis ) > FLOW_DELAY ) {   
     prevFlowMillis = currentFlowMillis ;
+    uint8_t oReg = SREG ; // save status register
     cli() ;  // avoid interrupt to ensure that counter is consistent
     flowMeterCntCopy = flowMeterCnt ; 
     flowMeterCnt = 0 ;
+    SREG = oReg ; // restore status register
     sei() ;  // allow interrupt again
 #define CONVERT_TO_ML_PER_MIN  30.0 / ( PULSES_PER_ML * FLOW_DELAY / 1000.0 ) //  30 = 60 /2 : 60 = 60 sec/min, 1000 = msec instead of sec , 2 because counter is increased by all changes (rise and fall)
     currentFlow  =  ((float) flowMeterCntCopy) * CONVERT_TO_ML_PER_MIN ;                                          // expected value should be between 15 and 800 ml/min for the conrad flow meter   
@@ -1852,7 +1876,7 @@ void setNewSequence() {                   // **********  setNewSequence( ) *****
 #ifdef DEBUGSEQUENCE
     Serial.println(F(" "));
     Serial.print(F("ppmMain="));  Serial.println(ppmMain );  
-    Serial.println(F(" "));
+    //Serial.println(F(" "));
 #endif
        prevPpmMain = ppmMain ;
        seqRef = sequencePointer[ppmMain] ;  // seqTab contains pointers to the sequence array
@@ -1912,7 +1936,8 @@ void checkSequence() {
           nextSequenceMillis = currentMillis  +  seqDelay ;
       }
 #ifdef DEBUGSEQUENCE
-      Serial.print(F("seqStep="));  Serial.println( seqStep );
+      Serial.print(F("At"));  Serial.print( currentMillis );
+      Serial.print(F(" seqStep="));  Serial.println( seqStep );
       Serial.print(F("portbTempValue="));  Serial.println( portbTempValue );
       Serial.print(F("seqDelay="));  Serial.println( seqDelay );
       Serial.print(F("portbTemp="));  Serial.println( portbTemp );

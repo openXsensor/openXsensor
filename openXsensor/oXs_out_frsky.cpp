@@ -649,9 +649,10 @@ void OXS_OUT::sendSportData()
                   p_measurements[currFieldIdx_]->available = 0 ;                                                         // mark the data as not available
                   dataValue[sensorSeq] =  p_measurements[currFieldIdx_]->value ;                                         // store the value in a buffer
                   dataId[sensorSeq] = fieldId[currFieldIdx_] ;                                                   // mark the data from this sensor as available
+                  uint8_t oReg = SREG ; // save status register
                   cli() ;
                   frskyStatus &= ~(1<< sensorSeq) ;                                               // says that data is loaded by resetting one bit
-                  sei();
+                  SREG = oReg ; // restore the status register
 #ifdef DEBUG_LOAD_SPORT
                   Serial.print("Load "); Serial.print(dataId[sensorSeq],HEX) ; Serial.print(" ") ; Serial.println(dataValue[sensorSeq]);
 #endif                  
@@ -1942,10 +1943,11 @@ void startHubTransmit()
     return ;
   }
   SET_TX_PIN() ;                    // Send a logic 0 on the TX_PIN (=start bit).
+  uint8_t oReg = SREG ; // save status register
   cli() ;
   OCR1A = TCNT1 + TICKS2WAITONEHUB  - INTERRUPT_ENTRY_TRANSMIT;   // Count one period into the future.
   CLEAR_TIMER_INTERRUPT() ;         // Clear interrupt bits
-  sei() ;
+  SREG = oReg ; // restore the status register
   SwUartTXBitCount = 0 ;
   SwUartTXData = hubData[0] ;
   //TxNotEmpty = 0 ;

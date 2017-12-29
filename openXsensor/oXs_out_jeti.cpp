@@ -673,10 +673,11 @@ void startJetiTransmit()
   }
   SET_TX_PIN_TO_OUTPUT() ;
   CLEAR_TX_PIN() ;                    // Send a logic 0 on the TX_PIN (=start bit).
+  uint8_t oReg = SREG ; // save status register
   cli() ;
   OCR1A = TCNT1 + TICKS2WAITONEJETI  - INTERRUPT_ENTRY_TRANSMIT;   // Count one period into the future.
   CLEAR_TIMER_INTERRUPT() ;         // Clear interrupt bits
-  sei() ;
+  SREG = oReg ;  // restore status register
   SwUartTXBitCount = 0 ;
   SwUartTXData = jetiData[0] ;
   TxCount = 0 ;
