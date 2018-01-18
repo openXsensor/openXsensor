@@ -146,13 +146,18 @@ extern unsigned long millis( void ) ;
 //#define DEBUGCOMPENSATEDCLIMBRATE
 //#define DEBUGOUTDATATOSERIAL
 //#define DEBUGENTERLOOP
+//#define DEBUG_ENTER_READSENSORS
+//#define DEBUG_CALCULATE_FIELDS
 //#define DEBUGSEQUENCE
+//#define DEBUG_PPM_AVAILABLE_FROM_INTERRUPT
 //#define DEBUGPPMVALUE
 //#define DEBUGFORCEPPM
 //#define DEBUG_VARIO_TIME
 //#define DEBUG_VOLTAGE_TIME
 //#define DEBUG_READ_SPORT
+//#define DEBUG_SIMULATE_FLOW_SENSOR
 //#define DEBUG_FLOW_SENSOR
+//#define DEBUG_RPM
 #endif
 
 
@@ -712,9 +717,15 @@ if ( currentLoopMillis - lastLoop500Millis > 500 ) {
 
     // read all sensors
     readSensors(); 
-
+#ifdef DEBUG_CALCULATE_FIELDS
+  Serial.print("call calculateAllFields at") ; Serial.println(millis()) ;
+#endif
     // Calculate all fields
     calculateAllFields(); 
+
+#ifdef DEBUG_CALCULATE_FIELDS
+  Serial.print("end of call calculateAllFields at") ; Serial.println(millis()) ;
+#endif
 
     // prepare the telemetry data to be sent (nb: data are prepared but not sent)
     if ( millis() > 1500 ) oXs_Out.sendData(); 
@@ -790,17 +801,26 @@ extern uint16_t i2cPressureError ;
 extern uint16_t i2cTemperatureError ;
 extern uint16_t i2cReadCount ;
 
-void readSensors() {   
+void readSensors() {  
+   
 #ifdef AIRSPEED
   oXs_4525.readSensor(); // Read a first time the differential pressure on 4525DO, calculate airspeed; note airspeed is read a second time in the loop in order to reduce response time
 #endif
 
 #ifdef VARIO
+#ifdef DEBUG_ENTER_READSENSORS
+  Serial.print( "read baro 1 at ") ; Serial.println(millis()); 
+#endif
+
   newVarioAvailable = oXs_MS5611.readSensor(); // Read pressure & temperature on MS5611, calculate Altitude and vertical speed; 
   if ( oXs_MS5611.varioData.absoluteAlt.available == true and oXs_MS5611.varioData.rawPressure > 100000.0f ) actualPressure = oXs_MS5611.varioData.rawPressure / 10000.0 ; // this value can be used when calculating the Airspeed
 #endif
 
 #ifdef VARIO2
+#ifdef DEBUG_ENTER_READSENSORS
+  Serial.print( "read baro 2 at ") ; Serial.println(millis()); 
+#endif
+
   newVarioAvailable2 = oXs_MS5611_2.readSensor(); // Read pressure & temperature on MS5611, calculate Altitude and vertical speed
 #endif
 
@@ -825,6 +845,10 @@ void readSensors() {
 #endif             // End defined(ARDUINO_MEASURES_A_CURRENT) && (ARDUINO_MEASURES_A_CURRENT == YES)
 
 #ifdef GPS_INSTALLED
+#ifdef DEBUG_ENTER_READSENSORS
+  Serial.print( "read gps at ") ; Serial.println(millis()); 
+#endif
+
     oXs_Gps.readGps() ; // Do not perform calculation if there is less than 2000 usec before MS5611 ADC is available =  (9000 - 2000)/2
 #endif             // End GPS_INSTALLED
 
@@ -844,6 +868,9 @@ void readSensors() {
         sport_rpm.value = RpmValue ;
         sport_rpm.available = true ;    
         lastRpmMillis = millis() ;
+#ifdef DEBUG_RPM
+       Serial.print( "RPM ") ; Serial.println(sport_rpm.value); 
+#endif       
   }      
 #endif
 
@@ -1613,7 +1640,7 @@ void LoadFromEEProm(){
 volatile uint16_t time1 ;
 void ProcessPPMSignal(){
 boolean getNewPpm = false ; // become true if a new ppm value has been acquired  
-#if defined ( PIN_PPM )  // when ppm is read from a rx channel
+#if defined( PIN_PPM )  // when ppm is read from a rx channel
   ReadPPM(); // set ppmus to 0 if ppm is not available or has not been collected X time, other fill ppmus with the (max) pulse duration in usec 
 #ifdef DEBUGFORCEPPM
 //for debuging ppm without having a connection to ppm; force ppm to a value
@@ -1761,6 +1788,10 @@ void ReadPPM() {    // set ppmus to 0 if ppm is not available or has not been co
          static uint16_t ppmTemp ;
          static uint16_t ppmMax ; // highest value of ppmTemp received ; Some ppm measurement are wrong (to low) because there are some interrupt some 
          ppmus = 0 ;
+#if defined DEBUG_PPM_AVAILABLE_FROM_INTERRUPT
+        Serial.print("Read ppm at ") ; Serial.println(millis()) ;
+#endif
+
          if ( PulseTimeAvailable ) { // if new pulse is available
 #define PPM_COUNT_MAX 5 // select the max of 5 ppm (so once every 100 msec
            uint8_t oReg = SREG ; // save Status register
@@ -1768,6 +1799,9 @@ void ReadPPM() {    // set ppmus to 0 if ppm is not available or has not been co
             ppmTemp = time1 ;    // use values from interrupt
             PulseTimeAvailable = false ;
             SREG = oReg ;  // restore Status register  
+#if defined DEBUG_PPM_AVAILABLE_FROM_INTERRUPT
+        Serial.print("ppm time1= ") ; Serial.println(time1) ;
+#endif
             if ( ppmIdx >= PPM_COUNT_MAX ) {
                 ppmus = ppmMax ; // we keep the highest value
                 ppmIdx = 0 ;
@@ -1821,6 +1855,9 @@ void processFlowMeterCnt () {    // get the flowmeter counter once per X seconds
     flowMeterCnt = 0 ;
     SREG = oReg ; // restore status register
     sei() ;  // allow interrupt again
+#ifdef DEBUG_SIMULATE_FLOW_SENSOR
+    flowMeterCntCopy = 100 ;        // force a fix value in order to test without a flow sensor
+#endif    
 #define CONVERT_TO_ML_PER_MIN  30.0 / ( PULSES_PER_ML * FLOW_DELAY / 1000.0 ) //  30 = 60 /2 : 60 = 60 sec/min, 1000 = msec instead of sec , 2 because counter is increased by all changes (rise and fall)
     currentFlow  =  ((float) flowMeterCntCopy) * CONVERT_TO_ML_PER_MIN ;                                          // expected value should be between 15 and 800 ml/min for the conrad flow meter   
     if (currentFlow < flowParam[TX_FIELD_FLOW_1] ) {
@@ -1846,8 +1883,8 @@ void processFlowMeterCnt () {    // get the flowmeter counter once per X seconds
     newFlowAvailable = true ;   // this is use to fill TEST_1, 2, 3 to avoid conflict with JETI protocol which uses 3 individual flags 
 #if defined ( DEBUG) && defined (DEBUG_FLOW_SENSOR)
     Serial.print(" At " ); Serial.print( prevFlowMillis ) ;
-    //Serial.print("flcnt " ); Serial.print( flowMeterCntCopy ) ;
-    //Serial.print(" corr " ); Serial.print( flowCorr ) ;
+    Serial.print(" flcnt " ); Serial.print( flowMeterCntCopy ) ;
+    Serial.print(" remain " ); Serial.print( remainingFuelML.value ) ;
     Serial.print(" ml/min " ); Serial.print( currentFlow ) ;
     Serial.print(" cons " ); Serial.println( consumedML ) ;
 #endif

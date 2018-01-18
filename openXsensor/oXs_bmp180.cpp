@@ -1,5 +1,7 @@
 #include "oXs_bmp180.h"
 
+#if defined(SENSOR_IS_BMP180) 
+
 #ifdef DEBUG
 //#define DEBUGI2CMS5611
 //#define DEBUGDATA
@@ -144,7 +146,7 @@ long result = 0 ;
     } // end of delay of 9 ms  
   } // end of SensorState == 1 
   else if (varioData.SensorState==1){ // =========================  
-    if ( micros() > varioData.lastCommandMicros + 9000) { // wait 9000 usec to get Temp with high precision
+    if ( ( micros() - varioData.lastCommandMicros ) > 9000 ) { // wait 9000 usec to get Temp with high precision
           if ( ! I2c.read( BMP180_ADR , 0xF6, 2 )) { ; //read 2 bytes from the device in register F6 ; keep previous value in case of error
                 result = I2c.receive() ;
                 result <<= 8 ;
@@ -342,7 +344,7 @@ void OXS_BMP180::calculateVario() {
       pressureMicrosPrev2 = pressureMicrosPrev1 ;
 } // End of calculate Vario
 
-
+#endif // end of #if defined(SENSOR_IS_BMP180) 
 
 
 

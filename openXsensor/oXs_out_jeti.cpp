@@ -558,7 +558,6 @@ boolean OXS_OUT::retrieveFieldIfAvailable(uint8_t fieldId , int32_t * fieldValue
         * fieldValue  =  sport_rpm.value * 60 ;
 #endif        
 //        }  
-        * fieldValue = 1000 ;                       
         * dataType = JETI22_0D ;
         break ;
 #endif

@@ -52,7 +52,7 @@
 //#define FILL_TEST_1_2_3_WITH_FLOW_SENSOR_CONSUMPTION             // uncomment to activate this option
 
 // --------- 3 - PPM settings ---------
-//#define PIN_PPM           2     // Uncomment this line in order to use a Rx channel to control oXs; default is 2 but my own device use 3
+#//define PIN_PPM           2     // Uncomment this line in order to use a Rx channel to control oXs; default is 2 but my own device use 3
 #define PPM_MIN_100       988     // default 1500 - 512 ; // pulse width (usec) when TX sends a channel = -100
 #define PPM_PLUS_100      2012    // default 1500 + 512 ; // pulse width (usec) when TX sends a channel = +100
 
@@ -216,8 +216,8 @@
 
 
 // --------- xx - Reserved for developer. DEBUG must be activated here when we want to debug one or several functions in some other files. ---------
-//#define DEBUG
-//#define DEBUG_BLINK   // use by developper in order to blink the led without using uart for debugging
+#//define DEBUG
+///#define DEBUG_BLINK   // use by developper in order to blink the led without using uart for debugging
 
 
 #define BASED_ON_AIRSPEED 0
@@ -250,6 +250,7 @@ struct ONE_MEASUREMENT {
 #define BMP085  4
 #define BMP180  5
 #define BMP280  6
+#define GY87    7
 
 #define NO_AIRSPEED 1
 #define MS4525      2
@@ -290,10 +291,10 @@ struct ONE_MEASUREMENT {
 
 
 #ifdef FIRST_BARO_SENSOR_USE
-  #if (FIRST_BARO_SENSOR_USE ==  MS5611 ) || (FIRST_BARO_SENSOR_USE ==  GY86 ) || (FIRST_BARO_SENSOR_USE ==  BMP085 ) || (FIRST_BARO_SENSOR_USE ==  BMP180 ) || (FIRST_BARO_SENSOR_USE ==  BMP280 ) 
+  #if (FIRST_BARO_SENSOR_USE ==  MS5611 ) || (FIRST_BARO_SENSOR_USE ==  GY86 ) || (FIRST_BARO_SENSOR_USE ==  BMP085 ) || (FIRST_BARO_SENSOR_USE ==  BMP180 ) || (FIRST_BARO_SENSOR_USE ==  BMP280 ) || (FIRST_BARO_SENSOR_USE ==  GY87 )
     #define VARIO
   #endif
-  #if  (FIRST_BARO_SENSOR_USE ==  BMP085 ) || (FIRST_BARO_SENSOR_USE ==  BMP180 ) 
+  #if  (FIRST_BARO_SENSOR_USE ==  BMP085 ) || (FIRST_BARO_SENSOR_USE ==  BMP180 )  || (FIRST_BARO_SENSOR_USE ==  GY87 )
     #define SENSOR_IS_BMP180
   #endif
   #if  (FIRST_BARO_SENSOR_USE ==  BMP280 ) 
@@ -307,6 +308,9 @@ struct ONE_MEASUREMENT {
   #endif
 #endif  
 
+#if ( defined( FIRST_BARO_SENSOR_USE ) && ( (FIRST_BARO_SENSOR_USE ==  MS5611 ) || (FIRST_BARO_SENSOR_USE ==  GY86 ) )) || ( defined( SECOND_BARO_SENSOR_USE ) && ( (SECOND_BARO_SENSOR_USE ==  MS5611 ) || (SECOND_BARO_SENSOR_USE ==  GY86 ) ))
+  #define SENSOR_IS_MS5611
+#endif
 
 #ifdef  AIRSPEED_SENSOR_USE 
   #if ( AIRSPEED_SENSOR_USE == MS4525 )

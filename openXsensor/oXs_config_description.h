@@ -319,7 +319,7 @@ See OpenXsensor https://github.com/openXsensor/
 *     When 2 baro sensors are used, oXs can transmit as vertical speed the average from both sensors. Still this does not seems to be very usefull.
 *     
 *     You must specify which type of baro sensor is used for the first vario using line #define FIRST_BARO_SENSOR_USE     MS5611         
-*        The value must be selected in this list: NO_BARO , MS5611, GY86 , BMP085 , BMP180 , BMP280  
+*        The value must be selected in this list: NO_BARO , MS5611, GY86 , BMP085 , BMP180 , BMP280  , GY87
 *     You must specify which type of baro sensor is used for the second vario using line #define SECOND_BARO_SENSOR_USE     NO_BARO         
 *        The value must be selected in this list: NO_BARO , MS5611  
 *     Both sensors are connected in parallel (using same Arduino pins A4 and A5).
@@ -966,7 +966,7 @@ See OpenXsensor https://github.com/openXsensor/
 *    - open Arduino IDE terminal (press CTRL + SHIFT + M simultaniously)
 *    - take care to set the baud rate to 115200 (or 38400 if GPS is activated too)
 *    - after startup, terminal should, every 2 or 3 sec, display Acc followed by 3 numbers being respectively AccX, AccY and AccZ. Please note that those numbers change when mpu6050 moves.
-*    - ensure that the mpu6050 (GY86) is perfectly horizontal and does not move (e.g. put on a table) 
+*    - ensure that the mpu6050 (on GY86,GY87) is perfectly horizontal and does not move (e.g. put on a table) 
 *    - notice the 2 first numbers ( = AccX and AccY ) ; Don't take care of the 3rd number because when the sensor is in this position, it will reflect the gravity and will be around 16384. 
 *    - rotate mpu6050 in order to get X or Y axis perfectly vertical and do not move. Now, the 3rd number would become much lower (because it does not measure gravity anymore)
 *    - notice the 3rd number ( = Accz )
