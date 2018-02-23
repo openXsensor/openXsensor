@@ -52,7 +52,7 @@
 //#define FILL_TEST_1_2_3_WITH_FLOW_SENSOR_CONSUMPTION             // uncomment to activate this option
 
 // --------- 3 - PPM settings ---------
-#//define PIN_PPM           2     // Uncomment this line in order to use a Rx channel to control oXs; default is 2 but my own device use 3
+//#define PIN_PPM           2     // Uncomment this line in order to use a Rx channel to control oXs; default is 2 but my own device use 3
 #define PPM_MIN_100       988     // default 1500 - 512 ; // pulse width (usec) when TX sends a channel = -100
 #define PPM_PLUS_100      2012    // default 1500 + 512 ; // pulse width (usec) when TX sends a channel = +100
 
@@ -66,7 +66,7 @@
 // ***** 4.2 - Type of Vspeed to transmit  *****             Is defined only in oXs_config_basic.h file                       
 
 // ***** 4.3 - Sensitivity predefined by program *****
-#define SENSITIVITY_MIN 20          // normal value for MS5611; for BMP, it is probably better to use a lower value like 20
+#define SENSITIVITY_MIN 80          // normal value for MS5611; for BMP, it is probably better to use a lower value like 20
 #define SENSITIVITY_MAX 300
 #define SENSITIVITY_MIN_AT 100
 #define SENSITIVITY_MAX_AT 1000
@@ -118,11 +118,11 @@
 //#define REFERENCE_VOLTAGE 4970    // set value in milliVolt; if commented, oXs will use or 1100 (if internal ref is used) or 5000 (if internal ref is not used) 
 
 // ***** 6.2 - Voltage parameters *****
-#define PIN_VOLTAGE         6  , 8     , 8   , 8    , 8   , 8               //  Fill 6 values; set to 0 up to 7 for analog pins A0 up to A7 ; set the value to 8 for the voltage(s) not to be measured.
-#define RESISTOR_TO_GROUND  3 , 10    , 10  , 10 , 0  , 18               // set value to 0 when no divider is used for a voltage; can contains decimals 
+#define PIN_VOLTAGE         2  , 8     , 8   , 8    , 8   , 8               //  Fill 6 values; set to 0 up to 7 for analog pins A0 up to A7 ; set the value to 8 for the voltage(s) not to be measured.
+#define RESISTOR_TO_GROUND  3.6 , 10    , 10  , 10 , 0  , 18               // set value to 0 when no divider is used for a voltage; can contains decimals 
 #define RESISTOR_TO_VOLTAGE 47 , 8.7 , 22 , 27  , 0 , 47              // set value to 0 when no divider is used for a voltage; can contains decimals 
 #define OFFSET_VOLTAGE      0   , 0     , 0    , 0    , 0   , 0                // optionnal, can be negative, must be integer, in principe in mv
-#define SCALE_VOLTAGE       1.0 , 1.0   , 1.0  , 1.0  , 1.0 , 1.0              // optionnal, can be negative, can have decimals
+#define SCALE_VOLTAGE       0.973 , 1.0   , 1.0  , 1.0  , 1.0 , 1.0              // optionnal, can be negative, can have decimals
 
 // ***** 6.3 - Max number of Lipo cells to measure (and transmit to Tx) *****      Is defined only in oXs_config_basic.h file
 
@@ -216,7 +216,7 @@
 
 
 // --------- xx - Reserved for developer. DEBUG must be activated here when we want to debug one or several functions in some other files. ---------
-#//define DEBUG
+//#define DEBUG
 ///#define DEBUG_BLINK   // use by developper in order to blink the led without using uart for debugging
 
 

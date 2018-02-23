@@ -113,6 +113,9 @@ void OXS_BMP180::setup() {
 #ifdef DEBUG  
   printer->println(F("setup vario done."));  
 #endif
+  I2c.write( BMP180_ADR , 0xF4 , 0x74) ;// ask a conversion of Pressure sending 74 in register F4; 74 means an average of 2 reads and so a normal wait time of 7.5 msec
+  varioData.lastCommandMicros = micros() ; 
+  varioData.SensorState=0; // 
   
 }  //end of setup
 
@@ -128,7 +131,7 @@ long result = 0 ;
 #endif
   bool newVSpeedCalculated  = false ; 
   if (varioData.SensorState==0) { // ========================= Read the pressure
-    if (  micros()   >   varioData.lastCommandMicros + 9000){ // wait 9 msec at least before asking for reading the pressure
+    if (  ( micros() - varioData.lastCommandMicros) > 9000){ // wait 9 msec at least before asking for reading the pressure
 //        long result = 0;
 	      if(  ! I2c.read( BMP180_ADR, 0xF6, 3 )) { ; //read 3 bytes from the device starting from register F6; keep previous value in case of error 
         	result = I2c.receive() ;
@@ -160,7 +163,7 @@ long result = 0 ;
   } // End of process if SensorState was 1  
   else if (varioData.SensorState==2) {    // ========================== new Pressure and (new or old) Temp are known so Request Pressure immediately and calculate altitude
     varioData.SensorState=0;
-    if ((D1 > 0) & (millis() > 1000) ) { // If D1 has been read in a previous loop and if sensor is started since more than 1 sec, then calculate pressure etc...
+    if ((D1 > 0) & (millis() > 3000) ) { // If D1 has been read in a previous loop and if sensor is started since more than 3 sec, then calculate pressure etc...
               calculateVario() ;
               newVSpeedCalculated = true ;
     }
