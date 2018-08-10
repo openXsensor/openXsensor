@@ -152,6 +152,7 @@ extern unsigned long millis( void ) ;
 //#define DEBUG_PPM_AVAILABLE_FROM_INTERRUPT
 //#define DEBUGPPMVALUE
 //#define DEBUGFORCEPPM
+//#define DEBUG_SELECTED_VARIO
 //#define DEBUG_VARIO_TIME
 //#define DEBUG_VOLTAGE_TIME
 //#define DEBUG_READ_SPORT
@@ -1050,6 +1051,21 @@ void calculateAllFields () {
 #elif defined(VARIO) && ( defined (VARIO2) || defined (AIRSPEED) || defined (USE_6050) || (defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined (ADS_MEASURE) && defined (ADS_AIRSPEED_BASED_ON) ) )&& defined (VARIO_SECONDARY ) && defined( VARIO_PRIMARY )  && defined (PIN_PPM)  && (VSPEED_SOURCE == PPM_SELECTION)
     mainVspeed.value = switchVSpeed.value   ;
     mainVspeed.available = switchVSpeed.available   ;
+#if defined (DEBUG_SELECTED_VARIO)
+static uint32_t next_debug_vspeeds_millis ;
+static boolean next_debug_vspeeds_flag = true ;
+  if (millis() > next_debug_vspeeds_millis) {
+    if (next_debug_vspeeds_flag) {
+      Serial.println("vspeeds= first, compensated, switched , main");
+      next_debug_vspeeds_flag = false ;
+    } else {
+      Serial.print("vspeeds= ");Serial.print(oXs_MS5611.varioData.climbRate.value); Serial.print(",");Serial.print(compensatedClimbRate.value); 
+      Serial.print(",");Serial.print(switchVSpeed.value); Serial.print(",");Serial.print(mainVspeed.value); Serial.println(" ");
+      next_debug_vspeeds_millis = millis() + 500 ;
+    }
+  }
+#endif //  end DEBUG_SELECTED_VARIO
+    
 #endif
 
 
@@ -1072,7 +1088,7 @@ void calculateAllFields () {
 //#define FILL_TEST_1_WITH_DTE
 //#define FILL_TEST_2_WITH_PPM_AIRSPEED_COMPENSATION
 #if defined(VARIO) && ( defined(AIRSPEED) || (defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined (ADS_MEASURE) && defined (ADS_AIRSPEED_BASED_ON) ) )
-#ifdef FILL_TEST_2_WITH_PPM_AIRSPEED_COMPENSATION
+#ifdef FILL_TEST_1_WITH_DTE
   test1.value = compensatedClimbRate.value ;
   test1.available = compensatedClimbRate.available ; 
 #endif
@@ -1639,7 +1655,7 @@ void LoadFromEEProm(){
 #if defined ( PIN_PPM ) || (  defined ( PPM_VIA_SPORT ) && ( (PROTOCOL  == FRSKY_SPORT) || (PROTOCOL  == FRSKY_SPORT_HUB) ) )
 volatile uint16_t time1 ;
 void ProcessPPMSignal(){
-boolean getNewPpm = false ; // become true if a new ppm value has been acquired  
+  boolean getNewPpm = false ; // become true if a new ppm value has been acquired  
 #if defined( PIN_PPM )  // when ppm is read from a rx channel
   ReadPPM(); // set ppmus to 0 if ppm is not available or has not been collected X time, other fill ppmus with the (max) pulse duration in usec 
 #ifdef DEBUGFORCEPPM
@@ -1679,7 +1695,10 @@ boolean getNewPpm = false ; // become true if a new ppm value has been acquired
         } else if ( ( ppm.value <= (4 - SWITCH_VARIO_MIN_AT_PPM)) && (ppm.value >= (- 4 - SWITCH_VARIO_MAX_AT_PPM)) ) {
             selectedVario = VARIO_SECONDARY ; 
         }  
+#ifdef DEBUG_SELECTED_VARIO
+    Serial.print(F("selected vario="));  Serial.println(selectedVario);
 #endif
+#endif // endif defined ( VARIO_PRIMARY) && defined ( VARIO_SECONDARY)  && ...
 
 #if defined (VARIO) || defined (VARIO2) 
         if ( (abs(ppm.value) >= (SENSITIVITY_MIN_AT_PPM - 4)) && ( abs(ppm.value) <= (SENSITIVITY_MAX_AT_PPM + 4)) ) {

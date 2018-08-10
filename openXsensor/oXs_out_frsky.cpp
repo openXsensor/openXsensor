@@ -556,12 +556,14 @@ void OXS_OUT::sendSportData()
   #if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) &&  ( (VFAS_SOURCE == VOLT_1) || (VFAS_SOURCE == VOLT_2) || (VFAS_SOURCE == VOLT_3) || (VFAS_SOURCE == VOLT_4) || (VFAS_SOURCE == VOLT_5) || (VFAS_SOURCE == VOLT_6) )
    if ( (!vfas.available) && ( oXs_Voltage.voltageData.mVolt[VFAS_SOURCE - VOLT_1].available) ){
       vfas.value = oXs_Voltage.voltageData.mVolt[VFAS_SOURCE - VOLT_1].value / 10 ;  // voltage in mv is divided by 10 because SPORT expect it (volt * 100) 
-      vfas.available = true ; 
+      vfas.available = true ;
+      oXs_Voltage.voltageData.mVolt[VFAS_SOURCE - VOLT_1].available = false ; 
    }
   #elif defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined(ADS_MEASURE) && ( (VFAS_SOURCE == ADS_VOLT_1) || (VFAS_SOURCE == ADS_VOLT_2) || (VFAS_SOURCE == ADS_VOLT_3) || (VFAS_SOURCE == ADS_VOLT_4) )
    if ( (!vfas.available) && ( ads_Conv[VFAS_SOURCE - ADS_VOLT_1].available) ){
       vfas.value = ads_Conv[VFAS_SOURCE - ADS_VOLT_1].value / 10 ;  // voltage in mv is divided by 10 because SPORT expect it (volt * 100) 
       vfas.available = true ; 
+      ads_Conv[VFAS_SOURCE - ADS_VOLT_1].available = false;
    }
   #else
     #if  ( (VFAS_SOURCE == ADS_VOLT_1) || (VFAS_SOURCE == ADS_VOLT_2) || (VFAS_SOURCE == ADS_VOLT_3) || (VFAS_SOURCE == ADS_VOLT_4) )

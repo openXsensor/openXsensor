@@ -49,7 +49,7 @@
 
 //#define FILL_TEST1_WITH_HEADING_FROM_MAGNETOMETER              // uncomment to activate this option
 
-//#define FILL_TEST_1_2_3_WITH_FLOW_SENSOR_CONSUMPTION             // uncomment to activate this option
+#define FILL_TEST_1_2_3_WITH_FLOW_SENSOR_CONSUMPTION             // uncomment to activate this option
 
 // --------- 3 - PPM settings ---------
 //#define PIN_PPM           2     // Uncomment this line in order to use a Rx channel to control oXs; default is 2 but my own device use 3
@@ -118,11 +118,12 @@
 //#define REFERENCE_VOLTAGE 4970    // set value in milliVolt; if commented, oXs will use or 1100 (if internal ref is used) or 5000 (if internal ref is not used) 
 
 // ***** 6.2 - Voltage parameters *****
-#define PIN_VOLTAGE         2  , 8     , 8   , 8    , 8   , 8               //  Fill 6 values; set to 0 up to 7 for analog pins A0 up to A7 ; set the value to 8 for the voltage(s) not to be measured.
-#define RESISTOR_TO_GROUND  3.6 , 10    , 10  , 10 , 0  , 18               // set value to 0 when no divider is used for a voltage; can contains decimals 
-#define RESISTOR_TO_VOLTAGE 47 , 8.7 , 22 , 27  , 0 , 47              // set value to 0 when no divider is used for a voltage; can contains decimals 
+// Each of following lines contains 6 parameters, the first value is for VOLT_1, the second for VOLT_2, ... up to the sixth for VOLT_6 
+#define PIN_VOLTAGE        6  , 8     , 8   , 8    , 8   , 8               //  Fill 6 values; set to 0 up to 7 for analog pins A0 up to A7 ; set the value to 8 for the voltage(s) not to be measured.
+#define RESISTOR_TO_GROUND  2.95 , 10    , 10  , 10 , 0  , 18               // set value to 0 when no divider is used for a voltage; can contains decimals 
+#define RESISTOR_TO_VOLTAGE 46.9 , 8.7 , 22 , 27  , 0 , 47              // set value to 0 when no divider is used for a voltage; can contains decimals 
 #define OFFSET_VOLTAGE      0   , 0     , 0    , 0    , 0   , 0                // optionnal, can be negative, must be integer, in principe in mv
-#define SCALE_VOLTAGE       0.973 , 1.0   , 1.0  , 1.0  , 1.0 , 1.0              // optionnal, can be negative, can have decimals
+#define SCALE_VOLTAGE       1.00 , 1.0   , 1.0  , 1.0  , 1.0 , 1.0              // optionnal, can be negative, can have decimals
 
 // ***** 6.3 - Max number of Lipo cells to measure (and transmit to Tx) *****      Is defined only in oXs_config_basic.h file
 

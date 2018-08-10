@@ -5,7 +5,7 @@
   //#define DEBUGADS1115EACHREAD
   //#define DEBUGADS1115REQUESTCONV
   //#define DEBUGADS1115MVOLT
-  #define DEBUGADSAIRSPEEDDATA
+  //#define DEBUGADSAIRSPEEDDATA
   //#define DEBUGCURRENT 
 #endif
 
@@ -266,8 +266,8 @@ void OXS_ADS1115::ads_calculate_airspeed( int16_t ads_difPressureAdc ) {
        } // end calibration
   }  else { // sensor is calibrated
                     ads_difPressureAdc_0 = ( ads_difPressureAdc - offset7002 )  ;
-  //                  ads_sumDifPressureAdc_0 += ads_difPressureAdc_0 ;
-  //                  ads_cntDifPressureAdc_0++ ;
+                    ads_sumDifPressureAdc_0 += ads_difPressureAdc_0 ;
+                    ads_cntDifPressureAdc_0++ ;
 #define FILTERING7002_ADC_MIN        0.001 // 
 #define FILTERING7002_ADC_MAX        0.01  // 
 #define FILTERING7002_ADC_MIN_AT       10  // when abs(delta between ADC and current value) is less than MIN_AT , apply MIN  

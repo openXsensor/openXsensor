@@ -1047,7 +1047,7 @@ Ecrit par par Rainer Schlosshan traduction Thierry ZINK
 * http://www.conrad.be/ce/nl/product/155374/BIO-TECH-eK-FCH-M-Doorstroomsensor-1-stuks-Voedingsspanning-bereik-5-24-VDC-Meetbereik-08-0015-lmin-l-x;jsessionid=EED7B26A7F28BA3F20F0060807E20FD1.ASTPCEN22?ref=searchDetail
 * Il est prévu pour mesurer de 0,015 à 0,8 ml / min.
 * Le signal de sortie du débitmètre doit être connecté à la broche 9 de l'Arduino (et les 2 autres broches à 5 volts VCC et à Grnd).
-* Il existe d'autres capteurs de débit bon marché sur ebay ou aliexpress, mais je pense qu'ils n'offre pas assez de précision pour un faible débit.
+* Il existe d'autres capteurs de débit bon marché sur ebay ou aliexpress, mais je pense qu'ils n'offrent pas assez de précision lorsque le débit est faible.
 * 
 * Pour activer le débitmètre, vous devez: 
 *   - Affecter YES au paramètres A_FLOW_SENSOR_IS_CONNECTED (dans le fichier oXs_config_basic.h)

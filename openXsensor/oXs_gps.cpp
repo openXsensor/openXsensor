@@ -132,13 +132,13 @@ void OXS_GPS::setupGps( ) {
       uint8_t initGpsIdx = 0 ;
   SOFT_TX_PORT |= (1<<SOFT_TX_BIT);   // put 1 in output port
   SOFT_TX_DDR |= (1<<SOFT_TX_BIT);    // set port as output
-  delay(1000) ; // wait to be sure that GPS has started
+  delay(3000) ; // wait to be sure that GPS has started
   while (initGpsIdx < sizeof( initGps1)) {
 //    Serial.println( pgm_read_byte_near(initGps1 + initGpsIdx ), HEX) ;    
     gps_putchar( pgm_read_byte_near(initGps1 + initGpsIdx++ ), MICROSECONDS_PER_BIT_9600) ; // Send initialisation command
     delay(10) ;
   }
-  delay(100) ;
+  delay(1000) ;
 #ifdef DEBUG
   Serial.println(F("End of GPS setup")) ;
 #endif  
