@@ -981,7 +981,7 @@ void calculateAllFields () {
             test1.available = true ; 
             test2.value =  linear_acceleration_y * 981; 
             test2.available = true ; 
-            test3.value = linear_acceleration_Z * 981; 
+            test3.value = linear_acceleration_z * 981;
             test3.available = true ; 
   #endif
 
