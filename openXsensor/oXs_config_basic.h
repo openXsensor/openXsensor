@@ -59,7 +59,7 @@
                         // 3 , ALTIMETER , 1 , 1 , 0 , -16384 , 16383 , \
 
 // ***** 2.4 - Jeti data *****
-#define VOLTAGE_SOURCE   VOLT_1                     // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
+//#define VOLTAGE_SOURCE   VOLT_1                     // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6
 //#define TEMPERATURE_SOURCE NTC                   // select between MS5611 and NTC
 
 // ***** 2.5 - How to fill TEST_1, TEST_2, TEST_3  ******     see oXs_config_advanced.h (required only when some measurements have to be filled in TEST_1, TEST_2 or TEST_3)
@@ -88,7 +88,7 @@
 // ***** 6.1 - Voltage Reference to measure voltages and current *****              see oXs_config_advanced.h when voltage reference is not Vcc and 5 volt
 
 // ***** 6.2 - Voltage parameters *****                                             see oXs_config_advanced.h for additionnal parameters when YES
-#define ARDUINO_MEASURES_VOLTAGES   YES                                        //   select between YES , NO (When NO, following line is discarded)
+#define ARDUINO_MEASURES_VOLTAGES   YES                                             //   select between YES , NO (When NO, following line is discarded)
 
 // ***** 6.3 - Max number of Lipo cells to measure (and transmit to Tx) *****
 #define NUMBEROFCELLS 0                                                 // Put this line as comment or set value to 0 (zero) if you do not want to transmit cell voltages.
