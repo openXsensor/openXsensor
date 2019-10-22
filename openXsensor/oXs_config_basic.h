@@ -120,6 +120,14 @@
 // --------- 11 - Flow sensor ---------------                                       if YES, see also oXs_config_advanced.h 
 #define A_FLOW_SENSOR_IS_CONNECTED      NO          // select between YES , NO
 
+<<<<<<< Updated upstream
+=======
+// --------- 12 - Locator ---------------                                        
+#define A_LOCATOR_IS_CONNECTED      NO          // select between YES , NO
+
+
+
+>>>>>>> Stashed changes
 // --------- 20 - Sequencer ---------                                               see oXs_config_advanced.h (only when oXs has to generate signals in sequence)
 
 
