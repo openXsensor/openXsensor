@@ -68,11 +68,11 @@
 
 // --------- 4 - Vario settings ---------
 // ***** 4.1 - Connecting 1 or 2 barometric sensor(s)  ***** 
-#define FIRST_BARO_SENSOR_USE   GY86       // select between NO_BARO , MS5611, GY86 , BMP085 , BMP180 , GY87,  BMP280  
+#define FIRST_BARO_SENSOR_USE   MS5611       // select between NO_BARO , MS5611, GY86 , BMP085 , BMP180 , GY87,  BMP280  
                                               // Note : when used, second sensor is to define in oXs_config_advanced.h
                                               
 // ***** 4.2 - Type of Vspeed to transmit  *****                                    
-#define VSPEED_SOURCE  BARO_AND_IMU    // select between FIRST_BARO, BARO_AND_IMU, SECOND_BARO , AVERAGE_FIRST_SECOND, AIRSPEED_COMPENSATED or PPM_SELECTION
+#define VSPEED_SOURCE  FIRST_BARO    // select between FIRST_BARO, BARO_AND_IMU, SECOND_BARO , AVERAGE_FIRST_SECOND, AIRSPEED_COMPENSATED or PPM_SELECTION
 
 // ***** 4.3 - Sensitivity predefined by program *****                               see oXs_config_advanced.h (normally no need to change it)
 // ***** 4.4 - Sensitivity adjusted from the TX *****                                see oXs_config_advanced.h (normally no need to change it)
@@ -120,22 +120,10 @@
 // --------- 11 - Flow sensor ---------------                                       if YES, see also oXs_config_advanced.h 
 #define A_FLOW_SENSOR_IS_CONNECTED      NO          // select between YES , NO
 
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-=======
 // --------- 12 - Locator ---------------                                        
 #define A_LOCATOR_IS_CONNECTED      NO          // select between YES , NO
 
 
-
->>>>>>> Stashed changes
-=======
-// --------- 12 - Locator ---------------                                        
-#define A_LOCATOR_IS_CONNECTED      YES          // select between YES , NO
-
-
-
->>>>>>> 8dc1afd8163397cd4f238d950afefc7c805dbc72
 // --------- 20 - Sequencer ---------                                               see oXs_config_advanced.h (only when oXs has to generate signals in sequence)
 
 
