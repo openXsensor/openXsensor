@@ -313,8 +313,8 @@ extern bool    GPS_speedAvailable ;
 extern uint32_t GPS_ground_course ;     // degrees with 5 decimals
 extern bool    GPS_ground_courseAvailable;
 
-//uint8_t GPS_numSat;
-//uint16_t GPS_hdop = 9999;           // Compute GPS quality signal
+extern uint8_t GPS_numSat;
+extern uint16_t GPS_hdop ;           // Compute GPS quality signal
 //uint16_t GPS_packetCount = 0;
 //uint32_t GPS_svInfoReceivedCount = 0; // SV = Space Vehicle, counter increments each time SV info is received.
 //uint8_t GPS_update = 0;             // it's a binary toggle to distinct a GPS position update

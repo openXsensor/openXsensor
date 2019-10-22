@@ -37,7 +37,7 @@
 //define FILL_TEST_3_WITH_EXPECTED_ALT                        // uncomment this line if oXs has to calculate an expected Alt in the future based on current Alt, Vspeed and vertical Acc
 //#define EXPECTED_ALT_AT_SEC 0.2                               // time (in sec) for expected Alt (this line must be uncommented wen previous is uncommented
 
-//#define FILL_TEST_1_2_3_WITH_LINEAR_ACC                     // uncomment this line if oXs has to fill TEST_1, TEST_2, TEST_3 with linear Acc
+#define FILL_TEST_1_2_3_WITH_LINEAR_ACC                     // uncomment this line if oXs has to fill TEST_1, TEST_2, TEST_3 with linear Acc
 
 //#define FILL_TEST_1_2_WITH_VSPEED_AND_ALT_FROM_SECOND_VARIO  // uncomment to activate this option
 
@@ -49,7 +49,11 @@
 
 //#define FILL_TEST1_WITH_HEADING_FROM_MAGNETOMETER              // uncomment to activate this option
 
-#define FILL_TEST_1_2_3_WITH_FLOW_SENSOR_CONSUMPTION             // uncomment to activate this option
+//#define FILL_TEST_1_2_3_WITH_FLOW_SENSOR_CONSUMPTION             // uncomment to activate this option
+
+//#define FILL_TEST1_WITH_GPS_NUMBER_OF_SAT                      // uncomment to activate this option; note: when there is a GPS fix 3D (or higher), then number of sat is increased by 100
+
+//#define FILL_TEST2_WITH_GPS_HDOP                               // uncomment to activate this option
 
 // --------- 3 - PPM settings ---------
 //#define PIN_PPM           2     // Uncomment this line in order to use a Rx channel to control oXs; default is 2 but my own device use 3
