@@ -34,7 +34,7 @@ bool    GPS_ground_courseAvailable = false ;
 
 uint8_t GPS_numSat;
 uint8_t GPS_fix_type;
-//uint16_t GPS_hdop = 9999;           // Compute GPS quality signal
+uint16_t GPS_hdop = 9999;           // Compute GPS quality signal
 uint16_t GPS_packetCount = 0;
 //uint32_t GPS_svInfoReceivedCount = 0; // SV = Space Vehicle, counter increments each time SV info is received.
 //uint8_t GPS_update = 0;             // it's a binary toggle to distinct a GPS position update
@@ -58,6 +58,12 @@ int16_t GPS_bearing ;          // bearing from home in degrees
 
 bool GPS_fix = false ; // true if gps data are available.
 static uint8_t _msg_id; //used to identify the message type when reading the gps, is used also when buffer is parsed 
+
+#if defined( A_LOCATOR_IS_CONNECTED)  && ( A_LOCATOR_IS_CONNECTED == YES)
+uint32_t GPS_last_fix_millis ; // time when last fix has been received (used by lora locator) 
+int32_t GPS_last_fix_lon ;     // last lon when a fix has been received
+int32_t GPS_last_fix_lat ;     // last lat when a fix has been received
+#endif
 
 // Receive buffer
 static union {
@@ -326,11 +332,15 @@ static bool next_fix = false ;
             int32_t off_y = (GPS_lat - GPS_home_lat) / GPS_scale ;
             GPS_bearing = 90 + atan2f(-off_y, off_x) * 57.2957795f;  // in degree
             if (GPS_bearing < 0) GPS_bearing += 360;
+#if defined( A_LOCATOR_IS_CONNECTED)  && ( A_LOCATOR_IS_CONNECTED == YES)
+            GPS_last_fix_millis = millis() ;  // used by lora locator
+            GPS_last_fix_lon = GPS_lon ;      // used by lora locator
+            GPS_last_fix_lat = GPS_lat ;      // used by lora locator
+#endif
         } else {
             GPS_fix = false;
         }
         GPS_lonAvailable = GPS_latAvailable = GPS_altitudeAvailable = GPS_fix; 
-        
         _new_position = true;
 #ifdef DEBUGPARSEGPS
   printer->print(F("Gps fix: "));
@@ -354,7 +364,7 @@ static bool next_fix = false ;
         if (!next_fix)
              GPS_fix = false;
         GPS_numSat = _buffer.solution.satellites;  
-//        GPS_hdop = _buffer.solution.position_DOP;  Not used currently
+        GPS_hdop = _buffer.solution.position_DOP;  
         break;
     case MSG_VELNED:   // here we should add the 3d speed (if accurate enough
         GPS_speed_3d  = _buffer.velned.speed_3d;  // cm/s

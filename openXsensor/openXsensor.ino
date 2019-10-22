@@ -1,3 +1,5 @@
+
+
 #include "oXs_config_basic.h"
 #include "oXs_config_advanced.h"
 #include "oXs_voltage.h"
@@ -13,6 +15,7 @@
 #include "oXs_out_jeti.h"
 #include "oXs_general.h"
 #include "oXs_gps.h"
+#include "oXs_lora.h"
 
 #ifdef USE_6050
   #include "oXs_imu.h"
@@ -788,6 +791,10 @@ if ( currentLoopMillis - lastLoop500Millis > 500 ) {
     SaveToEEProm();
   }
 #endif
+
+#if defined( A_LOCATOR_IS_CONNECTED )  and ( A_LOCATOR_IS_CONNECTED == YES) 
+  loraHandle() ;
+#endif  
 }          // ****************   end of main loop *************************************
 
 
@@ -981,7 +988,7 @@ void calculateAllFields () {
             test1.available = true ; 
             test2.value =  linear_acceleration_y * 981; 
             test2.available = true ; 
-            test3.value = linear_acceleration_Z * 981; 
+            test3.value = linear_acceleration_z * 981; 
             test3.available = true ; 
   #endif
 
@@ -1161,6 +1168,21 @@ static uint32_t previousYawRateMillis ;
     test1.available = test2.available = test3.available = true ;
     newFlowAvailable = false ;
   }  
+#endif
+
+
+#if defined ( A_GPS_IS_CONNECTED ) && ( A_GPS_IS_CONNECTED == YES ) 
+  #if defined ( FILL_TEST1_WITH_GPS_NUMBER_OF_SAT )
+  test1.value = GPS_numSat ;
+  if ( GPS_fix ) {
+    test1.value += 100 ;
+  }
+  test1.available = true ;
+  #endif
+  #if defined ( FILL_TEST2_WITH_GPS_HDOP )
+  test2.value = GPS_hdop ; 
+  test2.available = true ;
+  #endif
 #endif
 
 //  test1.value = oXs_MS5611.varioData.absoluteAlt.value/10 ;
