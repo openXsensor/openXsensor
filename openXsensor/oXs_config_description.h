@@ -256,6 +256,9 @@ See OpenXsensor https://github.com/openXsensor/
 
 //#define FILL_TEST_3_WITH_FLOW_SENSOR_CONSUMPTION             // uncomment to activate this option
 
+//#define FILL_TEST1_WITH_GPS_NUMBER_OF_SAT                      // uncomment to activate this option; note: when there is a GPS fix 3D (or higher), then number of sat is increased by 100
+
+//#define FILL_TEST2_WITH_GPS_HDOP                               // uncomment to activate this option
 
 **** 3 - PPM settings **************************************************************************************************
 *   oXs can (optionally) change some oXs parameters and/or reset some oXs data based on actions taken on the TX.
@@ -970,7 +973,7 @@ See OpenXsensor https://github.com/openXsensor/
 *    - notice the 2 first numbers ( = AccX and AccY ) ; Don't take care of the 3rd number because when the sensor is in this position, it will reflect the gravity and will be around 16384. 
 *    - rotate mpu6050 in order to get X or Y axis perfectly vertical and do not move. Now, the 3rd number would become much lower (because it does not measure gravity anymore)
 *    - notice the 3rd number ( = Accz )
-*    - update oXs_config.h file filling the 3 numbers in lines #define ACC_OFFSET_X , #define ACC_OFFSET_Y and #define ACC_OFFSET_Z
+*    - update oXs_config_advanced.h file filling the 3 numbers in lines #define ACC_OFFSET_X , #define ACC_OFFSET_Y and #define ACC_OFFSET_Z
 *    - set line #define DISPLAY_ACC_OFFSET as comment (adding "//" in front)
 *    - upload again oXs firmware in arduino
 ************************************************************************************************************************ 
