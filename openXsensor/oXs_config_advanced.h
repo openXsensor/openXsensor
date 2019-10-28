@@ -11,7 +11,7 @@
 
 #ifndef OXS_CONFIG_ADVANCED_h
 #define OXS_CONFIG_ADVANCED_h
-//#include "oXs_config_basic.h"
+#include "oXs_config_macros.h"
 
 
 // --------- 1 - Telemetry protocol ---------  Protocol is defined in oXs_config_basic.h file
@@ -151,14 +151,14 @@
 #define RESISTOR_TO_CURRENT_SENSOR      0   // put as comment or set to 0 if no divider is used (e.g  39   for 1.1 internal ref)
 
 // ***** 6.6 - Ads1115 parameters  *****
-#define ADS_MEASURE A0_TO_A1 ,  ADS_OFF , ADS_OFF , ADS_OFF // select 4 values between A0_TO_A1, A0_TO_A3, A1_TO_A3, A2_TO_A3, A0_TO_GND, A1_TO_GND, A2_TO_GND, A3_TO_GND, ADS_OFF
-#define ADS_FULL_SCALE_VOLT  MV2048, MV4096, MV6144, MV4096 //  select between MV6144 MV4096 MV2048 MV1024 MV512 MV256
-#define ADS_OFFSET 0, 0 , 0 , 0 // must be an integer (positive or negative)
-#define ADS_SCALE 1, 1, 1, 1 // can be a float
-#define ADS_RATE  MS2 , MS9, MS9 , MS2 // select between MS137, MS69, MS35, MS18, MS9, MS5, MS3 , MS2
-#define ADS_AVERAGING_ON 10 , 20, 30, 50 // number of values used for averaging (must be between 1 and 254) 
+//#define ADS_MEASURE A0_TO_A1 ,  ADS_OFF , ADS_OFF , ADS_OFF // select 4 values between A0_TO_A1, A0_TO_A3, A1_TO_A3, A2_TO_A3, A0_TO_GND, A1_TO_GND, A2_TO_GND, A3_TO_GND, ADS_OFF
+//#define ADS_FULL_SCALE_VOLT  MV2048, MV4096, MV6144, MV4096 //  select between MV6144 MV4096 MV2048 MV1024 MV512 MV256
+//#define ADS_OFFSET 0, 0 , 0 , 0 // must be an integer (positive or negative)
+//#define ADS_SCALE 1, 1, 1, 1 // can be a float
+//#define ADS_RATE  MS2 , MS9, MS9 , MS2 // select between MS137, MS69, MS35, MS18, MS9, MS5, MS3 , MS2
+//#define ADS_AVERAGING_ON 10 , 20, 30, 50 // number of values used for averaging (must be between 1 and 254) 
 //#define ADS_CURRENT_BASED_ON ADS_VOLT_1  // uncomment if current, and comsumption have to be calculated based on one of ADS voltage measurement; select then the voltage to be used between ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
-#define ADS_AIRSPEED_BASED_ON ADS_VOLT_1  // uncomment if airspeed (and dte) have to be calculated based on one of ADS voltage measurement ; select then the voltage to be used between ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
+//#define ADS_AIRSPEED_BASED_ON ADS_VOLT_1  // uncomment if airspeed (and dte) have to be calculated based on one of ADS voltage measurement ; select then the voltage to be used between ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
 
 // --------- 7 - RPM (rotations per minute) settings ---------                      
 #define PULSES_PER_ROTATION 2
@@ -218,148 +218,6 @@
 //#define SEQUENCE_LOW    10 , 0b100000 ,10 , 0b000000   // sequence for Low voltage
 //#define SEQUENCE_MIN_VOLT_6 4000 // sequence_100 will be activated if voltage 6 is lower that the value.
 //#define SEQUENCE_MIN_CELL   3000 // sequence_100 will be activated if lowest cell is lower that the value.
-
-
-// --------- xx - Reserved for developer. DEBUG must be activated here when we want to debug one or several functions in some other files. ---------
-//#define DEBUG
-///#define DEBUG_BLINK   // use by developper in order to blink the led without using uart for debugging
-
-
-#define BASED_ON_AIRSPEED 0
-#define BASED_ON_GPS_SPEED 1
-#define AVERAGING_DELAY_MILLISEC  AVERAGING_TOLERANCE * 100  
-
-#define FIRST_BARO 1
-#define SECOND_BARO 2
-#define AVERAGE_FIRST_SECOND 4
-#define AIRSPEED_COMPENSATED 3
-#define BARO_AND_IMU 5
-#define PPM_SELECTION 6
-
-#include <Arduino.h>
-struct ONE_MEASUREMENT {
-  uint8_t available ;
-  int32_t value ;
-} ;
-
-#define FRSKY_SPORT      1
-#define FRSKY_HUB        2
-#define FRSKY_SPORT_HUB  3
-#define MULTIPLEX        4
-#define HOTT             5
-#define JETI             6
-
-#define NO_BARO 1
-#define MS5611  2
-#define GY86    3
-#define BMP085  4
-#define BMP180  5
-#define BMP280  6
-#define GY87    7
-
-#define NO_AIRSPEED 1
-#define MS4525      2
-#define MVPX7002    3
-
-#define NO  1
-#define YES 2
-
-#define NTC 20
-
-#define SECONDS_SINCE_T0        32
-#define AVERAGE_VSPEED_SINCE_TO 33 
-
-/***************************************************************************************/
-/* oXs code used by Flow sensor and for SPORT Lua scripts                                                        */ 
-/***************************************************************************************/
-#define TX_FIELD_FLOW_1     0
-#define TX_FIELD_FLOW_2     1
-#define TX_FIELD_FLOW_3     2
-#define TX_FIELD_FLOW_4     3
-#define TX_FIELD_FLOW_CORR_1    4
-#define TX_FIELD_FLOW_CORR_2    5
-#define TX_FIELD_FLOW_CORR_3    6
-#define TX_FIELD_FLOW_CORR_4    7
-#define TX_FIELD_TANK_CAPACITY  8
-#define TX_FIELD_RESET_FUEL     9
-#define TX_FIELD_PPM          0x10
-
-
-#ifdef DEBUG
-//#include "HardwareSerial.h"
-#endif
-
-#ifdef GPS_INSTALLED
-//#include "HardwareSerial.h"
-#endif
-
-
-
-#ifdef FIRST_BARO_SENSOR_USE
-  #if (FIRST_BARO_SENSOR_USE ==  MS5611 ) || (FIRST_BARO_SENSOR_USE ==  GY86 ) || (FIRST_BARO_SENSOR_USE ==  BMP085 ) || (FIRST_BARO_SENSOR_USE ==  BMP180 ) || (FIRST_BARO_SENSOR_USE ==  BMP280 ) || (FIRST_BARO_SENSOR_USE ==  GY87 )
-    #define VARIO
-  #endif
-  #if  (FIRST_BARO_SENSOR_USE ==  BMP085 ) || (FIRST_BARO_SENSOR_USE ==  BMP180 )  || (FIRST_BARO_SENSOR_USE ==  GY87 )
-    #define SENSOR_IS_BMP180
-  #endif
-  #if  (FIRST_BARO_SENSOR_USE ==  BMP280 ) 
-    #define SENSOR_IS_BMP280
-  #endif
-#endif
-
-#ifdef SECOND_BARO_SENSOR_USE
-  #if SECOND_BARO_SENSOR_USE ==  MS5611  
-    #define VARIO2
-  #endif
-#endif  
-
-#if ( defined( FIRST_BARO_SENSOR_USE ) && ( (FIRST_BARO_SENSOR_USE ==  MS5611 ) || (FIRST_BARO_SENSOR_USE ==  GY86 ) )) || ( defined( SECOND_BARO_SENSOR_USE ) && ( (SECOND_BARO_SENSOR_USE ==  MS5611 ) || (SECOND_BARO_SENSOR_USE ==  GY86 ) ))
-  #define SENSOR_IS_MS5611
-#endif
-
-#ifdef  AIRSPEED_SENSOR_USE 
-  #if ( AIRSPEED_SENSOR_USE == MS4525 )
-    #define AIRSPEED    
-  #endif
-#endif  
-
-
-#ifdef CALCULATE_RPM 
-  #if ( CALCULATE_RPM == YES )
-    #define MEASURE_RPM
-  #endif
-#endif  
-
-
-#ifdef  A_GPS_IS_CONNECTED 
-  #if ( A_GPS_IS_CONNECTED == YES )
-    #define GPS_INSTALLED
-  #endif
-#endif  
-
-
-#ifdef  A_MPU6050_IS_CONNECTED 
-  #if ( A_MPU6050_IS_CONNECTED == YES )
-    #define USE_6050 
-  #endif
-#endif  
-
-#ifdef  A_MPU6050_IS_CONNECTED 
-  #if ( A_MPU6050_IS_CONNECTED == YES ) 
-    #ifdef CALCULATE_YAW_WITH_HMC5883
-      #if ( CALCULATE_YAW_WITH_HMC5883 == YES )
-        #define USE_HMC5883
-      #endif
-    #endif    
-  #endif
-#endif  
-
-#if defined( DISPLAY_ACC_OFFSET ) && defined ( A_MPU6050_IS_CONNECTED ) && ( A_MPU6050_IS_CONNECTED == YES )
-  #define DEBUG
-#endif
-#if defined( GENERATE_MAG_CALIBRATION_DATA ) && defined ( A_MPU6050_IS_CONNECTED ) && ( A_MPU6050_IS_CONNECTED == YES ) && defined ( USE_HMC5883 )   
-  #define DEBUG
-#endif
 
 
 #endif// End define OXS_CONFIG_ADVANCED_h

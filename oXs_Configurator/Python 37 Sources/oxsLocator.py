@@ -1,0 +1,1 @@
+from oxsConfig import ttk , W , E 

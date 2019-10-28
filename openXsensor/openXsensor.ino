@@ -1217,6 +1217,10 @@ static uint32_t previousYawRateMillis ;
 //	}
 //#endif
 
+//  if ( oXs_MS5611.varioData.climbRate.available ) {
+//    test1.value = oXs_MS5611.varioData.temperature ;
+//    test1.available = true ;
+//  }  
 } // end of calculate all fields
 
 
