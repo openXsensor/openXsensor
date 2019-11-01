@@ -1,5 +1,5 @@
-from oxsConfig import ttk , W , E , fVario , varioTypeVar , secondBaroExist , varioSourceVar , varioHysteresisVar ,\
-     Spinbox , analogVarioChanged , fAnalogVario , analogVarioExist , varioAnalogPinVar , varioAnalogMaxVar , varioAnalogMinVar
+from oxsConfig import ttk , W , E , Spinbox ,  fVario , varioTypeVar , secondBaroExist , varioSourceVar , varioHysteresisVar
+from oxsConfig import  analogVarioChanged , fAnalogVario , analogVarioExist , varioAnalogPinVar , varioAnalogMaxVar , varioAnalogMinVar
 
 #here start the definition of the vario tab
 ttk.Label(fVario, text="Type of sensor").grid(row=1, pady=(20,2))
@@ -21,7 +21,7 @@ varioSourceBox = ttk.Combobox(fVario, textvariable=varioSourceVar,
 varioSourceBox.grid(row=5, padx=10)
 
 ttk.Label(fVario, text="Hysteresis" ).grid(column= 0, row=6, padx= 5 , pady=(20,2))
-varioHysteresisBox = Spinbox(fVario, from_=0.0, to=10.0, textvariable=varioHysteresisVar)
+varioHysteresisBox = Spinbox(fVario, from_=0.0, to=10.0, width = 5 , textvariable=varioHysteresisVar)
 varioHysteresisBox.grid(column=1, row=6 , padx=10, pady=(20,2))
 
 

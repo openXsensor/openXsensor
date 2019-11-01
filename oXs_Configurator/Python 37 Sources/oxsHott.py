@@ -9,7 +9,7 @@ from oxsConfig import ttk , W , E ,  fHott , hottBattery1SourceVar , hottBattery
 #define TEMPERATURE_2_SOURCE      PPM             //  select between VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, TEST_1, TEST_2, TEST_3 , GLIDER_RATIO , SENSITIVITY, PPM
 
 
-ttk.Label(fHott, text="Undervoltage warning").grid(column= 0, row=1, padx= (15,5), pady=(10,5) , sticky=('E'))
+ttk.Label(fHott, text="Undervoltage warning (in mVolt)").grid(column= 0, row=1, padx= (15,5), pady=(10,5) , sticky=('E'))
 ttk.Label(fHott, text="Based on" ).grid(column= 1, row=2, pady=(30,5) , sticky=('WE'))
 ttk.Label(fHott, text="Battery 1" ).grid(column= 0, row=3, padx= (15,5), pady=(10,5) , sticky=('E'))
 ttk.Label(fHott, text="Battery 2" ).grid(column= 0, row=4, padx= (15,5), pady=(10,5) , sticky=('E'))
