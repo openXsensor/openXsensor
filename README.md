@@ -54,17 +54,16 @@ It is compatible with :
   * Can become a locator (to retreive lost model)
     * Uses a LORA module (SX1276/RFM95) to get a long range transmission
     * Uses a second Arduino pro mini (or Arduino nano) with a display and a LORA module
-      * display the GPS position and strength of signal (as goniometer)
+    * display the GPS position and strength of signal (as goniometer)
   
 Note: Setup is done editing manually the files oXs_config_basic.h and in some cases oXs_config_advanced.h
 	  All details about the requirements and the way to configure oXs are given in the file oXs_config_description.h
-	  Some explanations are given in wiki (but are not 100% up to date). It is higtly recommended to read oXs_config_description.h 
-      
-      The latest version of the project includes an oXs configurator. It allows:
-        * to generate the config files using a graphical user interface.
-        * to save/reload several sets of parameters.
-        * to view the documentation (content of file oXs_description.h
-      It requires that Python3.7 is installed.
-      Still, for Windows 10, there is precompiled package that does not require to install Python.
-      The configurator supports most (but not all oXs setup parameters) so, in some cases, you still have to edit the config files manually.
+	  Some explanations are given in wiki (but are not 100% up to date). It is higtly recommended to read oXs_config_description.h.      
+Note: The latest version of the project includes an oXs configurator. It allows:
+   * to generate the config files using a graphical user interface.
+   * to save/reload several sets of parameters.
+   * to view the documentation (content of file oXs_description.h
+It requires that Python3.7 is installed.
+Still, for Windows 10, there is precompiled package that does not require to install Python.
+The configurator supports most (but not all oXs setup parameters) so, in some cases, you still have to edit the config files manually.
   
