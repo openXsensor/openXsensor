@@ -32,7 +32,7 @@ from oxsHott import hottCellUndervoltageBox
 from oxsJeti import jetiVoltageSourceBox
 
 
-from oxsConfig import  ttk , W , E , BOTH ,nb , HIDDEN , StringVar ,  root , \
+from oxsConfig import  ttk , W , E , BOTH ,nb , HIDDEN ,  root , \
     fMain, fPpm , fAdc, fAirspeed , fAnalogVario , fCurrent , fFlow, fFrsky ,fGps , fHott , fImu , fJeti ,\
     fMagnet , fMultiplex , fRpm , fLocator , fSequence, fVario , fVoltage , fAddFields ,\
     ppmChanged , ppmExist , varioChanged , varioExist, voltageChanged , voltageExist , currentChanged , currentExist ,\

@@ -1,4 +1,4 @@
-from tkinter import StringVar
+#from tkinter import StringVar
 from oxsConfig import ttk , W , E , fImu
 
 
@@ -10,8 +10,8 @@ from oxsConfig import ttk , W , E , fImu
 #define ACC_OFFSET_Y 0 // fill here the second value reported when DISPLAY_ACC_OFFSET is activated (eg. -150)
 #define ACC_OFFSET_Z 0 // fill here the third value reported when DISPLAY_ACC_OFFSET is activated (eg. -1100)
 
-dummyImuVar = StringVar(value='-')
+#dummyImuVar = StringVar(value='-')
 ttk.Label(fImu, text="Not yet implemented (so you have to edit manually the config files)" ).grid(column= 0, row=4, padx= 1 , pady= 20)
-dummyBox = ttk.Combobox(fImu, textvariable=dummyImuVar, 
-                values=( "-"  ),
-                state="readonly")
+#dummyBox = ttk.Combobox(fImu, textvariable=dummyImuVar, 
+#                values=( "-"  ),
+#                state="readonly")

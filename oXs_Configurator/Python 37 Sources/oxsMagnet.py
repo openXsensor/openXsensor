@@ -1,4 +1,4 @@
-from tkinter import StringVar
+#from tkinter import StringVar
 from oxsConfig import ttk , W , E , fMagnet
 
 

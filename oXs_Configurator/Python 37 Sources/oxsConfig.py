@@ -10,6 +10,21 @@ import configparser
 
 configUploadFileName = None
 
+config =  configparser.ConfigParser()
+config.add_section("Main")
+config.add_section("Ppm")
+config.add_section("Vario")
+config.add_section("Airspeed")
+config.add_section("Voltage")
+config.add_section("Current")
+config.add_section("Rpm")
+config.add_section("Gps")
+config.add_section("AddFields")
+config.add_section("Frsky")
+config.add_section("Multiplex")
+config.add_section("Hott")
+config.add_section("Jeti")
+
 def generateOxsConfig():
     f=open("oXs_config_basic.h" , 'w')
     fa=open("oXs_config_advanced.h" , 'w')
@@ -308,21 +323,6 @@ def generateOxsConfig():
     f.close()
     fa.close()
     messagebox.showinfo("oXs configurator", "Config files advanced and basic have been created")
-
-config =  configparser.ConfigParser()
-config.add_section("Main")
-config.add_section("Ppm")
-config.add_section("Vario")
-config.add_section("Airspeed")
-config.add_section("Voltage")
-config.add_section("Current")
-config.add_section("Rpm")
-config.add_section("Gps")
-config.add_section("AddFields")
-config.add_section("Frsky")
-config.add_section("Multiplex")
-config.add_section("Hott")
-config.add_section("Jeti")
 
 def uploadConfig():   
     print("Read config")
@@ -633,20 +633,16 @@ def ppmChanged():
         nb.tab(1, state="normal")
     else:
         nb.tab(1, state="hidden")
-
 def ppmTypeChanged(*arg):
     if ppmTypeVar.get() == 'Rx chanel':
         fPpmType.grid(row=8)
     else:    
        fPpmType.grid_remove()
-
-
 def varioChanged():
     if varioExist.get() == 'On':
         nb.tab(2, state="normal")
     else:
         nb.tab(2, state="hidden")
-
 def voltageChanged():
     if voltageExist.get() == 'On':
         nb.tab(3, state="normal")
@@ -702,7 +698,6 @@ def sequenceChanged():
         nb.tab(13, state="normal")
     else:
         nb.tab(13, state="hidden")
-
 def addFieldsChanged():
     if addFieldsExist.get() == 'On':
         nb.tab(14, state="normal")
@@ -714,13 +709,11 @@ def fillTest3ExpectedAltitudeChanged():
         fFillTest3ExpectedAltitude.grid(row=4)
     else:
         fFillTest3ExpectedAltitude.grid_remove()
-
 def analogVarioChanged():
     if analogVarioExist.get() == 'On':
         fAnalogVario.grid(row=8)
     else:    
         fAnalogVario.grid_remove()
-
 
 
 root = Tk()
