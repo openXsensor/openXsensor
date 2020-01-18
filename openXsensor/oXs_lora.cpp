@@ -1,4 +1,3 @@
-#include "oXs_config_basic.h"
 #include "oXs_lora.h"
 #include <avr/pgmspace.h>
 

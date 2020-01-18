@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include "oXs_config_basic.h"
 #include "oXs_config_advanced.h"
+#include "oXs_config_macros.h"
 
 struct CURRENTDATA {
   struct ONE_MEASUREMENT milliAmps;       // in mA

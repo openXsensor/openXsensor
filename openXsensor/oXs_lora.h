@@ -1,6 +1,9 @@
 #ifndef OXS_LORA_h
 #define OXS_LORA_h
 
+#include "oXs_config_basic.h"
+#include "oXs_config_macros.h"
+
 //#if defined( A_LOCATOR_IS_CONNECTED)  && ( A_LOCATOR_IS_CONNECTED == YES)
 #include "Arduino.h"
 

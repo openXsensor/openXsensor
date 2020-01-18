@@ -1,5 +1,7 @@
 #include "oXs_curr.h"
 
+#if defined( ARDUINO_MEASURES_A_CURRENT) && (ARDUINO_MEASURES_A_CURRENT == YES)
+
 #ifdef DEBUG
 //#define DEBUGCURRENT
 #endif
@@ -136,6 +138,6 @@ void OXS_CURRENT::resetValues(){
 }
 
 
-
+#endif // end of #if defined( ARDUINO_MEASURES_A_CURRENT) && (ARDUINO_MEASURES_A_CURRENT == YES)
 
 

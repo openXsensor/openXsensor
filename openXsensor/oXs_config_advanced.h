@@ -11,7 +11,7 @@
 
 #ifndef OXS_CONFIG_ADVANCED_h
 #define OXS_CONFIG_ADVANCED_h
-#include "oXs_config_macros.h"
+//#include "oXs_config_macros.h"
 
 
 // --------- 1 - Telemetry protocol ---------  Protocol is defined in oXs_config_basic.h file

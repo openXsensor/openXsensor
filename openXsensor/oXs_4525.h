@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include "oXs_config_basic.h"
 #include "oXs_config_advanced.h"
+#include "oXs_config_macros.h"
 #include "I2C.h"
 
 //#define CALCULATEINTEGER
