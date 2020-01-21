@@ -221,8 +221,9 @@ def generateOxsConfig():
         f.write(f"#define NUMBEROFCELLS {voltNumberOfCellsVar.get()}\n")
         if voltReferenceVar.get() == "Internal":
             fa.write("\n#define USE_INTERNAL_REFERENCE\n")
-        elif voltReferenceVar.get() == "Internal":
+        elif voltReferenceVar.get() == "External":
             fa.write("\n#define USE_EXTERNAL_REFERENCE\n")
+            fa.write(f"\n#define REFERENCE_VOLTAGE {str(voltRefValueVar.get())}\n")
         else:
             fa.write(f"\n#define REFERENCE_VOLTAGE {str(voltRefValueVar.get())}\n")
         fa.write(f"\n#define PIN_VOLTAGE ")
@@ -717,7 +718,7 @@ def analogVarioChanged():
 
 
 root = Tk()
-root.title("openXsensor configurator V1.0.1")
+root.title("openXsensor configurator V1.0.2")
 nb = ttk.Notebook(root)
 nb.enable_traversal()
 fMain = ttk.Frame(nb)   
@@ -826,7 +827,7 @@ volt6OffsetVar = DoubleVar(value='0.0')
 
 voltNumberOfCellsVar = StringVar(value='0')
 voltReferenceVar = StringVar(value='Internal')
-voltRefValueVar = DoubleVar(value='5.0')
+voltRefValueVar = IntVar(value='5000')
 
 currentPinVar = StringVar(value='0')
 currentMvoltAt0Var = DoubleVar(value='0.0')

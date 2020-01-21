@@ -5,7 +5,8 @@ from oxsConfig import ttk , W , E ,fVoltage  , volt1Exist , volt2Exist , volt3Ex
     volt1ScaleVar , volt2ScaleVar , volt3ScaleVar , volt4ScaleVar , volt5ScaleVar , volt6ScaleVar ,\
     volt1OffsetVar , volt2OffsetVar , volt3OffsetVar , volt4OffsetVar , volt5OffsetVar , volt6OffsetVar , \
     voltNumberOfCellsVar , voltReferenceVar , voltRefValueVar 
-    
+
+from oxsCurrent import voltRefValueCurrentBox , voltRefValueCurrentLabel 
 
 # here start the definition of the Voltages tab
 ttk.Label(fVoltage, text="Volt 1" ).grid(column= 1, row=2, padx= 5, pady=5 )
@@ -88,12 +89,28 @@ ttk.Combobox(fVoltage, textvariable=voltNumberOfCellsVar,
                 state="readonly", width=1).grid(column=1, row=9, pady=(20,20))
 
 def voltReferenceChanged():
-    if voltReferenceVar.get()=='Vcc':
-        voltRefValueBox['state']='normal'
-        voltRefValueLabel['state']='normal'
+    if voltReferenceVar.get()=='Vcc' or voltReferenceVar.get()=='External':
+        voltRefValueVoltageBox['state']='normal'
+        voltRefValueCurrentBox['state']='normal'
+        voltRefValueVoltageLabel['state']='normal'
+        voltRefValueCurrentLabel['state']='normal'
     else:
-        voltRefValueBox['state']='disabled'
-        voltRefValueLabel['state']='disabled'
+        voltRefValueVoltageBox['state']='disabled'
+        voltRefValueCurrentBox['state']='disabled'
+        voltRefValueVoltageLabel['state']='disabled'
+        voltRefValueCurrentLabel['state']='disabled'
+
+def voltReferenceChangedInCurrent():
+    if voltReferenceVar.get()=='Vcc' or voltReferenceVar.get()=='External':
+        voltRefValueVoltageBox['state']='normal'
+        voltRefValueCurrentBox['state']='normal'
+        voltRefValueVoltageLabel['state']='normal'
+        voltRefValueCurrentLabel['state']='normal'
+    else:
+        voltRefValueVoltageBox['state']='disabled'
+        voltRefValueCurrentBox['state']='disabled'
+        voltRefValueVoltageLabel['state']='disabled'
+        voltRefValueCurrentLabel['state']='disabled'        
 
 ttk.Label(fVoltage, text="Reference for voltage measurements"
     ).grid(column= 0, row=10, padx= 5, pady=(30,2), columnspan= '5' )
@@ -104,7 +121,7 @@ ttk.Radiobutton(fVoltage,  variable=voltReferenceVar, text='External' , value='E
 ttk.Radiobutton(fVoltage,  variable=voltReferenceVar, text='Vcc' , value='Vcc',
 	command=voltReferenceChanged    ).grid(column=0, row=13, sticky=(W,E), padx=20, pady=2 , columnspan= 5)
 
-voltRefValueLabel = ttk.Label(fVoltage, text="Vcc voltage"  ,state='disabled'  )
-voltRefValueLabel.grid(column= 1, row=13, sticky=(E) ,padx= (5,0), pady=2, columnspan= '2' )
-voltRefValueBox = ttk.Entry(fVoltage, textvariable=voltRefValueVar , width='5' , state='disabled')
-voltRefValueBox.grid( column=3, row=13, sticky=(W,E), padx=20, pady=2 )
+voltRefValueVoltageLabel = ttk.Label(fVoltage, text="External or Vcc voltage (in mVolt)"  ,state='disabled'  )
+voltRefValueVoltageLabel.grid(column= 1, row=13, sticky=(E) ,padx= (5,0), pady=2, columnspan= '2' )
+voltRefValueVoltageBox = ttk.Entry(fVoltage, textvariable=voltRefValueVar , width='5' , state='disabled')
+voltRefValueVoltageBox.grid( column=3, row=13, sticky=(W,E), padx=20, pady=2 )

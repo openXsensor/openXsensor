@@ -14,7 +14,7 @@ from tkinter import X, Y, BOTTOM, RIGHT, LEFT, HORIZONTAL , END , DISABLED
 
 from oxsPpm import ppmTypeBox
 from oxsVario import varioTypeBox 
-from oxsVoltage import volt1PinBox
+from oxsVoltage import volt1PinBox 
 from oxsCurrent import currentPinBox
 from oxsRpm import pulsesPerRotationBox
 from oxsGps import gpsRateBox
