@@ -191,9 +191,9 @@ def generateOxsConfig():
         f.write(f"#define FIRST_BARO_SENSOR_USE {varioTypeVar.get()}\n")
         f.write(f"#define VSPEED_SOURCE {varioSourceVar.get()}\n")
         if secondBaroExist.get() == 'On':
-            fa.write("\n#define SECOND_BARO_SENSOR_USE    NO_BARO\n")
-        else:
             fa.write("\n#define SECOND_BARO_SENSOR_USE    MS5611\n")
+        else:
+            fa.write("\n#define SECOND_BARO_SENSOR_USE     NO_BARO\n")
         fa.write("\n#define SENSITIVITY_MIN 80\n")
         fa.write("#define SENSITIVITY_MAX 300\n")
         fa.write("#define SENSITIVITY_MIN_AT 100\n")

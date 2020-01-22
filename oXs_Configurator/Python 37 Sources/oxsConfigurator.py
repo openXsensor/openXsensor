@@ -72,6 +72,71 @@ def viewOxsDoc():
         #    st.settext(text = "File with docs not found")
         oxsDoc.config(state=DISABLED)
 
+def viewOxsConfigBasic():
+    global win1
+    try:
+        if win1.state() == "normal": win1.focus()
+    except:
+        win1 = tk.Toplevel()
+        win1.geometry("300x300+500+200")
+        win1["bg"] = "navy"
+        #st = Pmw.ScrolledText( win1, borderframe=1, labelpos=E, label_text= "", usehullsize=1,
+        #        hull_width=400, hull_height=300, text_padx=10,  text_pady=10, text_wrap='none', text_state = 'disabled')
+        #st.pack(fill=BOTH, expand=1, padx=5, pady=5)
+        sy = tk.Scrollbar(win1)
+        sx = tk.Scrollbar(win1 ,  orient=HORIZONTAL)
+        oxsDoc = tk.Text(win1 , height=500, width=300, wrap='none')
+        sx.pack(side=BOTTOM, fill=X)
+        sy.pack(side=RIGHT, fill=Y)
+        oxsDoc.pack(side=LEFT, fill=Y)
+        sy.config(command=oxsDoc.yview)
+        sx.config(command=oxsDoc.xview)
+       #self.pack()
+#       
+        
+        fileName = r"oXs_config_basic.h"
+        try:
+            f = open(fileName, "r")
+            oxsDoc.insert(END, f.read() )
+        #    st.settext( text = f.read() )
+        except:
+            oxsDoc.insert(END, "File oXs_config_basic.h not found")
+        #    st.settext(text = "File with docs not found")
+        oxsDoc.config(state=DISABLED)
+
+def viewOxsConfigAdvanced():
+    global win1
+    try:
+        if win1.state() == "normal": win1.focus()
+    except:
+        win1 = tk.Toplevel()
+        win1.geometry("300x300+500+200")
+        win1["bg"] = "navy"
+        #st = Pmw.ScrolledText( win1, borderframe=1, labelpos=E, label_text= "", usehullsize=1,
+        #        hull_width=400, hull_height=300, text_padx=10,  text_pady=10, text_wrap='none', text_state = 'disabled')
+        #st.pack(fill=BOTH, expand=1, padx=5, pady=5)
+        sy = tk.Scrollbar(win1)
+        sx = tk.Scrollbar(win1 ,  orient=HORIZONTAL)
+        oxsDoc = tk.Text(win1 , height=500, width=300, wrap='none')
+        sx.pack(side=BOTTOM, fill=X)
+        sy.pack(side=RIGHT, fill=Y)
+        oxsDoc.pack(side=LEFT, fill=Y)
+        sy.config(command=oxsDoc.yview)
+        sx.config(command=oxsDoc.xview)
+       #self.pack()
+#       
+        
+        fileName = r"oXs_config_advanced.h"
+        try:
+            f = open(fileName, "r")
+            oxsDoc.insert(END, f.read() )
+        #    st.settext( text = f.read() )
+        except:
+            oxsDoc.insert(END, "File oXs_config_advanced.h not found")
+        #    st.settext(text = "File with docs not found")
+        oxsDoc.config(state=DISABLED)
+
+
 
 ttk.Label(fMain,  text="Components (details to be filled in tabs)").grid( row=0 , pady=(10,2)) #column=0 , sticky=(N,W,E,S)
 ttk.Checkbutton(fMain, text='Ppm',  command=ppmChanged, variable=ppmExist,
@@ -141,7 +206,9 @@ ttk.Label(fMainRight, text="-Select components\n-Select protocol\n-Fill tab(s)\n
 ttk.Button(fMainRight, text='Upload Config', command=uploadConfig).grid(column=0, row=1, pady=10)
 ttk.Button(fMainRight, text='Save Config', command=saveConfig).grid(column=0, row=2, pady=10)
 ttk.Button(fMainRight, text='Generate oXs Config', command=generateOxsConfig).grid(column=0, row=4, pady=30)
-ttk.Button(fMainRight, text='View oXs doc', command=viewOxsDoc).grid(column=0, row=5, pady=30)
+ttk.Button(fMainRight, text='View oXs_config_basic.h', command=viewOxsConfigBasic).grid(column=0, row=5, pady=10)
+ttk.Button(fMainRight, text='View oXs_config_advanced.h', command=viewOxsConfigAdvanced).grid(column=0, row=6, pady=10)
+ttk.Button(fMainRight, text='View oXs doc', command=viewOxsDoc).grid(column=0, row=7, pady=30)
 
 
 
