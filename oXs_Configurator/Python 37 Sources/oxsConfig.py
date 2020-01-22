@@ -174,7 +174,11 @@ def generateOxsConfig():
             fa.write("\n#define FILL_TEST1_WITH_HEADING_FROM_MAGNETOMETER\n") 
         if fillTest123FlowVar.get() == "On":
             fa.write("\n#define FILL_TEST_1_2_3_WITH_FLOW_SENSOR_CONSUMPTION\n") 
-
+        if fillTest1GpsNbrSatVar.get() == "On":
+            fa.write("\n#define FILL_TEST1_WITH_GPS_NUMBER_OF_SAT\n")
+        if fillTest2GpsHdopVar.get() == "On":
+            fa.write("\n#define FILL_TEST2_WITH_GPS_HDOP\n")
+    
     if ppmExist.get() == "On":
         if ppmTypeVar.get() == 'Rx chanel':
             fa.write(f"\n#define PIN_PPM {str(ppmPinVar.get())}\n")
@@ -447,6 +451,8 @@ def uploadConfig():
     fillTest1YawRateVar.set(value= config.get("AddFields", "fillTest1YawRateVar"))
     fillTest1HeadingVar.set(value= config.get("AddFields", "fillTest1HeadingVar"))
     fillTest123FlowVar.set(value= config.get("AddFields", "fillTest123FlowVar"))
+    fillTest1GpsNbrSatVar.set(value= config.get("AddFields", "fillTest1GpsNbrSatVar"))
+    fillTest2GpsHdopVar.set(value= config.get("AddFields", "fillTest2GpsHdopVar"))
 
     frskyVfasVar.set(value= config.get("Frsky", "frskyVfasVar"))
     frskyFuelVar.set(value= config.get("Frsky", "frskyFuelVar"))
@@ -576,7 +582,9 @@ def saveConfig():
     config.set("AddFields", "fillTest1YawRateVar", fillTest1YawRateVar.get())
     config.set("AddFields", "fillTest1HeadingVar", fillTest1HeadingVar.get())
     config.set("AddFields", "fillTest123FlowVar", fillTest123FlowVar.get())
-    
+    config.set("AddFields", "fillTest1GpsNbrSatVar", fillTest1GpsNbrSatVar.get())
+    config.set("AddFields", "fillTest2GpsHdopVar", fillTest2GpsHdopVar.get())
+        
     config.set("Frsky", "frskyVfasVar", frskyVfasVar.get())
     config.set("Frsky", "frskyFuelVar", frskyFuelVar.get())
     config.set("Frsky", "frskyA3Var", frskyA3Var.get())
@@ -850,6 +858,8 @@ fillTest2PpmAirspeedCompVar = StringVar(value='Off')
 fillTest1YawRateVar = StringVar(value='Off')
 fillTest1HeadingVar = StringVar(value='Off')
 fillTest123FlowVar = StringVar(value='Off')
+fillTest1GpsNbrSatVar = StringVar(value='Off')
+fillTest2GpsHdopVar = StringVar(value='Off')
 
 protocolVar = StringVar(value='FRSKY_SPORT')
 pinToRxVar = StringVar(value='4')
