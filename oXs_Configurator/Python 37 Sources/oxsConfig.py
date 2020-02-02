@@ -198,6 +198,11 @@ def generateOxsConfig():
         fa.write("#define SENSITIVITY_MAX 300\n")
         fa.write("#define SENSITIVITY_MIN_AT 100\n")
         fa.write("#define SENSITIVITY_MAX_AT 1000\n")
+        if ppmExist.get() == "On":
+            fa.write("\n#define SENSITIVITY_MIN_AT_PPM 10\n")
+            fa.write("#define SENSITIVITY_MAX_AT_PPM 40\n")
+            fa.write("#define SENSITIVITY_PPM_MIN  20\n")
+            fa.write("#define SENSITIVITY_PPM_MAX 100\n")
         fa.write(f"\n#define VARIOHYSTERESIS {str(varioHysteresisVar.get())}\n")
         if analogVarioExist.get() == "On":
             fa.write(f"\n#define PIN_ANALOG_VSPEED {varioAnalogPinVar.get()}\n")
@@ -330,6 +335,7 @@ def generateOxsConfig():
     messagebox.showinfo("oXs configurator", "Config files advanced and basic have been created")
 
 def uploadConfig():   
+    from oxsVoltage import voltReferenceChanged
     print("Read config")
     #global configUploadFileName
     #configUploadFileName = filedialog.askopenfilename(initialdir="C:/Data/",
@@ -429,7 +435,11 @@ def uploadConfig():
     volt4OffsetVar.set(value= config.getfloat("Voltage", "volt4OffsetVar"))
     volt5OffsetVar.set(value= config.getfloat("Voltage", "volt5OffsetVar"))
     volt6OffsetVar.set(value= config.getfloat("Voltage", "volt6OffsetVar"))
-        
+    voltReferenceVar.set(value= config.get("Voltage", "voltReferenceVar"))
+    voltRefValueVar.set(value= config.getfloat("Voltage", "voltRefValueVar"))
+    voltReferenceChanged()
+
+
     currentPinVar.set(value= config.get("Current", "currentPinVar"))
     currentMvoltAt0Var.set(value= config.getfloat("Current", "currentMvoltAt0Var"))
     currentMvoltPerAmpVar.set(value= config.getfloat("Current", "currentMvoltPerAmpVar"))
