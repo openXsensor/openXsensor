@@ -183,7 +183,7 @@ def generateOxsConfig():
         if ppmTypeVar.get() == 'Rx chanel':
             fa.write(f"\n#define PIN_PPM {str(ppmPinVar.get())}\n")
             fa.write(f"#define PPM_MIN_100 {str(ppmForMin100Var.get())}\n")
-            fa.write(f"#define PPM_MIN_100 {str(ppmForPlus100Var.get())}\n")
+            fa.write(f"#define PPM_PLUS_100 {str(ppmForPlus100Var.get())}\n")
         else:
             fa.write("\n#define PPM_VIA_SPORT \n")
 
@@ -220,8 +220,8 @@ def generateOxsConfig():
         fa.write(f"\n#define AIRSPEED_RESET_AT_PPM {airspeedResetAtPpmVar.get()}\n")
         fa.write(f"\n#define COMPENSATION_MIN_AT_PPM {airspeedCompMinAtPpmVar.get()}\n")
         fa.write(f"\n#define COMPENSATION_MAX_AT_PPM {airspeedCompMaxAtPpmVar.get()}\n")
-        fa.write(f"\n#define COMPENSATION_MIN {airspeedCompMinVar.get()}\n")
-        fa.write(f"\n#define COMPENSATION_MAX {airspeedCompMaxVar.get()}\n")
+        fa.write(f"\n#define COMPENSATION_PPM_MIN {airspeedCompMinVar.get()}\n")
+        fa.write(f"\n#define COMPENSATION_PPM_MAX {airspeedCompMaxVar.get()}\n")
     else:
         f.write("\n#define AIRSPEED_SENSOR_USE NO_AIRSPEED\n")
     
@@ -736,7 +736,7 @@ def analogVarioChanged():
 
 
 root = Tk()
-root.title("openXsensor configurator V1.0.2")
+root.title("openXsensor configurator V1.0.3")
 nb = ttk.Notebook(root)
 nb.enable_traversal()
 fMain = ttk.Frame(nb)   
