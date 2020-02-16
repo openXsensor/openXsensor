@@ -202,6 +202,9 @@ extern uint16_t GPS_hdop;           // Compute GPS quality signal
 extern uint8_t GPS_fix_type ;
 extern int16_t GPS_distance ;
 extern int16_t GPS_bearing ; 
+extern uint8_t GPS_numSat;
+extern uint16_t GPS_hdop ;           // Compute GPS quality signal
+extern bool GPS_fix ; // true if gps data are available.
 
 
 

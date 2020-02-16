@@ -325,6 +325,8 @@ extern uint16_t GPS_speed_2d;                 // speed in cm/s
 extern uint32_t GPS_ground_course ;     // degrees with 5 decimals
 extern uint8_t GPS_numSat ;
 extern uint16_t GPS_hdop;           // Compute GPS quality signal
+extern bool GPS_fix ; // true if gps data are available.
+
 
 extern uint8_t GPS_fix_type ;
 extern int16_t GPS_distance ;
