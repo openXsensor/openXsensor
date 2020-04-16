@@ -8,6 +8,7 @@
 #include "oXs_bmp180.h"
 #include "oXs_bmp280.h"
 #include "oXs_4525.h"
+#include "oXs_sdp3x.h"
 #include "oXs_ads1115.h"
 #include "oXs_curr.h"
 #include "oXs_out_frsky.h"
@@ -131,6 +132,8 @@
                                // via a solder pin or fixed)
                                
 #define I2C_4525_Add        0x28 // 0x28 is the default I2C adress of a 4525DO sensor
+#define I2C_SDP3X_Add       0x21 // 0x21 is the default I2C adress of a SDP3X sensor
+
 
 #define I2C_ADS_Add 0x48 // default I2C address of ads1115 when addr pin is connected to ground
 
@@ -415,6 +418,14 @@ extern uint8_t  volatile TxDataIdx ;
   #endif  //DEBUG
 #endif
 
+#if defined(AIRSPEED_SENSOR_USE) && (AIRSPEED_SENSOR_USE == SDP3X) 
+  #ifdef DEBUG  
+    OXS_SDP3X oXs_sdp3x(I2C_SDP3X_Add ,Serial);
+  #else
+    OXS_SDP3X oXs_sdp3x(I2C_SDP3X_Add);
+  #endif  //DEBUG
+#endif
+
 #if defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES)
   #ifdef DEBUG  
     OXS_VOLTAGE oXs_Voltage(Serial);
@@ -543,6 +554,12 @@ void setup(){
   oXs_4525.setup();
   oXs_Out.airSpeedData=&oXs_4525.airSpeedData; 
 #endif // end AIRSPEED
+
+#if defined(AIRSPEED_SENSOR_USE) && (AIRSPEED_SENSOR_USE == SDP3X) 
+  oXs_sdp3x.setup();
+  oXs_Out.airSpeedData=&oXs_sdp3x.airSpeedData; 
+#endif // end AIRSPEED SDP3X
+
 
 #if defined(ARDUINO_MEASURES_A_CURRENT) && (ARDUINO_MEASURES_A_CURRENT == YES)
   oXs_Current.setupCurrent( );
@@ -836,6 +853,10 @@ void readSensors() {
 #ifdef AIRSPEED
   oXs_4525.readSensor(); // Read again the sensor in order to reduce response time/noise
 #endif 
+
+#if defined(AIRSPEED_SENSOR_USE) && (AIRSPEED_SENSOR_USE == SDP3X) 
+  oXs_sdp3x.readSensor(); //read the SDP3X sensor
+#endif
 
 #ifdef USE_6050
     newImuAvailable = read6050() ;

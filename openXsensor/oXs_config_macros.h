@@ -2,7 +2,7 @@
 #define OXS_CONFIG_MACROS_h
 
 // --------- xx - Reserved for developer. DEBUG must be activated here when we want to debug one or several functions in some other files. ---------
-//#define DEBUG
+#define DEBUG
 ///#define DEBUG_BLINK   // use by developper in order to blink the led without using uart for debugging
 
 
@@ -41,6 +41,7 @@ struct ONE_MEASUREMENT {
 #define NO_AIRSPEED 1
 #define MS4525      2
 #define MVPX7002    3
+#define SDP3X       4
 
 #define NO  1
 #define YES 2

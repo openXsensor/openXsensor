@@ -39,6 +39,7 @@ extern OXS_MS5611 oXs_MS5611 ;
 extern OXS_VOLTAGE oXs_Voltage ; 
 extern OXS_CURRENT oXs_Current ;
 extern OXS_4525 oXs_4525 ;
+//extern OXS_SDP3X oXs_sdp3x;
 
 #if  defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON)
 extern  CURRENTDATA adsCurrentData ;
@@ -422,6 +423,9 @@ void initMeasurement() {
   idToReply |= 0x10 ;
 #elif defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined(ADS_MEASURE) && defined(ADS_AIRSPEED_BASED_ON)
   p_measurements[18] = &oXs_ads1115.adsAirSpeedData.airSpeed ;
+  idToReply |= 0x10 ;
+#elif defined(AIRSPEED_SENSOR_USE) && (AIRSPEED_SENSOR_USE == SDPX3) 
+  p_measurements[18] = &oXs_sdp3x.airSpeedData.airSpeed ;
   idToReply |= 0x10 ;
 #else
   p_measurements[18] = &no_data ; 

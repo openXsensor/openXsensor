@@ -18,14 +18,9 @@ struct AIRSPEEDDATA {
 //  bool compensationAvailable ;
   bool airspeedReset ;
   float smoothAirSpeed ;    //cm/sec ; use in glider ratio
-
-
-   
   unsigned long lastCommand2Micros ; // used to avoid some task (reading voltage sensor, currentsensor, ..) when barometric data should be soon available for reading 
-
                                      // = micro divided by 2 to avoid overflow on comparison
   float difPressureAdc_zero ; 
-
 };
 
 extern float actualPressure ;

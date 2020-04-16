@@ -15,6 +15,7 @@ extern OXS_MS5611 oXs_MS5611 ;
 extern OXS_VOLTAGE oXs_Voltage ; 
 extern OXS_CURRENT oXs_Current ;
 extern OXS_4525 oXs_4525 ;
+extern OXS_SDP3X oXs_sdp3x;
 
 
 extern unsigned long micros( void ) ;
