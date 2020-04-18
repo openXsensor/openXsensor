@@ -101,7 +101,15 @@ struct ONE_MEASUREMENT {
 
 #ifdef  AIRSPEED_SENSOR_USE 
   #if ( AIRSPEED_SENSOR_USE == MS4525 )
-    #define AIRSPEED    
+    #define AIRSPEED
+    #define AIRSPEED_IS_USED 
+    #define AIRSPEED_4525
+  #elif ( AIRSPEED_SENSOR_USE == MPXV7002 )
+    #define AIRSPEED_IS_USED
+    #define AIRSPEED_7002
+  #elif ( AIRSPEED_SENSOR_USE == SDP3X )
+    #define AIRSPEED_IS_USED
+    #define AIRSPEED_SDP3X
   #endif
 #endif  
 

@@ -68,11 +68,11 @@
 
 // --------- 4 - Vario settings ---------
 // ***** 4.1 - Connecting 1 or 2 barometric sensor(s)  ***** 
-#define FIRST_BARO_SENSOR_USE   NO_BARO       // select between NO_BARO , MS5611, GY86 , BMP085 , BMP180 , GY87,  BMP280  
+#define FIRST_BARO_SENSOR_USE   MS5611       // select between NO_BARO , MS5611, GY86 , BMP085 , BMP180 , GY87,  BMP280  
                                               // Note : when used, second sensor is to define in oXs_config_advanced.h
                                               
 // ***** 4.2 - Type of Vspeed to transmit  *****                                    
-#define VSPEED_SOURCE  FIRST_BARO    // select between FIRST_BARO, BARO_AND_IMU, SECOND_BARO , AVERAGE_FIRST_SECOND, AIRSPEED_COMPENSATED or PPM_SELECTION
+#define VSPEED_SOURCE  AIRSPEED_COMPENSATED    // select between FIRST_BARO, BARO_AND_IMU, SECOND_BARO , AVERAGE_FIRST_SECOND, AIRSPEED_COMPENSATED or PPM_SELECTION
 
 // ***** 4.3 - Sensitivity predefined by program *****                               see oXs_config_advanced.h (normally no need to change it)
 // ***** 4.4 - Sensitivity adjusted from the TX *****                                see oXs_config_advanced.h (normally no need to change it)

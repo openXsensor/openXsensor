@@ -34,9 +34,6 @@ public:
 
 
 private:
-  
-//  unsigned int _calibrationData[7]; // The factory calibration data of the ms5611
-
    uint8_t _addr;
    uint8_t I2CErrorCodeSdp3x ;
    float dpScaleSdp3x;      // differential pressure scale factor
