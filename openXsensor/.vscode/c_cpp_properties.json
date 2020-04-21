@@ -9,7 +9,7 @@
             "forcedInclude": [
                 "C:\\Program Files (x86)\\Arduino\\hardware\\arduino\\avr\\cores\\arduino\\Arduino.h"
             ],
-            "intelliSenseMode": "msvc-x64"
+            "intelliSenseMode":"clang-x64"
         }
     ],
     "version": 4

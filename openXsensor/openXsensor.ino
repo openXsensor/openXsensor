@@ -51,6 +51,10 @@
   #error Error in oXs_config_advanced.h : PIN_PPM may not be equal to PIN_INT_6050
 #endif    
 
+#if  defined ( PPM_VIA_SPORT ) && ( (PROTOCOL  != FRSKY_SPORT) && (PROTOCOL  != FRSKY_SPORT_HUB) ) 
+  #error Error in oXs_config_advanced.h : PPM_VIA_SPORT is allowed only when protocol is FRSKY_SPORT or FRSKY_SPORT_HUB
+#endif
+
 #if defined( VFAS_SOURCE ) && ( !  ( ( VFAS_SOURCE == VOLT_1) || ( VFAS_SOURCE == VOLT_2) || ( VFAS_SOURCE == VOLT_3) || ( VFAS_SOURCE == VOLT_4) || ( VFAS_SOURCE == VOLT_5) || ( VFAS_SOURCE == VOLT_6) || ( VFAS_SOURCE == ADS_VOLT_1) || ( VFAS_SOURCE == ADS_VOLT_2) || ( VFAS_SOURCE == ADS_VOLT_3) || ( VFAS_SOURCE == ADS_VOLT_4)) ) 
  #error When defined, VFAS_SOURCE must be one of following values VOLT_1, VOLT_2, VOLT_3, VOLT_4, VOLT_5, VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4 
 #endif
@@ -133,6 +137,7 @@
                                
 #define I2C_4525_Add        0x28 // 0x28 is the default I2C adress of a 4525DO sensor
 #define I2C_SDP3X_Add       0x21 // 0x21 is the default I2C adress of a SDP3X sensor
+//#define I2C_SDP3X_Add       0x25 // 0x25 is the I2C adress of a SDP810 sensor
 
 
 #define I2C_ADS_Add 0x48 // default I2C address of ads1115 when addr pin is connected to ground
@@ -751,7 +756,7 @@ if ( currentLoopMillis - lastLoop500Millis > 500 ) {
     if ( millis() > 1500 ) oXs_Out.sendData(); 
    
 // PPM Processing = Read the ppm Signal from receiver  or use the SPORT ppm value from readSensors and process it 
-#if defined ( PIN_PPM ) || (  defined(PPM_VIA_SPORT) && ( (PROTOCOL  == FRSKY_SPORT) || (PROTOCOL == FRSKY_SPORT_HUB) ) )
+#if defined ( PPM_IS_USED ) 
 #if defined (VARIO) || defined (VARIO2)
     if (checkFreeTime()) ProcessPPMSignal();
 #else
@@ -1019,7 +1024,7 @@ void calculateAllFields () {
 
 
 // calculate selected Vspeed based on ppm
-#if defined (VARIO) && ( defined (VARIO2) || defined (AIRSPEED_IS_USED) || defined (USE_6050 ) ) && defined (VARIO_SECONDARY ) && defined( VARIO_PRIMARY )  && defined (PIN_PPM)
+#if defined (VARIO) && ( defined (VARIO2) || defined (AIRSPEED_IS_USED) || defined (USE_6050 ) ) && defined (VARIO_SECONDARY ) && defined( VARIO_PRIMARY )  && defined (PPM_IS_USED)
   if (( selectedVario == FIRST_BARO ) && ( newVarioAvailable ) )  {
       switchVSpeed.value = oXs_MS5611.varioData.climbRate.value ;
       switchVSpeed.available = true ;
@@ -1051,7 +1056,7 @@ void calculateAllFields () {
       switchVSpeed.available = true ;
   }
   #endif  // end USE_6050
-#endif // end #if defined (VARIO) && ( defined (VARIO2) || defined (AIRSPEED_IS_USED) || defined (USE_6050 ) ) && defined (VARIO_SECONDARY ) && defined( VARIO_PRIMARY )  && defined (PIN_PPM)  
+#endif // end #if defined (VARIO) && ( defined (VARIO2) || defined (AIRSPEED_IS_USED) || defined (USE_6050 ) ) && defined (VARIO_SECONDARY ) && defined( VARIO_PRIMARY )  && defined (PPM_IS_USED)  
 
 // mainVSpeed (calculated based on the setup in config)
 #if defined(VARIO) &&  ( (!defined(VSPEED_SOURCE)) || (defined(VSPEED_SOURCE) && (VSPEED_SOURCE == FIRST_BARO) ) )
@@ -1069,7 +1074,7 @@ void calculateAllFields () {
 #elif defined(VARIO) && defined(USE_6050) && (VSPEED_SOURCE == BARO_AND_IMU)
     mainVspeed.value = vSpeedImu.value ;
     mainVspeed.available = vSpeedImu.available ;
-#elif defined(VARIO) && ( defined (VARIO2) || defined (AIRSPEED_IS_USED) || defined (USE_6050) ) && defined (VARIO_SECONDARY ) && defined( VARIO_PRIMARY )  && defined (PIN_PPM)  && (VSPEED_SOURCE == PPM_SELECTION)
+#elif defined(VARIO) && ( defined (VARIO2) || defined (AIRSPEED_IS_USED) || defined (USE_6050) ) && defined (VARIO_SECONDARY ) && defined( VARIO_PRIMARY )  && defined (PPM_IS_USED)  && (VSPEED_SOURCE == PPM_SELECTION)
     mainVspeed.value = switchVSpeed.value   ;
     mainVspeed.available = switchVSpeed.available   ;
 #if defined (DEBUG_SELECTED_VARIO)
@@ -1112,7 +1117,7 @@ static boolean next_debug_vspeeds_flag = true ;
   test1.value = compensatedClimbRate.value ;
   test1.available = compensatedClimbRate.available ; 
 #endif
-#if  defined(FILL_TEST_2_WITH_PPM_AIRSPEED_COMPENSATION) && defined(PIN_PPM)
+#if  defined(FILL_TEST_2_WITH_PPM_AIRSPEED_COMPENSATION) && defined(PPM_IS_USED)
   static uint32_t lastPpmCompensationMillis ;
   uint32_t PpmCompensationMillis = millis() ;
   if ( ( PpmCompensationMillis - lastPpmCompensationMillis ) > 200 ) {
@@ -1379,7 +1384,7 @@ void calculateDte () {  // is calculated about every 2O ms each time that an alt
 
 
 //****************************** Calculate averages and glider ratio ********************************************
-#if defined (VARIO) && defined (GLIDER_RATIO_CALCULATED_AFTER_X_SEC ) && (GLIDER_RATIO_CALCULATED_AFTER_X_SEC >= 1 )  && defined ( PIN_PPM ) && defined (GLIDER_RATIO_ON_AT_PPM )
+#if defined (VARIO) && defined (GLIDER_RATIO_CALCULATED_AFTER_X_SEC ) && (GLIDER_RATIO_CALCULATED_AFTER_X_SEC >= 1 )  && defined ( PPM_IS_USED ) && defined (GLIDER_RATIO_ON_AT_PPM )
 void calculateAverages( ){
         static int32_t altitudeAtT0 ; // in cm
         static int32_t distanceSinceT0 ; // in cm
@@ -1698,7 +1703,7 @@ void LoadFromEEProm(){
 /* ProcessPPMSignal => read PPM signal from receiver and       */
 /*   use its value to adjust sensitivity and other parameters  */
 /***************************************************************/
-#if defined ( PIN_PPM ) || (  defined ( PPM_VIA_SPORT ) && ( (PROTOCOL  == FRSKY_SPORT) || (PROTOCOL  == FRSKY_SPORT_HUB) ) )
+#if defined ( PPM_IS_USED ) 
 volatile uint16_t time1 ;
 void ProcessPPMSignal(){
   boolean getNewPpm = false ; // become true if a new ppm value has been acquired  
@@ -1735,7 +1740,7 @@ void ProcessPPMSignal(){
 #else // so if Sequence is not used and so PPM is used for Vario sensitivity , vario compensation , airspeed reset , glider ratio and/or vario source selection 
     if ( ( ( ppm.value - prevPpm) < 4 ) && ( ( prevPpm - ppm.value) < 4 ) ) {  // test if new value is quite close to previous in order to avoid unstabel handling 
     
-#if defined ( VARIO_PRIMARY) && defined ( VARIO_SECONDARY)  && defined (VARIO ) && ( defined (VARIO2) ||  defined ( AIRSPEED_IS_USED)  || defined (USE_6050) )  && defined (PIN_PPM)
+#if defined ( VARIO_PRIMARY) && defined ( VARIO_SECONDARY)  && defined (VARIO ) && ( defined (VARIO2) ||  defined ( AIRSPEED_IS_USED)  || defined (USE_6050) )  && defined (PPM_IS_USED)
         if ( (ppm.value >= (SWITCH_VARIO_MIN_AT_PPM - 4)) && (ppm.value <= (SWITCH_VARIO_MAX_AT_PPM + 4)) ) {
           selectedVario = VARIO_PRIMARY ;
         } else if ( ( ppm.value <= (4 - SWITCH_VARIO_MIN_AT_PPM)) && (ppm.value >= (- 4 - SWITCH_VARIO_MAX_AT_PPM)) ) {

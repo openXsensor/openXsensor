@@ -1,7 +1,7 @@
 // OpenXsensor https://github.com/openXsensor/
 // started by Rainer Schlosshan and maintained by Michel Strens
 
-// This is version : 8.2.13 (22 oct 2019)
+// This is version : 8.2.14 (21 Apr 2020)
 
 //******************************************************************************************************************************************************* //
 //                                                                                                                                                        //

@@ -2,7 +2,7 @@
 #define OXS_CONFIG_MACROS_h
 
 // --------- xx - Reserved for developer. DEBUG must be activated here when we want to debug one or several functions in some other files. ---------
-#define DEBUG
+//#define DEBUG
 ///#define DEBUG_BLINK   // use by developper in order to blink the led without using uart for debugging
 
 
@@ -97,6 +97,10 @@ struct ONE_MEASUREMENT {
 
 #if ( defined( FIRST_BARO_SENSOR_USE ) && ( (FIRST_BARO_SENSOR_USE ==  MS5611 ) || (FIRST_BARO_SENSOR_USE ==  GY86 ) )) || ( defined( SECOND_BARO_SENSOR_USE ) && ( (SECOND_BARO_SENSOR_USE ==  MS5611 ) || (SECOND_BARO_SENSOR_USE ==  GY86 ) ))
   #define SENSOR_IS_MS5611
+#endif
+
+#if defined ( PIN_PPM ) || (  defined(PPM_VIA_SPORT) && ( (PROTOCOL  == FRSKY_SPORT) || (PROTOCOL == FRSKY_SPORT_HUB) ) )
+  #define PPM_IS_USED
 #endif
 
 #ifdef  AIRSPEED_SENSOR_USE 
