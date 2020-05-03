@@ -35,7 +35,9 @@
 #elif ! ( (PROTOCOL == FRSKY_SPORT) or (PROTOCOL == FRSKY_HUB) or (PROTOCOL == FRSKY_SPORT_HUB) or (PROTOCOL == HOTT) or (PROTOCOL == MULTIPLEX)  or (PROTOCOL == JETI))    
     #error The parameter PROTOCOL in config_basic.h is NOT valid
 #endif
-
+#if ( ( (PROTOCOL == HOTT) or (PROTOCOL == MULTIPLEX)  or (PROTOCOL == JETI) ) and ( PIN_SERIALTX == 7 ) ) 
+    #error PIN_SERIALTX may be 7 only for Frsky protocols
+#endif
 #if  defined(VARIO) and (! defined(VSPEED_SOURCE))
     #error The parameter VSPEED_SOURCE in config_basic.h is not defined while a type of baro sensor is defined
 #elif  defined(VARIO) and  defined(VSPEED_SOURCE) and ( ! ( (VSPEED_SOURCE == FIRST_BARO) or (VSPEED_SOURCE == SECOND_BARO) or (VSPEED_SOURCE == AVERAGE_FIRST_SECOND) \

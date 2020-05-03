@@ -69,6 +69,7 @@ See OpenXsensor https://github.com/openXsensor/
 *   Therefore, one DIGITAL Arduino pin has to be connected to the receiver.
 *   You must specify the Arduino pin being used.
 *   Default: 4 ; allowed values are 2 or 4 but take care not using the same pin for 2 features.
+*   For Frsky protocols, it is also possible to use pin 7 (foreseen for receiver running the D16 firmware written by MikeB)
 ************************************************************************************************************************
 #define PIN_SERIALTX  4
             

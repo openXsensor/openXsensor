@@ -18,7 +18,7 @@
 
 // ****** 1.1 - Pin connected to Rx ********
 #define PIN_SERIALTX      4                 // The pin which transmits the serial data to the telemetry receiver, Usually pin 4 (otherwise pin 2)
-
+                                            // For Frsky protocols, it is also possible to use pin 7 (useful for receiver running the D16 firmware written by MikeB)
 // ***** 1.2 - SPORT_SENSOR_ID used (only for Frsky Sport protocol)  *****   See list of available values in oXs_config_descripion.h 
 #define         DATA_ID_VARIO  0x00  // = sensor 0 used for Alt and Vspeed
 #define         DATA_ID_FLVSS  0xA1  //          1 used for Cell values
