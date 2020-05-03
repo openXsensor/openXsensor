@@ -203,7 +203,7 @@ void OXS_OUT::initJetiListOfFields() {  // fill an array with the list of fields
     listOfFields[listOfFieldsIdx++] = AIR_SPEED ;
 #elif defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined(ADS_MEASURE) && defined(ADS_AIRSPEED_BASED_ON)    
     listOfFields[listOfFieldsIdx++] = AIR_SPEED ;
-#elif defined(AIRSPEED_SENSOR_USE) && (AIRSPEED_SENSOR_USE == SDPX3)
+#elif defined(AIRSPEED_SDP3X)
     listOfFields[listOfFieldsIdx++] = AIR_SPEED ; 
 #endif  // End airpseed    
 #ifdef GPS_INSTALLED            
@@ -478,7 +478,7 @@ boolean OXS_OUT::retrieveFieldIfAvailable(uint8_t fieldId , int32_t * fieldValue
         * dataType = JETI14_1D ;
         oXs_ads1115.adsAirSpeedData.airSpeed.available = false ;
         break ;
-#elif defined(AIRSPEED_SENSOR_USE) && (AIRSPEED_SENSOR_USE == SDPX3)
+#elif defined(AIRSPEED_SDP3X)
       case  AIR_SPEED :
         if ( ! oXs_sdp3x.airSpeedData.airSpeed.available  ) return 0;
         * fieldValue = oXs_sdp3x.airSpeedData.airSpeed.value  * 1.852;   //  convert from 1/10 of knots to  1/10 of Km/h 
@@ -843,7 +843,7 @@ void OXS_OUT::fillJetiBufferWithText() {
       case  AIR_SPEED :
         mergeLabelUnit( textIdx, "Airspeed", "Km/h"  ) ;
         break ; 
-#elif defined(AIRSPEED_SENSOR_USE) && (AIRSPEED_SENSOR_USE == SDPX3)
+#elif defined(AIRSPEED_SDP3X)
       case  AIR_SPEED :
         mergeLabelUnit( textIdx, "Airspeed", "Km/h"  ) ;
         break ;                

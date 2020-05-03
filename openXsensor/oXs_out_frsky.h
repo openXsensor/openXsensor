@@ -467,7 +467,12 @@ uint32_t millis( void ) ;
 
 #define SET_TX_PIN( )    ( TRXPORT |= ( 1 << PIN_SERIALTX ) )
 #define CLEAR_TX_PIN( )  ( TRXPORT &= ~( 1 << PIN_SERIALTX ) )
+
+#if PIN_SERIALTX == 7
+#define GET_RX_PIN( )    ( ACSR & ( 1 << ACO ) )
+#else
 #define GET_RX_PIN( )    ( TRXPIN & ( 1 << PIN_SERIALTX ) )
+#endif
 
 //******************* End of part used for handling of UART with Receiver
 

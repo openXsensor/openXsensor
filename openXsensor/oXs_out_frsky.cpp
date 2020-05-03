@@ -39,7 +39,7 @@ extern OXS_MS5611 oXs_MS5611 ;
 extern OXS_VOLTAGE oXs_Voltage ; 
 extern OXS_CURRENT oXs_Current ;
 extern OXS_4525 oXs_4525 ;
-//extern OXS_SDP3X oXs_sdp3x;
+extern OXS_SDP3X oXs_sdp3x;
 
 #if  defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON)
 extern  CURRENTDATA adsCurrentData ;
@@ -120,6 +120,11 @@ void OXS_OUT::setup() {
     //initilalise PORT
     TRXDDR &= ~( 1 << PIN_SERIALTX ) ;       // PIN is input, tri-stated.
     TRXPORT &= ~( 1 << PIN_SERIALTX ) ;      // PIN is input, tri-stated.
+#if PIN_SERIALTX == 7
+		ADCSRB &= ~(1<<ACME) ;
+		ACSR = (1<<ACBG) | (1 << ACIS1) ;
+		DIDR1 |= (1<<AIN1D) ;
+#endif
 
 #if defined( PROTOCOL ) && ( PROTOCOL == FRSKY_SPORT )
     initMeasurement() ;
@@ -135,19 +140,29 @@ void OXS_OUT::setup() {
 #elif PIN_SERIALTX == 2
     PCMSK2 |= 0x04 ;                  // IO2 (PD2) on Arduini mini
 #else
+ #if PIN_SERIALTX != 7
     #error "This PIN is not supported"
+ #endif
 #endif // test on PIN_SERIALTX
     delay(1500) ; // this delay has been added because some users reported that SPORT is not recognised with a X6R ; perhaps is it related to the EU firmware (2015)
 #ifdef DEBUG_SPORT_PIN 
     digitalWrite(DEBUG_SPORT_PIN, HIGH); // Set the pulse used during SPORT detection to HIGH because detecttion is starting
 #endif
 
+#if PIN_SERIALTX == 7
+    ACSR |= ( 1<<ACI ) ;              // clear pending interrupt
+#else
     PCIFR = (1<<PCIF2) ;	            // clear pending interrupt
+#endif
     delay(20) ;                      // to see if SPORT is active, we have to wait at least 12 msec and check bit PCIF2 from PCIFR; if bit is set, it is SPORT
 #ifdef DEBUG_SPORT_PIN
     digitalWrite(DEBUG_SPORT_PIN, LOW); // Set the pulse used during SPORT detection to LOW because detection is done
-#endif    
+#endif
+#if PIN_SERIALTX == 7
+    if ( ( ACSR & (1<<ACI)) == 0 ) {
+#else
     if ( ( PCIFR & (1<<PCIF2)) == 0 ) {
+#endif
         sportAvailable = false ;
         initHubUart() ;
     }
@@ -424,7 +439,7 @@ void initMeasurement() {
 #elif defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined(ADS_MEASURE) && defined(ADS_AIRSPEED_BASED_ON)
   p_measurements[18] = &oXs_ads1115.adsAirSpeedData.airSpeed ;
   idToReply |= 0x10 ;
-#elif defined(AIRSPEED_SENSOR_USE) && (AIRSPEED_SENSOR_USE == SDPX3) 
+#elif defined(AIRSPEED_SDP3X)
   p_measurements[18] = &oXs_sdp3x.airSpeedData.airSpeed ;
   idToReply |= 0x10 ;
 #else
@@ -1617,7 +1632,11 @@ ISR(TIMER1_COMPA_vect)
 #ifdef DEBUGASERIAL
                         PORTC &= ~1 ;
 #endif
+#if PIN_SERIALTX == 7
+                        if( GET_RX_PIN( )) {
+#else
                         if( GET_RX_PIN( ) == 0 ) {
+#endif
                             data |= 0x80 ;                    // If a logical 1 is read, let the data mirror this.
                         }
 #ifdef DEBUGASERIAL
@@ -1713,8 +1732,13 @@ ISR(TIMER1_COMPA_vect)
                         LastRx = SwUartRXData ;                 // save the current byte
                         if (state == IDLE ) {                    // when Go back to idle.
                             DISABLE_TIMER_INTERRUPT() ;         // Stop the timer interrupts.
-                            PCIFR = ( 1<<PCIF2 ) ;              // clear pending interrupt
-                            PCICR |= ( 1<<PCIE2 ) ;             // pin change interrupt enabled (so we can receive another byte)
+#if PIN_SERIALTX == 7
+							ACSR |= ( 1<<ACI ) ;              // clear pending interrupt
+							ACSR |= ( 1<<ACIE ) ;             // interrupt enabled (so we can receive another byte)
+#else
+							PCIFR = ( 1<<PCIF2 ) ;       // clear pending interrupt
+							PCICR |= ( 1<<PCIE2 ) ;      // pin change interrupt enabled
+#endif
                         }
                         
                     } // End receiving  1 bit or 1 byte (8 bits)
@@ -1741,8 +1765,13 @@ ISR(TIMER1_COMPA_vect)
   case WAITING :       // SPORT ******** we where waiting for some time before listening for an start bit; we can now expect a start bit again
          DISABLE_TIMER_INTERRUPT() ;  // Stop the timer interrupts.
          state = IDLE ;               // Go back to idle.
+#if PIN_SERIALTX == 7
+         ACSR |= ( 1<<ACI ) ;              // clear pending interrupt
+         ACSR |= ( 1<<ACIE ) ;             // interrupt enabled (so we can receive another byte)
+#else
          PCIFR = ( 1<<PCIF2 ) ;       // clear pending interrupt
          PCICR |= ( 1<<PCIE2 ) ;      // pin change interrupt enabled
+#endif
          break ;
 
   // Unknown state.
@@ -1844,11 +1873,18 @@ void initSportUart(  )           //*************** initialise UART pour SPORT
 #elif PIN_SERIALTX == 2
     PCMSK2 |= 0x04 ;                    // IO2 (PD2) on Arduini mini
 #else
+ #if PIN_SERIALTX != 7
     #error "This PIN is not supported"
+ #endif
 #endif
 
-    PCIFR = (1<<PCIF2) ;  // clear pending interrupt
-    PCICR |= (1<<PCIE2) ; // pin change interrupt enabled
+#if PIN_SERIALTX == 7
+    ACSR |= ( 1<<ACI ) ;              // clear pending interrupt
+    ACSR |= ( 1<<ACIE ) ;             // interrupt enabled (so we can receive another byte)
+#else
+    PCIFR = ( 1<<PCIF2 ) ;       // clear pending interrupt
+    PCICR |= ( 1<<PCIE2 ) ;      // pin change interrupt enabled
+#endif
 
     // Internal State Variable
     state = IDLE ;
@@ -1874,6 +1910,23 @@ void initSportUart(  )           //*************** initialise UART pour SPORT
 // This is the pin change interrupt for port D
 // This assumes it is the only pin change interrupt on port D
 //#ifdef FRSKY_SPORT
+#if PIN_SERIALTX == 7
+ISR(ANALOG_COMP_vect)
+{
+	ACSR &= ~(1 << ACIE ) ;     // interrupt disabled
+//	PORTC &= ~2 ;
+  state = RECEIVE ;                 // Change state
+  DISABLE_TIMER_INTERRUPT() ;       // Disable timer to change its registers.
+  OCR1A = TCNT1 + TICKS2WAITONE_HALFSPORT - INTERRUPT_EXEC_CYCL - INTERRUPT_EARLY_BIAS ; // Count one and a half period into the future.
+#ifdef DEBUGASERIAL
+  DDRC = 0x03 ;   // PC0,1 as o/p debug
+  PORTC |= 1 ;
+#endif
+  SwUartRXBitCount = 0 ;            // Clear received bit counter.
+  CLEAR_TIMER_INTERRUPT() ;         // Clear interrupt bits
+  ENABLE_TIMER_INTERRUPT() ;        // Enable timer1 interrupt on again
+}
+#else
 ISR(PCINT2_vect)
 {
   if ( TRXPIN & ( 1 << PIN_SERIALTX ) ) {     // if Pin is high = start bit (inverted)
@@ -1894,7 +1947,7 @@ ISR(PCINT2_vect)
 //#endif
 
 }
-
+#endif
 #endif // #end of code for SPORT protocol 
 
 
@@ -1970,4 +2023,3 @@ void startHubTransmit()
 
 //********************************** End of code to handle the UART communication with the receiver
 #endif   //End of FRSKY protocols
-

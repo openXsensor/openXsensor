@@ -857,7 +857,7 @@ void readSensors() {
   oXs_4525.readSensor(); // Read again the sensor in order to reduce response time/noise
 #endif 
 
-#ifdef AIRSPEED_SDP3X) 
+#ifdef AIRSPEED_SDP3X 
   oXs_sdp3x.readSensor(); //read the SDP3X sensor
 #endif
 
@@ -1379,7 +1379,7 @@ void calculateDte () {  // is calculated about every 2O ms each time that an alt
 #endif    
    
 } // end calculateDte  
-#endif #if defined (VARIO) &&  defined ( AIRSPEED_IS_USED)     
+#endif //#if defined (VARIO) &&  defined ( AIRSPEED_IS_USED)     
 // ***************************** end calculate Dte ***********************************************
 
 

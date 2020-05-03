@@ -26,7 +26,7 @@ OXS_SDP3X::OXS_SDP3X(uint8_t addr)
 }
 
 
-// **************** Setup the 4525DO sensor *********************
+// **************** Setup the SDP3X sensor *********************
 void OXS_SDP3X::setup() {
   airSpeedData.airSpeed.available = false ;     
 #ifdef DEBUG  
