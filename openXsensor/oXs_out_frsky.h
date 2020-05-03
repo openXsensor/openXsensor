@@ -10,6 +10,7 @@
 #include "oXs_curr.h" // we need the currentdata struct
 #include "oXs_voltage.h" // we need the arduinodata struct
 #include "oXs_ads1115.h" // we need the data
+#include "oXs_sdp3x.h" // we need the airspeed data
 //#include <Arduino.h>
 #include "oXs_general.h"
 // this file is used only for FRSKY

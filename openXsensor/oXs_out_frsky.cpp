@@ -40,7 +40,6 @@ extern OXS_VOLTAGE oXs_Voltage ;
 extern OXS_CURRENT oXs_Current ;
 extern OXS_4525 oXs_4525 ;
 extern OXS_SDP3X oXs_sdp3x;
-
 #if  defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON)
 extern  CURRENTDATA adsCurrentData ;
 #endif
