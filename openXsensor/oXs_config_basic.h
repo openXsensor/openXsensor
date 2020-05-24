@@ -27,7 +27,7 @@
 
 // --------- 2 - Data to transmit ---------   uncomment the lines below if you want to transmit some extra oXs measurements into some telemetry fields
 // ***** 2.1 - Frsky data *****                
-//#define VFAS_SOURCE  VOLT_1                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4 
+#define VFAS_SOURCE  VOLT_1                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4 
 //#define FUEL_SOURCE   ADS_VOLT_1                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
 //#define A3_SOURCE     ADS_VOLT_1                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
 //#define A4_SOURCE     ADS_VOLT_3                 // select between VOLT_1, VOLT_2, VOLT_3 , VOLT_4, VOLT_5 , VOLT_6, ADS_VOLT_1, ADS_VOLT_2, ADS_VOLT_3, ADS_VOLT_4
@@ -72,7 +72,7 @@
                                               // Note : when used, second sensor is to define in oXs_config_advanced.h
                                               
 // ***** 4.2 - Type of Vspeed to transmit  *****                                    
-#define VSPEED_SOURCE  AIRSPEED_COMPENSATED    // select between FIRST_BARO, BARO_AND_IMU, SECOND_BARO , AVERAGE_FIRST_SECOND, AIRSPEED_COMPENSATED or PPM_SELECTION
+#define VSPEED_SOURCE  FIRST_BARO    // select between FIRST_BARO, BARO_AND_IMU, SECOND_BARO , AVERAGE_FIRST_SECOND, AIRSPEED_COMPENSATED or PPM_SELECTION
 
 // ***** 4.3 - Sensitivity predefined by program *****                               see oXs_config_advanced.h (normally no need to change it)
 // ***** 4.4 - Sensitivity adjusted from the TX *****                                see oXs_config_advanced.h (normally no need to change it)
@@ -81,14 +81,14 @@
 // ***** 4.7 - Analog vertical speed *****                                           see oXs_config_advanced.h (change if you want to activate it)
 // ***** 4.8  - Calculating glider ratio, average sink/climb rate **************     see oXs_config_advanced.h (change if you want to get those measurement)
 // --------- 5 - Airspeed settings ---------                                         see oXs_config_advanced.h for additionnal parameters (normally no need to change them)
-#define AIRSPEED_SENSOR_USE       SDP3X       // select between NO_AIRSPEED , MS4525 , MPXV7002, SDP3X
+#define AIRSPEED_SENSOR_USE      NO_AIRSPEED       // select between NO_AIRSPEED , MS4525 , MPXV7002, SDP3X
 
 // --------- 6 - Voltages & Current sensor settings ---------
 
 // ***** 6.1 - Voltage Reference to measure voltages and current *****              see oXs_config_advanced.h when voltage reference is not Vcc and 5 volt
 
 // ***** 6.2 - Voltage parameters *****                                             see oXs_config_advanced.h for additionnal parameters when YES
-#define ARDUINO_MEASURES_VOLTAGES   NO                                             //   select between YES , NO (When NO, following line is discarded)
+#define ARDUINO_MEASURES_VOLTAGES   YES                                            //   select between YES , NO (When NO, following line is discarded)
 
 // ***** 6.3 - Max number of Lipo cells to measure (and transmit to Tx) *****
 #define NUMBEROFCELLS 0                                                 // Put this line as comment or set value to 0 (zero) if you do not want to transmit cell voltages.
