@@ -1254,12 +1254,12 @@ See OpenXsensor https://github.com/openXsensor/
 ************************************************************************************************************************
  
 **** xx - Reserved for developer. **************************************************************************************
-* DEBUG must be activated here when you want to debug one or several functions in some other files.
+* DEBUG must be activated in file oXs_config_macros.h when you want to debug one or several functions in some other files.
 * Enabling DEBUG will allow to use Arduino Serial Monitor at 115200 baud (or 38600 when GPS is activated) to see init data and some live sensor values
 * You can then select the parts that you want to debug by uncommenting the specifics DEBUG parameters you want in each file
 * Note: OXS allows to transmit 3 fields named TEST1, TEST2, TEST3. You can fill those fields with whatever you want where you want if you want to transmit additional data to the Tx.
 * Just fill in test1.value (or 2, 3) with an int32_t and test1.available (or 2, 3) with true and add those OXS measurements in the data to be sent section. 
 ************************************************************************************************************************
-//#define DEBUG
+//#define DEBUG  // !! is to define in file oXs_config_macros.h
 
 
