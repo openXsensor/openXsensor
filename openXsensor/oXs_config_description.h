@@ -69,6 +69,7 @@ See OpenXsensor https://github.com/openXsensor/
 *   Therefore, one DIGITAL Arduino pin has to be connected to the receiver.
 *   You must specify the Arduino pin being used.
 *   Default: 4 ; allowed values are 2 or 4 but take care not using the same pin for 2 features.
+*   For Frsky protocols, it is also possible to use pin 7 (foreseen for receiver running the D16 firmware written by MikeB)
 ************************************************************************************************************************
 #define PIN_SERIALTX  4
             
@@ -503,19 +504,39 @@ See OpenXsensor https://github.com/openXsensor/
 
 **** 5 - Airspeed sensor settings (optional) ***************************************************************************
 * oXs can measure the difference between the static and the dynamic pressures provided by a Prandtl probe.
-* Best results are achieved using a specific sensor 4525DO-DS5AI001DP.
-* Please note that this sensor works with a Vcc = 5 Volt and can measure an airspeed up to 360 km/h.
-* There are other versions of 4525DO sensor with Vcc = 3.3 Volt or allowing higher pressure and so higher airspeed.
-* The sensor 4525DO is connected to the Arduino in parallel with the MS5611 (so using A4 and A5 on top of Ground and Vcc).
-* It is recommended adding a decoupling capacitor (100nf) as close as possible from 4524DO between ground and Vcc.
-* Note: at low airspeed (e.g. below 10 km/h), the difference of pressure to measure is so low that the measurement is not reliable.
-* Sensor 4525DO-DS5AI001DP is quite expensive and difficult to find. 
-* An alternative is to use a sensor MPXV7002 combined with an ADC ADS1115. See section on ADS1115 below
-* 
+* oXs supports 3 types of sensors
+*    - the 4525DO (digital)
+*    - the MPXV7002 (analog)
+*    - the SDP31, SDP32, or SDP33 (or the SDP810-125 or SDP810-500)
+* About the 4525DO, please note:
+*    Good results are achieved using a specific sensor 4525DO-DS5AI001DP.
+*    This sensor requires a Vcc = 5 Volt and can measure an airspeed up to 360 km/h.
+*    There are other versions of 4525DO sensor with Vcc = 3.3 Volt or allowing higher pressure and so higher airspeed.
+*    The sensor 4525DO is connected to the Arduino in parallel with the MS5611 (so using A4 and A5 on top of Ground and Vcc).
+*    It is recommended adding a decoupling capacitor (100nf) as close as possible from 4524DO between ground and Vcc.
+*    Note: at low airspeed (e.g. below 10 km/h), the difference of pressure to measure is so low that the measurement is not reliable.
+*    Sensor 4525DO-DS5AI001DP is quite expensive and difficult to find. 
+* About the MPXV7002, please note:
+*     It is less accurate (analog) but cheaper
+*     It requires to add also an ADC ADS1115 in order to measure the analog signal with some accuray. See section on ADS1115 below
+* About the SDP31, SDP32, SDP33 , SDP810:
+*     Those sensors are probably the best solution. They do not requires calibration (and reset) and are more accurate at low speed.
+*     Those sensors exists in 3 versions which differs by the maximum differential pressure (and so the max speed) they can measure
+*     SDP31 (or SDP810-500) can measure up to 500 Pa = 105 km/h
+*     SDP32 (or SDP810-125) can measure up to 125 Pa = 52 km/h
+*     SDP33 can measure up to 1500 Pa = 189 km/h
+*     The difference between SDP3x and SDP800 series is mainly the size of the sensor.
+*        SDP3x are very small (5mm) and require soldering on small pin
+*        SDP810 are bigger (25 mm) and have a 4 pin connector
+*     Currently oXs code is written for SDP3x serie but using a SDP810 requires only to change the I2C address in the openXsensor.ino file.
+*         So to use a SDP810 serie, put first line as comment and uncomment the second line
+*         #define I2C_SDP3X_Add       0x21 // 0x21 is the default I2C adress of a SDP3X sensor
+*         //#define I2C_SDP3X_Add       0x25 // 0x25 is the I2C adress of a SDP810 sensor
+
 * In line #define AIRSPEED_SENSOR_USE you must specify  the type of sensor being used     
-*    Select a value between  NO_AIRSPEED , MS4525 , MPXV7002
+*    Select a value between  NO_AIRSPEED , MS4525 , MPXV7002 , SDP3X
 * 
-* The pressure sensor need some calibration in order to return "0" when airspeed is null.
+* The pressure sensors MS4525 and MPXV7002 need some calibration in order to return "0" when airspeed is null.
 * oXs calibrates automatically the sensor when powered on (considering that the current measurement correspond to a "Zero" airspeed).
 * To do so, it is important that there is no wind on the Prandtl probe when OXS start up.
 * Anyway, some drift may occurs when the temperature of the sensor changes.
@@ -524,6 +545,7 @@ See OpenXsensor https://github.com/openXsensor/
 * Default value is 100.
 * The easiest is to configure a TX mixer that will generate a pulse of e.g. 1 sec with this value (e.g. 100).
 * Please note that the request for recalibration should be send only when the airspeed (on the probe) is really zero otherwise it would generate wrong measurements.
+* Note : SDP3X sensors does not require calibration
 *
 * oXs can calculate 2 types of airspeed:
 *  - the first one is an airspeed based on air density at 15 Celcius degree and 1013 hPa (normalised sea level). It is a normalised airspeed (indicated airspeed) as normally used on aircraft.
@@ -1232,12 +1254,12 @@ See OpenXsensor https://github.com/openXsensor/
 ************************************************************************************************************************
  
 **** xx - Reserved for developer. **************************************************************************************
-* DEBUG must be activated here when you want to debug one or several functions in some other files.
+* DEBUG must be activated in file oXs_config_macros.h when you want to debug one or several functions in some other files.
 * Enabling DEBUG will allow to use Arduino Serial Monitor at 115200 baud (or 38600 when GPS is activated) to see init data and some live sensor values
 * You can then select the parts that you want to debug by uncommenting the specifics DEBUG parameters you want in each file
 * Note: OXS allows to transmit 3 fields named TEST1, TEST2, TEST3. You can fill those fields with whatever you want where you want if you want to transmit additional data to the Tx.
 * Just fill in test1.value (or 2, 3) with an int32_t and test1.available (or 2, 3) with true and add those OXS measurements in the data to be sent section. 
 ************************************************************************************************************************
-//#define DEBUG
+//#define DEBUG  // !! is to define in file oXs_config_macros.h
 
 

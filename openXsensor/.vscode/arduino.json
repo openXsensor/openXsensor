@@ -1,0 +1,7 @@
+{
+    "board": "arduino:avr:nano",
+    "configuration": "cpu=atmega328",
+    "sketch": "openXsensor.ino",
+    "port": "COM4",
+    "programmer": "USBasp"
+}

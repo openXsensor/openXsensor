@@ -8,6 +8,7 @@
 #include "oXs_4525.h" // we need the airspeeddata struct
 #include "oXs_curr.h" // we need the currentdata struct
 #include "oXs_voltage.h" // we need the arduinodata struct
+#include "oXs_sdp3x.h" // we need the airspeed data
 //#include <Arduino.h>
 #include "oXs_general.h"
 #include "oXs_gps.h"

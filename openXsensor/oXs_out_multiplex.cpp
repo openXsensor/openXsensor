@@ -219,7 +219,7 @@ uint8_t OXS_OUT::formatOneValue( uint8_t currentFieldToSend) {
          break ; 
 #endif
 */
-#ifdef AIRSPEED       
+#ifdef AIRSPEED_IS_USED       
       case  AIR_SPEED :
         if ( ! airSpeedData->airSpeed.available  ) return 0;
         valueTemp = airSpeedData->airSpeed.value  * 1.852;   //  convert from 1/10 of knots to  1/10 of Km/h 

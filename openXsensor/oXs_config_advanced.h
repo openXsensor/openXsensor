@@ -18,7 +18,7 @@
 
 // ****** 1.1 - Pin connected to Rx ********
 #define PIN_SERIALTX      4                 // The pin which transmits the serial data to the telemetry receiver, Usually pin 4 (otherwise pin 2)
-
+                                            // For Frsky protocols, it is also possible to use pin 7 (useful for receiver running the D16 firmware written by MikeB)
 // ***** 1.2 - SPORT_SENSOR_ID used (only for Frsky Sport protocol)  *****   See list of available values in oXs_config_descripion.h 
 #define         DATA_ID_VARIO  0x00  // = sensor 0 used for Alt and Vspeed
 #define         DATA_ID_FLVSS  0xA1  //          1 used for Cell values
@@ -56,7 +56,7 @@
 //#define FILL_TEST2_WITH_GPS_HDOP                               // uncomment to activate this option
 
 // --------- 3 - PPM settings ---------
-//#define PIN_PPM           2     // Uncomment this line in order to use a Rx channel to control oXs; default is 2 but my own device use 3
+#define PIN_PPM           2     // Uncomment this line in order to use a Rx channel to control oXs; default is 2 but my own device use 3
 #define PPM_MIN_100       988     // default 1500 - 512 ; // pulse width (usec) when TX sends a channel = -100
 #define PPM_PLUS_100      2012    // default 1500 + 512 ; // pulse width (usec) when TX sends a channel = +100
 

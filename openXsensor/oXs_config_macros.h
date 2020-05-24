@@ -41,6 +41,7 @@ struct ONE_MEASUREMENT {
 #define NO_AIRSPEED 1
 #define MS4525      2
 #define MVPX7002    3
+#define SDP3X       4
 
 #define NO  1
 #define YES 2
@@ -98,9 +99,21 @@ struct ONE_MEASUREMENT {
   #define SENSOR_IS_MS5611
 #endif
 
+#if defined ( PIN_PPM ) || (  defined(PPM_VIA_SPORT) && ( (PROTOCOL  == FRSKY_SPORT) || (PROTOCOL == FRSKY_SPORT_HUB) ) )
+  #define PPM_IS_USED
+#endif
+
 #ifdef  AIRSPEED_SENSOR_USE 
   #if ( AIRSPEED_SENSOR_USE == MS4525 )
-    #define AIRSPEED    
+    #define AIRSPEED
+    #define AIRSPEED_IS_USED 
+    #define AIRSPEED_4525
+  #elif ( AIRSPEED_SENSOR_USE == MPXV7002 )
+    #define AIRSPEED_IS_USED
+    #define AIRSPEED_7002
+  #elif ( AIRSPEED_SENSOR_USE == SDP3X )
+    #define AIRSPEED_IS_USED
+    #define AIRSPEED_SDP3X
   #endif
 #endif  
 
