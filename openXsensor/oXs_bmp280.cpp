@@ -24,8 +24,8 @@ OXS_BMP280::OXS_BMP280(void)
 {
   // constructor
   //_addr=addr;
-#define I2C_BMP280_ADR 0x76 ; 
-  _addr = I2C_BMP280_ADR ;
+  //use definition of header file instead #define I2C_BMP280_ADR 0x76 ; 
+  _addr = BMP280_ADR ;
   varioData.SensorState = 0 ;
 #ifdef DEBUG  
   printer = &print; //operate on the address of print
