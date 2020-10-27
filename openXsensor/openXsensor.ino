@@ -112,6 +112,22 @@
 #if defined(GPS_REFRESH_RATE) && ( ! ( (GPS_REFRESH_RATE == 1) || (GPS_REFRESH_RATE == 5) || (GPS_REFRESH_RATE == 10) ))      
   #error When defined GPS_REFRESH_RATE must be 1, 5 or 10
 #endif
+
+#if defined ( MEASURE_RF_LINK_QUALITY ) && ( MEASURE_RF_LINK_QUALITY == YES) 
+  #ifndef PIN_PPM
+    #error When MEASURE_RF_LINK_QUALITY = YES , PIN_PPM must be defined (in file oXs_config_advanced.h)
+  #endif
+  #if defined ( VSPEED_SOURCE ) &&  ( VSPEED_SOURCE == PPM_SELECTION)
+    #error When MEASURE_RF_LINK_QUALITY = YES , VSPEED_SOURCE may not be set to PPM_SELECTION
+  #endif
+  #if defined (AIRSPEED_SENSOR_USE) && (not(AIRSPEED_SENSOR_USE == NO_AIRSPEED))
+    #error When MEASURE_RF_LINK_QUALITY = YES , SEQUENCE_OUTPUTS may not be defined
+  #endif
+  #if defined ( SEQUENCE_OUTPUTS )
+    #error When MEASURE_RF_LINK_QUALITY = YES , SEQUENCE_OUTPUTS may not be defined
+  #endif
+#endif //defined ( MEASURE_RF_LINK_QUALITY ) && ( MEASURE_RF_LINK_QUALITY == YES)
+
   
 #ifdef PIN_PPM
  #if PIN_PPM == 2
@@ -164,6 +180,7 @@ extern unsigned long millis( void ) ;
 //#define DEBUG_CALCULATE_FIELDS
 //#define DEBUGSEQUENCE
 //#define DEBUG_PPM_AVAILABLE_FROM_INTERRUPT
+#define DEBUG_RF_LINK_QUALITY
 //#define DEBUGPPMVALUE
 //#define DEBUGFORCEPPM
 //#define DEBUG_SELECTED_VARIO
@@ -1706,7 +1723,7 @@ void LoadFromEEProm(){
 /*   use its value to adjust sensitivity and other parameters  */
 /***************************************************************/
 #if defined ( PPM_IS_USED ) 
-volatile uint16_t time1 ;
+
 void ProcessPPMSignal(){
   boolean getNewPpm = false ; // become true if a new ppm value has been acquired  
 #if defined( PIN_PPM )  // when ppm is read from a rx channel
@@ -1810,10 +1827,23 @@ void ProcessPPMSignal(){
 
 #ifdef PPM_INTERRUPT
 uint16_t StartTime ;
-//uint16_t EndTime ;
-  
-volatile uint8_t PulseTime ;		// A byte to avoid 
+volatile uint16_t time1 ; // pulsewidth (in millisec)
+//volatile uint8_t PulseTime ;		// A byte to avoid 
+volatile uint32_t ppmPulseMicros ; // timestamp when falling edges occurs in micros sec
 volatile boolean  PulseTimeAvailable = false ;
+
+#if defined ( MEASURE_RF_LINK_QUALITY ) && ( MEASURE_RF_LINK_QUALITY == YES)
+            uint32_t ppmTimestampPrev ; //Timestamp (micros) of the previous PPM signal (used to check that the delay between 2 pulses is about 18ms)
+            uint16_t widthPrev ;  // width of the previous PWM pulse ( micros)
+            uint8_t lqError ;     // count the number of errors (new PWM pulses having the same value as the previous one)
+            uint8_t lqCount ;     // count total number of PWM pulses (to calculate a %); use to reset the counters after XXX (e.g.50) PWM
+            uint8_t prevFrameInError ; // boolean ; true when the previous PWM was wrong (used to calculate consecutive errors)
+            uint8_t lqConsecutiveError ;  // count number of consecutive PWM errors
+            uint8_t lqConsecutiveErrorMax ; // keep the max of consecutive errors within a sequence
+#endif
+extern uint16_t lastTimerValue ;
+extern uint32_t TotalMicros ;
+
 
 #if PIN_PPM == 2 // When pin 2 is used, arduino handle INT0 (see datasheet)
 ISR(INT0_vect, ISR_NOBLOCK)  // NOBLOCK allows other interrupts to be served when this one is activated 
@@ -1824,6 +1854,8 @@ ISR(INT1_vect, ISR_NOBLOCK)
 	uint8_t oReg = SREG; // store SREG value 
 	cli() ;
 	uint16_t time = TCNT1 ;	// Read timer 1
+  uint16_t lastTimerValueTemp  = lastTimerValue ; // save the value to avoid any change in interrupt (not sure it is required
+  uint32_t TotalMicrosTemp = TotalMicros ; // save the value to avoid any change in interrupt (not sure it is required
 	SREG = oReg ; // restore SREG value
 	if ( EICRA & PPM_INT_EDGE ) // a rising edge occurs
 	{
@@ -1832,25 +1864,29 @@ ISR(INT1_vect, ISR_NOBLOCK)
 	}
 	else                       // a falling edge occurs   
 	{
-//		EndTime = time ;		
+    uint16_t elapsed = time - lastTimerValueTemp ;
+#if F_CPU == 20000000L   // 20MHz clock 
+   #error Unsupported clock speed
+#elif F_CPU == 16000000L  // 16MHz clock                                                  
+      ppmPulseMicros = TotalMicrosTemp + ( elapsed >> 4 ) ;
+#elif F_CPU == 8000000L   // 8MHz clock
+      ppmPulseMicros = TotalMicrosTemp + ( elapsed >> 3 ) ;
+#else
+    #error Unsupported clock speed
+#endif  
+
 		time -= StartTime ;
 #if F_CPU == 20000000L   // 20MHz clock 
    #error Unsupported clock speed
 #elif F_CPU == 16000000L  // 16MHz clock                                                  
-		time >>= 4 ;		// delay in usec
+		time>>= 4 ;		// delay in usec
 #elif F_CPU == 8000000L   // 8MHz clock
 		time >>= 3 ;		// delay in usec
 #else
     #error Unsupported clock speed
 #endif
-		
-//                if (  ppmInterrupted == 0  ) { // do not handle PulseTime if pin change interrupt has been delayed by another interrupt (Timer 1 compare A handling)
-		  time1 = time ; 
-      PulseTimeAvailable = true ;
-//		} else {
-//                ppmInterruptedCopy++ ;  // used in order to test the value outside ISR
-//                }
-//                ppmInterrupted = 0 ;                            // reset indicator about pin change interrupt delay  
+		time1 = time ; 
+    PulseTimeAvailable = true ;
 		EICRA |= PPM_INT_EDGE ;				//  allow a Rising edge to generate next interrupt
 	}
 }
@@ -1859,21 +1895,64 @@ void ReadPPM() {    // set ppmus to 0 if ppm is not available or has not been co
          static uint8_t ppmIdx ;
          static uint16_t ppmTemp ;
          static uint16_t ppmMax ; // highest value of ppmTemp received ; Some ppm measurement are wrong (to low) because there are some interrupt some 
-         ppmus = 0 ;
-#if defined DEBUG_PPM_AVAILABLE_FROM_INTERRUPT
-        Serial.print("Read ppm at ") ; Serial.println(millis()) ;
-#endif
+         ppmus = 0 ; // reset the pulse width
 
          if ( PulseTimeAvailable ) { // if new pulse is available
 #define PPM_COUNT_MAX 5 // select the max of 5 ppm (so once every 100 msec
            uint8_t oReg = SREG ; // save Status register
            cli() ; 
             ppmTemp = time1 ;    // use values from interrupt
+            uint32_t ppmTimestamp = ppmPulseMicros ; 
             PulseTimeAvailable = false ;
-            SREG = oReg ;  // restore Status register  
-#if defined DEBUG_PPM_AVAILABLE_FROM_INTERRUPT
-        Serial.print("ppm time1= ") ; Serial.println(time1) ;
+            SREG = oReg ;  // restore Status register 
+#if defined ( MEASURE_RF_LINK_QUALITY ) && ( MEASURE_RF_LINK_QUALITY == YES) 
+            uint32_t pulseInterval = (ppmTimestamp - ppmTimestampPrev)  ;
+            if ( (pulseInterval > PULSE_INTERVAL_MIN) && (pulseInterval < PULSE_INTERVAL_MAX ) ) {
+              if ( abs (( int16_t) (ppmTemp - widthPrev)) <= WIDTH_ERROR_MAX )  {
+                    lqError++ ;
+                    if ( prevFrameInError == true) {
+                      lqConsecutiveError++ ;      // count consecutive errors
+                      if (lqConsecutiveError > lqConsecutiveErrorMax) {
+                        lqConsecutiveErrorMax = lqConsecutiveError ;
+                      }
+                    }
+                    
+                    prevFrameInError = true ;
+              } else {
+                lqConsecutiveError = 0 ; // reset the counter when a valid PWM is received
+                prevFrameInError = false ; // reset the flag when we get a valid PWM signal 
+              }
+              lqCount++ ;
+#if defined ( DEBUG_RF_LINK_QUALITY )
+              Serial.print("Read ppm at ") ; Serial.print(ppmTimestamp) ;
+              Serial.print(" Delay= ") ; Serial.print(pulseInterval) ;
+              Serial.print(" Process at ") ; Serial.print(millis()) ;
+              Serial.print(" Width= ") ; Serial.print(ppmTemp) ;
+              Serial.print(" delta=") ; Serial.print( abs (( int16_t) (ppmTemp - widthPrev)) ) ;
+              Serial.print(" lqC=") ; Serial.print( lqCount ) ;
+              Serial.print(" lqE=") ; Serial.print( lqError ) ;
+              Serial.print(" cons=") ; Serial.print( lqConsecutiveError) ;
+              Serial.print(" Max=") ; Serial.print( lqConsecutiveErrorMax) ;
+              Serial.print(" %=") ; Serial.println(  (  ( (LQ_COUNT_MAX - (uint16_t) lqError)) *  100 ) / LQ_COUNT_MAX  ) ;
 #endif
+              if ( lqCount >= LQ_COUNT_MAX ) {
+#if defined ( FILL_TEST_1_2_WITH_LQ )
+              test1.value =   (  ( (LQ_COUNT_MAX - (uint16_t) lqError)) *  100 ) / LQ_COUNT_MAX ; 
+              test1.available = true ; 
+              test2.value =  lqConsecutiveErrorMax ; 
+              test2.available = true ;          
+#endif // FILL_TEST_1_2_WITH_LQ
+                lqCount = 0 ;
+                lqError = 0 ;
+                lqConsecutiveError = 0 ; 
+                lqConsecutiveErrorMax = 0 ;
+                // to do : save the values in data that can be transmitted
+              }
+            }
+            ppmTimestampPrev = ppmTimestamp ;
+            widthPrev = ppmTemp ;
+#endif  // defined ( MEASURE_RF_LINK_QUALITY ) && ( MEASURE_RF_LINK_QUALITY == YES)
+
             if ( ppmIdx >= PPM_COUNT_MAX ) {
                 ppmus = ppmMax ; // we keep the highest value
                 ppmIdx = 0 ;

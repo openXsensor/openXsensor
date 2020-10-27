@@ -42,7 +42,6 @@ ISR( TIMER1_CAPT_vect, ISR_NOBLOCK )
     #error Unsupported clock speed
   #endif
 
-		//eventTime = TotalMicros + ( elapsed >> 4 ) ;
 		RpmCounter = 0 ;
 		difference = eventTime - lastEventTime ;
 		lastEventTime = eventTime ;

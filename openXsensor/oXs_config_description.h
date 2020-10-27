@@ -41,6 +41,7 @@ See OpenXsensor https://github.com/openXsensor/
 *  10 - IMU 6050 (accelerometer/gyro sensor) (optionnal) and HMC5883 (magnetometer)
 *  11 - Flow sensor
 *  12 - Locator
+*  13 - Rf link quality
 *  20 - Sequencer  (ON/OFF) for some digital outputs (E.g. for a light controller)
 *  xx - Reserved for developer
 *
@@ -1182,6 +1183,47 @@ See OpenXsensor https://github.com/openXsensor/
 * In oXs_config_advanced.h file you can select the frequency to be used between the 2 SX1276 modules (e.g. to avoid perturbation when several devices are used simultanously)  
 * Note: if you change the frequency, take care to use the same on openXsensor and locator receiver devices.
 
+
+****** 13 - Rf link quality ********************************************************************************************************************
+* oXs can check the quality of the Rf link monitoring the PWM signal on a normally unused channel 
+* The principle is the following:
+*   The Tx generates on a channel a signal that changes continiously (just like when using a servo tester); easiest is probably to use a triangle wave form.
+*   The Rx receives this signal and generates a pulse at regular interval (e.g. every 18 ms for a Frsky X8R receiver) 
+*   The width of the pulse varies with the signal (normally betwwen 1000 usec and 2000 usec)
+*   If the Rx does not receives the signal from the Tx, the Rx will still generates a pulse but the width will be the same as the last received (or after some time a predefined value set as failsafe) 
+*   oXs can measure the width of each pulse and compare it with the previous one. Getting 2 identical pulses denotes a lost of Rf signal 
+*   oXs calculates the % of signal losts over a certain time (e.g. based on 50 signals) and the number of consecutive signal losts  
+*   This principle could normally be used will all Rf protocol (FRSKY, JETI, HOTT, MULTIPLEX) if the TX can be programmed in order to generate a varying signal.
+*   Still currently the 2 measurements are stored internally in TEST_1 and TEST_2 and only FRSKY protocol allows to select telemetry fields to transmit them.
+*   
+* In order to use this feature you have:
+* - let the Tx generates a e.g. triangular wave signal on a free channel.  
+*    With openTx, this requires 2 set up:
+*    - create a logical switch (e.g. L01) coupled with the free channel (e.g. Channel 8) :  set e.g. L01 with "a<x" "Channel 8"  "0"
+*    - create a mixer for a channel (e.g. 8) : Source = the logical switch L01, Delay up and down = 1.0, Slow up and down = 2.0
+* - in file oXs_config_basic.h :
+*    - in section 2.1 (for FRSKY protocol), define in which fields the 2 measurements TEST_1 and TEST_2 have to be transmitted (e.g. in TEMP1 and TEMP2) 
+*    - set MEASURE_RF_LINK_QUALITY on YES
+* - in file oXs_config_advanced:
+*     - in section 2.5, uncomment #define FILL_TEST_1_2_WITH_LQ in order to let TEST_1 and TEST_2 being filled
+*     - in section 3 (PP setting), define PIN_PPM with the arduino digital pin (should be 2 or 3) that will be connected to the RX channel   
+*     - in section 13, define following parameters
+*       PULSE_INTERVAL_MIN and PULSE_INTERVAL_MAX are used to discard a PWM pulse measurement if the delay between 2 pulses is not in the expected interval. 
+*            Take care of some tolerances; e.g. 17000 and 19000 seems ok for a FRSKY Rx generating a pulse every 18000 micro sec. 
+*       LQ_COUNT_MAX defines the number of PWM pulses used to calculate the 2 Rf quality parameters; 50 means that you get the measurement about once per second (e.g. 18msec * 50) 
+*       WIDTH_ERROR_MAX defines the max width difference between 2 conscutive pulses. 
+*            If the width difference is less or equal to this parameter, oXs considers that the signal does not have enough variation and so that a Rf frame has not been received. 
+*            Normally this parameter should be set on 1 or 2. 
+* - for best results, Rx should configured with a fail safe in "Hold". 
+*       If you assign a predefined PWM value for the fail save in your Rx, oXs will not count as error the first frame after the Rx enters in fail safe mode because the PWM value will most probaly differs from the previous one. 
+*       So, in this case, the link quality measurement reported by oXs will be too optimistic. 
+*       Still, normally a Rx does not enter in fail safe mode if only a few rf occurs. So the oXs measurement can still give an acceptable indication of rf quality (at least if the Rx does not enter to fast in fail save mode).
+* Note: on some Tx (e.g. those with openTx) you can ask the Tx to calculate and display the lowest % of quality and the highest value of consecutive LQ errors in order to monitor the whole session.      
+*************************************************************************************************************************************************
+#define PULSE_INTERVAL_MIN 17000           // minimum delay (micro second) between 2 PWM pulses generated by the Rx
+#define PULSE_INTERVAL_MAX 19000           // maximum delay (micro second) between 2 PWM pulses generated by the Rx
+#define LQ_COUNT_MAX 50                    // number of PWM pulses used to calculate the 2 Rf quality parameters; 50 means that you get the measurement once per second (e.g. 18msec * 50) 
+#define WIDTH_ERROR_MAX 1                  // PWM pulse is considered wrong if the width of 2 conscutive pulses differs by this parameter or less. Normally this parameter should be set on 1 or 2. 
 
 ****** 20 - Sequencer (ON/OFF) for several digital outputs **************************************************************************************
 * oXs allows you to control (HIGH/LOW) up to 6 digitals Arduino outputs in different sequences.

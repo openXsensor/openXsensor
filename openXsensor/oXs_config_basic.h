@@ -1,7 +1,7 @@
 // OpenXsensor https://github.com/openXsensor/
 // started by Rainer Schlosshan and maintained by Michel Strens
 
-// This is version : 8.2.14 (21 Apr 2020)
+// This is version : 8.2.15 (27 Oct 2020)
 
 //******************************************************************************************************************************************************* //
 //                                                                                                                                                        //
@@ -123,6 +123,8 @@
 // --------- 12 - Locator ---------------                                        
 #define A_LOCATOR_IS_CONNECTED      NO          // select between YES , NO
 
+// --------- 13 - Rf link quality ---------------                                  see oXs_config_advanced.h for additionnal parameters about link quality                                  
+#define MEASURE_RF_LINK_QUALITY     NO         // select between YES , NO
 
 // --------- 20 - Sequencer ---------                                               see oXs_config_advanced.h (only when oXs has to generate signals in sequence)
 
