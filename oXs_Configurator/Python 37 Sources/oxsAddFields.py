@@ -1,5 +1,5 @@
 from oxsConfig import ttk , W , E , Spinbox ,fAddFields , addFieldsExist
-from oxsConfig import fillTest3ExpectedAltitudeVar , fillTest3ExpectedAltitudeChanged , fFillTest3ExpectedAltitude , expAltTimeVar ,\
+from oxsConfig import fillTest1VarioTemperatureVar, fillTest3ExpectedAltitudeVar , fillTest3ExpectedAltitudeChanged , fFillTest3ExpectedAltitude , expAltTimeVar ,\
      fillTest123LinearAccVar , fillTest12VspeedAltVar , fillTest1DteVar , fillTest2PpmAirspeedCompVar ,\
      fillTest1YawRateVar , fillTest1HeadingVar , fillTest123FlowVar , fillTest1GpsNbrSatVar , fillTest2GpsHdopVar
 
@@ -24,39 +24,44 @@ from oxsConfig import fillTest3ExpectedAltitudeVar , fillTest3ExpectedAltitudeCh
 
 #define FILL_TEST2_WITH_GPS_HDOP                               // uncomment to activate this option
 
-ttk.Checkbutton(fAddFields, text='Fill Test_3 with expected altitude',  variable=fillTest3ExpectedAltitudeVar , command=fillTest3ExpectedAltitudeChanged,
+#define FILL_TEST_1_WITH_VARIO_TEMP                               // uncomment to activate this option
+
+ttk.Checkbutton(fAddFields, text='Fill Test_1 with vario temperature',  variable=fillTest1VarioTemperatureVar ,
 	    onvalue='On', offvalue='Off').grid(row=3, sticky=(W,E), padx=20 , pady=(20,2))
+
+ttk.Checkbutton(fAddFields, text='Fill Test_3 with expected altitude',  variable=fillTest3ExpectedAltitudeVar , command=fillTest3ExpectedAltitudeChanged,
+	    onvalue='On', offvalue='Off').grid(row=4, sticky=(W,E), padx=20 , pady=(20,2))
 
 ttk.Label(fFillTest3ExpectedAltitude, text="Exp.Alt to be calculated for" ).grid(column= 0, row=4, padx= 1 )
 expAltTimeBox = Spinbox(fFillTest3ExpectedAltitude, from_=0.2, to=5.0, textvariable=expAltTimeVar, 
                         increment = '0.1', width=4)
-expAltTimeBox.grid(column=1, row=4 , padx=10)
+expAltTimeBox.grid(column=1, row=5 , padx=10)
 ttk.Label(fFillTest3ExpectedAltitude, text="sec in the future" ).grid(column= 2, row=4, padx= 1 )
 
 ttk.Checkbutton(fAddFields, text='Fill Test_1 2 3 with linear Acc',  variable=fillTest123LinearAccVar ,
-     onvalue='On', offvalue='Off').grid(row=5, sticky=(W,E), padx=20 , pady=(20,2))
+     onvalue='On', offvalue='Off').grid(row=6, sticky=(W,E), padx=20 , pady=(20,2))
 
 ttk.Checkbutton(fAddFields, text='Fill Test_1 2 with Vspeed and Alt from second sensor',  variable=fillTest12VspeedAltVar ,
-     onvalue='On', offvalue='Off').grid(row=6, sticky=(W,E), padx=20 , pady=(20,2))
+     onvalue='On', offvalue='Off').grid(row=7, sticky=(W,E), padx=20 , pady=(20,2))
 
 
 ttk.Checkbutton(fAddFields, text='Fill Test_1 with dtE (total energy vario)',  variable=fillTest1DteVar ,
-     onvalue='On', offvalue='Off').grid(row=7, sticky=(W,E), padx=20 , pady=(20,2))
-
-ttk.Checkbutton(fAddFields, text='Fill Test_2 with PPM airspeed compensation',  variable=fillTest2PpmAirspeedCompVar ,
      onvalue='On', offvalue='Off').grid(row=8, sticky=(W,E), padx=20 , pady=(20,2))
 
-ttk.Checkbutton(fAddFields, text='Fill Test_1 with Yaw rate',  variable=fillTest1YawRateVar ,
+ttk.Checkbutton(fAddFields, text='Fill Test_2 with PPM airspeed compensation',  variable=fillTest2PpmAirspeedCompVar ,
      onvalue='On', offvalue='Off').grid(row=9, sticky=(W,E), padx=20 , pady=(20,2))
 
-ttk.Checkbutton(fAddFields, text='Fill Test_1 with Heading (from magnetometer)',  variable=fillTest1HeadingVar ,
+ttk.Checkbutton(fAddFields, text='Fill Test_1 with Yaw rate',  variable=fillTest1YawRateVar ,
      onvalue='On', offvalue='Off').grid(row=10, sticky=(W,E), padx=20 , pady=(20,2))
 
-ttk.Checkbutton(fAddFields, text='Fill Test_1 2 3 with Flow sensor consumption',  variable=fillTest123FlowVar ,
+ttk.Checkbutton(fAddFields, text='Fill Test_1 with Heading (from magnetometer)',  variable=fillTest1HeadingVar ,
      onvalue='On', offvalue='Off').grid(row=11, sticky=(W,E), padx=20 , pady=(20,2))
 
-ttk.Checkbutton(fAddFields, text='Fill Test_1 with number of satellites',  variable=fillTest1GpsNbrSatVar ,
+ttk.Checkbutton(fAddFields, text='Fill Test_1 2 3 with Flow sensor consumption',  variable=fillTest123FlowVar ,
      onvalue='On', offvalue='Off').grid(row=12, sticky=(W,E), padx=20 , pady=(20,2))
 
-ttk.Checkbutton(fAddFields, text='Fill Test_2 with GPS HDOP',  variable=fillTest2GpsHdopVar ,
+ttk.Checkbutton(fAddFields, text='Fill Test_1 with number of satellites',  variable=fillTest1GpsNbrSatVar ,
      onvalue='On', offvalue='Off').grid(row=13, sticky=(W,E), padx=20 , pady=(20,2))
+
+ttk.Checkbutton(fAddFields, text='Fill Test_2 with GPS HDOP',  variable=fillTest2GpsHdopVar ,
+     onvalue='On', offvalue='Off').grid(row=14, sticky=(W,E), padx=20 , pady=(20,2))

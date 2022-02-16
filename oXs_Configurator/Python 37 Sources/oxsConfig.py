@@ -157,6 +157,8 @@ def generateOxsConfig():
             messagebox.showwarning("Warning","Generated files will be unvalid:\n for Multiplex protocol, you must specify the field(s) to be sent")   
     
     if addFieldsExist.get() == "On":
+        if fillTest1VarioTemperatureVar.get() == "On":
+            fa.write("\n#define FILL_TEST_1_VARIO_TEMPERATURE\n") 
         if fillTest3ExpectedAltitudeVar.get() == "On":
             fa.write("\n#define FILL_TEST_3_WITH_EXPECTED_ALT\n") 
             fa.write(f"\n#define EXPECTED_ALT_AT_SEC {str(expAltTimeVar.get())}\n")
@@ -450,7 +452,7 @@ def uploadConfig():
 
     gps3dExist.set(value= config.get("Gps", "gps3dexist"))
     gpsRateVar.set(value= config.getint("Gps", "gpsratevar"))
-
+    fillTest1VarioTemperatureVar.set(value= config.get("AddFields", "fillTest1VarioTemperatureVar"))
     fillTest3ExpectedAltitudeVar.set(value= config.get("AddFields", "fillTest3ExpectedAltitudeVar"))
     fillTest3ExpectedAltitudeChanged()
     expAltTimeVar.set(value= config.getfloat("AddFields", "expAltTimeVar"))
@@ -583,6 +585,7 @@ def saveConfig():
     config.set("Gps", "gps3dExist", gps3dExist.get())
     config.set("Gps", "gpsRateVar", gpsRateVar.get())
 
+    config.set("AddFields", "fillTest1VarioTemperatureVar", fillTest1VarioTemperatureVar.get())
     config.set("AddFields", "fillTest3ExpectedAltitudeVar", fillTest3ExpectedAltitudeVar.get())
     config.set("AddFields", "expAltTimeVar", str(expAltTimeVar.get()))
     config.set("AddFields", "fillTest123LinearAccVar", fillTest123LinearAccVar.get())
@@ -861,6 +864,7 @@ gpsRateVar = StringVar(value='5')
 fFillTest3ExpectedAltitude = ttk.Frame(fAddFields)
 fillTest3ExpectedAltitudeVar = StringVar(value='Off')
 expAltTimeVar = DoubleVar(value='1.5')
+fillTest1VarioTemperatureVar = StringVar(value='Off')
 fillTest123LinearAccVar = StringVar(value='Off')
 fillTest12VspeedAltVar = StringVar(value='Off')
 fillTest1DteVar = StringVar(value='Off')
