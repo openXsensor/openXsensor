@@ -13,12 +13,15 @@ configUploadFileName = None
 config =  configparser.ConfigParser()
 config.add_section("Main")
 config.add_section("Ppm")
+config.add_section("Imu")
+config.add_section("Magnet")
 config.add_section("Vario")
 config.add_section("Airspeed")
 config.add_section("Voltage")
 config.add_section("Current")
 config.add_section("Rpm")
 config.add_section("Gps")
+config.add_section("Memory")
 config.add_section("AddFields")
 config.add_section("Frsky")
 config.add_section("Multiplex")
@@ -189,6 +192,12 @@ def generateOxsConfig():
         else:
             fa.write("\n#define PPM_VIA_SPORT \n")
 
+    if persistentExist.get() == "On":
+        f.write("\n#define SAVE_TO_EEPROM YES\n")
+        f.write(f"\n#define PIN_PUSHBUTTON {str(pushButtPinVar.get())}\n")
+    else:
+        f.write("\n#define SAVE_TO_EEPROM NO\n") 
+
     if varioExist.get() == "On":
         f.write(f"#define FIRST_BARO_SENSOR_USE {varioTypeVar.get()}\n")
         f.write(f"#define VSPEED_SOURCE {varioSourceVar.get()}\n")
@@ -298,8 +307,6 @@ def generateOxsConfig():
     else:
         f.write("\n#define CALCULATE_RPM NO\n")
 
-    f.write("\n#define SAVE_TO_EEPROM NO\n") 
-
     if gpsExist.get() == "On":
         f.write("\n#define A_GPS_IS_CONNECTED YES\n")
         if gps3dExist.get() == 'On':
@@ -310,11 +317,34 @@ def generateOxsConfig():
 
     if imuExist.get() == "On":
         f.write("\n#define A_MPU6050_IS_CONNECTED YES\n")
+        fa.write(f"\n#define PIN_INT_6050 {str(imuPinVar.get())}\n")
+        if imuDisplayOffset.get() == "On":
+            fa.write("\n#define DISPLAY_ACC_OFFSET\n")
+        else:
+            fa.write(f"#define ACC_OFFSET_X {str(imuOffsetXVar.get())}\n")
+            fa.write(f"#define ACC_OFFSET_Y {str(imuOffsetYVar.get())}\n")
+            fa.write(f"#define ACC_OFFSET_Z {str(imuOffsetZVar.get())}\n")
     else:
         f.write("\n#define A_MPU6050_IS_CONNECTED NO\n")
 
     if magnetExist.get() == "On":
+        if GeneratemagCalData.get() == "On":
+            fa.write("\n#define GENERATE_MAG_CALIBRATION_DATA\n")
+        else:
+            fa.write(f"#define XMAG_OFFSET {str(xMagOffsetVar.get())}\n")
+            fa.write(f"#define YMAG_OFFSET {str(yMagOffsetVar.get())}\n")
+            fa.write(f"#define ZMAG_OFFSET {str(zMagOffsetVar.get())}\n")
+            fa.write(f"#define XXMAG_CORRECTION {str(xxMagCorrectionVar.get())}\n")
+            fa.write(f"#define XYMAG_CORRECTION {str(xyMagCorrectionVar.get())}\n")
+            fa.write(f"#define XZMAG_CORRECTION {str(xzMagCorrectionVar.get())}\n")
+            fa.write(f"#define YXMAG_CORRECTION {str(yxMagCorrectionVar.get())}\n")
+            fa.write(f"#define YYMAG_CORRECTION {str(yyMagCorrectionVar.get())}\n")
+            fa.write(f"#define YZMAG_CORRECTION {str(yzMagCorrectionVar.get())}\n")
+            fa.write(f"#define ZXMAG_CORRECTION {str(zxMagCorrectionVar.get())}\n")
+            fa.write(f"#define ZYMAG_CORRECTION {str(zyMagCorrectionVar.get())}\n")
+            fa.write(f"#define ZZMAG_CORRECTION {str(zzMagCorrectionVar.get())}\n")            
         f.write("\n#define CALCULATE_YAW_WITH_HMC5883 YES\n")
+
     else:
         f.write("\n#define CALCULATE_YAW_WITH_HMC5883 NO\n")
 
@@ -371,6 +401,8 @@ def uploadConfig():
     adcChanged()
     sequenceExist.set(value= config.get("Main", "sequenceExist"))
     sequenceChanged()
+    persistentExist.set(value= config.get("Main", "persistentExist"))
+    persistentChanged()
     addFieldsExist.set(value= config.get("Main", "addFieldsExist"))
     addFieldsChanged()
     protocolVar.set(value= config.get("Main", "protocolVar"))
@@ -381,6 +413,28 @@ def uploadConfig():
     ppmPinVar.set(value= config.getint("Ppm", "ppmPinVar"))
     ppmForMin100Var.set(value= config.getint("Ppm", "ppmForMin100Var"))
     ppmForPlus100Var.set(value= config.getint("Ppm", "ppmForPlus100Var"))
+
+    imuPinVar.set(value= config.getint("Imu", "imuPinVar"))
+    imuDisplayOffset.set(value= config.get("Imu", "imuDisplayOffset"))
+    imuOffsetXVar.set(value= config.getint("Imu", "imuOffsetXVar"))
+    imuOffsetYVar.set(value= config.getint("Imu", "imuOffsetYVar"))
+    imuOffsetZVar.set(value= config.getint("Imu", "imuOffsetZVar"))
+
+    GeneratemagCalData.set(value= config.get("Magnet", "GeneratemagCalData"))
+    xMagOffsetVar.set(value= config.getint("Magnet", "xMagOffsetVar"))
+    yMagOffsetVar.set(value= config.getint("Magnet", "yMagOffsetVar"))
+    zMagOffsetVar.set(value= config.getint("Magnet", "zMagOffsetVar"))
+    xxMagCorrectionVar.set(value= config.getfloat("Magnet", "xxMagCorrectionVar"))
+    xyMagCorrectionVar.set(value= config.getfloat("Magnet", "xyMagCorrectionVar"))
+    xzMagCorrectionVar.set(value= config.getfloat("Magnet", "xzMagCorrectionVar"))
+    yxMagCorrectionVar.set(value= config.getfloat("Magnet", "yxMagCorrectionVar"))
+    yyMagCorrectionVar.set(value= config.getfloat("Magnet", "yyMagCorrectionVar"))
+    yzMagCorrectionVar.set(value= config.getfloat("Magnet", "yzMagCorrectionVar"))
+    zxMagCorrectionVar.set(value= config.getfloat("Magnet", "zxMagCorrectionVar"))
+    zyMagCorrectionVar.set(value= config.getfloat("Magnet", "zyMagCorrectionVar"))
+    zzMagCorrectionVar.set(value= config.getfloat("Magnet", "zzMagCorrectionVar"))
+    
+    pushButtPinVar.set(value= config.getint("Memory", "pushButtPinVar"))
 
     varioTypeVar.set(value= config.get("Vario", "varioTypeVar"))
     secondBaroExist.set(value= config.get("Vario", "secondBaroExist"))
@@ -509,6 +563,8 @@ def saveConfig():
     config.set("Main", "flowExist", flowExist.get())
     config.set("Main", "adcExist", adcExist.get())
     config.set("Main", "sequenceExist", sequenceExist.get())
+    config.set("Main", "persistentExist", persistentExist.get())
+    
     config.set("Main", "addFieldsExist", addFieldsExist.get())
     config.set("Main", "protocolVar", protocolVar.get())
     
@@ -516,6 +572,28 @@ def saveConfig():
     config.set("Ppm", "ppmPinVar", str(ppmPinVar.get()))
     config.set("Ppm", "ppmForMin100Var", str(ppmForMin100Var.get()))
     config.set("Ppm", "ppmForPlus100Var", str(ppmForPlus100Var.get()))
+
+    config.set("Imu", "imuPinVar", str(imuPinVar.get()))
+    config.set("Imu", "imuDisplayOffset", imuDisplayOffset.get())
+    config.set("Imu", "imuOffsetXVar", str(imuOffsetXVar.get()))
+    config.set("Imu", "imuOffsetYVar", str(imuOffsetYVar.get()))
+    config.set("Imu", "imuOffsetZVar", str(imuOffsetZVar.get()))
+
+    config.set("Magnet", "GeneratemagCalData", GeneratemagCalData.get())
+    config.set("Magnet", "xMagOffsetVar", str(xMagOffsetVar.get()))
+    config.set("Magnet", "yMagOffsetVar", str(yMagOffsetVar.get()))
+    config.set("Magnet", "zMagOffsetVar", str(zMagOffsetVar.get()))
+    config.set("Magnet", "xxMagCorrectionVar", str(xxMagCorrectionVar.get()))
+    config.set("Magnet", "xyMagCorrectionVar", str(xyMagCorrectionVar.get()))
+    config.set("Magnet", "xzMagCorrectionVar", str(xzMagCorrectionVar.get()))
+    config.set("Magnet", "yxMagCorrectionVar", str(xxMagCorrectionVar.get()))
+    config.set("Magnet", "yyMagCorrectionVar", str(yyMagCorrectionVar.get()))
+    config.set("Magnet", "yzMagCorrectionVar", str(yzMagCorrectionVar.get()))
+    config.set("Magnet", "zxMagCorrectionVar", str(zxMagCorrectionVar.get()))
+    config.set("Magnet", "zyMagCorrectionVar", str(zyMagCorrectionVar.get()))
+    config.set("Magnet", "zzMagCorrectionVar", str(zzMagCorrectionVar.get()))
+ 
+    config.set("Memory", "pushButtPinVar", str(pushButtPinVar.get()))
  
     config.set("Vario", "varioTypeVar", varioTypeVar.get())
     config.set("Vario", "secondBaroExist", secondBaroExist.get())
@@ -720,11 +798,16 @@ def sequenceChanged():
         nb.tab(13, state="normal")
     else:
         nb.tab(13, state="hidden")
-def addFieldsChanged():
-    if addFieldsExist.get() == 'On':
+def persistentChanged():
+    if persistentExist.get() == 'On':
         nb.tab(14, state="normal")
     else:
-        nb.tab(14, state="hidden")        
+        nb.tab(14, state="hidden")
+def addFieldsChanged():
+    if addFieldsExist.get() == 'On':
+        nb.tab(15, state="normal")
+    else:
+        nb.tab(15, state="hidden")        
 
 def fillTest3ExpectedAltitudeChanged():
     if fillTest3ExpectedAltitudeVar.get() == 'On':
@@ -756,11 +839,12 @@ fFlow = ttk.Frame(nb) # page 10
 fAdc = ttk.Frame(nb) # page 11
 fLocator = ttk.Frame(nb) # page 12
 fSequence = ttk.Frame(nb) # page 13
-fAddFields = ttk.Frame(nb) # page 14
-fFrsky = ttk.Frame(nb) # page 15
-fJeti = ttk.Frame(nb) # page 16
-fHott = ttk.Frame(nb) # page 17
-fMultiplex = ttk.Frame(nb) # page 18
+fMemory = ttk.Frame(nb) # page 14
+fAddFields = ttk.Frame(nb) # page 15
+fFrsky = ttk.Frame(nb) # page 16
+fJeti = ttk.Frame(nb) # page 17
+fHott = ttk.Frame(nb) # page 18
+fMultiplex = ttk.Frame(nb) # page 19
 
 ppmExist = StringVar(value='Off')
 varioExist = StringVar(value='Off')
@@ -773,6 +857,7 @@ imuExist = StringVar(value='Off')
 magnetExist = StringVar(value='Off')
 flowExist = StringVar(value='Off')
 locatorExist = StringVar(value='Off')
+persistentExist = StringVar(value='Off')
 adcExist = StringVar(value='Off')
 sequenceExist = StringVar(value='Off')
 addFieldsExist = StringVar(value='Off')
@@ -782,6 +867,28 @@ ppmTypeVar = StringVar(value='Rx chanel')
 ppmPinVar = IntVar(value = 2)
 ppmForMin100Var = IntVar(value = 1000)
 ppmForPlus100Var = IntVar(value = 2000)
+
+imuPinVar = IntVar(value = 3)
+imuDisplayOffset = StringVar(value='Off')
+imuOffsetXVar = IntVar(value=0)
+imuOffsetYVar = IntVar(value=0)
+imuOffsetZVar = IntVar(value=0)
+
+pushButtPinVar = IntVar(value = 10)
+
+GeneratemagCalData = StringVar(value='Off')
+xMagOffsetVar= IntVar(value=0)
+yMagOffsetVar= IntVar(value=0)
+zMagOffsetVar= IntVar(value=0)
+xxMagCorrectionVar = DoubleVar(value=0)
+xyMagCorrectionVar = DoubleVar(value=0)
+xzMagCorrectionVar = DoubleVar(value=0)
+yxMagCorrectionVar = DoubleVar(value=0)
+yyMagCorrectionVar = DoubleVar(value=0)
+yzMagCorrectionVar = DoubleVar(value=0)
+zxMagCorrectionVar = DoubleVar(value=0)
+zyMagCorrectionVar = DoubleVar(value=0)
+zzMagCorrectionVar = DoubleVar(value=0)
 
 varioTypeVar = StringVar(value='MS5611')
 
@@ -857,6 +964,8 @@ currentRgVar = DoubleVar(value='0.0')
 currentRcVar = DoubleVar(value='0.0')
 
 pulsesPerRotationVar = IntVar(value=2)
+
+pushButtonPin=StringVar(value='10')
 
 gps3dExist = StringVar(value='Off')
 gpsRateVar = StringVar(value='5')

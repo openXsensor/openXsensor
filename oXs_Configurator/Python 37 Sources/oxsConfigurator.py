@@ -25,6 +25,7 @@ from oxsFlow import *
 from oxsAdc import *
 from oxsLocator import *
 from oxsSequence import *
+from oxsMemory import *
 from oxsAddFields import expAltTimeBox
 from oxsFrsky import frskyVfasBox
 from oxsMultiplex import MultiplexLine1Box
@@ -34,10 +35,10 @@ from oxsJeti import jetiVoltageSourceBox
 
 from oxsConfig import  ttk , W , E , BOTH ,nb , HIDDEN ,  root , \
     fMain, fPpm , fAdc, fAirspeed , fAnalogVario , fCurrent , fFlow, fFrsky ,fGps , fHott , fImu , fJeti ,\
-    fMagnet , fMultiplex , fRpm , fLocator , fSequence, fVario , fVoltage , fAddFields ,\
+    fMagnet , fMultiplex , fRpm , fLocator , fSequence, fMemory, fVario , fVoltage , fAddFields ,\
     ppmChanged , ppmExist , varioChanged , varioExist, voltageChanged , voltageExist , currentChanged , currentExist ,\
     gpsChanged, gpsExist, airspeedChanged, airspeedExist, rpmChanged, rpmExist, imuChanged, imuExist,magnetChanged, magnetExist , \
-    flowChanged, flowExist, adcChanged , adcExist , locatorExist , locatorChanged , sequenceChanged , sequenceExist ,	\
+    flowChanged, flowExist, adcChanged , adcExist , locatorExist , locatorChanged , sequenceChanged , sequenceExist , persistentExist, persistentChanged ,	\
     addFieldsExist , addFieldsChanged,  protocolVar , protocolChanged , pinToRxVar , generateOxsConfig , saveConfig , uploadConfig 
 
 def viewOxsDoc():
@@ -165,19 +166,21 @@ ttk.Checkbutton(fMain, text='Locator',  command=locatorChanged, variable=locator
         onvalue='On', offvalue='Off').grid(row=12, sticky=(W,E), padx=20 , pady=5)
 ttk.Checkbutton(fMain, text='Sequencer',  command=sequenceChanged, variable=sequenceExist,
         onvalue='On', offvalue='Off').grid(row=13, sticky=(W,E), padx=20 , pady=5)
-ttk.Checkbutton(fMain, text='Extra fields (TEST 1,2,3)',  command=addFieldsChanged, variable=addFieldsExist,
+ttk.Checkbutton(fMain, text='Persistent Memory',  command=persistentChanged, variable=persistentExist,
         onvalue='On', offvalue='Off').grid(row=14, sticky=(W,E), padx=20 , pady=5)
+ttk.Checkbutton(fMain, text='Extra fields (TEST 1,2,3)',  command=addFieldsChanged, variable=addFieldsExist,
+        onvalue='On', offvalue='Off').grid(row=15, sticky=(W,E), padx=20 , pady=5)
 
-ttk.Label(fMain, text="Protocol of Rx").grid(column=0, row=15, pady=(20,2))
+ttk.Label(fMain, text="Protocol of Rx").grid(column=0, row=16, pady=(20,2))
 protocolBox = ttk.Combobox(fMain, textvariable=protocolVar, state = 'readonly' , 
                 values=('FRSKY_SPORT', 'JETI', 'HOTT', 'MULTIPLEX', 'FRSKY_HUB' , 'FRSKY_SPORT_HUB'))
 protocolBox.bind('<<ComboboxSelected>>', protocolChanged)
-protocolBox.grid(column=1, row=15 , pady=(20,2) )
+protocolBox.grid(column=1, row=16, pady=(20,2) )
 
-ttk.Label(fMain, text="Pin used for telemetry").grid(column=0, row=16, pady=(5,2))
+ttk.Label(fMain, text="Pin used for telemetry").grid(column=0, row=17, pady=(5,2))
 pinToRxBox = ttk.Combobox(fMain, textvariable=pinToRxVar, 
                 values=('4', '2'), state='readonly',  width=2)
-pinToRxBox.grid(column=1, row=16, pady=(5,2))
+pinToRxBox.grid(column=1, row=17, pady=(5,2))
 
 nb.add(fMain, text='Main')
 nb.add(fPpm, text='Ppm', state=HIDDEN)
@@ -193,6 +196,7 @@ nb.add(fFlow, text='Flow', state=HIDDEN)
 nb.add(fAdc, text='ADC', state=HIDDEN)
 nb.add(fLocator , text='Locator' , state=HIDDEN)
 nb.add(fSequence, text='Sequencer', state=HIDDEN)
+nb.add(fMemory, text='Persistent Memory', state=HIDDEN)
 nb.add(fAddFields , text= 'Extra Fields' , state=HIDDEN)
 nb.add(fFrsky, text='FRSKY', state='normal')
 nb.add(fJeti, text='JETI', state=HIDDEN)
