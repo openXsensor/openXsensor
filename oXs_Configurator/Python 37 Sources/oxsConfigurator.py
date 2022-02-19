@@ -1,10 +1,6 @@
 #to do : 
-#        add parameters for Acc (in .py, ini, upload , save, write)
 #        add parameters for ADC (in .py, ini, upload , save, write)
 #        add parameters for Airspeed (in .py, ini, upload , save, write)
-#        add parameters for Flow (in .py, ini, upload , save, write)
-#        add parameters for Locator (in .py, ini, upload , save, write)
-#        add parameters for Magnet (in .py, ini, upload , save, write)
 #        add parameters for Sequence (in .py, ini, upload , save, write)
 
 import tkinter as tk
