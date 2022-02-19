@@ -1,9 +1,9 @@
 ('C:\\Users\\Romolo\\Documents\\GitHub\\openXsensor\\oXs_Configurator\\Python '
  '37 Sources\\dist\\oxsConfigurator.exe',
- True,
  False,
  False,
- 'C:\\Users\\Romolo\\AppData\\Roaming\\Python\\Python310\\site-packages\\PyInstaller\\bootloader\\images\\icon-console.ico',
+ False,
+ 'C:\\Users\\Romolo\\AppData\\Roaming\\Python\\Python310\\site-packages\\PyInstaller\\bootloader\\images\\icon-windowed.ico',
  None,
  False,
  False,
@@ -3045,7 +3045,7 @@
  [],
  False,
  True,
- 1645293115,
- [('run.exe',
-   'C:\\Users\\Romolo\\AppData\\Roaming\\Python\\Python310\\site-packages\\PyInstaller\\bootloader\\Windows-64bit\\run.exe',
+ 1645304714,
+ [('runw.exe',
+   'C:\\Users\\Romolo\\AppData\\Roaming\\Python\\Python310\\site-packages\\PyInstaller\\bootloader\\Windows-64bit\\runw.exe',
    'EXECUTABLE')])
