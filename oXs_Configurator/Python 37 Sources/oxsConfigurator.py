@@ -201,7 +201,7 @@ nb.add(fMultiplex, text='MULTIPLEX', state=HIDDEN)
 nb.pack()
 
 fMainRight = ttk.Frame(fMain)
-fMainRight.grid(column=3 , row=0, rowspan=10)
+fMainRight.grid(column=3 , row=0, rowspan=15)
 ttk.Label(fMainRight, text="-Select components\n-Select protocol\n-Fill tab(s)\n   or\n-Upload a Config\n\n-Generate oXs config").grid(column=0, row=0, pady=(20,2))
 ttk.Button(fMainRight, text='Upload Config', command=uploadConfig).grid(column=0, row=1, pady=10)
 ttk.Button(fMainRight, text='Save Config', command=saveConfig).grid(column=0, row=2, pady=10)
