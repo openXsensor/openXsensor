@@ -202,6 +202,8 @@ def generateOxsConfig():
 
     if varioExist.get() == "On":
         f.write(f"#define FIRST_BARO_SENSOR_USE {varioTypeVar.get()}\n")
+        if varioTypeVar.get() == 'BMP280':
+            fa.write("#define BMP280_ADR 0x76\n")
         f.write(f"#define VSPEED_SOURCE {varioSourceVar.get()}\n")
         if secondBaroExist.get() == 'On':
             fa.write("\n#define SECOND_BARO_SENSOR_USE    MS5611\n")
@@ -354,6 +356,7 @@ def generateOxsConfig():
         if imuDisplayOffset.get() == "On":
             fa.write("\n#define DISPLAY_ACC_OFFSET\n")
         else:
+        
             fa.write(f"#define ACC_OFFSET_X {str(imuOffsetXVar.get())}\n")
             fa.write(f"#define ACC_OFFSET_Y {str(imuOffsetYVar.get())}\n")
             fa.write(f"#define ACC_OFFSET_Z {str(imuOffsetZVar.get())}\n")
@@ -390,6 +393,52 @@ def generateOxsConfig():
     else:
         f.write("\n#define A_FLOW_SENSOR_IS_CONNECTED   NO\n")
     
+    if sequenceExist.get() == 'On':
+        if SeqOut1Var.get()=='1' or SeqOut2Var.get()=='1' or SeqOut3Var.get()=='1' or SeqOut4Var.get()=='1' or SeqOut5Var.get()=='1' or SeqOut6Var.get()=='1':
+            fa.write(f"#define SEQUENCE_OUTPUTS 0b{SeqOut6Var.get()}{SeqOut5Var.get()}{SeqOut4Var.get()}{SeqOut3Var.get()}{SeqOut2Var.get()}{SeqOut1Var.get()}\n")
+            fa.write(f"#define SEQUENCE_UNIT    {str(SeqUnitVar.get())}\n")
+            if SeqTVar[0].get()!='0' and SeqTVar[0].get()!='':
+                fa.write("#define SEQUENCE_m100 ")
+                for y in range (0,25):
+                    if SeqTVar[y*4].get()=='':
+                        break
+                    if y!=0:
+                        fa.write(",")
+                    fa.write(f"{SeqTVar[y*4].get()}, 0b{str(SeqB5Var[y*4].get())}{str(SeqB4Var[y*4].get())}{str(SeqB3Var[y*4].get())}{str(SeqB2Var[y*4].get())}{str(SeqB1Var[y*4].get())}{str(SeqB0Var[y*4].get())}")
+                fa.write("\n")
+            if SeqTVar[1].get()!='0' and SeqTVar[1].get()!='':
+                fa.write("#define SEQUENCE_0 ")
+                for y in range (0,25):
+                    if SeqTVar[y*4+1].get()=='':
+                        break
+                    if y!=0:
+                        fa.write(",")
+                    fa.write(f"{SeqTVar[y*4+1].get()}, 0b{str(SeqB5Var[y*4+1].get())}{str(SeqB4Var[y*4+1].get())}{str(SeqB3Var[y*4+1].get())}{str(SeqB2Var[y*4+1].get())}{str(SeqB1Var[y*4+1].get())}{str(SeqB0Var[y*4+1].get())}")
+                fa.write("\n")
+            if SeqTVar[2].get()!='0' and SeqTVar[2].get()!='':
+                fa.write("#define SEQUENCE_100 ")
+                for y in range (0,25):
+                    if SeqTVar[y*4+2].get()=='':
+                        break
+                    if y!=0:
+                        fa.write(",")
+                    fa.write(f"{SeqTVar[y*4+2].get()}, 0b{str(SeqB5Var[y*4+2].get())}{str(SeqB4Var[y*4+2].get())}{str(SeqB3Var[y*4+2].get())}{str(SeqB2Var[y*4+2].get())}{str(SeqB1Var[y*4+2].get())}{str(SeqB0Var[y*4+2].get())}")
+                fa.write("\n")
+            if voltageExist.get() == "On":
+                if SeqTVar[3].get()!='0' and SeqTVar[3].get()!='' and (SeqMinVoltVar.get()!=0 or SeqMinCellVar.get()!=0):
+                    fa.write("#define SEQUENCE_LOW ")
+                    for y in range (0,25):
+                        if SeqTVar[y*4+3].get()=='':
+                            break
+                        if y!=0:
+                            fa.write(",")
+                        fa.write(f"{SeqTVar[y*4+3].get()}, 0b{str(SeqB5Var[y*4+3].get())}{str(SeqB4Var[y*4+3].get())}{str(SeqB3Var[y*4+3].get())}{str(SeqB2Var[y*4+3].get())}{str(SeqB1Var[y*4+3].get())}{str(SeqB0Var[y*4+3].get())}")
+                    fa.write("\n")
+                    if (SeqMinVoltVar.get()!=0):
+                        fa.write(f"#define SEQUENCE_MIN_VOLT_1 {str(SeqMinVoltVar.get())}")
+                        messagebox.showinfo("oXs configurator", "Be carefull you may need to modify oXs_config_advanced.h to set the voltage source for sequence")
+                    if (SeqMinCellVar.get()!=0):
+                        fa.write(f"#define SEQUENCE_MIN_CELL {str(SeqMinCellVar.get())}")
     if locatorExist.get() == "On":
         f.write("\n#define A_LOCATOR_IS_CONNECTED   YES\n")
     else:
@@ -1123,6 +1172,32 @@ pushButtonPin=StringVar(value='10')
 
 gps3dExist = StringVar(value='Off')
 gpsRateVar = StringVar(value='5')
+
+SeqUnitVar = IntVar(value='1')
+SeqMinVoltVar = IntVar(value='0')
+SeqMinCellVar = IntVar(value='0')
+SeqOut1Var = StringVar(value='0')
+SeqOut2Var = StringVar(value='0')
+SeqOut3Var = StringVar(value='0')
+SeqOut4Var = StringVar(value='0')
+SeqOut5Var = StringVar(value='0')
+SeqOut6Var = StringVar(value='0')
+SeqB5Var = []
+SeqB4Var = []
+SeqB3Var = []
+SeqB2Var = []
+SeqB1Var = []
+SeqB0Var = []
+SeqTVar = []
+
+for x in range(0,100):
+    SeqB0Var.append(IntVar(value='0'))
+    SeqB1Var.append(IntVar(value='0'))
+    SeqB2Var.append(IntVar(value='0'))
+    SeqB3Var.append(IntVar(value='0'))
+    SeqB4Var.append(IntVar(value='0'))
+    SeqB5Var.append(IntVar(value='0'))
+    SeqTVar.append(StringVar(value=''))
 
 fFillTest3ExpectedAltitude = ttk.Frame(fAddFields)
 fillTest3ExpectedAltitudeVar = StringVar(value='Off')

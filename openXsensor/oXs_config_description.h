@@ -329,7 +329,7 @@ See OpenXsensor https://github.com/openXsensor/
 *     You must specify which type of baro sensor is used for the second vario using line #define SECOND_BARO_SENSOR_USE     NO_BARO         
 *        The value must be selected in this list: NO_BARO , MS5611  
 *     Both sensors are connected in parallel (using same Arduino pins A4 and A5).
-*     First sensor ( MS5611 or BMPxxx) reacts on an I2C address 0x77.
+*     First sensor ( MS5611 ) reacts on an I2C address 0x77. BMPxxx often reacts on an I2C address 0x76 at least for BMP280 the address can be set also in oxs_config_advanced.h 
 *     When used, second sensor (a MS5611) must have the MS5611 CE (chip enable) pin connected to VDD. So it gets automatically an I2C address 0x76. (note: default MS5611 has CE connected to GND and so an I2C address = 0x77)
 *     Note : When only one sensor is used, it must be connected as first sensor.
 *

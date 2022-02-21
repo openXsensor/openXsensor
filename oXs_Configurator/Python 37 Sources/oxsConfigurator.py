@@ -1,7 +1,5 @@
 #to do : 
-#        add parameters for ADC (in .py, ini, upload , save, write)
-#        add parameters for Airspeed (in .py, ini, upload , save, write)
-#        add parameters for Sequence (in .py, ini, upload , save, write)
+#        finish handling parameters for Sequence (in .py, ini, upload , save)
 
 import tkinter as tk
 from tkinter import X, Y, BOTTOM, RIGHT, LEFT, HORIZONTAL , END , DISABLED
