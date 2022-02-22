@@ -867,6 +867,14 @@ void readSensors() {
       test1.value = oXs_MS5611.varioData.temperature/100.0 ;
       test1.available = true ;
     #endif
+    #ifdef FILL_TEST_2_WITH_VARIO_TEMP
+      test2.value = oXs_MS5611.varioData.temperature/100.0 ;
+      test2.available = true ;
+    #endif
+    #ifdef FILL_TEST_3_WITH_VARIO_TEMP
+      test3.value = oXs_MS5611.varioData.temperature/100.0 ;
+      test3.available = true ;
+    #endif
   }
 #endif
 

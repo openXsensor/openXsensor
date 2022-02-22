@@ -164,6 +164,10 @@ def generateOxsConfig():
     if addFieldsExist.get() == "On":
         if fillTest1VarioTemperatureVar.get() == "On":
             fa.write("\n#define FILL_TEST_1_VARIO_TEMPERATURE\n") 
+        if fillTest2VarioTemperatureVar.get() == "On":
+            fa.write("\n#define FILL_TEST_2_VARIO_TEMPERATURE\n") 
+        if fillTest3VarioTemperatureVar.get() == "On":
+            fa.write("\n#define FILL_TEST_3_VARIO_TEMPERATURE\n") 
         if fillTest3ExpectedAltitudeVar.get() == "On":
             fa.write("\n#define FILL_TEST_3_WITH_EXPECTED_ALT\n") 
             fa.write(f"\n#define EXPECTED_ALT_AT_SEC {str(expAltTimeVar.get())}\n")
@@ -632,6 +636,8 @@ def uploadConfig():
     gps3dExist.set(value= config.get("Gps", "gps3dexist"))
     gpsRateVar.set(value= config.getint("Gps", "gpsratevar"))
     fillTest1VarioTemperatureVar.set(value= config.get("AddFields", "fillTest1VarioTemperatureVar"))
+    fillTest2VarioTemperatureVar.set(value= config.get("AddFields", "fillTest2VarioTemperatureVar"))
+    fillTest3VarioTemperatureVar.set(value= config.get("AddFields", "fillTest3VarioTemperatureVar"))
     fillTest3ExpectedAltitudeVar.set(value= config.get("AddFields", "fillTest3ExpectedAltitudeVar"))
     fillTest3ExpectedAltitudeChanged()
     expAltTimeVar.set(value= config.getfloat("AddFields", "expAltTimeVar"))
@@ -828,6 +834,8 @@ def saveConfig():
     config.set("Gps", "gpsRateVar", gpsRateVar.get())
 
     config.set("AddFields", "fillTest1VarioTemperatureVar", fillTest1VarioTemperatureVar.get())
+    config.set("AddFields", "fillTest2VarioTemperatureVar", fillTest2VarioTemperatureVar.get())
+    config.set("AddFields", "fillTest3VarioTemperatureVar", fillTest3VarioTemperatureVar.get())
     config.set("AddFields", "fillTest3ExpectedAltitudeVar", fillTest3ExpectedAltitudeVar.get())
     config.set("AddFields", "expAltTimeVar", str(expAltTimeVar.get()))
     config.set("AddFields", "fillTest123LinearAccVar", fillTest123LinearAccVar.get())
@@ -1203,6 +1211,8 @@ fFillTest3ExpectedAltitude = ttk.Frame(fAddFields)
 fillTest3ExpectedAltitudeVar = StringVar(value='Off')
 expAltTimeVar = DoubleVar(value='1.5')
 fillTest1VarioTemperatureVar = StringVar(value='Off')
+fillTest2VarioTemperatureVar = StringVar(value='Off')
+fillTest3VarioTemperatureVar = StringVar(value='Off')
 fillTest123LinearAccVar = StringVar(value='Off')
 fillTest12VspeedAltVar = StringVar(value='Off')
 fillTest1DteVar = StringVar(value='Off')

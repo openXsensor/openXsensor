@@ -1,5 +1,6 @@
 from oxsConfig import ttk , W , E , Spinbox ,fAddFields , addFieldsExist
-from oxsConfig import fillTest1VarioTemperatureVar, fillTest3ExpectedAltitudeVar , fillTest3ExpectedAltitudeChanged , fFillTest3ExpectedAltitude , expAltTimeVar ,\
+from oxsConfig import fillTest1VarioTemperatureVar, fillTest2VarioTemperatureVar, fillTest3VarioTemperatureVar ,\
+     fillTest3ExpectedAltitudeVar , fillTest3ExpectedAltitudeChanged , fFillTest3ExpectedAltitude , expAltTimeVar ,\
      fillTest123LinearAccVar , fillTest12VspeedAltVar , fillTest1DteVar , fillTest2PpmAirspeedCompVar ,\
      fillTest1YawRateVar , fillTest1HeadingVar , fillTest123FlowVar , fillTest1GpsNbrSatVar , fillTest2GpsHdopVar
 
@@ -25,9 +26,6 @@ from oxsConfig import fillTest1VarioTemperatureVar, fillTest3ExpectedAltitudeVar
 #define FILL_TEST2_WITH_GPS_HDOP                               // uncomment to activate this option
 
 #define FILL_TEST_1_WITH_VARIO_TEMP                               // uncomment to activate this option
-
-ttk.Checkbutton(fAddFields, text='Fill Test_1 with vario temperature',  variable=fillTest1VarioTemperatureVar ,
-	    onvalue='On', offvalue='Off').grid(row=3, sticky=(W,E), padx=20 , pady=(20,2))
 
 ttk.Checkbutton(fAddFields, text='Fill Test_3 with expected altitude',  variable=fillTest3ExpectedAltitudeVar , command=fillTest3ExpectedAltitudeChanged,
 	    onvalue='On', offvalue='Off').grid(row=4, sticky=(W,E), padx=20 , pady=(20,2))
@@ -65,3 +63,13 @@ ttk.Checkbutton(fAddFields, text='Fill Test_1 with number of satellites',  varia
 
 ttk.Checkbutton(fAddFields, text='Fill Test_2 with GPS HDOP',  variable=fillTest2GpsHdopVar ,
      onvalue='On', offvalue='Off').grid(row=14, sticky=(W,E), padx=20 , pady=(20,2))
+
+ttk.Checkbutton(fAddFields, text='Fill Test_1 with vario temperature',  variable=fillTest1VarioTemperatureVar ,
+	    onvalue='On', offvalue='Off').grid(row=15, sticky=(W,E), padx=20 , pady=(20,2))
+
+ttk.Checkbutton(fAddFields, text='Fill Test_2 with vario temperature',  variable=fillTest2VarioTemperatureVar ,
+	    onvalue='On', offvalue='Off').grid(row=16, sticky=(W,E), padx=20 , pady=(20,2))
+
+ttk.Checkbutton(fAddFields, text='Fill Test_3 with vario temperature',  variable=fillTest3VarioTemperatureVar ,
+	    onvalue='On', offvalue='Off').grid(row=17, sticky=(W,E), padx=20 , pady=(20,2))
+
