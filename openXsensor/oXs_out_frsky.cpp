@@ -666,43 +666,40 @@ static uint32_t ptxtime=0;
   }
   #else                   // use gps_Speed_2d
   if (GPS_speed_2dAvailable) { 
-           sport_gps_speed.available = GPS_speed_2dAvailable ;
-           GPS_speed_2dAvailable = false ;
-    #ifdef GPS_SPEED_IN_KMH
-           sport_gps_speed.value = ( ((uint32_t) GPS_speed_2d) * 36 )  ; // convert cm/s in 1/100 of km/h (factor = 3.6)
-    #else                                
-           sport_gps_speed.value = ( ((uint32_t) GPS_speed_2d) * 700 ) / 36 ; // convert cm/s in 1/1000 of knots (factor = 19.44)
-    #endif // end of GPS_SPEED_IN_KMH
+    sport_gps_speed.available = GPS_speed_2dAvailable ;
+    GPS_speed_2dAvailable = false ;
+  #ifdef GPS_SPEED_IN_KMH
+    sport_gps_speed.value = ( ((uint32_t) GPS_speed_2d) * 36 )  ; // convert cm/s in 1/100 of km/h (factor = 3.6)
+  #else                                
+    sport_gps_speed.value = ( ((uint32_t) GPS_speed_2d) * 700 ) / 36 ; // convert cm/s in 1/1000 of knots (factor = 19.44)
+  #endif // end of GPS_SPEED_IN_KMH
   }
   #endif //  enf of GPS_SPEED_3D  or 2D           
   if (GPS_ground_courseAvailable) {
-            sport_gps_course.available = GPS_ground_courseAvailable ;
-            GPS_ground_courseAvailable = false ;
-            sport_gps_course.value = GPS_ground_course / 1000;               // convert from degree * 100000 to degree * 100                
+    sport_gps_course.available = GPS_ground_courseAvailable ;
+    GPS_ground_courseAvailable = false ;
+    sport_gps_course.value = GPS_ground_course / 1000;               // convert from degree * 100000 to degree * 100                
   }
  
   #if defined(GPS_TRANSMIT_TIME)
   if (GPS_timeAvailable) {
-    sport_gps_date.value=(GPS_year % 100);
-    sport_gps_date.value<<=8;
-    sport_gps_date.value+=GPS_month;
-    sport_gps_date.value<<=8;
-    sport_gps_date.value+=GPS_day;
-    sport_gps_date.value<<=8;
-    sport_gps_date.value+=0xFF;
-    sport_gps_time.value=GPS_hour;
-    sport_gps_time.value<<=8;
-    sport_gps_time.value+=GPS_min;
-    sport_gps_time.value<<=8;
-    sport_gps_time.value+=GPS_sec;
-    sport_gps_time.value<<=8;
-    if (ptxtime!=sport_gps_time.value) {
-      ptxtime=sport_gps_time.value;
+    if (ptxtime+1000<millis()) { 
+      ptxtime=millis();
+      sport_gps_date.value=(GPS_year % 100);
+      sport_gps_date.value<<=8;
+      sport_gps_date.value+=GPS_month;
+      sport_gps_date.value<<=8;
+      sport_gps_date.value+=GPS_day;
+      sport_gps_date.value<<=8;
+      sport_gps_date.value+=0xFF;
+      sport_gps_time.value=GPS_hour;
+      sport_gps_time.value<<=8;
+      sport_gps_time.value+=GPS_min;
+      sport_gps_time.value<<=8;
+      sport_gps_time.value+=GPS_sec;
+      sport_gps_time.value<<=8;
       sport_gps_date.available=GPS_timeAvailable;
       sport_gps_time.available=GPS_timeAvailable;
-    } else {
-      sport_gps_date.available=false;
-      sport_gps_time.available=false;
     }
   }
   #endif
