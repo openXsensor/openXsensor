@@ -230,6 +230,9 @@ uint8_t sensorIsr  ;
 struct ONE_MEASUREMENT no_data = { 0, 0 } ; 
 
 void initMeasurement() {
+#if defined (GPS_TRANSMIT_TIME)
+static uint32_t ptxtime=0;
+#endif
 // pointer to Altitude
 #if defined(VARIO) 
     p_measurements[0] = &oXs_MS5611.varioData.relativeAlt ; // we use always relative altitude in Frsky protocol
@@ -358,15 +361,16 @@ void initMeasurement() {
 #if defined(GPS_TRANSMIT_TIME)
 // pointer to GPS date
 #if defined(GPS_INSTALLED)
-  p_measurements[15] = &sport_gps_date ; 
+  if (sport_gps_time.value!=ptxtime) {
+    ptxtime=sport_gps_time.value;
+    p_measurements[15] = &sport_gps_date ;
+    p_measurements[16] = &sport_gps_time ;
+  } else {
+    p_measurements[15] = &no_data ;
+    p_measurements[16] = &no_data ;
+  }
 #else
   p_measurements[15] = &no_data ; 
-#endif
-
-// pointer to GPS time
-#if defined(GPS_INSTALLED)
-  p_measurements[16] = &sport_gps_time ; 
-#else
   p_measurements[16] = &no_data ; 
 #endif
 #else
