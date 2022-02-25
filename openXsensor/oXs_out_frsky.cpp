@@ -683,21 +683,21 @@ static uint32_t ptxtime=0;
  
   #if defined(GPS_TRANSMIT_TIME)
   if (GPS_timeAvailable) {
-    if (ptxtime+1000<millis()) { 
-      ptxtime=millis();
-      sport_gps_date.value=(GPS_year % 100);
-      sport_gps_date.value<<=8;
-      sport_gps_date.value+=GPS_month;
-      sport_gps_date.value<<=8;
-      sport_gps_date.value+=GPS_day;
-      sport_gps_date.value<<=8;
-      sport_gps_date.value+=0xFF;
-      sport_gps_time.value=GPS_hour;
-      sport_gps_time.value<<=8;
-      sport_gps_time.value+=GPS_min;
-      sport_gps_time.value<<=8;
-      sport_gps_time.value+=GPS_sec;
-      sport_gps_time.value<<=8;
+    sport_gps_date.value=(GPS_year % 100);
+    sport_gps_date.value<<=8;
+    sport_gps_date.value+=GPS_month;
+    sport_gps_date.value<<=8;
+    sport_gps_date.value+=GPS_day;
+    sport_gps_date.value<<=8;
+    sport_gps_date.value+=0xFF;
+    sport_gps_time.value=GPS_hour;
+    sport_gps_time.value<<=8;
+    sport_gps_time.value+=GPS_min;
+    sport_gps_time.value<<=8;
+    sport_gps_time.value+=GPS_sec;
+    sport_gps_time.value<<=8;
+    if (ptxtime!=sport_gps_time.value) { 
+      ptxtime=sport_gps_time.value;
       sport_gps_date.available=GPS_timeAvailable;
       sport_gps_time.available=GPS_timeAvailable;
     }
