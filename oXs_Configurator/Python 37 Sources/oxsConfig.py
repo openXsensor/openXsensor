@@ -346,6 +346,8 @@ def generateOxsConfig():
 
     if gpsExist.get() == "On":
         f.write("\n#define A_GPS_IS_CONNECTED YES\n")
+        if gpsTimeExist.get() == 'On':
+            fa.write("\n#define GPS_TRANSMIT_TIME\n")
         if gps3dExist.get() == 'On':
             fa.write("\n#define GPS_SPEED_3D\n")
             fa.write(f"#define GPS_REFRESH_RATE {gpsRateVar.get()}\n")
@@ -634,6 +636,7 @@ def uploadConfig():
     AdcSpVar.set(value= config.get("Ads", "AdcSpVar"))
 
     gps3dExist.set(value= config.get("Gps", "gps3dexist"))
+    gpsTimeExist.set(value= config.get("Gps", "gpstimeexist"))
     gpsRateVar.set(value= config.getint("Gps", "gpsratevar"))
     fillTest1VarioTemperatureVar.set(value= config.get("AddFields", "fillTest1VarioTemperatureVar"))
     fillTest2VarioTemperatureVar.set(value= config.get("AddFields", "fillTest2VarioTemperatureVar"))
@@ -831,6 +834,7 @@ def saveConfig():
     config.set("Ads", "AdcSpVar", AdcSpVar.get())
 
     config.set("Gps", "gps3dExist", gps3dExist.get())
+    config.set("Gps", "gpsTimeExist", gpsTimeExist.get())
     config.set("Gps", "gpsRateVar", gpsRateVar.get())
 
     config.set("AddFields", "fillTest1VarioTemperatureVar", fillTest1VarioTemperatureVar.get())
@@ -1179,6 +1183,7 @@ pulsesPerRotationVar = IntVar(value=2)
 pushButtonPin=StringVar(value='10')
 
 gps3dExist = StringVar(value='Off')
+gpsTimeExist = StringVar(value='Off')
 gpsRateVar = StringVar(value='5')
 
 SeqUnitVar = IntVar(value='1')

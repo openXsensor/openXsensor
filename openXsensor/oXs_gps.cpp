@@ -32,6 +32,16 @@ bool    GPS_speed_2dAvailable = false ;
 uint32_t GPS_ground_course ;     // degrees with 5 decimals
 bool    GPS_ground_courseAvailable = false ;
 
+#if defined(GPS_TRANSMIT_TIME)
+int16_t GPS_year;               // year
+int8_t GPS_month;               // month
+int8_t GPS_day;                 // day
+int8_t GPS_hour;                // hours
+int8_t GPS_min;                 // minutes
+int8_t GPS_sec;                 // seconds
+bool    GPS_timeAvailable = false ; 
+#endif
+
 uint8_t GPS_numSat;
 uint8_t GPS_fix_type;
 uint16_t GPS_hdop = 9999;           // Compute GPS quality signal
@@ -71,6 +81,9 @@ static union {
     ubx_nav_status status;
     ubx_nav_solution solution;
     ubx_nav_velned velned;
+#if defined(GPS_TRANSMIT_TIME)
+    ubx_nav_timeutc timeutc;
+#endif
     ubx_nav_svinfo svinfo;
     uint8_t bytes[UBLOX_BUFFER_SIZE];
 } _buffer;
@@ -144,6 +157,9 @@ void OXS_GPS::setupGps( ) {
         0xB5,0x62,0x06,0x01,0x08,0x00,0x01,0x02,0x00,0x01,0x00,0x00,0x00,0x00,0x13,0xBE, // activate NAV-POSLLH message
         0xB5,0x62,0x06,0x01,0x08,0x00,0x01,0x06,0x00,0x01,0x00,0x00,0x00,0x00,0x17,0xDA, //        NAV-SOL
         0xB5,0x62,0x06,0x01,0x08,0x00,0x01,0x12,0x00,0x01,0x00,0x00,0x00,0x00,0x23,0x2E, //        NAV-VELNED
+#if defined(GPS_TRANSMIT_TIME)
+        0xB5,0x62,0x06,0x01,0x08,0x00,0x01,0x21,0x00,0x01,0x00,0x00,0x00,0x00,0x32,0x97, //........NAV-TIMEUTC
+#endif
 #if defined(GPS_REFRESH_RATE) && (GPS_REFRESH_RATE == 1)
         0xB5,0x62,0x06,0x08,0x06,0x00,0xE8,0x03,0x01,0x00,0x01,0x00,0x01,0x39,  // NAV-RATE for 1 hz
 #elif defined(GPS_REFRESH_RATE) && (GPS_REFRESH_RATE == 10)
@@ -309,7 +325,10 @@ static bool _new_position = false ;
 // do we have new speed information?
 static bool _new_speed = false ;
 static bool next_fix = false ;
-  
+#if defined(GPS_TRANSMIT_TIME)
+// do we have new time information?
+static bool _new_time = false ;
+#endif
     switch (_msg_id) {
     case MSG_POSLLH:
         //i2c_dataset.time                = _buffer.posllh.time;
@@ -381,19 +400,54 @@ static bool next_fix = false ;
   printer->print(GPS_speed_2d);
   printer->print(F(" course: "));
   printer->println(GPS_ground_course);
-#endif        
+#endif
         break;
+#if defined(GPS_TRANSMIT_TIME)
+    case MSG_TIMEUTC:   // Parse time informations
+        if (_buffer.timeutc.flag & 0b111) {
+          GPS_year=_buffer.timeutc.year;
+          GPS_month=_buffer.timeutc.month;
+          GPS_day=_buffer.timeutc.day;
+          GPS_hour=_buffer.timeutc.hour;
+          GPS_min=_buffer.timeutc.min;
+          GPS_sec=_buffer.timeutc.sec;
+          _new_time=true;
+          GPS_timeAvailable=true;
+#ifdef DEBUGPARSEGPS
+  printer->print(F("Gps time: "));
+  printer->print(GPS_year);
+  printer->print(F("-"));
+  printer->print(GPS_month);
+  printer->print(F("-"));
+  printer->print(GPS_day);
+  printer->print(F(" "));
+  printer->print(GPS_hour);
+  printer->print(F(":"));
+  printer->print(GPS_min);
+  printer->print(F(":"));
+  printer->println(GPS_sec);
+#endif
+        } else {
+          GPS_timeAvailable=false;
+        }
+        break;
+#endif
     default:
         return false;
     } // end of case
 
     // we only return true when we get new position and speed data
     // this ensures we don't use stale data
-    if (_new_position && _new_speed) {
-        _new_speed = _new_position = false;
+#if defined(GPS_TRANSMIT_TIME)
+    if (_new_position && _new_speed && _new_time) {
+        _new_speed = _new_position = _new_time = false;
         return true;
     }
+#else
+    if (_new_position && _new_speed) {
+        _new_speed = _new_position =  false;
+        return true;
+    }
+#endif
     return false;
 }
-
-

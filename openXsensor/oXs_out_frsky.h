@@ -313,7 +313,17 @@ extern bool    GPS_speed_2dAvailable;
 extern uint16_t GPS_speed;                 // speed in cm/s
 extern bool    GPS_speedAvailable ;
 extern uint32_t GPS_ground_course ;     // degrees with 5 decimals
+#if defined(GPS_TRANSMIT_TIME)
+extern int16_t GPS_year;               // year
+extern int8_t GPS_month;               // month
+extern int8_t GPS_day;                 // day
+extern int8_t GPS_hour;                // hours
+extern int8_t GPS_min;                 // minutes
+extern int8_t GPS_sec;                 // seconds
+extern bool    GPS_timeAvailable;
+#endif
 extern bool    GPS_ground_courseAvailable;
+
 
 extern uint8_t GPS_numSat;
 extern uint16_t GPS_hdop ;           // Compute GPS quality signal
@@ -480,9 +490,3 @@ uint32_t millis( void ) ;
 #endif // Enf of ndef MULTIPLEX
 
 #endif // OXS_OUT_h
-
-
-
-
-
-

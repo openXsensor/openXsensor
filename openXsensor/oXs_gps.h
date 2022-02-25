@@ -93,6 +93,21 @@ typedef struct {
     ubx_nav_svinfo_channel channel[16];         // 16 satellites * 12 byte
 } ubx_nav_svinfo;
 
+#if defined(GPS_TRANSMIT_TIME)
+typedef struct {
+    uint32_t time;              // GPS msToW
+    uint32_t time_acc;
+    int32_t nanoseconds;
+    uint16_t year;
+    uint8_t month;
+    uint8_t day;
+    uint8_t hour;
+    uint8_t min;
+    uint8_t sec;
+    uint8_t flag;
+} ubx_nav_timeutc;
+#endif
+
 // GPS codes that could be used
 #define    PREAMBLE1  0xb5
 #define    PREAMBLE2  0x62
@@ -105,6 +120,9 @@ typedef struct {
 #define    MSG_STATUS  0x3
 #define    MSG_SOL  0x6
 #define    MSG_VELNED  0x12
+#if defined GPS_TRANSMIT_TIME
+#define    MSG_TIMEUTC  0x21
+#endif
 #define    MSG_SVINFO  0x30
 #define    MSG_CFG_PRT  0x00
 #define    MSG_CFG_RATE  0x08
@@ -148,6 +166,3 @@ private:
 
 
 #endif // OXS_GPS_h
-
-
-
