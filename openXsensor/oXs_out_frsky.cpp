@@ -230,9 +230,6 @@ uint8_t sensorIsr  ;
 struct ONE_MEASUREMENT no_data = { 0, 0 } ; 
 
 void initMeasurement() {
-#if defined (GPS_TRANSMIT_TIME)
-static uint32_t ptxtime=0;
-#endif
 // pointer to Altitude
 #if defined(VARIO) 
     p_measurements[0] = &oXs_MS5611.varioData.relativeAlt ; // we use always relative altitude in Frsky protocol
@@ -361,14 +358,8 @@ static uint32_t ptxtime=0;
 #if defined(GPS_TRANSMIT_TIME)
 // pointer to GPS date
 #if defined(GPS_INSTALLED)
-  if (sport_gps_time.value!=ptxtime) {
-    ptxtime=sport_gps_time.value;
-    p_measurements[15] = &sport_gps_date ;
-    p_measurements[16] = &sport_gps_time ;
-  } else {
-    p_measurements[15] = &no_data ;
-    p_measurements[16] = &no_data ;
-  }
+  p_measurements[15] = &sport_gps_date ;
+  p_measurements[16] = &sport_gps_time ;
 #else
   p_measurements[15] = &no_data ; 
   p_measurements[16] = &no_data ; 
@@ -590,7 +581,11 @@ static uint32_t ptxtime=0;
 
 
 void OXS_OUT::sendSportData()
-{  
+{
+#if defined(GPS_TRANSMIT_TIME)
+static uint32_t ptxtime=0;
+#endif
+
 #ifdef DEBUG_STATE
                   Serial.print("State "); Serial.print(state,HEX) ; Serial.print(" LastRx "); Serial.print(LastRx,HEX) ; Serial.print(" prevLastRx "); Serial.print(prevLastRx,HEX) ;
                   Serial.print(" sensorIsr "); Serial.println(sensorIsr,HEX) ; 
@@ -695,16 +690,20 @@ void OXS_OUT::sendSportData()
     sport_gps_date.value+=GPS_day;
     sport_gps_date.value<<=8;
     sport_gps_date.value+=0xFF;
-    sport_gps_date.available=GPS_timeAvailable;
-  }
-  if (GPS_timeAvailable) {
     sport_gps_time.value=GPS_hour;
     sport_gps_time.value<<=8;
     sport_gps_time.value+=GPS_min;
     sport_gps_time.value<<=8;
     sport_gps_time.value+=GPS_sec;
     sport_gps_time.value<<=8;
-    sport_gps_time.available=GPS_timeAvailable;
+    if (ptxtime!=sport_gps_time.value) {
+      ptxtime=sport_gps_time.value;
+      sport_gps_date.available=GPS_timeAvailable;
+      sport_gps_time.available=GPS_timeAvailable;
+    } else {
+      sport_gps_date.available=false;
+      sport_gps_time.available=false;
+    }
   }
   #endif
 #endif // end of GPS_INSTALLED
