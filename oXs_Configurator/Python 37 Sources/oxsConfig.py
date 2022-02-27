@@ -891,18 +891,18 @@ def saveConfig():
 
 def protocolChanged(*arg):
     #print(protocolVar.get() )
-    nb.tab(15, state="hidden")
     nb.tab(16, state="hidden")
     nb.tab(17, state="hidden")
     nb.tab(18, state="hidden")
+    nb.tab(19, state="hidden")
     if protocolVar.get() == "FRSKY_SPORT" or protocolVar.get() == "FRSKY_HUB" or protocolVar.get() == "FRSKY_SPORT_HUB" :
-        nb.tab(15, state="normal")
-    elif protocolVar.get() == "JETI":
         nb.tab(16, state="normal")
-    elif protocolVar.get() == "HOTT":
+    elif protocolVar.get() == "JETI":
         nb.tab(17, state="normal")
-    elif protocolVar.get() == "MULTIPLEX":
+    elif protocolVar.get() == "HOTT":
         nb.tab(18, state="normal")
+    elif protocolVar.get() == "MULTIPLEX":
+        nb.tab(19, state="normal")
 
 def ppmChanged():
     if ppmExist.get() == 'On':
