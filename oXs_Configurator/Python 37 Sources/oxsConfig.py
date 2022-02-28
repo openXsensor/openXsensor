@@ -361,6 +361,9 @@ def generateOxsConfig():
         fa.write(f"\n#define PIN_INT_6050 {str(imuPinVar.get())}\n")
         if imuDisplayOffset.get() == "On":
             fa.write("\n#define DISPLAY_ACC_OFFSET\n")
+            fa.write("#define ACC_OFFSET_X 0\n")
+            fa.write("#define ACC_OFFSET_Y 0\n")
+            fa.write("#define ACC_OFFSET_Z 0\n")
         else:
         
             fa.write(f"#define ACC_OFFSET_X {str(imuOffsetXVar.get())}\n")
@@ -372,6 +375,18 @@ def generateOxsConfig():
     if magnetExist.get() == "On":
         if GeneratemagCalData.get() == "On":
             fa.write("\n#define GENERATE_MAG_CALIBRATION_DATA\n")
+            fa.write("#define XMAG_OFFSET 0\n")
+            fa.write("#define YMAG_OFFSET 0\n")
+            fa.write("#define ZMAG_OFFSET 0\n")
+            fa.write("#define XXMAG_CORRECTION 1\n")
+            fa.write("#define XYMAG_CORRECTION 0\n")
+            fa.write("#define XZMAG_CORRECTION 0\n")
+            fa.write("#define YXMAG_CORRECTION 0\n")
+            fa.write("#define YYMAG_CORRECTION 1\n")
+            fa.write("#define YZMAG_CORRECTION 0\n")
+            fa.write("#define ZXMAG_CORRECTION 0\n")
+            fa.write("#define ZYMAG_CORRECTION 0\n")
+            fa.write("#define ZZMAG_CORRECTION 1\n")
         else:
             fa.write(f"#define XMAG_OFFSET {str(xMagOffsetVar.get())}\n")
             fa.write(f"#define YMAG_OFFSET {str(yMagOffsetVar.get())}\n")

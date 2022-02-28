@@ -1,4 +1,4 @@
-('C:\\Users\\Romolo\\Documenti\\Github\\openXsensor\\oXs_Configurator\\Python '
+('C:\\Users\\Romolo\\Documents\\GitHub\\openXsensor\\oXs_Configurator\\Python '
  '37 Sources\\build\\oxsConfigurator\\PYZ-00.pyz',
  [('os', 'C:\\Program Files\\Python310\\lib\\os.py', 'PYMODULE'),
   ('subprocess',
@@ -512,15 +512,15 @@
    'PYMODULE'),
   ('posixpath', 'C:\\Program Files\\Python310\\lib\\posixpath.py', 'PYMODULE'),
   ('stat', 'C:\\Program Files\\Python310\\lib\\stat.py', 'PYMODULE'),
-  ('tracemalloc',
-   'C:\\Program Files\\Python310\\lib\\tracemalloc.py',
-   'PYMODULE'),
-  ('_py_abc', 'C:\\Program Files\\Python310\\lib\\_py_abc.py', 'PYMODULE'),
   ('stringprep',
    'C:\\Program Files\\Python310\\lib\\stringprep.py',
    'PYMODULE'),
+  ('_py_abc', 'C:\\Program Files\\Python310\\lib\\_py_abc.py', 'PYMODULE'),
+  ('tracemalloc',
+   'C:\\Program Files\\Python310\\lib\\tracemalloc.py',
+   'PYMODULE'),
   ('oxsConfig',
-   'C:\\Users\\Romolo\\Documenti\\Github\\openXsensor\\oXs_Configurator\\Python '
+   'C:\\Users\\Romolo\\Documents\\GitHub\\openXsensor\\oXs_Configurator\\Python '
    '37 Sources\\oxsConfig.py',
    'PYMODULE'),
   ('configparser',
@@ -545,79 +545,79 @@
    'C:\\Program Files\\Python310\\lib\\tkinter\\dialog.py',
    'PYMODULE'),
   ('oxsJeti',
-   'C:\\Users\\Romolo\\Documenti\\Github\\openXsensor\\oXs_Configurator\\Python '
+   'C:\\Users\\Romolo\\Documents\\GitHub\\openXsensor\\oXs_Configurator\\Python '
    '37 Sources\\oxsJeti.py',
    'PYMODULE'),
   ('oxsHott',
-   'C:\\Users\\Romolo\\Documenti\\Github\\openXsensor\\oXs_Configurator\\Python '
+   'C:\\Users\\Romolo\\Documents\\GitHub\\openXsensor\\oXs_Configurator\\Python '
    '37 Sources\\oxsHott.py',
    'PYMODULE'),
   ('oxsMultiplex',
-   'C:\\Users\\Romolo\\Documenti\\Github\\openXsensor\\oXs_Configurator\\Python '
+   'C:\\Users\\Romolo\\Documents\\GitHub\\openXsensor\\oXs_Configurator\\Python '
    '37 Sources\\oxsMultiplex.py',
    'PYMODULE'),
   ('oxsFrsky',
-   'C:\\Users\\Romolo\\Documenti\\Github\\openXsensor\\oXs_Configurator\\Python '
+   'C:\\Users\\Romolo\\Documents\\GitHub\\openXsensor\\oXs_Configurator\\Python '
    '37 Sources\\oxsFrsky.py',
    'PYMODULE'),
   ('oxsAddFields',
-   'C:\\Users\\Romolo\\Documenti\\Github\\openXsensor\\oXs_Configurator\\Python '
+   'C:\\Users\\Romolo\\Documents\\GitHub\\openXsensor\\oXs_Configurator\\Python '
    '37 Sources\\oxsAddFields.py',
    'PYMODULE'),
   ('oxsMemory',
-   'C:\\Users\\Romolo\\Documenti\\Github\\openXsensor\\oXs_Configurator\\Python '
+   'C:\\Users\\Romolo\\Documents\\GitHub\\openXsensor\\oXs_Configurator\\Python '
    '37 Sources\\oxsMemory.py',
    'PYMODULE'),
   ('oxsSequence',
-   'C:\\Users\\Romolo\\Documenti\\Github\\openXsensor\\oXs_Configurator\\Python '
+   'C:\\Users\\Romolo\\Documents\\GitHub\\openXsensor\\oXs_Configurator\\Python '
    '37 Sources\\oxsSequence.py',
    'PYMODULE'),
   ('oxsLocator',
-   'C:\\Users\\Romolo\\Documenti\\Github\\openXsensor\\oXs_Configurator\\Python '
+   'C:\\Users\\Romolo\\Documents\\GitHub\\openXsensor\\oXs_Configurator\\Python '
    '37 Sources\\oxsLocator.py',
    'PYMODULE'),
   ('oxsAdc',
-   'C:\\Users\\Romolo\\Documenti\\Github\\openXsensor\\oXs_Configurator\\Python '
+   'C:\\Users\\Romolo\\Documents\\GitHub\\openXsensor\\oXs_Configurator\\Python '
    '37 Sources\\oxsAdc.py',
    'PYMODULE'),
   ('oxsFlow',
-   'C:\\Users\\Romolo\\Documenti\\Github\\openXsensor\\oXs_Configurator\\Python '
+   'C:\\Users\\Romolo\\Documents\\GitHub\\openXsensor\\oXs_Configurator\\Python '
    '37 Sources\\oxsFlow.py',
    'PYMODULE'),
   ('oxsMagnet',
-   'C:\\Users\\Romolo\\Documenti\\Github\\openXsensor\\oXs_Configurator\\Python '
+   'C:\\Users\\Romolo\\Documents\\GitHub\\openXsensor\\oXs_Configurator\\Python '
    '37 Sources\\oxsMagnet.py',
    'PYMODULE'),
   ('oxsImu',
-   'C:\\Users\\Romolo\\Documenti\\Github\\openXsensor\\oXs_Configurator\\Python '
+   'C:\\Users\\Romolo\\Documents\\GitHub\\openXsensor\\oXs_Configurator\\Python '
    '37 Sources\\oxsImu.py',
    'PYMODULE'),
   ('oxsAirspeed',
-   'C:\\Users\\Romolo\\Documenti\\Github\\openXsensor\\oXs_Configurator\\Python '
+   'C:\\Users\\Romolo\\Documents\\GitHub\\openXsensor\\oXs_Configurator\\Python '
    '37 Sources\\oxsAirspeed.py',
    'PYMODULE'),
   ('oxsGps',
-   'C:\\Users\\Romolo\\Documenti\\Github\\openXsensor\\oXs_Configurator\\Python '
+   'C:\\Users\\Romolo\\Documents\\GitHub\\openXsensor\\oXs_Configurator\\Python '
    '37 Sources\\oxsGps.py',
    'PYMODULE'),
   ('oxsRpm',
-   'C:\\Users\\Romolo\\Documenti\\Github\\openXsensor\\oXs_Configurator\\Python '
+   'C:\\Users\\Romolo\\Documents\\GitHub\\openXsensor\\oXs_Configurator\\Python '
    '37 Sources\\oxsRpm.py',
    'PYMODULE'),
   ('oxsCurrent',
-   'C:\\Users\\Romolo\\Documenti\\Github\\openXsensor\\oXs_Configurator\\Python '
+   'C:\\Users\\Romolo\\Documents\\GitHub\\openXsensor\\oXs_Configurator\\Python '
    '37 Sources\\oxsCurrent.py',
    'PYMODULE'),
   ('oxsVoltage',
-   'C:\\Users\\Romolo\\Documenti\\Github\\openXsensor\\oXs_Configurator\\Python '
+   'C:\\Users\\Romolo\\Documents\\GitHub\\openXsensor\\oXs_Configurator\\Python '
    '37 Sources\\oxsVoltage.py',
    'PYMODULE'),
   ('oxsVario',
-   'C:\\Users\\Romolo\\Documenti\\Github\\openXsensor\\oXs_Configurator\\Python '
+   'C:\\Users\\Romolo\\Documents\\GitHub\\openXsensor\\oXs_Configurator\\Python '
    '37 Sources\\oxsVario.py',
    'PYMODULE'),
   ('oxsPpm',
-   'C:\\Users\\Romolo\\Documenti\\Github\\openXsensor\\oXs_Configurator\\Python '
+   'C:\\Users\\Romolo\\Documents\\GitHub\\openXsensor\\oXs_Configurator\\Python '
    '37 Sources\\oxsPpm.py',
    'PYMODULE'),
   ('tkinter',
