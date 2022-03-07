@@ -13,12 +13,17 @@ configUploadFileName = None
 config =  configparser.ConfigParser()
 config.add_section("Main")
 config.add_section("Ppm")
+config.add_section("Imu")
+config.add_section("Magnet")
 config.add_section("Vario")
 config.add_section("Airspeed")
 config.add_section("Voltage")
 config.add_section("Current")
+config.add_section("Ads")
+config.add_section("Flow")
 config.add_section("Rpm")
 config.add_section("Gps")
+config.add_section("Memory")
 config.add_section("AddFields")
 config.add_section("Frsky")
 config.add_section("Multiplex")
@@ -157,6 +162,12 @@ def generateOxsConfig():
             messagebox.showwarning("Warning","Generated files will be unvalid:\n for Multiplex protocol, you must specify the field(s) to be sent")   
     
     if addFieldsExist.get() == "On":
+        if fillTest1VarioTemperatureVar.get() == "On":
+            fa.write("\n#define FILL_TEST_1_VARIO_TEMP\n") 
+        if fillTest2VarioTemperatureVar.get() == "On":
+            fa.write("\n#define FILL_TEST_2_VARIO_TEMP\n") 
+        if fillTest3VarioTemperatureVar.get() == "On":
+            fa.write("\n#define FILL_TEST_3_VARIO_TEMP\n") 
         if fillTest3ExpectedAltitudeVar.get() == "On":
             fa.write("\n#define FILL_TEST_3_WITH_EXPECTED_ALT\n") 
             fa.write(f"\n#define EXPECTED_ALT_AT_SEC {str(expAltTimeVar.get())}\n")
@@ -187,8 +198,16 @@ def generateOxsConfig():
         else:
             fa.write("\n#define PPM_VIA_SPORT \n")
 
+    if persistentExist.get() == "On":
+        f.write("\n#define SAVE_TO_EEPROM YES\n")
+        f.write(f"\n#define PIN_PUSHBUTTON {str(pushButtPinVar.get())}\n")
+    else:
+        f.write("\n#define SAVE_TO_EEPROM NO\n") 
+
     if varioExist.get() == "On":
         f.write(f"#define FIRST_BARO_SENSOR_USE {varioTypeVar.get()}\n")
+        if varioTypeVar.get() == 'BMP280':
+            fa.write("#define BMP280_ADR 0x76\n")
         f.write(f"#define VSPEED_SOURCE {varioSourceVar.get()}\n")
         if secondBaroExist.get() == 'On':
             fa.write("\n#define SECOND_BARO_SENSOR_USE    MS5611\n")
@@ -286,7 +305,36 @@ def generateOxsConfig():
         f.write("\n#define ARDUINO_MEASURES_A_CURRENT NO\n")
     
     if adcExist.get() == "On":
-        f.write("\n#define AN_ADS1115_IS_CONNECTED YES\n")
+        if (Adc0TypeVar.get() != "ADS_OFF") or (Adc1TypeVar.get() != "ADS_OFF") or (Adc2TypeVar.get() != "ADS_OFF") or (Adc3TypeVar.get() != "ADS_OFF"):
+            f.write("\n#define AN_ADS1115_IS_CONNECTED YES\n")
+            fa.write(f"\n#define ADS_MEASURE {Adc0TypeVar.get()}, {Adc1TypeVar.get()}, {Adc2TypeVar.get()}, {Adc3TypeVar.get()}\n")
+            fa.write(f"#define ADS_FULL_SCALE_VOLT {Adc0FsVar.get()}, {Adc1FsVar.get()}, {Adc2FsVar.get()}, {Adc3FsVar.get()}\n")
+            fa.write(f"#define ADS_OFFSET {str(Adc0OffVar.get())}, {str(Adc1OffVar.get())}, {str(Adc2OffVar.get())}, {str(Adc3OffVar.get())}\n")
+            fa.write(f"#define ADS_SCALE {str(Adc0ScVar.get())}, {str(Adc1ScVar.get())}, {str(Adc2ScVar.get())}, {str(Adc3ScVar.get())}\n")
+            fa.write(f"#define ADS_RATE {Adc0CrVar.get()}, {Adc1CrVar.get()}, {Adc2CrVar.get()}, {Adc3CrVar.get()}\n")
+            if Adc0AvgVar.get()<1:
+                Adc0AvgVar.set(1)
+            if Adc1AvgVar.get()<1:
+                Adc1AvgVar.set(1)
+            if Adc2AvgVar.get()<1:
+                Adc2AvgVar.set(1)
+            if Adc3AvgVar.get()<1:
+                Adc3AvgVar.set(1)
+            if Adc0AvgVar.get()>254:
+                Adc0AvgVar.set(254)
+            if Adc1AvgVar.get()>254:
+                Adc1AvgVar.set(254)
+            if Adc2AvgVar.get()>254:
+                Adc2AvgVar.set(254)
+            if Adc3AvgVar.get()>254:
+                Adc3AvgVar.set(254)
+            fa.write(f"#define ADS_AVERAGING_ON {str(Adc0AvgVar.get())}, {str(Adc1AvgVar.get())}, {str(Adc2AvgVar.get())}, {str(Adc3AvgVar.get())}\n")
+            if AdcCurrVar.get() != "NO":
+                fa.write(f"#define ADS_CURRENT_BASED_ON {AdcCurrVar.get()}\n")
+            if AdcSpVar.get() != "NO":
+                fa.write(f"#define ADS_AIRSPEED_BASED_ON {AdcSpVar.get()}\n")
+        else:
+            f.write("\n#define AN_ADS1115_IS_CONNECTED NO\n")
     else:
         f.write("\n#define AN_ADS1115_IS_CONNECTED NO\n")
 
@@ -296,31 +344,122 @@ def generateOxsConfig():
     else:
         f.write("\n#define CALCULATE_RPM NO\n")
 
-    f.write("\n#define SAVE_TO_EEPROM NO\n") 
-
     if gpsExist.get() == "On":
         f.write("\n#define A_GPS_IS_CONNECTED YES\n")
+        if gpsTimeExist.get() == 'On':
+            fa.write("\n#define GPS_TRANSMIT_TIME\n")
         if gps3dExist.get() == 'On':
             fa.write("\n#define GPS_SPEED_3D\n")
-        fa.write(f"#define GPS_REFRESH_RATE {gpsRateVar.get()}\n")  
+            fa.write(f"#define GPS_REFRESH_RATE {gpsRateVar.get()}\n")
+        else:
+            fa.write(f"\n#define GPS_REFRESH_RATE {gpsRateVar.get()}\n")  
     else:
         f.write("\n#define A_GPS_IS_CONNECTED NO\n")
 
     if imuExist.get() == "On":
         f.write("\n#define A_MPU6050_IS_CONNECTED YES\n")
+        fa.write(f"\n#define PIN_INT_6050 {str(imuPinVar.get())}\n")
+        if imuDisplayOffset.get() == "On":
+            fa.write("\n#define DISPLAY_ACC_OFFSET\n")
+            fa.write("#define ACC_OFFSET_X 0\n")
+            fa.write("#define ACC_OFFSET_Y 0\n")
+            fa.write("#define ACC_OFFSET_Z 0\n")
+        else:
+        
+            fa.write(f"#define ACC_OFFSET_X {str(imuOffsetXVar.get())}\n")
+            fa.write(f"#define ACC_OFFSET_Y {str(imuOffsetYVar.get())}\n")
+            fa.write(f"#define ACC_OFFSET_Z {str(imuOffsetZVar.get())}\n")
     else:
         f.write("\n#define A_MPU6050_IS_CONNECTED NO\n")
 
     if magnetExist.get() == "On":
+        if GeneratemagCalData.get() == "On":
+            fa.write("\n#define GENERATE_MAG_CALIBRATION_DATA\n")
+            fa.write("#define XMAG_OFFSET 0\n")
+            fa.write("#define YMAG_OFFSET 0\n")
+            fa.write("#define ZMAG_OFFSET 0\n")
+            fa.write("#define XXMAG_CORRECTION 1\n")
+            fa.write("#define XYMAG_CORRECTION 0\n")
+            fa.write("#define XZMAG_CORRECTION 0\n")
+            fa.write("#define YXMAG_CORRECTION 0\n")
+            fa.write("#define YYMAG_CORRECTION 1\n")
+            fa.write("#define YZMAG_CORRECTION 0\n")
+            fa.write("#define ZXMAG_CORRECTION 0\n")
+            fa.write("#define ZYMAG_CORRECTION 0\n")
+            fa.write("#define ZZMAG_CORRECTION 1\n")
+        else:
+            fa.write(f"#define XMAG_OFFSET {str(xMagOffsetVar.get())}\n")
+            fa.write(f"#define YMAG_OFFSET {str(yMagOffsetVar.get())}\n")
+            fa.write(f"#define ZMAG_OFFSET {str(zMagOffsetVar.get())}\n")
+            fa.write(f"#define XXMAG_CORRECTION {str(xxMagCorrectionVar.get())}\n")
+            fa.write(f"#define XYMAG_CORRECTION {str(xyMagCorrectionVar.get())}\n")
+            fa.write(f"#define XZMAG_CORRECTION {str(xzMagCorrectionVar.get())}\n")
+            fa.write(f"#define YXMAG_CORRECTION {str(yxMagCorrectionVar.get())}\n")
+            fa.write(f"#define YYMAG_CORRECTION {str(yyMagCorrectionVar.get())}\n")
+            fa.write(f"#define YZMAG_CORRECTION {str(yzMagCorrectionVar.get())}\n")
+            fa.write(f"#define ZXMAG_CORRECTION {str(zxMagCorrectionVar.get())}\n")
+            fa.write(f"#define ZYMAG_CORRECTION {str(zyMagCorrectionVar.get())}\n")
+            fa.write(f"#define ZZMAG_CORRECTION {str(zzMagCorrectionVar.get())}\n")
         f.write("\n#define CALCULATE_YAW_WITH_HMC5883 YES\n")
+
     else:
         f.write("\n#define CALCULATE_YAW_WITH_HMC5883 NO\n")
 
     if flowExist.get() == "On":
         f.write("\n#define A_FLOW_SENSOR_IS_CONNECTED   YES\n")
+        fa.write(f"#define PULSES_PER_ML {str(flowPulsesmlVar.get())}\n")
+        fa.write(f"#define TANK_CAPACITY {str(flowTankCapVar.get())}\n")
+        fa.write(f"#define INIT_FLOW_PARAM {str(flowL1ValueVar.get())} , {str(flowL2ValueVar.get())} , {str(flowL3ValueVar.get())} , {str(flowL4ValueVar.get())} , {str(flowL1CorrVar.get())} , {str(flowL2CorrVar.get())} , {str(flowL3CorrVar.get())} , {str(flowL4CorrVar.get())}\n")
+        fa.write(f"##define FLOW_SENSOR_RESET_AT_PPM {str(flowPPMResetVar.get())}\n")
     else:
         f.write("\n#define A_FLOW_SENSOR_IS_CONNECTED   NO\n")
     
+    if sequenceExist.get() == 'On':
+        if SeqOut1Var.get()=='1' or SeqOut2Var.get()=='1' or SeqOut3Var.get()=='1' or SeqOut4Var.get()=='1' or SeqOut5Var.get()=='1' or SeqOut6Var.get()=='1':
+            fa.write(f"#define SEQUENCE_OUTPUTS 0b{SeqOut6Var.get()}{SeqOut5Var.get()}{SeqOut4Var.get()}{SeqOut3Var.get()}{SeqOut2Var.get()}{SeqOut1Var.get()}\n")
+            fa.write(f"#define SEQUENCE_UNIT    {str(SeqUnitVar.get())}\n")
+            if SeqTVar[0].get()!='0' and SeqTVar[0].get()!='':
+                fa.write("#define SEQUENCE_m100 ")
+                for y in range (0,25):
+                    if SeqTVar[y*4].get()=='':
+                        break
+                    if y!=0:
+                        fa.write(",")
+                    fa.write(f"{SeqTVar[y*4].get()}, 0b{str(SeqB5Var[y*4].get())}{str(SeqB4Var[y*4].get())}{str(SeqB3Var[y*4].get())}{str(SeqB2Var[y*4].get())}{str(SeqB1Var[y*4].get())}{str(SeqB0Var[y*4].get())}")
+                fa.write("\n")
+            if SeqTVar[1].get()!='0' and SeqTVar[1].get()!='':
+                fa.write("#define SEQUENCE_0 ")
+                for y in range (0,25):
+                    if SeqTVar[y*4+1].get()=='':
+                        break
+                    if y!=0:
+                        fa.write(",")
+                    fa.write(f"{SeqTVar[y*4+1].get()}, 0b{str(SeqB5Var[y*4+1].get())}{str(SeqB4Var[y*4+1].get())}{str(SeqB3Var[y*4+1].get())}{str(SeqB2Var[y*4+1].get())}{str(SeqB1Var[y*4+1].get())}{str(SeqB0Var[y*4+1].get())}")
+                fa.write("\n")
+            if SeqTVar[2].get()!='0' and SeqTVar[2].get()!='':
+                fa.write("#define SEQUENCE_100 ")
+                for y in range (0,25):
+                    if SeqTVar[y*4+2].get()=='':
+                        break
+                    if y!=0:
+                        fa.write(",")
+                    fa.write(f"{SeqTVar[y*4+2].get()}, 0b{str(SeqB5Var[y*4+2].get())}{str(SeqB4Var[y*4+2].get())}{str(SeqB3Var[y*4+2].get())}{str(SeqB2Var[y*4+2].get())}{str(SeqB1Var[y*4+2].get())}{str(SeqB0Var[y*4+2].get())}")
+                fa.write("\n")
+            if voltageExist.get() == "On":
+                if SeqTVar[3].get()!='0' and SeqTVar[3].get()!='' and (SeqMinVoltVar.get()!=0 or SeqMinCellVar.get()!=0):
+                    fa.write("#define SEQUENCE_LOW ")
+                    for y in range (0,25):
+                        if SeqTVar[y*4+3].get()=='':
+                            break
+                        if y!=0:
+                            fa.write(",")
+                        fa.write(f"{SeqTVar[y*4+3].get()}, 0b{str(SeqB5Var[y*4+3].get())}{str(SeqB4Var[y*4+3].get())}{str(SeqB3Var[y*4+3].get())}{str(SeqB2Var[y*4+3].get())}{str(SeqB1Var[y*4+3].get())}{str(SeqB0Var[y*4+3].get())}")
+                    fa.write("\n")
+                    if (SeqMinVoltVar.get()!=0):
+                        fa.write(f"#define SEQUENCE_MIN_VOLT_1 {str(SeqMinVoltVar.get())}")
+                        messagebox.showinfo("oXs configurator", "Be carefull you may need to modify oXs_config_advanced.h to set the voltage source for sequence")
+                    if (SeqMinCellVar.get()!=0):
+                        fa.write(f"#define SEQUENCE_MIN_CELL {str(SeqMinCellVar.get())}")
     if locatorExist.get() == "On":
         f.write("\n#define A_LOCATOR_IS_CONNECTED   YES\n")
     else:
@@ -369,6 +508,8 @@ def uploadConfig():
     adcChanged()
     sequenceExist.set(value= config.get("Main", "sequenceExist"))
     sequenceChanged()
+    persistentExist.set(value= config.get("Main", "persistentExist"))
+    persistentChanged()
     addFieldsExist.set(value= config.get("Main", "addFieldsExist"))
     addFieldsChanged()
     protocolVar.set(value= config.get("Main", "protocolVar"))
@@ -379,6 +520,28 @@ def uploadConfig():
     ppmPinVar.set(value= config.getint("Ppm", "ppmPinVar"))
     ppmForMin100Var.set(value= config.getint("Ppm", "ppmForMin100Var"))
     ppmForPlus100Var.set(value= config.getint("Ppm", "ppmForPlus100Var"))
+
+    imuPinVar.set(value= config.getint("Imu", "imuPinVar"))
+    imuDisplayOffset.set(value= config.get("Imu", "imuDisplayOffset"))
+    imuOffsetXVar.set(value= config.getint("Imu", "imuOffsetXVar"))
+    imuOffsetYVar.set(value= config.getint("Imu", "imuOffsetYVar"))
+    imuOffsetZVar.set(value= config.getint("Imu", "imuOffsetZVar"))
+
+    GeneratemagCalData.set(value= config.get("Magnet", "GeneratemagCalData"))
+    xMagOffsetVar.set(value= config.getint("Magnet", "xMagOffsetVar"))
+    yMagOffsetVar.set(value= config.getint("Magnet", "yMagOffsetVar"))
+    zMagOffsetVar.set(value= config.getint("Magnet", "zMagOffsetVar"))
+    xxMagCorrectionVar.set(value= config.getfloat("Magnet", "xxMagCorrectionVar"))
+    xyMagCorrectionVar.set(value= config.getfloat("Magnet", "xyMagCorrectionVar"))
+    xzMagCorrectionVar.set(value= config.getfloat("Magnet", "xzMagCorrectionVar"))
+    yxMagCorrectionVar.set(value= config.getfloat("Magnet", "yxMagCorrectionVar"))
+    yyMagCorrectionVar.set(value= config.getfloat("Magnet", "yyMagCorrectionVar"))
+    yzMagCorrectionVar.set(value= config.getfloat("Magnet", "yzMagCorrectionVar"))
+    zxMagCorrectionVar.set(value= config.getfloat("Magnet", "zxMagCorrectionVar"))
+    zyMagCorrectionVar.set(value= config.getfloat("Magnet", "zyMagCorrectionVar"))
+    zzMagCorrectionVar.set(value= config.getfloat("Magnet", "zzMagCorrectionVar"))
+    
+    pushButtPinVar.set(value= config.getint("Memory", "pushButtPinVar"))
 
     varioTypeVar.set(value= config.get("Vario", "varioTypeVar"))
     secondBaroExist.set(value= config.get("Vario", "secondBaroExist"))
@@ -445,12 +608,54 @@ def uploadConfig():
     currentMvoltPerAmpVar.set(value= config.getfloat("Current", "currentMvoltPerAmpVar"))
     currentRgVar.set(value= config.getfloat("Current", "currentRgVar"))
     currentRcVar.set(value= config.getfloat("Current", "currentRcVar"))
-    
+
+    flowPulsesmlVar.set(value= config.getint("Flow", "flowPulsesmlVar"))
+    flowTankCapVar.set(value= config.getint("Flow", "flowTankCapVar"))
+    flowL1ValueVar.set(value= config.getint("Flow", "flowL1ValueVar"))
+    flowL1CorrVar.set(value= config.getint("Flow", "flowL1CorrVar"))
+    flowL2ValueVar.set(value= config.getint("Flow", "flowL2ValueVar"))
+    flowL2CorrVar.set(value= config.getint("Flow", "flowL2CorrVar"))
+    flowL3ValueVar.set(value= config.getint("Flow", "flowL3ValueVar"))
+    flowL3CorrVar.set(value= config.getint("Flow", "flowL3CorrVar"))
+    flowL4ValueVar.set(value= config.getint("Flow", "flowL4ValueVar"))
+    flowL4CorrVar.set(value= config.getint("Flow", "flowL4CorrVar"))
+    flowPPMResetVar.set(value= config.getint("Flow", "flowPPMResetVar"))
+
     pulsesPerRotationVar.set(value=config.get("Rpm","pulsesPerRotationVar"))
 
-    gps3dExist.set(value= config.get("Gps", "gps3dexist"))
-    gpsRateVar.set(value= config.getint("Gps", "gpsratevar"))
+    Adc0TypeVar.set(value= config.get("Ads", "Adc0TypeVar"))
+    Adc1TypeVar.set(value= config.get("Ads", "Adc1TypeVar"))
+    Adc2TypeVar.set(value= config.get("Ads", "Adc2TypeVar"))
+    Adc3TypeVar.set(value= config.get("Ads", "Adc3TypeVar"))
+    Adc0FsVar.set(value= config.get("Ads", "Adc0FsVar"))
+    Adc1FsVar.set(value= config.get("Ads", "Adc1FsVar"))
+    Adc2FsVar.set(value= config.get("Ads", "Adc2FsVar"))
+    Adc3FsVar.set(value= config.get("Ads", "Adc3FsVar"))
+    Adc0OffVar.set(value= config.getint("Ads", "Adc0OffVar"))
+    Adc1OffVar.set(value= config.getint("Ads", "Adc1OffVar"))
+    Adc2OffVar.set(value= config.getint("Ads", "Adc2OffVar"))
+    Adc3OffVar.set(value= config.getint("Ads", "Adc3OffVar"))
+    Adc0ScVar.set(value= config.getfloat("Ads", "Adc0ScVar"))
+    Adc1ScVar.set(value= config.getfloat("Ads", "Adc1ScVar"))
+    Adc2ScVar.set(value= config.getfloat("Ads", "Adc2ScVar"))
+    Adc3ScVar.set(value= config.getfloat("Ads", "Adc3ScVar"))
+    Adc0CrVar.set(value= config.get("Ads", "Adc0CrVar"))
+    Adc1CrVar.set(value= config.get("Ads", "Adc1CrVar"))
+    Adc2CrVar.set(value= config.get("Ads", "Adc2CrVar"))
+    Adc3CrVar.set(value= config.get("Ads", "Adc3CrVar"))
+    Adc0AvgVar.set(value= config.getint("Ads", "Adc0AvgVar"))
+    Adc1AvgVar.set(value= config.getint("Ads", "Adc1AvgVar"))
+    Adc2AvgVar.set(value= config.getint("Ads", "Adc2AvgVar"))
+    Adc3AvgVar.set(value= config.getint("Ads", "Adc3AvgVar"))
+    AdcCurrVar.set(value= config.get("Ads", "AdcCurrVar"))
+    AdcSpVar.set(value= config.get("Ads", "AdcSpVar"))
 
+    gps3dExist.set(value= config.get("Gps", "gps3dexist"))
+    gpsTimeExist.set(value= config.get("Gps", "gpstimeexist"))
+    gpsRateVar.set(value= config.getint("Gps", "gpsratevar"))
+    fillTest1VarioTemperatureVar.set(value= config.get("AddFields", "fillTest1VarioTemperatureVar"))
+    fillTest2VarioTemperatureVar.set(value= config.get("AddFields", "fillTest2VarioTemperatureVar"))
+    fillTest3VarioTemperatureVar.set(value= config.get("AddFields", "fillTest3VarioTemperatureVar"))
     fillTest3ExpectedAltitudeVar.set(value= config.get("AddFields", "fillTest3ExpectedAltitudeVar"))
     fillTest3ExpectedAltitudeChanged()
     expAltTimeVar.set(value= config.getfloat("AddFields", "expAltTimeVar"))
@@ -507,6 +712,8 @@ def saveConfig():
     config.set("Main", "flowExist", flowExist.get())
     config.set("Main", "adcExist", adcExist.get())
     config.set("Main", "sequenceExist", sequenceExist.get())
+    config.set("Main", "persistentExist", persistentExist.get())
+    
     config.set("Main", "addFieldsExist", addFieldsExist.get())
     config.set("Main", "protocolVar", protocolVar.get())
     
@@ -514,6 +721,28 @@ def saveConfig():
     config.set("Ppm", "ppmPinVar", str(ppmPinVar.get()))
     config.set("Ppm", "ppmForMin100Var", str(ppmForMin100Var.get()))
     config.set("Ppm", "ppmForPlus100Var", str(ppmForPlus100Var.get()))
+
+    config.set("Imu", "imuPinVar", str(imuPinVar.get()))
+    config.set("Imu", "imuDisplayOffset", imuDisplayOffset.get())
+    config.set("Imu", "imuOffsetXVar", str(imuOffsetXVar.get()))
+    config.set("Imu", "imuOffsetYVar", str(imuOffsetYVar.get()))
+    config.set("Imu", "imuOffsetZVar", str(imuOffsetZVar.get()))
+
+    config.set("Magnet", "GeneratemagCalData", GeneratemagCalData.get())
+    config.set("Magnet", "xMagOffsetVar", str(xMagOffsetVar.get()))
+    config.set("Magnet", "yMagOffsetVar", str(yMagOffsetVar.get()))
+    config.set("Magnet", "zMagOffsetVar", str(zMagOffsetVar.get()))
+    config.set("Magnet", "xxMagCorrectionVar", str(xxMagCorrectionVar.get()))
+    config.set("Magnet", "xyMagCorrectionVar", str(xyMagCorrectionVar.get()))
+    config.set("Magnet", "xzMagCorrectionVar", str(xzMagCorrectionVar.get()))
+    config.set("Magnet", "yxMagCorrectionVar", str(xxMagCorrectionVar.get()))
+    config.set("Magnet", "yyMagCorrectionVar", str(yyMagCorrectionVar.get()))
+    config.set("Magnet", "yzMagCorrectionVar", str(yzMagCorrectionVar.get()))
+    config.set("Magnet", "zxMagCorrectionVar", str(zxMagCorrectionVar.get()))
+    config.set("Magnet", "zyMagCorrectionVar", str(zyMagCorrectionVar.get()))
+    config.set("Magnet", "zzMagCorrectionVar", str(zzMagCorrectionVar.get()))
+ 
+    config.set("Memory", "pushButtPinVar", str(pushButtPinVar.get()))
  
     config.set("Vario", "varioTypeVar", varioTypeVar.get())
     config.set("Vario", "secondBaroExist", secondBaroExist.get())
@@ -578,11 +807,54 @@ def saveConfig():
     config.set("Current", "currentRgVar", str(currentRgVar.get()))
     config.set("Current", "currentRcVar", str(currentRcVar.get()))
 
+    config.set("Flow", "flowPulsesmlVar", str(flowPulsesmlVar.get()))
+    config.set("Flow", "flowTankCapVar", str(flowTankCapVar.get()))
+    config.set("Flow", "flowL1ValueVar", str(flowL1ValueVar.get()))
+    config.set("Flow", "flowL1CorrVar", str(flowL1CorrVar.get()))
+    config.set("Flow", "flowL2ValueVar", str(flowL2ValueVar.get()))
+    config.set("Flow", "flowL2CorrVar", str(flowL2CorrVar.get()))
+    config.set("Flow", "flowL3ValueVar", str(flowL3ValueVar.get()))
+    config.set("Flow", "flowL3CorrVar", str(flowL3CorrVar.get()))
+    config.set("Flow", "flowL4ValueVar", str(flowL4ValueVar.get()))
+    config.set("Flow", "flowL4CorrVar", str(flowL4CorrVar.get()))
+    config.set("Flow", "flowPPMResetVar", str(flowPPMResetVar.get()))
+
     config.set("Rpm", "pulsesPerRotationVar", str(pulsesPerRotationVar.get()))
 
+    config.set("Ads", "Adc0TypeVar", Adc0TypeVar.get())
+    config.set("Ads", "Adc1TypeVar", Adc1TypeVar.get())
+    config.set("Ads", "Adc2TypeVar", Adc2TypeVar.get())
+    config.set("Ads", "Adc3TypeVar", Adc3TypeVar.get())
+    config.set("Ads", "Adc0FsVar", Adc0FsVar.get())
+    config.set("Ads", "Adc1FsVar", Adc1FsVar.get())
+    config.set("Ads", "Adc2FsVar", Adc2FsVar.get())
+    config.set("Ads", "Adc3FsVar", Adc3FsVar.get())
+    config.set("Ads", "Adc0OffVar", str(Adc0OffVar.get()))
+    config.set("Ads", "Adc1OffVar", str(Adc1OffVar.get()))
+    config.set("Ads", "Adc2OffVar", str(Adc2OffVar.get()))
+    config.set("Ads", "Adc3OffVar", str(Adc3OffVar.get()))
+    config.set("Ads", "Adc0ScVar", str(Adc0ScVar.get()))
+    config.set("Ads", "Adc1ScVar", str(Adc1ScVar.get()))
+    config.set("Ads", "Adc2ScVar", str(Adc2ScVar.get()))
+    config.set("Ads", "Adc3ScVar", str(Adc3ScVar.get()))
+    config.set("Ads", "Adc0CrVar", Adc0CrVar.get())
+    config.set("Ads", "Adc1CrVar", Adc1CrVar.get())
+    config.set("Ads", "Adc2CrVar", Adc2CrVar.get())
+    config.set("Ads", "Adc3CrVar", Adc3CrVar.get())
+    config.set("Ads", "Adc0AvgVar", str(Adc0AvgVar.get()))
+    config.set("Ads", "Adc1AvgVar", str(Adc1AvgVar.get()))
+    config.set("Ads", "Adc2AvgVar", str(Adc2AvgVar.get()))
+    config.set("Ads", "Adc3AvgVar", str(Adc3AvgVar.get()))
+    config.set("Ads", "AdcCurrVar", AdcCurrVar.get())
+    config.set("Ads", "AdcSpVar", AdcSpVar.get())
+
     config.set("Gps", "gps3dExist", gps3dExist.get())
+    config.set("Gps", "gpsTimeExist", gpsTimeExist.get())
     config.set("Gps", "gpsRateVar", gpsRateVar.get())
 
+    config.set("AddFields", "fillTest1VarioTemperatureVar", fillTest1VarioTemperatureVar.get())
+    config.set("AddFields", "fillTest2VarioTemperatureVar", fillTest2VarioTemperatureVar.get())
+    config.set("AddFields", "fillTest3VarioTemperatureVar", fillTest3VarioTemperatureVar.get())
     config.set("AddFields", "fillTest3ExpectedAltitudeVar", fillTest3ExpectedAltitudeVar.get())
     config.set("AddFields", "expAltTimeVar", str(expAltTimeVar.get()))
     config.set("AddFields", "fillTest123LinearAccVar", fillTest123LinearAccVar.get())
@@ -634,18 +906,18 @@ def saveConfig():
 
 def protocolChanged(*arg):
     #print(protocolVar.get() )
-    nb.tab(15, state="hidden")
     nb.tab(16, state="hidden")
     nb.tab(17, state="hidden")
     nb.tab(18, state="hidden")
+    nb.tab(19, state="hidden")
     if protocolVar.get() == "FRSKY_SPORT" or protocolVar.get() == "FRSKY_HUB" or protocolVar.get() == "FRSKY_SPORT_HUB" :
-        nb.tab(15, state="normal")
-    elif protocolVar.get() == "JETI":
         nb.tab(16, state="normal")
-    elif protocolVar.get() == "HOTT":
+    elif protocolVar.get() == "JETI":
         nb.tab(17, state="normal")
-    elif protocolVar.get() == "MULTIPLEX":
+    elif protocolVar.get() == "HOTT":
         nb.tab(18, state="normal")
+    elif protocolVar.get() == "MULTIPLEX":
+        nb.tab(19, state="normal")
 
 def ppmChanged():
     if ppmExist.get() == 'On':
@@ -717,11 +989,16 @@ def sequenceChanged():
         nb.tab(13, state="normal")
     else:
         nb.tab(13, state="hidden")
-def addFieldsChanged():
-    if addFieldsExist.get() == 'On':
+def persistentChanged():
+    if persistentExist.get() == 'On':
         nb.tab(14, state="normal")
     else:
-        nb.tab(14, state="hidden")        
+        nb.tab(14, state="hidden")
+def addFieldsChanged():
+    if addFieldsExist.get() == 'On':
+        nb.tab(15, state="normal")
+    else:
+        nb.tab(15, state="hidden")        
 
 def fillTest3ExpectedAltitudeChanged():
     if fillTest3ExpectedAltitudeVar.get() == 'On':
@@ -736,7 +1013,7 @@ def analogVarioChanged():
 
 
 root = Tk()
-root.title("openXsensor configurator V1.0.3")
+root.title("openXsensor configurator V1.0.4")
 nb = ttk.Notebook(root)
 nb.enable_traversal()
 fMain = ttk.Frame(nb)   
@@ -753,11 +1030,12 @@ fFlow = ttk.Frame(nb) # page 10
 fAdc = ttk.Frame(nb) # page 11
 fLocator = ttk.Frame(nb) # page 12
 fSequence = ttk.Frame(nb) # page 13
-fAddFields = ttk.Frame(nb) # page 14
-fFrsky = ttk.Frame(nb) # page 15
-fJeti = ttk.Frame(nb) # page 16
-fHott = ttk.Frame(nb) # page 17
-fMultiplex = ttk.Frame(nb) # page 18
+fMemory = ttk.Frame(nb) # page 14
+fAddFields = ttk.Frame(nb) # page 15
+fFrsky = ttk.Frame(nb) # page 16
+fJeti = ttk.Frame(nb) # page 17
+fHott = ttk.Frame(nb) # page 18
+fMultiplex = ttk.Frame(nb) # page 19
 
 ppmExist = StringVar(value='Off')
 varioExist = StringVar(value='Off')
@@ -770,6 +1048,7 @@ imuExist = StringVar(value='Off')
 magnetExist = StringVar(value='Off')
 flowExist = StringVar(value='Off')
 locatorExist = StringVar(value='Off')
+persistentExist = StringVar(value='Off')
 adcExist = StringVar(value='Off')
 sequenceExist = StringVar(value='Off')
 addFieldsExist = StringVar(value='Off')
@@ -779,6 +1058,40 @@ ppmTypeVar = StringVar(value='Rx chanel')
 ppmPinVar = IntVar(value = 2)
 ppmForMin100Var = IntVar(value = 1000)
 ppmForPlus100Var = IntVar(value = 2000)
+
+imuPinVar = IntVar(value = 3)
+imuDisplayOffset = StringVar(value='Off')
+imuOffsetXVar = IntVar(value=0)
+imuOffsetYVar = IntVar(value=0)
+imuOffsetZVar = IntVar(value=0)
+
+flowPulsesmlVar = IntVar(value = 10)
+flowTankCapVar = IntVar(value = 1000)
+flowL1ValueVar = IntVar(value = 0)
+flowL1CorrVar = IntVar(value = 0)
+flowL2ValueVar = IntVar(value = 0)
+flowL2CorrVar = IntVar(value = 0)
+flowL3ValueVar = IntVar(value = 0)
+flowL3CorrVar = IntVar(value = 0)
+flowL4ValueVar = IntVar(value = 0)
+flowL4CorrVar = IntVar(value = 0)
+flowPPMResetVar = IntVar(value = 95)
+
+pushButtPinVar = IntVar(value = 10)
+
+GeneratemagCalData = StringVar(value='Off')
+xMagOffsetVar= IntVar(value=0)
+yMagOffsetVar= IntVar(value=0)
+zMagOffsetVar= IntVar(value=0)
+xxMagCorrectionVar = DoubleVar(value=0)
+xyMagCorrectionVar = DoubleVar(value=0)
+xzMagCorrectionVar = DoubleVar(value=0)
+yxMagCorrectionVar = DoubleVar(value=0)
+yyMagCorrectionVar = DoubleVar(value=0)
+yzMagCorrectionVar = DoubleVar(value=0)
+zxMagCorrectionVar = DoubleVar(value=0)
+zyMagCorrectionVar = DoubleVar(value=0)
+zzMagCorrectionVar = DoubleVar(value=0)
 
 varioTypeVar = StringVar(value='MS5611')
 
@@ -801,6 +1114,33 @@ airspeedCompMinAtPpmVar = IntVar(value=60)
 airspeedCompMaxAtPpmVar = IntVar(value=90)
 airspeedCompMinVar = IntVar(value=80)
 airspeedCompMaxVar = IntVar(value=140)
+
+Adc0TypeVar= StringVar(value='ADS_OFF')
+Adc1TypeVar= StringVar(value='ADS_OFF')
+Adc2TypeVar= StringVar(value='ADS_OFF')
+Adc3TypeVar= StringVar(value='ADS_OFF')
+Adc0FsVar= StringVar(value='MV6144')
+Adc1FsVar= StringVar(value='MV6144')
+Adc2FsVar= StringVar(value='MV6144')
+Adc3FsVar= StringVar(value='MV6144')
+Adc0OffVar = IntVar(value=0)
+Adc1OffVar = IntVar(value=0)
+Adc2OffVar = IntVar(value=0)
+Adc3OffVar = IntVar(value=0)
+Adc0ScVar = DoubleVar(value=1)
+Adc1ScVar = DoubleVar(value=1)
+Adc2ScVar = DoubleVar(value=1)
+Adc3ScVar = DoubleVar(value=1)
+Adc0CrVar= StringVar(value='MS2')
+Adc1CrVar= StringVar(value='MS2')
+Adc2CrVar= StringVar(value='MS2')
+Adc3CrVar= StringVar(value='MS2')
+Adc0AvgVar = IntVar(value=10)
+Adc1AvgVar = IntVar(value=10)
+Adc2AvgVar = IntVar(value=10)
+Adc3AvgVar = IntVar(value=10)
+AdcCurrVar = StringVar(value='NO')
+AdcSpVar = StringVar(value='NO')
 
 volt1Exist = StringVar(value='Off')
 volt2Exist = StringVar(value='Off')
@@ -855,12 +1195,44 @@ currentRcVar = DoubleVar(value='0.0')
 
 pulsesPerRotationVar = IntVar(value=2)
 
+pushButtonPin=StringVar(value='10')
+
 gps3dExist = StringVar(value='Off')
+gpsTimeExist = StringVar(value='Off')
 gpsRateVar = StringVar(value='5')
+
+SeqUnitVar = IntVar(value='1')
+SeqMinVoltVar = IntVar(value='0')
+SeqMinCellVar = IntVar(value='0')
+SeqOut1Var = StringVar(value='0')
+SeqOut2Var = StringVar(value='0')
+SeqOut3Var = StringVar(value='0')
+SeqOut4Var = StringVar(value='0')
+SeqOut5Var = StringVar(value='0')
+SeqOut6Var = StringVar(value='0')
+SeqB5Var = []
+SeqB4Var = []
+SeqB3Var = []
+SeqB2Var = []
+SeqB1Var = []
+SeqB0Var = []
+SeqTVar = []
+
+for x in range(0,100):
+    SeqB0Var.append(IntVar(value='0'))
+    SeqB1Var.append(IntVar(value='0'))
+    SeqB2Var.append(IntVar(value='0'))
+    SeqB3Var.append(IntVar(value='0'))
+    SeqB4Var.append(IntVar(value='0'))
+    SeqB5Var.append(IntVar(value='0'))
+    SeqTVar.append(StringVar(value=''))
 
 fFillTest3ExpectedAltitude = ttk.Frame(fAddFields)
 fillTest3ExpectedAltitudeVar = StringVar(value='Off')
 expAltTimeVar = DoubleVar(value='1.5')
+fillTest1VarioTemperatureVar = StringVar(value='Off')
+fillTest2VarioTemperatureVar = StringVar(value='Off')
+fillTest3VarioTemperatureVar = StringVar(value='Off')
 fillTest123LinearAccVar = StringVar(value='Off')
 fillTest12VspeedAltVar = StringVar(value='Off')
 fillTest1DteVar = StringVar(value='Off')

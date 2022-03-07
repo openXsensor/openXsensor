@@ -861,7 +861,21 @@ void readSensors() {
 #endif
 
   newVarioAvailable = oXs_MS5611.readSensor(); // Read pressure & temperature on MS5611, calculate Altitude and vertical speed; 
-  if ( oXs_MS5611.varioData.absoluteAlt.available == true and oXs_MS5611.varioData.rawPressure > 100000.0f ) actualPressure = oXs_MS5611.varioData.rawPressure / 10000.0 ; // this value can be used when calculating the Airspeed
+  if ( oXs_MS5611.varioData.absoluteAlt.available == true and oXs_MS5611.varioData.rawPressure > 100000.0f ) {
+      actualPressure = oXs_MS5611.varioData.rawPressure / 10000.0 ; // this value can be used when calculating the Airspeed
+    #ifdef FILL_TEST_1_WITH_VARIO_TEMP
+      test1.value = oXs_MS5611.varioData.temperature/100.0 ;
+      test1.available = true ;
+    #endif
+    #ifdef FILL_TEST_2_WITH_VARIO_TEMP
+      test2.value = oXs_MS5611.varioData.temperature/100.0 ;
+      test2.available = true ;
+    #endif
+    #ifdef FILL_TEST_3_WITH_VARIO_TEMP
+      test3.value = oXs_MS5611.varioData.temperature/100.0 ;
+      test3.available = true ;
+    #endif
+  }
 #endif
 
 #ifdef VARIO2

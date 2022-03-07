@@ -72,6 +72,10 @@ extern uint8_t volatile sendStatus ;
     struct ONE_MEASUREMENT sport_gps_alt ;
     struct ONE_MEASUREMENT sport_gps_speed ; 
     struct ONE_MEASUREMENT sport_gps_course;
+#if defined GPS_TRANSMIT_TIME
+    struct ONE_MEASUREMENT sport_gps_date;
+    struct ONE_MEASUREMENT sport_gps_time;
+#endif
     extern bool GPS_fix ;
 #endif
 
@@ -205,18 +209,18 @@ void OXS_OUT::sendData() {
 
 volatile uint8_t idToReply ;                                                     // each bit (0..5) reports (set to 1) if oXs has to reply to a pooling on a specific Id (this has been added because oXs has to reply with all 0x00 when he has not yet data available 
 volatile uint8_t frskyStatus = 0x3F  ;                                                   //Status of SPORT protocol saying if data is to load in work field (bit 0...5 are used for the 6 sensorId), initially all data are to be loaded
-uint8_t currFieldIdx[6] = { 0 , 2, 5 , 10 , 15 , 19 } ;                          // per sensor, say which field has been loaded the last time (so next time, we have to search from the next one)
-const uint8_t fieldMinIdx[7]  = { 0 , 2, 5 , 10 , 15 , 19 , 22 } ;                     // per sensor, say the first field index ; there is one entry more in the array to know the last index
-const uint8_t fieldId[22] = { 0x10 , 0x11 , 0x30 , 0x30 , 0x30 , 0x21 , 0x20 , 0x60 ,0x90, 0x91 , 0x80, 0x80 , 0x82 , 0x83 , 0x84 , 0x50 , 0x40 , 0x41 , 0xA0 , 0x70 , 0x71 , 0x72 } ; //fieldID to send to Tx (to shift 4 bits to left
-struct ONE_MEASUREMENT * p_measurements[22] ;      // array of 22 pointers (each pointer point to a structure containing a byte saying if a value is available and to the value.
+uint8_t currFieldIdx[6] = { 0 , 2, 5 , 10 , 17 , 21 } ;                          // per sensor, say which field has been loaded the last time (so next time, we have to search from the next one)
+const uint8_t fieldMinIdx[7]  = { 0 , 2, 5 , 10 , 17 , 21 , 24 } ;                     // per sensor, say the first field index ; there is one entry more in the array to know the last index
+const uint8_t fieldId[24] = { 0x10 , 0x11 , 0x30 , 0x30 , 0x30 , 0x21 , 0x20 , 0x60 ,0x90, 0x91 , 0x80, 0x80 , 0x82 , 0x83 , 0x84 , 0x85, 0x85, 0x50 , 0x40 , 0x41 , 0xA0 , 0x70 , 0x71 , 0x72 } ; //fieldID to send to Tx (to shift 4 bits to left
+struct ONE_MEASUREMENT * p_measurements[24] ;      // array of 22 pointers (each pointer point to a structure containing a byte saying if a value is available and to the value.
 // There are 20 possible fields to transmit in SPORT                                                                                                                            
 // They are grouped per sensor ID
 // Sensor 0 start from index = 0 and contains Alt + Vspeed
 // Sensor 1 start from index = 2 and contains Cell_1_2 , Cell_3_4 and Cell_5_6
 // Sensor 2 start from index = 5 and contains vfas , current and fuel
-// Sensor 3 start from index = 8 and contains gps_lon , gps_lat, gps_alt , gps_speed and gps_course
-// Sensor 4 start from index = 13 and contains rpm, T1, T2, airspeed
-// Sensor 5 start from index = 17 and contains accX , accY, accZ
+// Sensor 3 start from index = 10 and contains gps_lon , gps_lat, gps_alt , gps_speed and gps_course
+// Sensor 4 start from index = 15 and contains rpm, T1, T2, airspeed
+// Sensor 5 start from index = 19 and contains accX , accY, accZ
 
 int32_t dataValue[6] ;   // keep for each sensor id the next value to be sent
 uint8_t dataId[6] ;      // keep for each sensor id the Id of next field to be sent
@@ -351,219 +355,237 @@ void initMeasurement() {
   p_measurements[14] = &no_data ; 
 #endif
 
-// pointer to RPM
-#if defined(MEASURE_RPM) 
-  p_measurements[15] = &sport_rpm ; 
-  idToReply |= 0x10 ;
+#if defined(GPS_TRANSMIT_TIME)
+// pointer to GPS date
+#if defined(GPS_INSTALLED)
+  p_measurements[15] = &sport_gps_date ;
+  p_measurements[16] = &sport_gps_time ;
 #else
   p_measurements[15] = &no_data ; 
+  p_measurements[16] = &no_data ; 
+#endif
+#else
+  p_measurements[15] = &no_data ; 
+  p_measurements[16] = &no_data ; 
+#endif
+
+// pointer to RPM
+#if defined(MEASURE_RPM) 
+  p_measurements[17] = &sport_rpm ; 
+  idToReply |= 0x10 ;
+#else
+  p_measurements[17] = &no_data ; 
 #endif
 
 // pointer to T1
 #if defined(T1_SOURCE) && ( T1_SOURCE == TEST_1)
-   p_measurements[16] = &test1 ;
+   p_measurements[18] = &test1 ;
    idToReply |= 0x10 ; 
 #elif defined(T1_SOURCE) && ( T1_SOURCE == TEST_2)
-   p_measurements[16] = &test2 ; 
+   p_measurements[18] = &test2 ; 
    idToReply |= 0x10 ;
 #elif defined(T1_SOURCE) && ( T1_SOURCE == TEST_3)
-   p_measurements[16] = &test3 ; 
+   p_measurements[18] = &test3 ; 
    idToReply |= 0x10 ;
 #elif defined(T1_SOURCE) && ( T1_SOURCE == GLIDER_RATIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
-   p_measurements[16] = &gliderRatio ; 
+   p_measurements[18] = &gliderRatio ; 
    idToReply |= 0x10 ;
 #elif defined(T1_SOURCE) && ( T1_SOURCE == SECONDS_SINCE_T0 ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
-   p_measurements[16] = &secFromT0 ;
+   p_measurements[18] = &secFromT0 ;
    idToReply |= 0x10 ; 
 #elif defined(T1_SOURCE) && ( T1_SOURCE == AVERAGE_VSPEED_SINCE_TO ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
-   p_measurements[16] = &averageVspeedSinceT0 ;
+   p_measurements[18] = &averageVspeedSinceT0 ;
    idToReply |= 0x10 ; 
 #elif defined(T1_SOURCE) && ( T1_SOURCE == SENSITIVITY) && defined(VARIO)
-   p_measurements[16] = &oXs_MS5611.varioData.sensitivity ; 
+   p_measurements[18] = &oXs_MS5611.varioData.sensitivity ; 
    idToReply |= 0x10 ;
 #elif defined(T1_SOURCE) && ( T1_SOURCE == PPM) && ( defined(PIN_PPM) || ( defined(PPM_VIA_SPORT) && ( (PROTOCOL  == FRSKY_SPORT) || (PROTOCOL == FRSKY_SPORT_HUB) ) ) )
-   p_measurements[16] = &ppm ; 
+   p_measurements[18] = &ppm ; 
    idToReply |= 0x10 ;
 #elif defined(T1_SOURCE) && defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && ( T1_SOURCE == VOLT_1 || T1_SOURCE == VOLT_2 || T1_SOURCE == VOLT_3 || T1_SOURCE == VOLT_4 || T1_SOURCE == VOLT_5 || T1_SOURCE == VOLT_6 )
-   p_measurements[16] = &oXs_Voltage.voltageData.mVolt[T1_SOURCE - VOLT_1] ;
+   p_measurements[18] = &oXs_Voltage.voltageData.mVolt[T1_SOURCE - VOLT_1] ;
    idToReply |= 0x10 ;
 #elif defined(T1_SOURCE) && defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined(ADS_MEASURE) && ( T1_SOURCE == ADS_VOLT_1 || T1_SOURCE == ADS_VOLT_2 || T1_SOURCE == ADS_VOLT_3 || T1_SOURCE == ADS_VOLT_4 )
-    p_measurements[16] =  &ads_Conv[T1_SOURCE - ADS_VOLT_1];
+    p_measurements[18] =  &ads_Conv[T1_SOURCE - ADS_VOLT_1];
     idToReply |= 0x10 ;
 #else
-   p_measurements[16] = &no_data ; // T1 
+   p_measurements[18] = &no_data ; // T1 
 #endif
 
 // pointer to T2   
 #if defined(T2_SOURCE) && ( T2_SOURCE == TEST_1)
-   p_measurements[17] = &test1 ;
+   p_measurements[19] = &test1 ;
    idToReply |= 0x10 ; 
 #elif defined(T2_SOURCE) && ( T2_SOURCE == TEST_2)
-   p_measurements[17] = &test2 ; 
+   p_measurements[19] = &test2 ; 
    idToReply |= 0x10 ;
 #elif defined(T2_SOURCE) && ( T2_SOURCE == TEST_3)
-   p_measurements[17] = &test3 ; 
+   p_measurements[19] = &test3 ; 
    idToReply |= 0x10 ;
 #elif defined(T2_SOURCE) && ( T2_SOURCE == GLIDER_RATIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
-   p_measurements[17] = &gliderRatio ; 
+   p_measurements[19] = &gliderRatio ; 
    idToReply |= 0x10 ;
 #elif defined(T2_SOURCE) && ( T2_SOURCE == SECONDS_SINCE_T0 ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
-   p_measurements[17] = &secFromT0 ; 
+   p_measurements[19] = &secFromT0 ; 
    idToReply |= 0x10 ;
 #elif defined(T2_SOURCE) && ( T2_SOURCE == AVERAGE_VSPEED_SINCE_TO ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
-   p_measurements[17] = &averageVspeedSinceT0 ; 
+   p_measurements[19] = &averageVspeedSinceT0 ; 
    idToReply |= 0x10 ;
 #elif defined(T2_SOURCE) && ( T2_SOURCE == SENSITIVITY) && defined(VARIO) 
-   p_measurements[17] = &oXs_MS5611.varioData.sensitivity ; 
+   p_measurements[19] = &oXs_MS5611.varioData.sensitivity ; 
    idToReply |= 0x10 ;
 #elif defined(T2_SOURCE) && ( T2_SOURCE == PPM) && ( defined(PIN_PPM) || ( defined(PPM_VIA_SPORT) && ( (PROTOCOL  == FRSKY_SPORT) || (PROTOCOL == FRSKY_SPORT_HUB) ) ) )
-   p_measurements[17] = &ppm ; 
+   p_measurements[19] = &ppm ; 
    idToReply |= 0x10 ;
 #elif defined(T2_SOURCE) && defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && ( T2_SOURCE == VOLT_1 || T2_SOURCE == VOLT_2 || T2_SOURCE == VOLT_3 || T2_SOURCE == VOLT_4 || T2_SOURCE == VOLT_5 || T2_SOURCE == VOLT_6 )
-   p_measurements[17] = &oXs_Voltage.voltageData.mVolt[T2_SOURCE - VOLT_1] ;
+   p_measurements[19] = &oXs_Voltage.voltageData.mVolt[T2_SOURCE - VOLT_1] ;
    idToReply |= 0x10 ;
 #elif defined(T2_SOURCE) && defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined(ADS_MEASURE) && ( T2_SOURCE == ADS_VOLT_1 || T2_SOURCE == ADS_VOLT_2 || T2_SOURCE == ADS_VOLT_3 || T2_SOURCE == ADS_VOLT_4 )
-    p_measurements[17] =  &ads_Conv[T2_SOURCE - ADS_VOLT_1];
+    p_measurements[19] =  &ads_Conv[T2_SOURCE - ADS_VOLT_1];
     idToReply |= 0x10 ;
 #else
-   p_measurements[17] = &no_data ; // T2 
+   p_measurements[19] = &no_data ; // T2 
 #endif
 
 
    
 // pointer to airspeed
 #if defined(AIRSPEED) 
-  p_measurements[18] = &oXs_4525.airSpeedData.airSpeed ;
+  p_measurements[20] = &oXs_4525.airSpeedData.airSpeed ;
   idToReply |= 0x10 ;
 #elif defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined(ADS_MEASURE) && defined(ADS_AIRSPEED_BASED_ON)
-  p_measurements[18] = &oXs_ads1115.adsAirSpeedData.airSpeed ;
+  p_measurements[20] = &oXs_ads1115.adsAirSpeedData.airSpeed ;
   idToReply |= 0x10 ;
 #elif defined(AIRSPEED_SDP3X)
-  p_measurements[18] = &oXs_sdp3x.airSpeedData.airSpeed ;
+  p_measurements[20] = &oXs_sdp3x.airSpeedData.airSpeed ;
   idToReply |= 0x10 ;
 #else
-  p_measurements[18] = &no_data ; 
+  p_measurements[20] = &no_data ; 
 #endif
 
 // pointer to accX
 #if defined(ACCX_SOURCE) && ( ACCX_SOURCE == TEST_1)
-   p_measurements[19] = &test1 ; // accX
+   p_measurements[21] = &test1 ; // accX
    idToReply |= 0x20 ;
 #elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == TEST_2)
-   p_measurements[19] = &test2 ; // accX
+   p_measurements[21] = &test2 ; // accX
    idToReply |= 0x20 ;
 #elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == TEST_3)
-   p_measurements[19] = &test3 ; // accX
+   p_measurements[21] = &test3 ; // accX
    idToReply |= 0x20 ;
 #elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == GLIDER_RATIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
-   p_measurements[19] = &gliderRatio ; 
+   p_measurements[21] = &gliderRatio ; 
    idToReply |= 0x20 ;
 #elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == SECONDS_SINCE_T0 ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
-   p_measurements[19] = &secFromT0 ; 
+   p_measurements[21] = &secFromT0 ; 
    idToReply |= 0x20 ;
 #elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == AVERAGE_VSPEED_SINCE_TO ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
-   p_measurements[19] = &averageVspeedSinceT0 ; 
+   p_measurements[21] = &averageVspeedSinceT0 ; 
    idToReply |= 0x20 ;
 #elif defined(ACCX_SOURCE) && defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && ( ACCX_SOURCE == VOLT_1 || ACCX_SOURCE == VOLT_2 || ACCX_SOURCE == VOLT_3 || ACCX_SOURCE == VOLT_4 || ACCX_SOURCE == VOLT_5 || ACCX_SOURCE == VOLT_6 )
-   p_measurements[19] = &oXs_Voltage.voltageData.mVolt[ACCX_SOURCE - VOLT_1] ;
+   p_measurements[21] = &oXs_Voltage.voltageData.mVolt[ACCX_SOURCE - VOLT_1] ;
    idToReply |= 0x20 ;
 #elif defined(ACCX_SOURCE) && defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined(ADS_MEASURE) && ( ACCX_SOURCE == ADS_VOLT_1 || ACCX_SOURCE == ADS_VOLT_2 || ACCX_SOURCE == ADS_VOLT_3 || ACCX_SOURCE == ADS_VOLT_4 )
-    p_measurements[19] =  &ads_Conv[ACCX_SOURCE - ADS_VOLT_1];
+    p_measurements[21] =  &ads_Conv[ACCX_SOURCE - ADS_VOLT_1];
     idToReply |= 0x20 ;
 #elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == PITCH) && defined(USE_6050)
-   p_measurements[19] = &pitch ; // accX
+   p_measurements[21] = &pitch ; // accX
    idToReply |= 0x20 ;
 #elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == ROLL) && defined(USE_6050)
-   p_measurements[19] = &roll ; // accX
+   p_measurements[21] = &roll ; // accX
    idToReply |= 0x20 ;
 #elif defined(ACCX_SOURCE) && ( ACCX_SOURCE == YAW) && defined(USE_6050)
-   p_measurements[19] = &yaw ; // accX
+   p_measurements[21] = &yaw ; // accX
    idToReply |= 0x20 ;
 #else
-   p_measurements[19] = &no_data ; // accX
+   p_measurements[21] = &no_data ; // accX
 #endif
 
 // pointer to accY
 #if defined(ACCY_SOURCE) && ( ACCY_SOURCE == TEST_1)
-   p_measurements[20] = &test1 ; // accY
+   p_measurements[22] = &test1 ; // accY
    idToReply |= 0x20 ;
 #elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == TEST_2)
-   p_measurements[20] = &test2 ; // accY
+   p_measurements[22] = &test2 ; // accY
    idToReply |= 0x20 ;
 #elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == TEST_3)
-   p_measurements[20] = &test3 ; // accY
+   p_measurements[22] = &test3 ; // accY
    idToReply |= 0x20 ;
 #elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == GLIDER_RATIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
-   p_measurements[20] = &gliderRatio ; 
+   p_measurements[22] = &gliderRatio ; 
    idToReply |= 0x20 ;
 #elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == SECONDS_SINCE_T0 ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
-   p_measurements[20] = &secFromT0 ; 
+   p_measurements[22] = &secFromT0 ; 
    idToReply |= 0x20 ;
 #elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == AVERAGE_VSPEED_SINCE_TO ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
-   p_measurements[20] = &averageVspeedSinceT0 ; 
+   p_measurements[22] = &averageVspeedSinceT0 ; 
    idToReply |= 0x20 ;
 #elif defined(ACCY_SOURCE) && defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && ( ACCY_SOURCE == VOLT_1 || ACCY_SOURCE == VOLT_2 || ACCY_SOURCE == VOLT_3 || ACCY_SOURCE == VOLT_4 || ACCY_SOURCE == VOLT_5 || ACCY_SOURCE == VOLT_6 )
-   p_measurements[20] = &oXs_Voltage.voltageData.mVolt[ACCY_SOURCE - VOLT_1] ;
+   p_measurements[22] = &oXs_Voltage.voltageData.mVolt[ACCY_SOURCE - VOLT_1] ;
    idToReply |= 0x20 ;
 #elif defined(ACCY_SOURCE) && defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined(ADS_MEASURE) && ( ACCY_SOURCE == ADS_VOLT_1 || ACCY_SOURCE == ADS_VOLT_2 || ACCY_SOURCE == ADS_VOLT_3 || ACCY_SOURCE == ADS_VOLT_4 )
-    p_measurements[20] =  &ads_Conv[ACCY_SOURCE - ADS_VOLT_1];
+    p_measurements[22] =  &ads_Conv[ACCY_SOURCE - ADS_VOLT_1];
     idToReply |= 0x20 ;
 #elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == PITCH) && defined(USE_6050)
-   p_measurements[20] = &pitch ; 
+   p_measurements[22] = &pitch ; 
    idToReply |= 0x20 ;
 #elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == ROLL) && defined(USE_6050)
-   p_measurements[20] = &roll ; 
+   p_measurements[22] = &roll ; 
    idToReply |= 0x20 ;
 #elif defined(ACCY_SOURCE) && ( ACCY_SOURCE == YAW) && defined(USE_6050)
-   p_measurements[20] = &yaw ; 
+   p_measurements[22] = &yaw ; 
    idToReply |= 0x20 ;
 #else
-   p_measurements[20] = &no_data ; // accY
+   p_measurements[22] = &no_data ; // accY
 #endif
 
 // pointer to accZ
 #if defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == TEST_1)
-   p_measurements[21] = &test1 ; // accZ
+   p_measurements[23] = &test1 ; // accZ
    idToReply |= 0x20 ;
 #elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == TEST_2)
-   p_measurements[21] = &test2 ; // accZ
+   p_measurements[23] = &test2 ; // accZ
    idToReply |= 0x20 ;
 #elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == TEST_3)
-   p_measurements[21] = &test3 ; // accZ
+   p_measurements[23] = &test3 ; // accZ
    idToReply |= 0x20 ;
 #elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == GLIDER_RATIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
-   p_measurements[21] = &gliderRatio ; 
+   p_measurements[23] = &gliderRatio ; 
    idToReply |= 0x20 ;
 #elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == SECONDS_SINCE_T0 ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
-   p_measurements[21] = &secFromT0 ; 
+   p_measurements[23] = &secFromT0 ; 
    idToReply |= 0x20 ;
 #elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == AVERAGE_VSPEED_SINCE_TO ) && defined(VARIO) && defined(GLIDER_RATIO_CALCULATED_AFTER_X_SEC)
-   p_measurements[21] = &averageVspeedSinceT0 ; 
+   p_measurements[23] = &averageVspeedSinceT0 ; 
    idToReply |= 0x20 ;
 #elif defined(ACCZ_SOURCE) && defined(ARDUINO_MEASURES_VOLTAGES) && (ARDUINO_MEASURES_VOLTAGES == YES) && ( ACCZ_SOURCE == VOLT_1 || ACCZ_SOURCE == VOLT_2 || ACCZ_SOURCE == VOLT_3 || ACCZ_SOURCE == VOLT_4 || ACCZ_SOURCE == VOLT_5 || ACCZ_SOURCE == VOLT_6 )
-   p_measurements[21] = &oXs_Voltage.voltageData.mVolt[ACCZ_SOURCE - VOLT_1] ;
+   p_measurements[23] = &oXs_Voltage.voltageData.mVolt[ACCZ_SOURCE - VOLT_1] ;
    idToReply |= 0x20 ;
 #elif defined(ACCZ_SOURCE) && defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined(ADS_MEASURE) && ( ACCZ_SOURCE == ADS_VOLT_1 || ACCZ_SOURCE == ADS_VOLT_2 || ACCZ_SOURCE == ADS_VOLT_3 || ACCZ_SOURCE == ADS_VOLT_4 )
-    p_measurements[21] =  &ads_Conv[ACCZ_SOURCE - ADS_VOLT_1];
+    p_measurements[23] =  &ads_Conv[ACCZ_SOURCE - ADS_VOLT_1];
     idToReply |= 0x20 ;
 #elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == PITCH) && defined(USE_6050)
-   p_measurements[21] = &pitch ; // accX
+   p_measurements[23] = &pitch ; // accX
    idToReply |= 0x20 ;
 #elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == ROLL) && defined(USE_6050)
-   p_measurements[21] = &roll ; // accX
+   p_measurements[23] = &roll ; // accX
    idToReply |= 0x20 ;
 #elif defined(ACCZ_SOURCE) && ( ACCZ_SOURCE == YAW) && defined(USE_6050)
-   p_measurements[21] = &yaw ; // accX
+   p_measurements[23] = &yaw ; // accX
    idToReply |= 0x20 ;
 #else
-   p_measurements[21] = &no_data ; // accZ
+   p_measurements[23] = &no_data ; // accZ
 #endif
 
 }
 
 
 void OXS_OUT::sendSportData()
-{  
+{
+#if defined(GPS_TRANSMIT_TIME)
+static uint32_t ptxtime=0;
+#endif
+
 #ifdef DEBUG_STATE
                   Serial.print("State "); Serial.print(state,HEX) ; Serial.print(" LastRx "); Serial.print(LastRx,HEX) ; Serial.print(" prevLastRx "); Serial.print(prevLastRx,HEX) ;
                   Serial.print(" sensorIsr "); Serial.println(sensorIsr,HEX) ; 
@@ -598,14 +620,20 @@ void OXS_OUT::sendSportData()
     if ( oXs_Current.currentData.milliAmps.available) {
       oXs_Current.currentData.milliAmps.available = false ; 
       sport_currentData.value = oXs_Current.currentData.milliAmps.value  / 100 ;
+      if (sport_currentData.value<0) {
+        sport_currentData.value=0;
+      }
       sport_currentData.available = true ;
     }  
 #elif defined(AN_ADS1115_IS_CONNECTED) && (AN_ADS1115_IS_CONNECTED == YES ) && defined(ADS_MEASURE) && defined(ADS_CURRENT_BASED_ON)
     if ( oXs_ads1115.adsCurrentData.milliAmps.available ) {
       oXs_ads1115.adsCurrentData.milliAmps.available = false ;
       sport_currentData.value = oXs_ads1115.adsCurrentData.milliAmps.value  / 100 ;
+      if (sport_currentData.value<0) {
+        sport_currentData.value=0;
+      }
       sport_currentData.available = true ;
-    }  
+    }
 #endif
 
 #if defined(GPS_INSTALLED)
@@ -638,20 +666,43 @@ void OXS_OUT::sendSportData()
   }
   #else                   // use gps_Speed_2d
   if (GPS_speed_2dAvailable) { 
-           sport_gps_speed.available = GPS_speed_2dAvailable ;
-           GPS_speed_2dAvailable = false ;
-    #ifdef GPS_SPEED_IN_KMH
-           sport_gps_speed.value = ( ((uint32_t) GPS_speed_2d) * 36 )  ; // convert cm/s in 1/100 of km/h (factor = 3.6)
-    #else                                
-           sport_gps_speed.value = ( ((uint32_t) GPS_speed_2d) * 700 ) / 36 ; // convert cm/s in 1/1000 of knots (factor = 19.44)
-    #endif // end of GPS_SPEED_IN_KMH
+    sport_gps_speed.available = GPS_speed_2dAvailable ;
+    GPS_speed_2dAvailable = false ;
+  #ifdef GPS_SPEED_IN_KMH
+    sport_gps_speed.value = ( ((uint32_t) GPS_speed_2d) * 36 )  ; // convert cm/s in 1/100 of km/h (factor = 3.6)
+  #else                                
+    sport_gps_speed.value = ( ((uint32_t) GPS_speed_2d) * 700 ) / 36 ; // convert cm/s in 1/1000 of knots (factor = 19.44)
+  #endif // end of GPS_SPEED_IN_KMH
   }
   #endif //  enf of GPS_SPEED_3D  or 2D           
   if (GPS_ground_courseAvailable) {
-            sport_gps_course.available = GPS_ground_courseAvailable ;
-            GPS_ground_courseAvailable = false ;
-            sport_gps_course.value = GPS_ground_course / 1000;               // convert from degree * 100000 to degree * 100                
-  }     
+    sport_gps_course.available = GPS_ground_courseAvailable ;
+    GPS_ground_courseAvailable = false ;
+    sport_gps_course.value = GPS_ground_course / 1000;               // convert from degree * 100000 to degree * 100                
+  }
+ 
+  #if defined(GPS_TRANSMIT_TIME)
+  if (GPS_timeAvailable) {
+    sport_gps_date.value=(GPS_year % 100);
+    sport_gps_date.value<<=8;
+    sport_gps_date.value+=GPS_month;
+    sport_gps_date.value<<=8;
+    sport_gps_date.value+=GPS_day;
+    sport_gps_date.value<<=8;
+    sport_gps_date.value+=0xFF;
+    sport_gps_time.value=GPS_hour;
+    sport_gps_time.value<<=8;
+    sport_gps_time.value+=GPS_min;
+    sport_gps_time.value<<=8;
+    sport_gps_time.value+=GPS_sec;
+    sport_gps_time.value<<=8;
+    if (ptxtime!=sport_gps_time.value) { 
+      ptxtime=sport_gps_time.value;
+      sport_gps_date.available=GPS_timeAvailable;
+      sport_gps_time.available=GPS_timeAvailable;
+    }
+  }
+  #endif
 #endif // end of GPS_INSTALLED
 
 //    Serial.print("frskyStatus "); Serial.println(frskyStatus,HEX) ;

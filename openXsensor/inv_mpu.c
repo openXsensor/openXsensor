@@ -401,7 +401,7 @@ int mpu_init()
     if (rev) {
         /* Congrats, these parts are better. */
         if (rev == 1)             chip_cfg.accel_half = 1;
-        else if (rev == 2)        chip_cfg.accel_half = 0;
+        else if ((rev == 2) || (rev ==4))        chip_cfg.accel_half = 0;
         else {
             log_e("Unsupported software product rev %d.\n", rev);
             return -1;
@@ -2194,4 +2194,3 @@ lp_int_restore:
 /**
  *  @}
  */
-
