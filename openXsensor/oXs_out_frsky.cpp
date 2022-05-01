@@ -749,11 +749,13 @@ static uint32_t ptxtime=0;
 void OXS_OUT::sendHubData()  // for Hub protocol
 {
 #define FRAME2_EVERY_N_FRAME1 1 // n means that there is n frame1 after one frame2(gps)
+#define FRAME3_EVERY_N_FRAME2 5 // n means that there is n frame3 after n frame3 (gps) accordingly to hub protocol time get transmitter every 5 sec
 #define MSEC_PER_BYTE 7        // number of msec per byte to transmit; I expect that a value of 7 ms should work; probably it can even be reduced up to 6.
   static uint32_t lastMsFrame1=0;
   static uint16_t lastFrameLength ;
   static uint32_t temp ;
   static uint8_t countFrame1 = FRAME2_EVERY_N_FRAME1 ;
+  static uint8_t countFrame2 = FRAME3_EVERY_N_FRAME2 ;
 #ifdef GPS_INSTALLED  
   //static uint32_t lastMsFrame2=0;
   
@@ -762,9 +764,18 @@ void OXS_OUT::sendHubData()  // for Hub protocol
   temp = millis() ;
   if ( (state == IDLE ) && (temp  >  (lastMsFrame1 + ( lastFrameLength * MSEC_PER_BYTE) ) ) ) {
 #ifdef GPS_INSTALLED
+#if defined(GPS_TRANSMIT_TIME)
+      if ( (countFrame2 == 0 ) && GPS_fix ) {
+        SendFrame3();
+        lastFrameLength = hubMaxData ;
+        countFrame2 = FRAME3_EVERY_N_FRAME2 ;
+        lastMsFrame1=temp;
+      } else
+#endif
       if ( (countFrame1 == 0 ) && GPS_fix ) {
           SendFrame2();
           lastFrameLength = hubMaxData ;
+          if ( countFrame2 ) countFrame2-- ;
           countFrame1 = FRAME2_EVERY_N_FRAME1 ;
           lastMsFrame1=temp; 
       } else 
@@ -1011,6 +1022,10 @@ void OXS_OUT::SendFrame1(){
 #define FRSKY_USERDATA_GPS_LONG_B   0x12  // Longitude (DDMM)
 #define FRSKY_USERDATA_GPS_LAT_B    0x13  // Latitude (DDMM)
 #define FRSKY_USERDATA_GPS_CURSE_B  0x14  // Course degrees
+#define FRSKY_USERDATA_GPS_DATE     0x15  // Course degrees
+#define FRSKY_USERDATA_GPS_YEAR     0x16  // Course degrees
+#define FRSKY_USERDATA_GPS_HOURMIN  0x17  // Course degrees
+#define FRSKY_USERDATA_GPS_SECONDS  0x18  // Course degrees
 #define FRSKY_USERDATA_GPS_SPEED_A  0x19  // Speed 2 decimals of knots
 #define FRSKY_USERDATA_GPS_LONG_A   0x1A  // Longitude (.MMMM)
 #define FRSKY_USERDATA_GPS_LAT_A    0x1B  // Latitude (.MMMM)
@@ -1080,6 +1095,30 @@ void OXS_OUT::SendFrame2(){
 #endif
   
 }
+#if defined(GPS_TRANSMIT_TIME)
+void OXS_OUT::SendFrame3(){
+  static uint16_t value ;
+  hubMaxData = 0 ; // reset of number of data to send
+  value=GPS_day;
+  value<<8;
+  value+=GPS_month;
+  SendValue(FRSKY_USERDATA_GPS_DATE , value) ; // DATE (DDMM)
+  value=(GPS_year % 100);
+  value<<8;
+  SendValue(FRSKY_USERDATA_GPS_YEAR , value) ; // YEAR (CC00)
+  value=GPS_hour;
+  value<<8;
+  value+=GPS_min;
+  SendValue(FRSKY_USERDATA_GPS_HOURMIN , value) ; // HOURMIN (hhmm)
+  value=GPS_sec;
+  value<<8;
+  SendValue(FRSKY_USERDATA_GPS_SECONDS , value) ; // seconds (ss00)
+  if( hubMaxData > 0 ) {
+    sendHubByte(0x5E) ; // End of Frame 2!
+    setHubNewData(  ) ;
+  }
+}
+#endif
 #endif // end of GPS_INSTALLED
 
 
