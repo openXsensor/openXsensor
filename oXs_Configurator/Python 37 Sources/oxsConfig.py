@@ -163,11 +163,11 @@ def generateOxsConfig():
     
     if addFieldsExist.get() == "On":
         if fillTest1VarioTemperatureVar.get() == "On":
-            fa.write("\n#define FILL_TEST_1_VARIO_TEMP\n") 
+            fa.write("\n#define FILL_TEST_1_WITH_VARIO_TEMP\n") 
         if fillTest2VarioTemperatureVar.get() == "On":
-            fa.write("\n#define FILL_TEST_2_VARIO_TEMP\n") 
+            fa.write("\n#define FILL_TEST_2_WITH_VARIO_TEMP\n") 
         if fillTest3VarioTemperatureVar.get() == "On":
-            fa.write("\n#define FILL_TEST_3_VARIO_TEMP\n") 
+            fa.write("\n#define FILL_TEST_3_WITH_VARIO_TEMP\n") 
         if fillTest3ExpectedAltitudeVar.get() == "On":
             fa.write("\n#define FILL_TEST_3_WITH_EXPECTED_ALT\n") 
             fa.write(f"\n#define EXPECTED_ALT_AT_SEC {str(expAltTimeVar.get())}\n")
