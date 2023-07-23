@@ -218,11 +218,15 @@ void loraHandle(){
         loraSetup() ; // init lora with some set up that need to be done only once
         loraState = LORA_IN_SLEEP ;
         loraStateMillis = currentMillis + SLEEP_TIME ;
+#ifdef DEBUGLORA
         Serial.println("End of init") ;
+#endif        
         break ;
     case  LORA_IN_SLEEP :
         if (currentMillis > loraStateMillis ){ 
+#ifdef DEBUGLORA
           Serial.println("End of sleep; enter receive mode for 5 sec");
+#endif          
           loraRxOn(); 
           loraState = LORA_IN_RECEIVE ; 
           loraStateMillis = currentMillis + SHORT_RECEIVE_TIME ;
@@ -233,16 +237,22 @@ void loraHandle(){
         loraIrqFlags = loraReadRegister(LORA_REG_IRQ_FLAGS);
         if ( loraIrqFlags & IRQ_RX_DONE_MASK  ) {
           if ( loraIrqFlags & IRQ_PAYLOAD_CRC_ERROR_MASK) {
+#ifdef DEBUGLORA            
             Serial.println("wrong crc received") ;
+#endif
             loraRxOn() ; // restart reading in continous mode if CRC is wrong (reset address and interrupt)
           } else {
               loraReadPacket() ; // read the data in fifo (type and TxPower) and Rssi+SNR 
               loraInSleep() ;
               loraState = LORA_TO_TRANSMIT;
+#ifdef DEBUGLORA
               Serial.println("packet received") ;
+#endif
           }
         } else if (currentMillis > loraStateMillis) {
+#ifdef DEBUGLORA
            Serial.println("receive timeout; go to sleep") ;
+#endif
            loraInSleep() ;
            loraState = LORA_IN_SLEEP;
            loraStateMillis = currentMillis + SLEEP_TIME ;
@@ -253,7 +263,9 @@ void loraHandle(){
         loraTxOn(loraRxPacketTxPower) ; // set TxOn  (adjust frequency, number of bytes, Txpower, start Tx)  // set lora in transmit mode
         loraStateMillis = currentMillis + 400 ; // start a timeout ; normally sending is done in less than 200msec
         loraState = LORA_WAIT_END_OF_TRANSMIT ;
+#ifdef DEBUGLORA
         Serial.println("packet redy for sending") ;
+#endif
         break;
     case  LORA_WAIT_END_OF_TRANSMIT :
         // check if transmit is done or if timeout occurs
@@ -261,12 +273,16 @@ void loraHandle(){
         // else, if timeOut, go in sleep for the SLEEP_TIME
         loraIrqFlags = loraReadRegister(LORA_REG_IRQ_FLAGS);
         if ( loraIrqFlags & IRQ_TX_DONE_MASK ) {
+#ifdef DEBUGLORA
             Serial.println("packet has been sent; go to receive for 60sec") ;
+#endif
             loraRxOn();
             loraState = LORA_IN_RECEIVE ; 
             loraStateMillis = currentMillis + LONG_RECEIVE_TIME ;
         } else if ( currentMillis > loraStateMillis ) {
+#ifdef DEBUGLORA
             Serial.println("transmit timeout; go to sleep for 66") ;
+#endif
             loraInSleep() ;
             loraState = LORA_IN_SLEEP;
             loraStateMillis = currentMillis + SLEEP_TIME ;
@@ -344,10 +360,12 @@ void loraReadPacket()            // read a packet with 2 bytes ; PacketType and 
   loraRxPacketType = spiSend(0);
   loraRxPacketTxPower = spiSend(0);
   SPI_UNSELECT ;
+#ifdef DEBUGLORA  
   Serial.print("Rssi=");Serial.println(loraRxPacketRssi ) ;
   Serial.print("Snr=");Serial.println( loraRxPacketSnr) ;
   Serial.print("Type=");Serial.println(loraRxPacketType ) ;
   Serial.print("Power=");Serial.println(loraRxPacketTxPower ) ;
+#endif
 }
 
 
