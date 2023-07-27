@@ -492,7 +492,7 @@ static bool _new_time = false ;
         break;
 #if defined(GPS_TRANSMIT_TIME)
     case MSG_TIMEUTC:   // Parse time informations
-        if (_buffer.timeutc.flag & 0b111) {
+        if ((_buffer.timeutc.flag & 0x07) == 0x07 ) {
           GPS_year=_buffer.timeutc.year;
           GPS_month=_buffer.timeutc.month;
           GPS_day=_buffer.timeutc.day;
