@@ -30,7 +30,7 @@ It is compatible with :
 	* Alternative: ADS1115 + MPXV7002DP
 	* Can also be used by oXs to compensate vertical speed measurements (dTE)
   * GPS
-    * Can be connected to a GPS (NEO6/NEO7/NEO8) and transmit collected data
+    * Can be connected to a GPS (NEO6/NEO7/NEO8/M9/M10) and transmit collected data
   * Accelerometer/gyroscope
     * Can be connected to a MPU6050 sensor (e.g. GY-86 module)
     * Can calculate vertical speed based on acceleration + baro (faster reaction of vario)
@@ -63,7 +63,7 @@ Note: The latest version of the project includes an oXs configurator. It allows:
    * to generate the config files using a graphical user interface.
    * to save/reload several sets of parameters.
    * to view the documentation (content of file oXs_description.h
-It requires that Python3.7 is installed.
-Still, for Windows 10, there is precompiled package that does not require to install Python.
+It requires that Python3.7 is installed - compatible with Python3.11 as well.
+Still, for Windows 10/Windows 11, there is precompiled package that does not require to install Python.
 The configurator supports most (but not all oXs setup parameters) so, in some cases, you still have to edit the config files manually.
   

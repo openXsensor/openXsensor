@@ -63,6 +63,43 @@ typedef struct {
 } ubx_nav_solution;
 
 typedef struct {
+    uint32_t time;
+    uint16_t year;
+    uint8_t month;
+    uint8_t day;
+    uint8_t hour;
+    uint8_t min;
+    uint8_t sec;
+    uint8_t valid;
+    uint32_t time_acc;
+    int32_t nano;
+    uint8_t fix_type;
+    uint8_t fix_status;
+    uint8_t additional_flags;
+    uint8_t satellites;
+    uint32_t longitude;
+    uint32_t latitude;
+    int32_t height;
+    int32_t height_above_sea_level;
+    uint32_t hacc; // horizontal accuracy
+    uint32_t vacc; // vertical accuracy
+    int32_t velocity_noord;
+    int32_t velocity_east;
+    int32_t velocity_down;
+    int32_t gspeed_2d_mm; // speed 2D in mm/sec
+    int32_t head_mot_2d;
+    uint32_t speed_accuracy;
+    uint32_t head_accuracy;
+    uint16_t position_DOP;
+    uint16_t flag3;
+    uint32_t res;
+    int32_t  head_velocity;
+    int16_t magnetic_declination;
+    uint16_t magnetic_accuracy;  
+} ubx_nav_pvt;
+
+
+typedef struct {
     uint32_t time;              // GPS msToW
     int32_t ned_north;
     int32_t ned_east;
@@ -118,7 +155,8 @@ typedef struct {
 #define    MSG_ACK_ACK  0x01
 #define    MSG_POSLLH  0x2
 #define    MSG_STATUS  0x3
-#define    MSG_SOL  0x6
+#define    MSG_SOL  0x6 // not supported in ublox10
+#define    MSG_PVT  0x7 // not supported in ublox6
 #define    MSG_VELNED  0x12
 #if defined GPS_TRANSMIT_TIME
 #define    MSG_TIMEUTC  0x21

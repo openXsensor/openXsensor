@@ -163,11 +163,11 @@ def generateOxsConfig():
     
     if addFieldsExist.get() == "On":
         if fillTest1VarioTemperatureVar.get() == "On":
-            fa.write("\n#define FILL_TEST_1_VARIO_TEMP\n") 
+            fa.write("\n#define FILL_TEST_1_WITH_VARIO_TEMP\n") 
         if fillTest2VarioTemperatureVar.get() == "On":
-            fa.write("\n#define FILL_TEST_2_VARIO_TEMP\n") 
+            fa.write("\n#define FILL_TEST_2_WITH_VARIO_TEMP\n") 
         if fillTest3VarioTemperatureVar.get() == "On":
-            fa.write("\n#define FILL_TEST_3_VARIO_TEMP\n") 
+            fa.write("\n#define FILL_TEST_3_WITH_VARIO_TEMP\n") 
         if fillTest3ExpectedAltitudeVar.get() == "On":
             fa.write("\n#define FILL_TEST_3_WITH_EXPECTED_ALT\n") 
             fa.write(f"\n#define EXPECTED_ALT_AT_SEC {str(expAltTimeVar.get())}\n")
@@ -348,6 +348,8 @@ def generateOxsConfig():
         f.write("\n#define A_GPS_IS_CONNECTED YES\n")
         if gpsTimeExist.get() == 'On':
             fa.write("\n#define GPS_TRANSMIT_TIME\n")
+        if gpsM10.get() == 'On':
+            fa.write("\n#define GPS_M10\n")
         if gps3dExist.get() == 'On':
             fa.write("\n#define GPS_SPEED_3D\n")
             fa.write(f"#define GPS_REFRESH_RATE {gpsRateVar.get()}\n")
@@ -649,7 +651,8 @@ def uploadConfig():
     Adc3AvgVar.set(value= config.getint("Ads", "Adc3AvgVar"))
     AdcCurrVar.set(value= config.get("Ads", "AdcCurrVar"))
     AdcSpVar.set(value= config.get("Ads", "AdcSpVar"))
-
+    
+    gpsM10.set(value= config.get("Gps", "gpsM10"))
     gps3dExist.set(value= config.get("Gps", "gps3dexist"))
     gpsTimeExist.set(value= config.get("Gps", "gpstimeexist"))
     gpsRateVar.set(value= config.getint("Gps", "gpsratevar"))
@@ -847,7 +850,8 @@ def saveConfig():
     config.set("Ads", "Adc3AvgVar", str(Adc3AvgVar.get()))
     config.set("Ads", "AdcCurrVar", AdcCurrVar.get())
     config.set("Ads", "AdcSpVar", AdcSpVar.get())
-
+    
+    config.set("Gps", "gpsM10", gpsM10.get())
     config.set("Gps", "gps3dExist", gps3dExist.get())
     config.set("Gps", "gpsTimeExist", gpsTimeExist.get())
     config.set("Gps", "gpsRateVar", gpsRateVar.get())
@@ -1197,6 +1201,7 @@ pulsesPerRotationVar = IntVar(value=2)
 
 pushButtonPin=StringVar(value='10')
 
+gpsM10 = StringVar(value='Off')
 gps3dExist = StringVar(value='Off')
 gpsTimeExist = StringVar(value='Off')
 gpsRateVar = StringVar(value='5')
